@@ -160,7 +160,7 @@ export default function Skincare101Page() {
           <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">Your instructors</p>
           <h2 className="text-2xl font-bold text-ink-950 text-center mb-2">Learn from people who build skincare for a living.</h2>
           <p className="text-ink-400 text-sm text-center mb-8">Not influencers. Scientists, formulators, and compliance experts.</p>
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {INSTRUCTORS.map((inst) => (
               <div key={inst.name} className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm flex flex-col">
                 <div className="relative w-full aspect-square bg-teal-50">
@@ -172,10 +172,10 @@ export default function Skincare101Page() {
                     sizes="(max-width: 640px) 100vw, 33vw"
                   />
                 </div>
-                <div className="p-4 flex-1">
-                  <p className="font-bold text-ink-900 text-sm mb-0.5">{inst.name}</p>
-                  <p className="text-xs text-teal-600 font-semibold mb-2">{inst.role}</p>
-                  <p className="text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
+                <div className="p-2 sm:p-4 flex-1">
+                  <p className="font-bold text-ink-900 text-xs sm:text-sm mb-0.5">{inst.name}</p>
+                  <p className="text-[10px] sm:text-xs text-teal-600 font-semibold sm:mb-2">{inst.role}</p>
+                  <p className="hidden sm:block text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
                 </div>
               </div>
             ))}
