@@ -302,6 +302,7 @@ export default function Skincare101Page() {
                 </div>
               ))}
             </div>
+            <p className="text-sm text-ink-500 italic mb-3">☕ All of this for less than the price of a coffee!</p>
             <RazorpayButton className="flex justify-center" />
             <div className="flex items-center justify-center gap-4 mt-4 text-xs text-ink-400">
               <span className="flex items-center gap-1"><Calendar size={11} /> 26 April 2026</span>
