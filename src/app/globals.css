@@ -1,0 +1,299 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────
+   FONTS: Cooper BT (self-hosted)
+───────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: 'Cooper BT';
+  src: url('/fonts/CooperBT-Bold.woff2') format('woff2'),
+       url('/fonts/CooperBT-Bold.ttf')   format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cooper BT';
+  src: url('/fonts/CooperBTW01-Light.woff2') format('woff2'),
+       url('/fonts/CooperBTW01-Light.ttf')   format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─────────────────────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────────────────────── */
+@theme {
+  /* ── Teal (primary brand) ── */
+  --color-teal-950: #081918;
+  --color-teal-900: #0F2C2A;
+  --color-teal-800: #174039;
+  --color-teal-700: #1D5550;
+  --color-teal-600: #248179;   /* ← Primary brand colour */
+  --color-teal-500: #2E9E96;
+  --color-teal-400: #45B8B0;
+  --color-teal-300: #72CEC8;
+  --color-teal-200: #A8E4DF;
+  --color-teal-100: #D4F2EF;
+  --color-teal-50:  #EDF8F7;
+
+  /* ── Coral (accent / primary CTA) ── */
+  --color-coral-800: #B83028;
+  --color-coral-700: #D03830;
+  --color-coral-600: #E84940;
+  --color-coral-500: #FD6158;   /* ← Primary CTA / accent */
+  --color-coral-400: #FE7F78;
+  --color-coral-300: #FEA09A;
+  --color-coral-200: #FEC4C0;
+  --color-coral-100: #FEE3E1;
+  --color-coral-50:  #FFF2F1;
+
+  /* ── Background (white-first) ── */
+  --color-cream-50:  #FFFFFF;   /* ← Page background — pure white */
+  --color-cream-100: #F7F7F5;   /* ← Off-white for card sections */
+  --color-cream-200: #EFEFEC;   /* ← Subtle divider/section bg */
+
+  /* ── Warm neutrals (text / borders) ── */
+  --color-ink-950: #262525;     /* ← Primary text */
+  --color-ink-900: #343232;
+  --color-ink-800: #4A4848;
+  --color-ink-700: #5F5D5D;
+  --color-ink-600: #767373;
+  --color-ink-500: #8E8B8B;
+  --color-ink-400: #A7A5A5;
+  --color-ink-300: #C2C0C0;
+  --color-ink-200: #DDDCDC;
+  --color-ink-100: #EEEDED;
+  --color-ink-50:  #F7F6F6;
+
+  /* ── Neon Yellow (editorial accent — use sparingly) ── */
+  --color-yellow-600: #AACC18;   /* dark — for text on light bg */
+  --color-yellow-500: #D6FF3E;   /* ← Primary neon yellow accent */
+  --color-yellow-400: #E3FF72;   /* lighter */
+  --color-yellow-100: #F4FFCC;   /* subtle bg */
+  --color-yellow-50:  #FAFFF0;   /* ultra light */
+
+  /* ── Gold (premium highlights) ── */
+  --color-gold-600: #A87C0A;
+  --color-gold-500: #D4A843;
+  --color-gold-400: #E8C56A;
+  --color-gold-100: #FDF4DC;
+  --color-gold-50:  #FEFAF0;
+
+  /* ── Semantic risk colours ── */
+  --color-safe-600:    #16A34A;
+  --color-safe-500:    #22C55E;
+  --color-safe-100:    #DCFCE7;
+  --color-caution-600: #D97706;
+  --color-caution-500: #F59E0B;
+  --color-caution-100: #FEF3C7;
+  --color-warn-600:    #EA580C;
+  --color-warn-500:    #F97316;
+  --color-warn-100:    #FFEDD5;
+  --color-danger-700:  #B83028;
+  --color-danger-600:  #D03830;
+  --color-danger-500:  #FD6158;  /* coral as danger accent */
+  --color-danger-100:  #FEE3E1;
+
+  /* ── Typography ── */
+  /* Headers: Cooper BT (self-hosted) → Playfair Display → Georgia */
+  --font-display: 'Cooper BT', var(--font-playfair), Georgia, serif;
+  /* Body: Helvetica Neue → Helvetica → system sans */
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Mono: ingredient lists / INCI / technical */
+  --font-mono: var(--font-geist-mono), 'Courier New', monospace;
+
+  /* ── Easing ── */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────────────────
+   BASE RESET
+───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #FFFFFF;
+  color: #262525;
+  font-family: var(--font-sans);
+  line-height: 1.65;
+}
+
+/* ── Headers: Cooper BT / Playfair Display ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #262525;
+}
+
+::selection {
+  background: #D4F2EF;
+  color: #262525;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-teal-200);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-teal-300); }
+
+/* ─────────────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25%       { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50%       { border-radius: 50% 60% 30% 60% / 30% 40% 70% 60%; }
+  75%       { border-radius: 60% 40% 60% 30% / 70% 30% 50% 60%; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(36,129,121,.35); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 14px rgba(36,129,121,0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(36,129,121,0); }
+}
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0);  opacity: .4; }
+  30%            { transform: translateY(-7px); opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-fade-up    { animation: fade-up  0.65s var(--ease-smooth) both; }
+.animate-fade-in    { animation: fade-in  0.4s  var(--ease-smooth) both; }
+.animate-blob       { animation: blob     9s    ease-in-out infinite; }
+.animate-shimmer    { animation: shimmer  2s    linear infinite; }
+.animate-pulse-ring { animation: pulse-ring 2.2s ease-out infinite; }
+.animate-float      { animation: float    6s    ease-in-out infinite; }
+.animate-spin-slow  { animation: spin-slow 24s  linear infinite; }
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* ─────────────────────────────────────────────────────────
+   TYPING INDICATOR
+───────────────────────────────────────────────────────── */
+.typing-dot:nth-child(1) { animation: typing 1.4s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation: typing 1.4s ease-in-out .2s infinite; }
+.typing-dot:nth-child(3) { animation: typing 1.4s ease-in-out .4s infinite; }
+
+/* ─────────────────────────────────────────────────────────
+   GLASSMORPHISM
+───────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.70);
+}
+.glass-dark {
+  background: rgba(23, 64, 57, 0.88);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(36,129,121,.25);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SHIMMER LOADER
+───────────────────────────────────────────────────────── */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    rgba(36,129,121,.07)  25%,
+    rgba(36,129,121,.15)  50%,
+    rgba(36,129,121,.07)  75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCORE COLOURS
+───────────────────────────────────────────────────────── */
+.score-excellent { color: #16A34A; }
+.score-good      { color: #248179; }
+.score-fair      { color: #D97706; }
+.score-fail      { color: #FD6158; }
+
+/* ─────────────────────────────────────────────────────────
+   CHAT BUBBLES
+───────────────────────────────────────────────────────── */
+.chat-bubble-ai {
+  background: #FFFFFF;
+  border: 1px solid var(--color-teal-100);
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 24px -4px rgba(36,129,121,.1);
+}
+.chat-bubble-user {
+  background: var(--color-teal-600);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FOCUS RING
+───────────────────────────────────────────────────────── */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-teal-500);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SECTION DIVIDER  (decorative ruled line)
+───────────────────────────────────────────────────────── */
+.section-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-teal-200), transparent);
+}
+
+/* ─────────────────────────────────────────────────────────
+   GRADIENT TEXT
+───────────────────────────────────────────────────────── */
+.text-gradient-teal {
+  background: linear-gradient(135deg, #248179 0%, #45B8B0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-coral {
+  background: linear-gradient(135deg, #FD6158 0%, #FE9F9A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
