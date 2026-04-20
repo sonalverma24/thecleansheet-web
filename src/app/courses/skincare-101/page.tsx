@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ChevronDown, ChevronUp, CheckCircle2, Clock, Calendar,
-  Users, Zap, BookOpen, Star, ArrowRight, Shield, FlaskConical, Sparkles
+  Users, Zap, BookOpen, Star, Shield, FlaskConical, Sparkles
 } from "lucide-react";
 
-const REG_URL = "https://rzp.io/rzp/thecleansheet";
+function RazorpayButton({ className }: { className?: string }) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    // Clear any previous instance before injecting
+    form.innerHTML = "";
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/payment-button.js";
+    script.setAttribute("data-payment_button_id", "pl_SfO9mMsnPFH82u");
+    script.async = true;
+    form.appendChild(script);
+    return () => { form.innerHTML = ""; };
+  }, []);
+
+  return <form ref={formRef} className={className} />;
+}
 
 const MODULES = [
   { tag: "Foundation", title: "Understanding Your Skin", desc: "Skin types vs conditions, barrier function, sebum regulation, hydration, and inflammation — including what's specific to Indian skin." },
@@ -107,14 +124,7 @@ export default function Skincare101Page() {
           <p className="text-ink-500 text-base sm:text-lg max-w-lg mx-auto leading-relaxed mb-8">
             One 2-hour live session. 9 science-backed modules. Everything you need to read labels, decode ingredients, and build a routine that actually works.
           </p>
-          <a
-            href={REG_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white font-bold text-base px-8 py-4 rounded-2xl transition-colors shadow-lg shadow-teal-900/20"
-          >
-            Claim My Spot — ₹299 <ArrowRight size={18} />
-          </a>
+          <RazorpayButton className="flex justify-center" />
           <p className="text-xs text-ink-400 mt-3">No prior knowledge needed · One-time payment · All inclusive</p>
         </div>
       </section>
@@ -282,14 +292,7 @@ export default function Skincare101Page() {
                 </div>
               ))}
             </div>
-            <a
-              href={REG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-teal-700 hover:bg-teal-800 text-white font-bold text-base py-4 rounded-2xl transition-colors shadow-md shadow-teal-900/20 text-center"
-            >
-              Claim My Spot — ₹299
-            </a>
+            <RazorpayButton className="flex justify-center" />
             <div className="flex items-center justify-center gap-4 mt-4 text-xs text-ink-400">
               <span className="flex items-center gap-1"><Calendar size={11} /> 26 April 2026</span>
               <span className="flex items-center gap-1"><Clock size={11} /> 12–2 PM IST</span>
@@ -309,28 +312,14 @@ export default function Skincare101Page() {
           <p className="text-ink-500 text-sm mb-8 leading-relaxed">
             Join us on 26 April and walk away with the science to make confident, informed choices about every product you buy.
           </p>
-          <a
-            href={REG_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white font-bold text-base px-8 py-4 rounded-2xl transition-colors shadow-lg shadow-teal-900/20"
-          >
-            I'm Ready to Stop Guessing <ArrowRight size={18} />
-          </a>
+          <RazorpayButton className="flex justify-center" />
           <p className="text-xs text-ink-400 mt-3">₹299 · 26 April · 12–2 PM IST · Live Online</p>
         </div>
       </section>
 
       {/* ── Mobile sticky CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-white border-t border-teal-100 px-4 py-3 shadow-xl z-40">
-        <a
-          href={REG_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm py-3.5 rounded-xl transition-colors text-center"
-        >
-          Claim My Spot — ₹299
-        </a>
+      <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-white border-t border-teal-100 px-4 py-3 shadow-xl z-40 flex justify-center">
+        <RazorpayButton />
       </div>
 
       {/* Bottom padding for mobile sticky CTA */}
