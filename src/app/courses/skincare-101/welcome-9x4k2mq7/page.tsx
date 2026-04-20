@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata = {
   title: "You're In! — Skincare 101 · The Clean Sheet™",
   description: "Your spot for Skincare 101 is confirmed. Download your free Pocket Guide to Skincare Red Flags.",
+  robots: { index: false, follow: false },
 };
 
 const GUIDE_URL = "/guides/skincare-red-flags-guide.pdf";
