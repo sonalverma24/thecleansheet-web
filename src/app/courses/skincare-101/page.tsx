@@ -128,7 +128,7 @@ export default function Skincare101Page() {
           <p className="text-ink-500 text-base sm:text-lg max-w-lg mx-auto leading-relaxed mb-8">
             One 2-hour live session. 9 science-backed modules. Everything you need to read labels, decode ingredients, and build a routine that actually works.
           </p>
-          <p className="text-sm text-ink-400 italic mb-3">
+          <p className="text-sm text-ink-600 italic mb-3">
             Skip the overpriced serum. Spend ₹299 on knowing exactly why it doesn&apos;t work. ☕
           </p>
           <RazorpayButton className="flex justify-center" />
@@ -305,7 +305,7 @@ export default function Skincare101Page() {
                 </div>
               ))}
             </div>
-            <p className="text-sm text-ink-500 italic mb-3">Less than your last impulse buy at Nykaa. Just saying. ☕</p>
+            <p className="text-sm text-ink-700 italic mb-3">Less than your last impulse buy at Nykaa. Just saying. ☕</p>
             <RazorpayButton className="flex justify-center" />
             <div className="flex items-center justify-center gap-4 mt-4 text-xs text-ink-400">
               <span className="flex items-center gap-1"><Calendar size={11} /> 26 April 2026</span>
