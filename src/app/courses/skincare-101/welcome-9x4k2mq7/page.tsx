@@ -1,5 +1,6 @@
 import { CheckCircle2, Download, Calendar, Clock, ExternalLink, Sparkles } from "lucide-react";
 import Link from "next/link";
+import Script from "next/script";
 
 export const metadata = {
   title: "You're In! — Skincare 101 · The Clean Sheet™",
@@ -15,6 +16,8 @@ const CALENDAR_LINKS = {
 
 export default function PaymentSuccessPage() {
   return (
+    <>
+    <Script id="meta-pixel-purchase" strategy="afterInteractive">{`fbq('track', 'Purchase', {value: 299, currency: 'INR'});`}</Script>
     <div className="min-h-screen bg-gradient-to-b from-teal-50/60 to-white px-4 py-16">
       <div className="max-w-lg mx-auto">
 
@@ -112,5 +115,6 @@ export default function PaymentSuccessPage() {
 
       </div>
     </div>
+    </>
   );
 }
