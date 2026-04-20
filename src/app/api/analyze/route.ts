@@ -3,6 +3,57 @@ import { CLEAN_SHEET_SYSTEM_PROMPT, COMPARISON_SYSTEM_PROMPT, EXPERT_ANSWER_SYST
 
 export const maxDuration = 120;
 
+function isURL(text: string): boolean {
+  try {
+    const url = new URL(text.trim());
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+async function scrapeURL(url: string): Promise<string | null> {
+  try {
+    const jinaUrl = `https://r.jina.ai/${url}`;
+    const res = await fetch(jinaUrl, {
+      headers: {
+        Accept: "text/plain",
+        "X-Return-Format": "markdown",
+      },
+      signal: AbortSignal.timeout(25000),
+    });
+    if (!res.ok) return null;
+    const content = await res.text();
+    // Return first ~6000 chars to stay within token limits
+    return content.slice(0, 6000);
+  } catch {
+    return null;
+  }
+}
+
+// Try to extract a usable product name + brand from scraped content
+// so Gemini can search for the INCI on external sources
+function extractProductHint(content: string): string {
+  // Grab the first non-empty lines — usually title + brand on product pages
+  const lines = content.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Take up to first 5 meaningful lines (skip very short ones)
+  const hint = lines.filter((l) => l.length > 5).slice(0, 5).join(" | ");
+  return hint.slice(0, 300);
+}
+
+// Fall back to extracting a human-readable product name from the URL slug
+// e.g. /nat-habit-fresh-whipped-skin-malai-double-cocoa-body-butter/p/123
+// → "nat habit fresh whipped skin malai double cocoa body butter"
+function productNameFromURL(url: string): string {
+  try {
+    const path = new URL(url).pathname;
+    const slug = path.split("/").find((seg) => seg.length > 10 && !seg.match(/^\d+$/)) ?? "";
+    return slug.replace(/-/g, " ").trim();
+  } catch {
+    return "";
+  }
+}
+
 function isComparisonQuery(query: string): boolean {
   const q = query.toLowerCase();
   if (q.includes(" vs ") || q.includes(" versus ") || q.includes("compare")) return true;
@@ -14,12 +65,16 @@ function isComparisonQuery(query: string): boolean {
 // Queries that are questions about ingredients, safety, skin concerns — not a specific product to score
 function isExpertQuestion(query: string): boolean {
   const q = query.toLowerCase().trim();
-  const questionStarters = ["is ", "are ", "does ", "do ", "can ", "should ", "what is ", "what are ", "why is ", "why are ", "how does ", "how do ", "how safe ", "is it safe", "tell me about", "explain"];
+  const questionStarters = ["is ", "are ", "does ", "do ", "can ", "should ", "what is ", "what are ", "why is ", "why are ", "how does ", "how do ", "how safe ", "is it safe", "tell me about", "explain", "which is better", "which is safer", "which works"];
   const hasQuestionMark = q.includes("?");
   const startsLikeQuestion = questionStarters.some((s) => q.startsWith(s));
   // Has no brand/product signals (no title-case multi-word, no % signs for serums, no brand-style formatting)
   const looksLikeProduct = /\d+%/.test(q) || q.split(" ").filter((w) => /^[A-Z]/.test(w)).length >= 2;
-  return (hasQuestionMark || startsLikeQuestion) && !looksLikeProduct && !isComparisonQuery(query);
+  // If the query starts with a question word (is/are/does/etc.), treat as expert even if it
+  // also matches a comparison pattern — "is keratin better or smoothening" is a general
+  // haircare question, not a branded product comparison.
+  if (startsLikeQuestion && !looksLikeProduct) return true;
+  return hasQuestionMark && !looksLikeProduct && !isComparisonQuery(query);
 }
 
 function parseJSON(text: string) {
@@ -53,9 +108,29 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-    const q = query.trim();
-    const isComparison = isComparisonQuery(q);
-    const isExpert = !isComparison && isExpertQuestion(q);
+    let q = query.trim();
+    let scrapedContext = "";
+
+    let urlInput = "";
+
+    // If the query is a URL, scrape the page and build the product context
+    if (isURL(q)) {
+      urlInput = q;
+      const pageContent = await scrapeURL(q);
+      if (pageContent) {
+        scrapedContext = pageContent;
+        q = extractProductHint(pageContent) || productNameFromURL(q);
+      } else {
+        // Scraping failed — fall back to product name extracted from the URL slug
+        q = productNameFromURL(q);
+        if (!q) return OUT_OF_SCOPE;
+      }
+    }
+
+    // For URL inputs always use the product scorecard path — never route to expert/comparison
+    // based on whatever text happened to come out of the scraped page hint.
+    const isExpert = !urlInput && isExpertQuestion(q);
+    const isComparison = !urlInput && !isExpert && isComparisonQuery(q);
 
     const systemInstruction = isComparison
       ? COMPARISON_SYSTEM_PROMPT
@@ -68,13 +143,34 @@ export async function POST(req: Request) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: [{ googleSearch: {} } as any],
       systemInstruction,
+      generationConfig: { temperature: 0 },
     });
 
-    const prompt = isComparison
-      ? `Compare these two products: ${q}`
-      : isExpert
-        ? q
-        : `Analyze this product: ${q}`;
+    let prompt: string;
+    if (urlInput) {
+      // URL flow: tell Gemini to extract product identity from the scraped page
+      // and then actively search for the INCI on external sources (IncIDecoder,
+      // Open Beauty Facts, Amazon, Nykaa) since e-commerce pages often render
+      // ingredient lists via JavaScript that the scraper cannot capture.
+      prompt = `The user submitted a product page URL: ${urlInput}
+
+Below is the scraped content from that page. Use it to identify the product name and brand.
+Then, regardless of whether ingredients appear in the scraped content, run your full RESEARCH PROTOCOL:
+- Search for the full INCI list on incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, and the brand website
+- Search for the price and reviews
+- Apply the full scoring framework
+
+IMPORTANT: Do not rely solely on the scraped content for ingredients — most e-commerce pages load ingredient lists dynamically via JavaScript and they will be missing from the scrape. Always search externally for the INCI.
+
+Scraped page content (use for product identity only):
+${scrapedContext}`;
+    } else {
+      prompt = isComparison
+        ? `Compare these two products: ${q}`
+        : isExpert
+          ? q
+          : `Analyze this product: ${q}`;
+    }
 
     const result = await model.generateContent(prompt);
     const finalText = result.response.text().trim();

@@ -170,6 +170,11 @@ function ScorecardView({ card }: { card: Scorecard }) {
               <BadgeRow items={card.info_badges} icon={Info} color="text-teal-600" bg="bg-teal-50" border="border-teal-200" />
             </div>
           )}
+
+          {/* Disclaimer */}
+          <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
+            Scores are AI-generated based on publicly available INCI data, regulatory databases, and user reviews. Results may vary if ingredient lists change or data is unavailable. Always patch-test new products.
+          </p>
         </div>
       </div>
 
