@@ -151,6 +151,35 @@ export default function Skincare101Page() {
         </div>
       </section>
 
+      {/* ── Instructors ── */}
+      <section className="px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">Your instructors</p>
+          <h2 className="text-2xl font-bold text-ink-950 text-center mb-2">Learn from people who build skincare for a living.</h2>
+          <p className="text-ink-400 text-sm text-center mb-8">Not influencers. Scientists, formulators, and compliance experts.</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {INSTRUCTORS.map((inst) => (
+              <div key={inst.name} className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm flex flex-col">
+                <div className="relative w-full aspect-square bg-teal-50">
+                  <Image
+                    src={inst.photo}
+                    alt={inst.name}
+                    fill
+                    className="object-cover object-top"
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                  />
+                </div>
+                <div className="p-4 flex-1">
+                  <p className="font-bold text-ink-900 text-sm mb-0.5">{inst.name}</p>
+                  <p className="text-xs text-teal-600 font-semibold mb-2">{inst.role}</p>
+                  <p className="text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Hook ── */}
       <section className="px-4 py-12">
         <div className="max-w-2xl mx-auto">
@@ -226,35 +255,6 @@ export default function Skincare101Page() {
             <p className="text-teal-100 text-sm leading-relaxed max-w-md mx-auto">
               This isn't a lecture. Show us what's on your shelf and we decode it live — ingredients, claims, and all. Get your routine audited by people who actually build skincare for a living.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Instructors ── */}
-      <section className="px-4 pb-12 bg-teal-50/40 py-12">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">Your instructors</p>
-          <h2 className="text-2xl font-bold text-ink-950 text-center mb-2">Learn from people who build skincare for a living.</h2>
-          <p className="text-ink-400 text-sm text-center mb-8">Not influencers. Scientists, formulators, and compliance experts.</p>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {INSTRUCTORS.map((inst) => (
-              <div key={inst.name} className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm flex flex-col">
-                <div className="relative w-full aspect-square bg-teal-50">
-                  <Image
-                    src={inst.photo}
-                    alt={inst.name}
-                    fill
-                    className="object-cover object-top"
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 flex-1">
-                  <p className="font-bold text-ink-900 text-sm mb-0.5">{inst.name}</p>
-                  <p className="text-xs text-teal-600 font-semibold mb-2">{inst.role}</p>
-                  <p className="text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
