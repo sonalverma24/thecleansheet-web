@@ -17,7 +17,15 @@ const CALENDAR_LINKS = {
 export default function PaymentSuccessPage() {
   return (
     <>
-    <Script id="meta-pixel-purchase" strategy="afterInteractive">{`fbq('track', 'Purchase', {value: 299, currency: 'INR'});`}</Script>
+    <Script id="meta-pixel-purchase" strategy="afterInteractive">{`
+      fbq('track', 'Purchase', {
+        value: 299,
+        currency: 'INR',
+        content_name: 'Skincare 101 — The Clean Sheet',
+        content_type: 'product',
+        content_ids: ['skincare-101'],
+      });
+    `}</Script>
     <div className="min-h-screen bg-gradient-to-b from-teal-50/60 to-white px-4 py-16">
       <div className="max-w-lg mx-auto">
 
