@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import {
   ChevronDown, ChevronUp, CheckCircle2, Clock, Calendar,
   Users, Zap, BookOpen, Star, Shield, FlaskConical, Sparkles
@@ -42,16 +43,19 @@ const INSTRUCTORS = [
     name: "Neha Kundarap",
     role: "Beauty Innovation & Compliance Expert",
     bio: "A regulatory expert and educator who guides ethical beauty brands from concept to shelf, ensuring products are safe, sustainable, and globally compliant.",
+    photo: "/instructors/neha-kundarap.png",
   },
   {
     name: "Saranya Yamunan",
     role: "Formulation Scientist & Skincare Coach",
     bio: "A trusted skincare coach and formulation expert who helps brands create safer, highly effective, and affordable beauty and home products.",
+    photo: "/instructors/saranya-yamunan.jpeg",
   },
   {
     name: "Sonal Verma",
     role: "Co-founder, The Clean Sheet",
     bio: "Building India's first verified beauty and personal care ecosystem to ensure what you put on your skin is proven, safe, and uncompromising.",
+    photo: "/instructors/sonal-verma.png",
   },
 ];
 
@@ -232,15 +236,21 @@ export default function Skincare101Page() {
           <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">Your instructors</p>
           <h2 className="text-2xl font-bold text-ink-950 text-center mb-2">Learn from people who build skincare for a living.</h2>
           <p className="text-ink-400 text-sm text-center mb-8">Not influencers. Scientists, formulators, and compliance experts.</p>
-          <div className="space-y-4">
+          <div className="grid sm:grid-cols-3 gap-4">
             {INSTRUCTORS.map((inst) => (
-              <div key={inst.name} className="bg-white rounded-3xl border border-teal-100 p-5 flex items-start gap-4 shadow-sm">
-                <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center flex-shrink-0 text-teal-700 font-bold text-lg">
-                  {inst.name[0]}
+              <div key={inst.name} className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm flex flex-col">
+                <div className="relative w-full aspect-square bg-teal-50">
+                  <Image
+                    src={inst.photo}
+                    alt={inst.name}
+                    fill
+                    className="object-cover object-top"
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                  />
                 </div>
-                <div>
-                  <p className="font-bold text-ink-900 text-sm">{inst.name}</p>
-                  <p className="text-xs text-teal-600 font-semibold mb-1.5">{inst.role}</p>
+                <div className="p-4 flex-1">
+                  <p className="font-bold text-ink-900 text-sm mb-0.5">{inst.name}</p>
+                  <p className="text-xs text-teal-600 font-semibold mb-2">{inst.role}</p>
                   <p className="text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
                 </div>
               </div>
