@@ -94,7 +94,7 @@ function parseJSON(text: string) {
   return null;
 }
 
-const OUT_OF_SCOPE = Response.json({ type: "out_of_scope" });
+const outOfScope = () => Response.json({ type: "out_of_scope" });
 
 export async function POST(req: Request) {
   try {
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
     }
 
     if (!process.env.GOOGLE_AI_API_KEY) {
-      return OUT_OF_SCOPE;
+      return outOfScope();
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
       } else {
         // Scraping failed — fall back to product name extracted from the URL slug
         q = productNameFromURL(q);
-        if (!q) return OUT_OF_SCOPE;
+        if (!q) return outOfScope();
       }
     }
 
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: [{ googleSearch: {} } as any],
       systemInstruction,
-      generationConfig: { temperature: 0 },
+      generationConfig: { temperature: 0.2 },
     });
 
     let prompt: string;
@@ -176,13 +176,13 @@ ${scrapedContext}`;
     const finalText = result.response.text().trim();
 
     if (!finalText) {
-      return OUT_OF_SCOPE;
+      return outOfScope();
     }
 
     // Expert answer — plain text response, no JSON parsing needed
     if (isExpert) {
       const parsed = parseJSON(finalText);
-      if (parsed?.type === "out_of_scope") return OUT_OF_SCOPE;
+      if (parsed?.type === "out_of_scope") return outOfScope();
       if (parsed?.type === "answer") return Response.json({ type: "answer", answer: parsed });
       // Fallback: return raw text as answer
       return Response.json({ type: "answer", answer: { type: "answer", text: finalText, verdict: "info" } });
@@ -190,8 +190,8 @@ ${scrapedContext}`;
 
     const parsed = parseJSON(finalText);
 
-    if (!parsed) return OUT_OF_SCOPE;
-    if (parsed.type === "out_of_scope") return OUT_OF_SCOPE;
+    if (!parsed) return outOfScope();
+    if (parsed.type === "out_of_scope") return outOfScope();
 
     // Comparison response
     if (isComparison && parsed.type === "comparison" && parsed.productA && parsed.productB) {
@@ -202,6 +202,6 @@ ${scrapedContext}`;
     return Response.json({ type: "single", scorecard: parsed });
   } catch (err: unknown) {
     console.error("[analyze]", err instanceof Error ? err.message : err);
-    return OUT_OF_SCOPE;
+    return outOfScope();
   }
 }
