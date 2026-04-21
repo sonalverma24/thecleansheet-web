@@ -45,6 +45,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen flex flex-col antialiased">
+        {/* Google Analytics */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-DXHG8FBXQT" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-DXHG8FBXQT');
+        `}</Script>
+
         {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">{`
           !function(f,b,e,v,n,t,s)
