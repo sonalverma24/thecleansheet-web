@@ -129,11 +129,13 @@ body {
 }
 
 /* ── Headers: Cooper BT / Playfair Display ── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #262525;
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #262525;
+  }
 }
 
 ::selection {
