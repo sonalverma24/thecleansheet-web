@@ -273,7 +273,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
         <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-3xl p-6 text-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🇮🇳</span>
-            <h3 className="text-xs font-bold text-teal-200 uppercase tracking-widest">India Context</h3>
+            <h3 className="text-xs font-bold text-white uppercase tracking-widest">India Context</h3>
           </div>
           <p className="text-teal-100 text-sm leading-relaxed">{card.indiaContext}</p>
         </div>
@@ -400,7 +400,7 @@ function AnswerView({ answer }: { answer: ExpertAnswer }) {
             <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-2xl p-4 text-white">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-base">🇮🇳</span>
-                <span className="text-xs font-bold text-teal-200 uppercase tracking-widest">India Context</span>
+                <span className="text-xs font-bold text-white uppercase tracking-widest">India Context</span>
               </div>
               <p className="text-teal-100 text-sm leading-relaxed">{answer.indiaContext}</p>
             </div>

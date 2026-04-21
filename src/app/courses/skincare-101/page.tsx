@@ -253,9 +253,9 @@ export default function Skincare101Page() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-gradient-to-br from-teal-700 to-teal-900 rounded-3xl p-7 sm:p-10 text-white text-center">
             <p className="text-4xl mb-4">👜</p>
-            <p className="text-xs font-bold text-teal-300 uppercase tracking-widest mb-3">Module 09 · Live Session</p>
+            <p className="text-xs font-bold text-white uppercase tracking-widest mb-3">Module 09 · Live Session</p>
             <h3 className="text-xl sm:text-2xl font-bold mb-3 text-white">Bring Your Beauty Bag to Class.</h3>
-            <p className="text-teal-100 text-sm leading-relaxed max-w-md mx-auto">
+            <p className="text-white text-sm leading-relaxed max-w-md mx-auto">
               This isn't a lecture. Show us what's on your shelf and we decode it live — ingredients, claims, and all. Get your routine audited by people who actually build skincare for a living.
             </p>
           </div>
