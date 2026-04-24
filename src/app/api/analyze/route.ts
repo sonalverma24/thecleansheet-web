@@ -154,6 +154,8 @@ export async function POST(req: Request) {
       // ingredient lists via JavaScript that the scraper cannot capture.
       prompt = `The user submitted a product page URL: ${urlInput}
 
+This is a beauty/personal care product page URL. You MUST produce a full scorecard — never return {"type":"out_of_scope"} for a product URL. If you cannot find INCI data, score Full Ingredient Disclosure at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
+
 Below is the scraped content from that page. Use it to identify the product name and brand.
 Then, regardless of whether ingredients appear in the scraped content, run your full RESEARCH PROTOCOL:
 - Search for the full INCI list on incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, and the brand website
@@ -189,6 +191,21 @@ ${scrapedContext}`;
     }
 
     const parsed = parseJSON(finalText);
+
+    // For URL inputs, never surface out_of_scope — the URL is always a beauty product page.
+    // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
+    if (urlInput && (!parsed || parsed.type === "out_of_scope")) {
+      const fallbackName = productNameFromURL(urlInput);
+      if (fallbackName) {
+        const fallbackResult = await model.generateContent(`Analyze this product: ${fallbackName}`);
+        const fallbackText = fallbackResult.response.text().trim();
+        const fallbackParsed = parseJSON(fallbackText);
+        if (fallbackParsed && fallbackParsed.type !== "out_of_scope") {
+          return Response.json({ type: "single", scorecard: fallbackParsed });
+        }
+      }
+      return outOfScope();
+    }
 
     if (!parsed) return outOfScope();
     if (parsed.type === "out_of_scope") return outOfScope();
