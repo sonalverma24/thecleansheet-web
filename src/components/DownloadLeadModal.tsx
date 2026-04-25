@@ -36,8 +36,13 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
     setDone(true);
     setLoading(false);
 
-    // Open branded print page in a new tab
-    window.open(`/learn/guides/${guideSlug}/print`, "_blank");
+    // Trigger direct PDF download
+    const link = document.createElement("a");
+    link.href = _guideFile;
+    link.download = `The Clean Sheet - ${guideName}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   return (
@@ -124,9 +129,9 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
               <div className="w-14 h-14 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 size={28} className="text-teal-600" />
               </div>
-              <h2 className="text-xl font-bold text-ink-950 mb-2">Your guide is opening!</h2>
+              <h2 className="text-xl font-bold text-ink-950 mb-2">Your guide is downloading!</h2>
               <p className="text-sm text-ink-500 leading-relaxed mb-6">
-                The Clean Sheet™ Guide to {guideName} has opened in a new tab. Use &ldquo;Save as PDF&rdquo; to download it.
+                The Clean Sheet™ Guide to {guideName} should appear in your downloads shortly.
               </p>
               <button
                 onClick={onClose}
