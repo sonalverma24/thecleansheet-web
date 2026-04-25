@@ -6,10 +6,11 @@ import { X, Download, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 type Props = {
   guideName: string;
   guideFile: string;
+  guideSlug: string;
   onClose: () => void;
 };
 
-export default function DownloadLeadModal({ guideName, guideFile, onClose }: Props) {
+export default function DownloadLeadModal({ guideName, guideFile: _guideFile, guideSlug, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,13 +36,8 @@ export default function DownloadLeadModal({ guideName, guideFile, onClose }: Pro
     setDone(true);
     setLoading(false);
 
-    // Trigger download
-    const link = document.createElement("a");
-    link.href = guideFile;
-    link.download = `The Clean Sheet - ${guideName}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Open branded print page in a new tab
+    window.open(`/learn/guides/${guideSlug}/print`, "_blank");
   }
 
   return (
@@ -128,9 +124,9 @@ export default function DownloadLeadModal({ guideName, guideFile, onClose }: Pro
               <div className="w-14 h-14 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 size={28} className="text-teal-600" />
               </div>
-              <h2 className="text-xl font-bold text-ink-950 mb-2">Your guide is downloading!</h2>
+              <h2 className="text-xl font-bold text-ink-950 mb-2">Your guide is opening!</h2>
               <p className="text-sm text-ink-500 leading-relaxed mb-6">
-                The Clean Sheet™ Guide to {guideName} should appear in your downloads.
+                The Clean Sheet™ Guide to {guideName} has opened in a new tab. Use &ldquo;Save as PDF&rdquo; to download it.
               </p>
               <button
                 onClick={onClose}

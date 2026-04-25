@@ -7,9 +7,10 @@ import DownloadLeadModal from "./DownloadLeadModal";
 type Props = {
   guideName: string;
   guideFile: string;
+  guideSlug: string;
 };
 
-export default function DownloadGuideButton({ guideName, guideFile }: Props) {
+export default function DownloadGuideButton({ guideName, guideFile, guideSlug }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -26,6 +27,7 @@ export default function DownloadGuideButton({ guideName, guideFile }: Props) {
         <DownloadLeadModal
           guideName={guideName}
           guideFile={guideFile}
+          guideSlug={guideSlug}
           onClose={() => setOpen(false)}
         />
       )}
