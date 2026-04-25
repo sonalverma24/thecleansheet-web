@@ -130,11 +130,11 @@ export default function LearnPage() {
                 for your health. Bookmark this, it'll change how you shop.
               </p>
               <div className="flex gap-3">
-                <a href="#scoring" className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm">
-                  How We Score <ArrowRight size={14} />
+                <a href="#skin-type-guides" className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm">
+                  Skin Type Guides <ArrowRight size={14} />
                 </a>
-                <a href="#skin-type-guides" className="flex items-center gap-2 border border-teal-200 hover:border-teal-400 text-teal-700 font-medium px-5 py-3 rounded-xl transition-colors text-sm">
-                  Skin Type Guides
+                <a href="#scoring" className="flex items-center gap-2 border border-teal-200 hover:border-teal-400 text-teal-700 font-medium px-5 py-3 rounded-xl transition-colors text-sm">
+                  How We Score
                 </a>
               </div>
             </div>
@@ -159,6 +159,68 @@ export default function LearnPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Skin Type Guides — featured strip ────────────── */}
+      <section id="skin-type-guides" className="bg-gradient-to-br from-teal-900 to-teal-950 py-14 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 text-teal-300 bg-teal-800/60 border border-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+                <BookOpen size={12} />
+                Free Skin Type Guides
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                Find your skin type. Build your routine.
+              </h2>
+            </div>
+            <p className="text-teal-300 text-sm max-w-xs leading-relaxed">
+              Science-backed guides written for Indian skin — pick yours and read in under 5 minutes.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                type: "Oily Skin",
+                desc: "Manage sebum, minimise pores, pick non-comedogenic actives.",
+                href: "/learn/guides/oily-skin",
+                accent: "from-teal-400 to-teal-600",
+              },
+              {
+                type: "Dry Skin",
+                desc: "Restore the moisture barrier and lock in hydration.",
+                href: "/learn/guides/dry-skin",
+                accent: "from-teal-300 to-teal-500",
+              },
+              {
+                type: "Combination Skin",
+                desc: "Balance an oily T-zone and dry cheeks without compromising either.",
+                href: "/learn/guides/combination-skin",
+                accent: "from-teal-500 to-teal-700",
+              },
+              {
+                type: "Normal Skin",
+                desc: "Maintain your skin's natural balance and protect from ageing.",
+                href: "/learn/guides/normal-skin",
+                accent: "from-teal-200 to-teal-400",
+              },
+            ].map(({ type, desc, href, accent }) => (
+              <Link
+                key={type}
+                href={href}
+                className="group bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/30 rounded-2xl p-5 flex flex-col transition-all duration-200"
+              >
+                <div className={`h-0.5 w-10 rounded-full bg-gradient-to-r ${accent} mb-4`} />
+                <p className="text-white font-bold text-base mb-1.5">{type}</p>
+                <p className="text-teal-200/80 text-xs leading-relaxed flex-1">{desc}</p>
+                <div className="mt-4 flex items-center gap-1 text-teal-300 group-hover:text-white text-xs font-semibold transition-colors">
+                  Read guide <ArrowRight size={12} />
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -256,69 +318,6 @@ export default function LearnPage() {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Skin Type Guides ──────────────────────────────── */}
-      <section id="skin-type-guides" className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-10">
-            <div className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 border border-teal-200 text-sm font-medium px-4 py-1.5 rounded-full mb-5">
-              <BookOpen size={14} />
-              Skin Type Guides
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-ink-950 tracking-tight mb-3">
-              Guides for every skin type
-            </h2>
-            <p className="text-ink-600 text-lg">
-              Science-backed routines and ingredient checklists tailored to your skin type.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                type: "Oily Skin",
-                desc: "Manage excess sebum, minimise pores, and pick non-comedogenic actives.",
-                href: "/learn/guides/oily-skin",
-                accent: "from-teal-600 to-teal-800",
-              },
-              {
-                type: "Dry Skin",
-                desc: "Restore the moisture barrier, lock in hydration, and avoid stripping ingredients.",
-                href: "/learn/guides/dry-skin",
-                accent: "from-teal-400 to-teal-600",
-              },
-              {
-                type: "Combination Skin",
-                desc: "Balance an oily T-zone and dry cheeks without compromising either area.",
-                href: "/learn/guides/combination-skin",
-                accent: "from-teal-500 to-teal-800",
-              },
-              {
-                type: "Normal Skin",
-                desc: "Maintain your skin's natural balance and protect it from environmental stress.",
-                href: "/learn/guides/normal-skin",
-                accent: "from-teal-300 to-teal-600",
-              },
-            ].map(({ type, desc, href, accent }) => (
-              <Link
-                key={type}
-                href={href}
-                className="group bg-white rounded-3xl border border-teal-100 overflow-hidden hover:shadow-lg hover:shadow-teal-900/10 transition-all duration-200 flex flex-col"
-              >
-                <div className={`h-1.5 bg-gradient-to-r ${accent}`} />
-                <div className="p-5 flex flex-col flex-1">
-                  <span className="inline-flex items-center self-start text-xs font-semibold px-2.5 py-1 rounded-full border mb-3 bg-teal-100 text-teal-700 border-teal-200">
-                    {type}
-                  </span>
-                  <p className="text-ink-600 text-sm leading-relaxed flex-1">{desc}</p>
-                  <div className="mt-4 flex items-center gap-1.5 text-teal-600 group-hover:text-teal-800 text-sm font-semibold transition-colors">
-                    Read guide <ArrowRight size={13} />
-                  </div>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       </section>
