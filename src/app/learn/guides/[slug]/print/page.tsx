@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getGuideBySlug, getAllGuideSlugs } from "@/lib/skin-guides";
 import PrintTrigger from "@/components/PrintTrigger";
+import PrintBar from "@/components/PrintBar";
 
 export function generateStaticParams() {
   return getAllGuideSlugs().map((slug) => ({ slug }));
@@ -58,35 +59,7 @@ export default async function GuidePrintPage({ params }: { params: Promise<{ slu
       `}</style>
 
       {/* ─── SCREEN ONLY: close bar ─── */}
-      <div className="screen-only" style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 999,
-        background: "#0a2420", color: "#fff", padding: "10px 20px",
-        alignItems: "center", justifyContent: "space-between", gap: 12,
-        fontSize: 13, fontFamily: "Inter, sans-serif"
-      }}>
-        <span style={{ fontWeight: 600 }}>The Clean Sheet™ · Print Preview</span>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={() => typeof window !== "undefined" && window.print()}
-            style={{
-              background: "#0d9488", color: "#fff", border: "none",
-              borderRadius: 8, padding: "6px 16px", fontWeight: 700,
-              fontSize: 13, cursor: "pointer"
-            }}
-          >
-            Save as PDF
-          </button>
-          <button
-            onClick={() => typeof window !== "undefined" && window.close()}
-            style={{
-              background: "rgba(255,255,255,0.1)", color: "#fff", border: "none",
-              borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 13
-            }}
-          >
-            ✕ Close
-          </button>
-        </div>
-      </div>
+      <PrintBar />
 
       {/* ─── COVER PAGE ─── */}
       <div className="page-break avoid-break" style={{
