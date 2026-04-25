@@ -52,11 +52,10 @@ function Hero() {
             </div>
 
             {/* Sticker button — skin type guides */}
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-5 inline-block" style={{ transform: "rotate(-2deg)" }}>
               <Link
                 href="/learn#skin-type-guides"
                 className="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-ink-950 font-bold text-sm px-4 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.96]"
-                style={{ transform: "rotate(-2deg)", display: "inline-flex" }}
               >
                 ✦ Find your skin type guide
               </Link>

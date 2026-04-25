@@ -164,24 +164,24 @@ export default function LearnPage() {
       </section>
 
       {/* ── Skin Type Guides — featured strip ────────────── */}
-      <section id="skin-type-guides" className="bg-gradient-to-br from-teal-900 to-teal-950 py-14 px-4 sm:px-6 lg:px-8">
+      <section id="skin-type-guides" className="bg-gradient-to-br from-teal-900 to-teal-950 py-10 sm:py-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-2 text-teal-300 bg-teal-800/60 border border-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
-                <BookOpen size={12} />
-                Free Skin Type Guides
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-white tracking-tight">
+          <div className="mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-2 text-teal-300 bg-teal-800/60 border border-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+              <BookOpen size={12} />
+              Free Skin Type Guides
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-6">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight">
                 Find your skin type. Build your routine.
               </h2>
+              <p className="text-teal-300 text-sm sm:max-w-xs leading-relaxed flex-shrink-0">
+                Science-backed guides for Indian skin. Read in under 5 minutes.
+              </p>
             </div>
-            <p className="text-teal-300 text-sm max-w-xs leading-relaxed">
-              Science-backed guides written for Indian skin. Pick yours and read in under 5 minutes.
-            </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
                 type: "Oily Skin",
@@ -211,13 +211,13 @@ export default function LearnPage() {
               <Link
                 key={type}
                 href={href}
-                className="group bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/30 rounded-2xl p-5 flex flex-col transition-all duration-200"
+                className="group bg-white/10 hover:bg-white/20 border border-white/15 hover:border-white/30 rounded-2xl p-4 sm:p-5 flex flex-col transition-all duration-200"
               >
-                <div className={`h-0.5 w-10 rounded-full bg-gradient-to-r ${accent} mb-4`} />
-                <p className="text-white font-bold text-base mb-1.5">{type}</p>
-                <p className="text-teal-200/80 text-xs leading-relaxed flex-1">{desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-teal-300 group-hover:text-white text-xs font-semibold transition-colors">
-                  Read guide <ArrowRight size={12} />
+                <div className={`h-0.5 w-8 rounded-full bg-gradient-to-r ${accent} mb-3`} />
+                <p className="text-white font-bold text-sm sm:text-base mb-1">{type}</p>
+                <p className="text-teal-200/80 text-[11px] sm:text-xs leading-relaxed flex-1 hidden sm:block">{desc}</p>
+                <div className="mt-3 flex items-center gap-1 text-teal-300 group-hover:text-white text-xs font-semibold transition-colors">
+                  Read <ArrowRight size={11} />
                 </div>
               </Link>
             ))}
