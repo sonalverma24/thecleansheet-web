@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Sparkles, AlertTriangle, CheckCircle2, XCircle, BookOpen, ArrowRight } from "lucide-react";
+import { Sparkles, AlertTriangle, CheckCircle2, XCircle, BookOpen, ArrowRight, Download } from "lucide-react";
 
 export const metadata = {
   title: "Learn, The Clean Sheet™",
@@ -133,8 +133,8 @@ export default function LearnPage() {
                 <a href="#scoring" className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm">
                   How We Score <ArrowRight size={14} />
                 </a>
-                <a href="#glossary" className="flex items-center gap-2 border border-teal-200 hover:border-teal-400 text-teal-700 font-medium px-5 py-3 rounded-xl transition-colors text-sm">
-                  Glossary
+                <a href="#skin-type-guides" className="flex items-center gap-2 border border-teal-200 hover:border-teal-400 text-teal-700 font-medium px-5 py-3 rounded-xl transition-colors text-sm">
+                  Skin Type Guides
                 </a>
               </div>
             </div>
@@ -256,6 +256,76 @@ export default function LearnPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Skin Type Guides ──────────────────────────────── */}
+      <section id="skin-type-guides" className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-10">
+            <div className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 border border-teal-200 text-sm font-medium px-4 py-1.5 rounded-full mb-5">
+              <Download size={14} />
+              Free Guides
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-ink-950 tracking-tight mb-3">
+              Guides for every skin type
+            </h2>
+            <p className="text-ink-600 text-lg">
+              Science-backed routines and ingredient checklists tailored to your skin type. Download yours free.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                type: "Oily Skin",
+                desc: "Manage excess sebum, minimise pores, and pick non-comedogenic actives.",
+                file: "/guides/Oily_Skin_Care_Revised_v2.pdf",
+                accent: "from-teal-600 to-teal-800",
+                badge: "bg-teal-100 text-teal-700 border-teal-200",
+              },
+              {
+                type: "Dry Skin",
+                desc: "Restore the moisture barrier, lock in hydration, and avoid stripping ingredients.",
+                file: "/guides/Dry_Skin_Care_Guide.pdf",
+                accent: "from-teal-500 to-teal-700",
+                badge: "bg-teal-100 text-teal-700 border-teal-200",
+              },
+              {
+                type: "Combination Skin",
+                desc: "Balance an oily T-zone and dry cheeks without compromising either area.",
+                file: "/guides/Combination_Skin_Care_Guide.pdf",
+                accent: "from-teal-700 to-teal-900",
+                badge: "bg-teal-100 text-teal-700 border-teal-200",
+              },
+              {
+                type: "Normal Skin",
+                desc: "Maintain your skin's natural balance and protect it from environmental stress.",
+                file: "/guides/Normal_Skin_Care_Guide.pdf",
+                accent: "from-teal-400 to-teal-600",
+                badge: "bg-teal-100 text-teal-700 border-teal-200",
+              },
+            ].map(({ type, desc, file, accent, badge }) => (
+              <a
+                key={type}
+                href={file}
+                download
+                className="group bg-white rounded-3xl border border-teal-100 overflow-hidden hover:shadow-lg hover:shadow-teal-900/10 transition-all duration-200 flex flex-col"
+              >
+                {/* colour band */}
+                <div className={`h-1.5 bg-gradient-to-r ${accent}`} />
+                <div className="p-5 flex flex-col flex-1">
+                  <span className={`inline-flex items-center self-start text-xs font-semibold px-2.5 py-1 rounded-full border mb-3 ${badge}`}>
+                    {type}
+                  </span>
+                  <p className="text-ink-600 text-sm leading-relaxed flex-1">{desc}</p>
+                  <div className="mt-4 flex items-center gap-1.5 text-teal-600 group-hover:text-teal-800 text-sm font-semibold transition-colors">
+                    <Download size={14} />
+                    Download PDF
+                  </div>
+                </div>
+              </a>
+            ))}
           </div>
         </div>
       </section>
