@@ -27,7 +27,7 @@ export default function AboutPage() {
               </h1>
               <p className="text-xl text-ink-600 leading-relaxed mb-6 max-w-xl">
                 The Indian beauty industry is worth $28 billion and growing. But clean beauty
-                has no legal definition. Brands use "natural", "pure", "chemical-free" freely —
+                has no legal definition. Brands use "natural", "pure", "chemical-free" freely,
                 with no accountability.
               </p>
               <p className="text-xl text-ink-600 leading-relaxed max-w-xl">
@@ -41,7 +41,7 @@ export default function AboutPage() {
               <div className="relative rounded-3xl overflow-hidden aspect-square shadow-2xl shadow-teal-900/20">
                 <Image
                   src="/images/evidence-over-marketing.jpg"
-                  alt="Scanning product ingredients — evidence over marketing"
+                  alt="Scanning product ingredients, evidence over marketing"
                   fill
                   className="object-cover blur-[2px] scale-105"
                   priority
@@ -176,7 +176,7 @@ export default function AboutPage() {
                 </p>
                 <p>
                   The Clean Sheet fills this gap with a voluntary, science-driven certification
-                  inspired by the EU's SCCS guidelines, IFRA standards, and the EWG's rigour —
+                  inspired by the EU's SCCS guidelines, IFRA standards, and the EWG's rigour,
                   but built for India's market and consumer context.
                 </p>
               </div>
@@ -229,7 +229,7 @@ export default function AboutPage() {
             It's a marketing term. We're building the standard
             that changes that."
           </blockquote>
-          <p className="text-teal-400 mb-10">— The Clean Sheet™</p>
+          <p className="text-teal-400 mb-10">The Clean Sheet™</p>
           <Link
             href="/analyzer"
             className="inline-flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-semibold px-7 py-4 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/30 active:scale-[0.98]"

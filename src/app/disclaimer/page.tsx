@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Disclaimer — The Clean Sheet™",
-  description: "Disclaimer for The Clean Sheet™ — scope and limitations of our analysis, scores, and certifications.",
+  title: "Disclaimer | The Clean Sheet™",
+  description: "Disclaimer for The Clean Sheet™: scope and limitations of our analysis, scores, and certifications.",
 };
 
 export default function DisclaimerPage() {
@@ -30,8 +30,8 @@ export default function DisclaimerPage() {
             <p>
               Nothing on this Platform constitutes medical advice, dermatological advice, or a substitute for
               professional consultation. Product scores, ingredient flags, and safety assessments are based on
-              publicly available regulatory data, peer-reviewed literature, and our proprietary framework —
-              they are <strong>not clinical recommendations</strong>.
+              publicly available regulatory data, peer-reviewed literature, and our proprietary framework.
+              They are <strong>not clinical recommendations</strong>.
             </p>
             <p className="mt-3">
               If you have a skin condition, allergy, pregnancy concern, or medical question, please consult a
@@ -52,7 +52,7 @@ export default function DisclaimerPage() {
             </p>
           </Section>
 
-          <Section title="3. Ask Clean — AI Analyser">
+          <Section title="3. Ask Clean: AI Analyser">
             <p>
               The Ask Clean AI analyser uses large language model technology and is subject to the inherent
               limitations of AI, including occasional inaccuracies, hallucinations, or outdated information.

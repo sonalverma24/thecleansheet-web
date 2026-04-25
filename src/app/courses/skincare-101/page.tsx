@@ -70,14 +70,14 @@ const MODULES = [
   { num: "06", title: "Sunscreen simplified",                              arrow: "What actually protects your skin" },
   { num: "07", title: "How to choose the right products",                  arrow: "Stop guessing. Start deciding" },
   { num: "08", title: "Clean beauty and certifications",                   arrow: "What is real vs what is marketing" },
-  { num: "09", title: "Live Q&A — Bring Your Beauty Bag",                 arrow: "Get your shelf decoded live" },
+  { num: "09", title: "Live Q&A: Bring Your Beauty Bag",                  arrow: "Get your shelf decoded live" },
 ];
 
 const VALUE_ITEMS = [
   { icon: "🎥", title: "2-Hour Live Session",      sub: "Interactive, not pre-recorded" },
   { icon: "🔬", title: "Real Product Examples",    sub: "Actual formulations decoded" },
   { icon: "📖", title: "Ingredient Frameworks",    sub: "Decode any label instantly" },
-  { icon: "📋", title: "Pocket Guide PDF",         sub: "Free — yours to keep forever" },
+  { icon: "📋", title: "Pocket Guide PDF",         sub: "Free, yours to keep forever" },
 ];
 
 const CHECKLIST = [
@@ -270,7 +270,7 @@ export default function Skincare101Page() {
             <p className="text-xs font-bold text-white uppercase tracking-widest mb-3">Module 09 · Live Session</p>
             <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Bring Your Beauty Bag to Class.</h3>
             <p className="text-white text-sm leading-relaxed max-w-md mx-auto">
-              This isn&apos;t a lecture. Show us what&apos;s on your shelf and we decode it live — ingredients, claims, and all. Get your routine audited by people who actually build skincare for a living.
+              This isn&apos;t a lecture. Show us what&apos;s on your shelf and we decode it live: ingredients, claims, and all. Get your routine audited by people who actually build skincare for a living.
             </p>
           </div>
         </div>
@@ -295,9 +295,9 @@ export default function Skincare101Page() {
             <div className="flex items-start gap-4">
               <div className="text-2xl flex-shrink-0">📋</div>
               <div>
-                <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mb-1">Bonus — Free with Registration</p>
+                <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mb-1">Bonus: Free with Registration</p>
                 <p className="font-bold text-ink-900 text-sm mb-1">The Pocket Guide to Skincare Red Flags</p>
-                <p className="text-xs text-ink-500 leading-relaxed">Your cheat sheet for every Nykaa visit — ingredient red flags, misleading claims, formulation loopholes. Yours to keep forever.</p>
+                <p className="text-xs text-ink-500 leading-relaxed">Your cheat sheet for every Nykaa visit: ingredient red flags, misleading claims, formulation loopholes. Yours to keep forever.</p>
               </div>
             </div>
           </div>

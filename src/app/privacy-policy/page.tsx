@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy — The Clean Sheet™",
-  description: "Privacy Policy for The Clean Sheet™ — how we collect, use, and protect your personal data.",
+  title: "Privacy Policy | The Clean Sheet™",
+  description: "Privacy Policy for The Clean Sheet™: how we collect, use, and protect your personal data.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
           <Section title="1. Information We Collect">
             <p>We may collect the following categories of personal data:</p>
             <ul className="list-disc pl-5 mt-3 space-y-1.5">
-              <li><strong>Usage Data:</strong> IP address, browser type, pages visited, time spent, referring URLs, and device identifiers — collected automatically via server logs and analytics.</li>
+              <li><strong>Usage Data:</strong> IP address, browser type, pages visited, time spent, referring URLs, and device identifiers, collected automatically via server logs and analytics.</li>
               <li><strong>Query Data:</strong> Product names, ingredient lists, or questions you submit to the Ask Clean analyser. These are processed to generate responses and are not stored long-term.</li>
               <li><strong>Communication Data:</strong> Name, email address, and message content when you contact us via email or forms.</li>
               <li><strong>Brand/Business Data:</strong> Company name, contact details, and product information submitted by brands applying for certification.</li>
@@ -132,7 +132,7 @@ export default function PrivacyPolicyPage() {
             </p>
           </Section>
 
-          <Section title="11. Contact — Data Grievance Officer">
+          <Section title="11. Contact: Data Grievance Officer">
             <p>For any privacy-related queries or grievances (as required under DPDPA 2023 and IT Rules 2011):</p>
             <div className="mt-3 bg-teal-50 border border-teal-100 rounded-2xl p-5 text-sm space-y-1">
               <p className="font-semibold text-ink-950">The Clean Sheet™</p>

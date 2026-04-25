@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Use — The Clean Sheet™",
+  title: "Terms of Use | The Clean Sheet™",
   description: "Terms of Use for The Clean Sheet™ website and services.",
 };
 
@@ -44,7 +44,7 @@ export default function TermsOfUsePage() {
             </ul>
           </Section>
 
-          <Section title="2. Ask Clean — AI Analyser">
+          <Section title="2. Ask Clean: AI Analyser">
             <p>
               The Ask Clean analyser is an AI-powered tool that evaluates cosmetic products and ingredients
               based on publicly available data and The Clean Sheet™ proprietary scoring framework.
@@ -61,15 +61,15 @@ export default function TermsOfUsePage() {
             <p>
               The Clean Sheet™ Certification is awarded at our sole discretion following independent evaluation.
               Certification does not constitute an endorsement of a brand&apos;s overall business practices or all
-              products in its portfolio — only the specific product(s) evaluated. Certification is subject to
+              products in its portfolio. Only the specific product(s) evaluated. Certification is subject to
               periodic review and may be revoked if a product formulation changes or standards are not maintained.
             </p>
           </Section>
 
           <Section title="4. Intellectual Property">
             <p>
-              All content on the Platform — including but not limited to the scoring methodology, badge designs,
-              the Clean Sheet™ name and logo, written content, and AI outputs — is the intellectual property of
+              All content on the Platform, including but not limited to the scoring methodology, badge designs,
+              the Clean Sheet™ name and logo, written content, and AI outputs, is the intellectual property of
               The Clean Sheet™ and is protected under the <strong>Copyright Act, 1957</strong> and applicable IP law.
             </p>
             <p className="mt-3">

@@ -177,7 +177,7 @@ export default function LearnPage() {
               </h2>
             </div>
             <p className="text-teal-300 text-sm max-w-xs leading-relaxed">
-              Science-backed guides written for Indian skin — pick yours and read in under 5 minutes.
+              Science-backed guides written for Indian skin. Pick yours and read in under 5 minutes.
             </p>
           </div>
 

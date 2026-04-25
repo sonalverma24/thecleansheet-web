@@ -33,8 +33,8 @@ function Hero() {
             </h1>
 
             <p className="text-base sm:text-xl text-ink-500 max-w-xl leading-relaxed mb-7 sm:mb-10">
-              India&apos;s first independent standard for beauty &amp; personal care —
-              because &ldquo;dermatologist tested&rdquo; isn&apos;t enough.
+              India&apos;s first independent standard for beauty &amp; personal care.
+              Because &ldquo;dermatologist tested&rdquo; isn&apos;t enough.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3">
@@ -49,6 +49,17 @@ function Hero() {
                 Get certified
                 <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </a>
+            </div>
+
+            {/* Sticker button — skin type guides */}
+            <div className="mt-6 flex items-center gap-3">
+              <Link
+                href="/learn#skin-type-guides"
+                className="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-ink-950 font-bold text-sm px-4 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.96]"
+                style={{ transform: "rotate(-2deg)", display: "inline-flex" }}
+              >
+                ✦ Find your skin type guide
+              </Link>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-5 mt-7 sm:mt-10">
@@ -626,7 +637,7 @@ function ForBrands() {
               <br />can't be faked.
             </h2>
             <p className="text-ink-600 text-lg leading-relaxed mb-8">
-              Consumers are reading labels now. The Clean Sheet™ certification is proof —
+              Consumers are reading labels now. The Clean Sheet™ certification is proof,
               not a promise. Every certified product carries a public scorecard, not just a badge.
             </p>
             <div className="space-y-3.5 mb-10">

@@ -832,7 +832,7 @@ export default function AnalyzerPage() {
               <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto">
                 The Clean Sheet™ is built exclusively for beauty and personal care.
                 Try asking about a skincare product, a cosmetic ingredient, or a haircare brand
-                — and I&apos;ll give you the full science.
+                and I&apos;ll give you the full science.
               </p>
               <button
                 onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}

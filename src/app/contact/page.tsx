@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Mail, Phone, Globe, MessageSquare } from "lucide-react";
 
 export const metadata = {
-  title: "Contact — The Clean Sheet™",
-  description: "Get in touch with The Clean Sheet™ — for enquiries, brand certification, press, and feedback.",
+  title: "Contact | The Clean Sheet™",
+  description: "Get in touch with The Clean Sheet™ for enquiries, brand certification, press, and feedback.",
 };
 
 export default function ContactPage() {
@@ -15,7 +15,7 @@ export default function ContactPage() {
           <p className="text-teal-600 text-xs font-semibold uppercase tracking-widest mb-3">Get in touch</p>
           <h1 className="text-4xl font-bold text-ink-950 tracking-tight mb-4">Contact Us</h1>
           <p className="text-ink-500 text-lg max-w-xl">
-            Whether you&apos;re a consumer with a question, a brand exploring certification, or press — we&apos;d love to hear from you.
+            Whether you&apos;re a consumer with a question, a brand exploring certification, or press, we&apos;d love to hear from you.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export default function ContactPage() {
           <p className="mt-2">
             For legal notices, please write to{" "}
             <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:underline">hello@thecleansheet.in</a>{" "}
-            with subject line: <em>Legal Notice — The Clean Sheet™</em>.
+            with subject line: <em>Legal Notice | The Clean Sheet™</em>.
           </p>
         </div>
 

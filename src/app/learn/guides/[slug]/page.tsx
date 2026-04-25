@@ -236,7 +236,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <Sparkles size={18} className="text-teal-500 flex-shrink-0" />
             <p className="text-ink-700 flex-1 text-sm leading-relaxed">
               <strong className="text-ink-900">Want to check if a product is right for your skin?</strong>{" "}
-              Run any product through Ask Clean — our AI engine scores it against your skin type in seconds.
+              Run any product through Ask Clean. Our AI engine scores it against your skin type in seconds.
             </p>
             <Link
               href="/analyzer"

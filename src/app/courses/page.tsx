@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
 
 export const metadata = {
-  title: "Courses — The Clean Sheet™",
+  title: "Courses | The Clean Sheet™",
   description: "Learn the science of skincare with expert-led courses from The Clean Sheet.",
 };
 
@@ -42,7 +42,7 @@ export default function CoursesPage() {
               </h2>
 
               <p className="text-ink-500 text-sm mb-6">
-                Stop guessing. Learn the science behind your skin — ingredients, routines, and what actually works.
+                Stop guessing. Learn the science behind your skin: ingredients, routines, and what actually works.
               </p>
 
               <div className="space-y-2 mb-6">

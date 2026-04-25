@@ -3,7 +3,7 @@ import Link from "next/link";
 import Script from "next/script";
 
 export const metadata = {
-  title: "You're In! — Skincare 101 · The Clean Sheet™",
+  title: "You're In! | Skincare 101 · The Clean Sheet™",
   description: "Your spot for Skincare 101 is confirmed. Download your free Pocket Guide to Skincare Red Flags.",
   robots: { index: false, follow: false },
 };
@@ -21,7 +21,7 @@ export default function PaymentSuccessPage() {
       fbq('track', 'Purchase', {
         value: 299,
         currency: 'INR',
-        content_name: 'Skincare 101 — The Clean Sheet',
+        content_name: 'Skincare 101 | The Clean Sheet',
         content_type: 'product',
         content_ids: ['skincare-101'],
       });
@@ -82,7 +82,7 @@ export default function PaymentSuccessPage() {
           </div>
           <a
             href={GUIDE_URL}
-            download="The Clean Sheet — Pocket Guide to Skincare Red Flags.pdf"
+            download="The Clean Sheet - Pocket Guide to Skincare Red Flags.pdf"
             className="flex items-center justify-center gap-2 w-full bg-white text-teal-800 hover:bg-teal-50 font-bold text-sm py-3.5 rounded-2xl transition-colors"
           >
             <Download size={16} /> Download Now

@@ -45,7 +45,7 @@ export default function WhatsAppBubble() {
               Join The Clean Sheet™ community
             </p>
             <p className="text-ink-400 text-[11px] leading-relaxed mb-3.5">
-              Science-backed beauty tips, ingredient alerts, and early access — straight to your WhatsApp.
+              Science-backed beauty tips, ingredient alerts, and early access. Straight to your WhatsApp.
             </p>
             <a
               href={WA_LINK}
