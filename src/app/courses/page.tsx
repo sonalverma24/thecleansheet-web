@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock, Users } from "lucide-react";
+import { Calendar, Clock, Users, Star } from "lucide-react";
 
 export const metadata = {
   title: "Courses | The Clean Sheet™",
@@ -21,52 +21,71 @@ export default function CoursesPage() {
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6">
-          {/* Skincare 101 Card */}
-          <Link
-            href="/courses/skincare-101"
-            className="group relative rounded-3xl border border-ink-100 bg-white hover:border-teal-200 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-300 overflow-hidden"
-          >
-            <div className="p-7">
+
+          {/* Skincare 101 Card — ended, greyed out */}
+          <div className="relative rounded-3xl border border-ink-100 bg-ink-50 overflow-hidden opacity-70">
+
+            {/* Rating badge */}
+            <div className="absolute top-4 right-4 flex items-center gap-1 bg-yellow-400 text-ink-900 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm z-10">
+              <Star size={11} className="fill-ink-900" />
+              4.75 / 5
+            </div>
+
+            {/* Ended ribbon */}
+            <div className="absolute top-4 left-4 bg-ink-400 text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full z-10">
+              Ended
+            </div>
+
+            <div className="p-7 pt-14">
               <div className="flex items-center gap-2 mb-4">
-                <span className="inline-flex items-center gap-1.5 bg-coral-50 text-coral-600 text-xs font-semibold px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1.5 bg-ink-100 text-ink-400 text-xs font-semibold px-3 py-1 rounded-full">
                   Live Online
                 </span>
-                <span className="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 text-xs font-semibold px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1.5 bg-ink-100 text-ink-400 text-xs font-semibold px-3 py-1 rounded-full">
                   ₹299
                 </span>
               </div>
 
-              <h2 className="text-2xl font-bold text-ink-900 mb-2" style={{ fontFamily: "var(--font-display)" }}>
+              <h2 className="text-2xl font-bold text-ink-400 mb-2" style={{ fontFamily: "var(--font-display)" }}>
                 Skincare 101
-                <span className="block text-base font-normal text-ink-500 mt-0.5">The Science Session</span>
+                <span className="block text-base font-normal text-ink-400 mt-0.5">The Science Session</span>
               </h2>
 
-              <p className="text-ink-500 text-sm mb-6">
+              <p className="text-ink-400 text-sm mb-6">
                 Stop guessing. Learn the science behind your skin: ingredients, routines, and what actually works.
               </p>
 
               <div className="space-y-2 mb-6">
-                <div className="flex items-center gap-2 text-sm text-ink-500">
-                  <Calendar size={14} className="text-teal-500 shrink-0" />
+                <div className="flex items-center gap-2 text-sm text-ink-400">
+                  <Calendar size={14} className="text-ink-300 shrink-0" />
                   <span>26 April 2026</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-ink-500">
-                  <Clock size={14} className="text-teal-500 shrink-0" />
+                <div className="flex items-center gap-2 text-sm text-ink-400">
+                  <Clock size={14} className="text-ink-300 shrink-0" />
                   <span>12–2 PM IST (2 hours)</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-ink-500">
-                  <Users size={14} className="text-teal-500 shrink-0" />
-                  <span>Limited slots available</span>
+                <div className="flex items-center gap-2 text-sm text-ink-400">
+                  <Users size={14} className="text-ink-300 shrink-0" />
+                  <span>Session completed</span>
                 </div>
               </div>
-
-              <div className="flex items-center gap-1.5 text-teal-600 font-semibold text-sm group-hover:gap-3 transition-all duration-200">
-                View Course <ArrowRight size={15} />
-              </div>
             </div>
+          </div>
 
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 to-coral-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </Link>
+          {/* Coming Soon Card */}
+          <div className="relative rounded-3xl border-2 border-dashed border-teal-200 bg-teal-50/40 overflow-hidden flex flex-col items-center justify-center text-center p-10 min-h-[300px]">
+            <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center mb-4">
+              <span className="text-teal-600 text-xl font-bold">+</span>
+            </div>
+            <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2">Next Course</p>
+            <h2 className="text-xl font-bold text-ink-700 mb-2" style={{ fontFamily: "var(--font-display)" }}>
+              Coming Soon
+            </h2>
+            <p className="text-sm text-ink-400 max-w-xs leading-relaxed">
+              Something new is in the works. Stay tuned for the next session from The Clean Sheet™.
+            </p>
+          </div>
+
         </div>
       </div>
     </main>
