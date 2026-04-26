@@ -1,27 +1,20 @@
 "use client";
-
-import { useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   CheckCircle2, Clock, Calendar, Users, BookOpen, Star,
   Shield, FlaskConical, Zap, Sparkles, AlertTriangle
 } from "lucide-react";
 
-/* ─── Razorpay Button ─── */
-function RazorpayButton({ className }: { className?: string }) {
-  const formRef = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    const form = formRef.current;
-    if (!form) return;
-    form.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/payment-button.js";
-    script.setAttribute("data-payment_button_id", "pl_SfO9mMsnPFH82u");
-    script.async = true;
-    form.appendChild(script);
-    return () => { form.innerHTML = ""; };
-  }, []);
-  return <form ref={formRef} className={className} />;
+/* ─── Session Ended Notice ─── */
+function SessionEndedNotice({ className }: { className?: string }) {
+  return (
+    <div className={className}>
+      <div className="inline-flex flex-col items-center gap-1 bg-teal-950/10 border border-teal-200 rounded-2xl px-5 py-3 text-center">
+        <p className="text-sm font-bold text-teal-900">Registrations are now closed.</p>
+        <p className="text-xs text-ink-500">This session has ended. Stay tuned for the next one.</p>
+      </div>
+    </div>
+  );
 }
 
 /* ─── Data ─── */
@@ -93,10 +86,10 @@ export default function Skincare101Page() {
   return (
     <div className="min-h-screen bg-white">
 
-      {/* ── Urgency Strip ── */}
-      <div className="bg-teal-900 text-white text-center py-2.5 px-4 text-xs sm:text-sm font-medium sticky top-0 z-50">
-        <span className="opacity-80 mr-2">26 April 2026 · 12–2 PM IST · Live Online</span>
-        <span className="font-bold text-teal-300">Limited slots available →</span>
+      {/* ── Session Ended Strip ── */}
+      <div className="bg-teal-950 text-white text-center py-2.5 px-4 text-xs sm:text-sm font-medium sticky top-0 z-50">
+        <span className="text-teal-300 font-bold">This session has ended.</span>
+        <span className="opacity-70 ml-2">Registrations are closed · Stay tuned for the next one</span>
       </div>
 
       {/* ── Hero ── */}
@@ -125,11 +118,7 @@ export default function Skincare101Page() {
             Live online · 26 April 2026 · 12–2 PM IST
           </div>
 
-          <p className="text-teal-200 text-xs italic mb-3">
-            Skip the overpriced serum. Spend ₹299 on knowing exactly why it doesn&apos;t work. ☕
-          </p>
-          <RazorpayButton className="flex justify-center" />
-          <p className="text-teal-300/70 text-xs mt-2">No prior knowledge needed · One-time payment · All inclusive</p>
+          <SessionEndedNotice className="flex justify-center mt-4" />
         </div>
       </section>
 
@@ -140,7 +129,7 @@ export default function Skincare101Page() {
             { icon: Clock,    label: "2 Hours",   sub: "Live session" },
             { icon: BookOpen, label: "9 Modules",  sub: "No fluff" },
             { icon: Users,    label: "Live Q&A",   sub: "Beauty bag audit" },
-            { icon: Star,     label: "₹299",       sub: "All inclusive" },
+            { icon: Star,     label: "4.75 / 5",   sub: "Attendee rating" },
           ].map(({ icon: Icon, label, sub }) => (
             <div key={label} className="flex flex-col items-center gap-0.5">
               <Icon size={16} className="text-teal-500 mb-0.5" />
@@ -328,22 +317,16 @@ export default function Skincare101Page() {
                 </div>
               ))}
             </div>
-            <p className="text-sm text-ink-500 italic text-center mb-5">Less than your last impulse buy at Nykaa. Just saying. ☕</p>
-            <RazorpayButton className="flex justify-center" />
+            <SessionEndedNotice className="flex justify-center mb-5" />
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-4 text-xs text-ink-400">
               <span className="flex items-center gap-1"><Calendar size={11} /> 26 April 2026</span>
               <span className="flex items-center gap-1"><Clock size={11} /> 12–2 PM IST</span>
-              <span className="flex items-center gap-1"><Users size={11} /> Limited slots</span>
+              <span className="flex items-center gap-1"><Users size={11} /> Session ended</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Mobile sticky CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 sm:hidden bg-white border-t border-teal-100 px-4 py-3 shadow-xl z-40 flex justify-center">
-        <RazorpayButton />
-      </div>
-      <div className="h-20 sm:h-0" />
     </div>
   );
 }
