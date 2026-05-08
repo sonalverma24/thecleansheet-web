@@ -41,13 +41,21 @@ function extractProductHint(content: string): string {
   return hint.slice(0, 300);
 }
 
-// Fall back to extracting a human-readable product name from the URL slug
-// e.g. /nat-habit-fresh-whipped-skin-malai-double-cocoa-body-butter/p/123
-// → "nat habit fresh whipped skin malai double cocoa body butter"
+// Extract a human-readable product name from the URL slug.
+// Handles Shopify /collections/.../products/slug and similar patterns.
 function productNameFromURL(url: string): string {
   try {
     const path = new URL(url).pathname;
-    const slug = path.split("/").find((seg) => seg.length > 10 && !seg.match(/^\d+$/)) ?? "";
+    const segments = path.split("/").filter(Boolean);
+
+    // Prefer the segment immediately after /products/, /product/, or /p/
+    const productIdx = segments.findIndex((s) => s === "products" || s === "product" || s === "p");
+    if (productIdx !== -1 && segments[productIdx + 1] && !segments[productIdx + 1].match(/^\d+$/)) {
+      return segments[productIdx + 1].replace(/-/g, " ").trim();
+    }
+
+    // Fallback: last non-numeric, non-empty segment of any length
+    const slug = [...segments].reverse().find((s) => s.length >= 2 && !s.match(/^\d+$/)) ?? "";
     return slug.replace(/-/g, " ").trim();
   } catch {
     return "";
@@ -119,11 +127,10 @@ export async function POST(req: Request) {
       const pageContent = await scrapeURL(q);
       if (pageContent) {
         scrapedContext = pageContent;
-        q = extractProductHint(pageContent) || productNameFromURL(q);
+        q = extractProductHint(pageContent) || productNameFromURL(q) || urlInput;
       } else {
-        // Scraping failed — fall back to product name extracted from the URL slug
-        q = productNameFromURL(q);
-        if (!q) return outOfScope();
+        // Scraping failed — fall back to slug extraction; URL itself is passed as context
+        q = productNameFromURL(q) || urlInput;
       }
     }
 
@@ -149,23 +156,26 @@ export async function POST(req: Request) {
     let prompt: string;
     if (urlInput) {
       // URL flow: tell Gemini to extract product identity from the scraped page
-      // and then actively search for the INCI on external sources (IncIDecoder,
-      // Open Beauty Facts, Amazon, Nykaa) since e-commerce pages often render
+      // (or from the URL itself when scraping failed) and actively search for
+      // the INCI on external sources since e-commerce pages often render
       // ingredient lists via JavaScript that the scraper cannot capture.
+      const scrapedSection = scrapedContext
+        ? `Below is the scraped content from that page. Use it to identify the product name and brand.\n\nScraped page content (use for product identity only):\n${scrapedContext}`
+        : `The page could not be scraped (JavaScript-rendered or blocked). Use the URL and any product name you can infer from it to identify the product, then search externally.`;
+
       prompt = `The user submitted a product page URL: ${urlInput}
 
 This is a beauty/personal care product page URL. You MUST produce a full scorecard — never return {"type":"out_of_scope"} for a product URL. If you cannot find INCI data, score Full Ingredient Disclosure at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
 
-Below is the scraped content from that page. Use it to identify the product name and brand.
-Then, regardless of whether ingredients appear in the scraped content, run your full RESEARCH PROTOCOL:
-- Search for the full INCI list on incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, and the brand website
+${scrapedSection}
+
+Regardless of whether ingredients appear in the scraped content, run your full RESEARCH PROTOCOL:
+- Visit the brand's own website by searching for "${q} ingredients site:${new URL(urlInput).hostname}"
+- Search for the full INCI list on incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com
 - Search for the price and reviews
 - Apply the full scoring framework
 
-IMPORTANT: Do not rely solely on the scraped content for ingredients — most e-commerce pages load ingredient lists dynamically via JavaScript and they will be missing from the scrape. Always search externally for the INCI.
-
-Scraped page content (use for product identity only):
-${scrapedContext}`;
+IMPORTANT: Do not rely solely on the scraped content for ingredients — most e-commerce pages load ingredient lists dynamically via JavaScript and they will be missing from the scrape. Always search externally for the INCI.`;
     } else {
       prompt = isComparison
         ? `Compare these two products: ${q}`
@@ -193,18 +203,20 @@ ${scrapedContext}`;
     const parsed = parseJSON(finalText);
 
     // For URL inputs, never surface out_of_scope — the URL is always a beauty product page.
-    // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
+    // If Gemini still returns out_of_scope or unparseable JSON, retry with a direct brand-site search.
     if (urlInput && (!parsed || parsed.type === "out_of_scope")) {
       const fallbackName = productNameFromURL(urlInput);
-      if (fallbackName) {
-        const fallbackResult = await model.generateContent(`Analyze this product: ${fallbackName}`);
-        const fallbackText = fallbackResult.response.text().trim();
-        const fallbackParsed = parseJSON(fallbackText);
-        if (fallbackParsed && fallbackParsed.type !== "out_of_scope") {
-          return Response.json({ type: "single", scorecard: fallbackParsed });
-        }
+      const hostname = (() => { try { return new URL(urlInput).hostname; } catch { return ""; } })();
+      const fallbackPrompt = fallbackName
+        ? `Search for "${fallbackName}" by ${hostname} and analyze this beauty product. Produce a full scorecard.`
+        : `Search the web for the beauty product at ${urlInput} and produce a full ingredient scorecard.`;
+      const fallbackResult = await model.generateContent(fallbackPrompt);
+      const fallbackText = fallbackResult.response.text().trim();
+      const fallbackParsed = parseJSON(fallbackText);
+      if (fallbackParsed && fallbackParsed.type !== "out_of_scope") {
+        return Response.json({ type: "single", scorecard: fallbackParsed });
       }
-      return outOfScope();
+      return Response.json({ type: "url_fetch_failed" });
     }
 
     if (!parsed) return outOfScope();

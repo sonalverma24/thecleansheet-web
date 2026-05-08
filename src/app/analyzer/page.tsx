@@ -551,7 +551,7 @@ export default function AnalyzerPage() {
   const [expertAnswer, setExpertAnswer] = useState<ExpertAnswer | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
-  const [outOfScope, setOutOfScope] = useState(false);
+  const [outOfScope, setOutOfScope] = useState<"out_of_scope" | "url_fetch_failed" | false>(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -603,12 +603,16 @@ export default function AnalyzerPage() {
       const data = await res.json();
       clearInterval(ticker);
 
+      if (data.type === "url_fetch_failed") {
+        setOutOfScope("url_fetch_failed");
+        return;
+      }
       if (data.type === "out_of_scope" || (!res.ok && !data.type)) {
-        setOutOfScope(true);
+        setOutOfScope("out_of_scope");
         return;
       }
       if (data.error) {
-        setOutOfScope(true);
+        setOutOfScope("out_of_scope");
         return;
       }
       if (data.type === "comparison" && data.comparison) {
@@ -631,7 +635,7 @@ export default function AnalyzerPage() {
       }
     } catch {
       clearInterval(ticker);
-      setOutOfScope(true);
+      setOutOfScope("url_fetch_failed");
     } finally {
       setIsAnalyzing(false);
       setStatusMsg(null);
@@ -824,23 +828,55 @@ export default function AnalyzerPage() {
       {(outOfScope || analyzeError) && !isAnalyzing && (
         <section className="px-4 pb-10">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-teal-50 border border-teal-200 rounded-3xl p-7 text-center">
-              <p className="text-2xl mb-3">🧴</p>
-              <p className="text-ink-900 font-semibold text-base mb-2">
-                This one&apos;s outside my lane
-              </p>
-              <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto">
-                The Clean Sheet™ is built exclusively for beauty and personal care.
-                Try asking about a skincare product, a cosmetic ingredient, or a haircare brand
-                and I&apos;ll give you the full science.
-              </p>
-              <button
-                onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
-                className="mt-5 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
-              >
-                Try a beauty product →
-              </button>
-            </div>
+            {outOfScope === "url_fetch_failed" ? (
+              <div className="bg-teal-50 border border-teal-200 rounded-3xl p-7 text-center">
+                <p className="text-2xl mb-3">🔗</p>
+                <p className="text-ink-900 font-semibold text-base mb-2">
+                  Couldn&apos;t fetch data from that page
+                </p>
+                <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto mb-5">
+                  The page may be JavaScript-rendered or geo-blocked. Try one of these instead:
+                </p>
+                <div className="flex flex-col gap-2.5 max-w-xs mx-auto text-left mb-5">
+                  <p className="text-sm text-ink-700 font-medium flex items-start gap-2">
+                    <span className="text-teal-500 font-bold flex-shrink-0">1.</span>
+                    Paste the product&apos;s full ingredient list directly into the search box
+                  </p>
+                  <p className="text-sm text-ink-700 font-medium flex items-start gap-2">
+                    <span className="text-teal-500 font-bold flex-shrink-0">2.</span>
+                    Try a link from Nykaa, Amazon, or the brand&apos;s website
+                  </p>
+                  <p className="text-sm text-ink-700 font-medium flex items-start gap-2">
+                    <span className="text-teal-500 font-bold flex-shrink-0">3.</span>
+                    Search by product name — e.g. &ldquo;Terra The Skin Beneath&rdquo;
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
+                  className="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+                >
+                  Try again →
+                </button>
+              </div>
+            ) : (
+              <div className="bg-teal-50 border border-teal-200 rounded-3xl p-7 text-center">
+                <p className="text-2xl mb-3">🧴</p>
+                <p className="text-ink-900 font-semibold text-base mb-2">
+                  Hmm, I couldn&apos;t analyse that
+                </p>
+                <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto">
+                  The Clean Sheet™ covers beauty and personal care products. If you searched for a skincare
+                  or haircare product and landed here, try pasting its ingredient list directly, or
+                  search by brand + product name.
+                </p>
+                <button
+                  onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
+                  className="mt-5 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+                >
+                  Try a beauty product →
+                </button>
+              </div>
+            )}
           </div>
         </section>
       )}
