@@ -148,11 +148,11 @@ function Hero() {
                 Analyse a product for free
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/certification"
+              <a href="#get-certified"
                 className="inline-flex items-center justify-center sm:justify-start gap-2 text-ink-600 hover:text-ink-950 font-medium text-sm sm:text-base transition-colors group sm:py-4">
                 Certify Your Brand
                 <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+              </a>
             </div>
 
             {/* Sticker button, skin type guides */}

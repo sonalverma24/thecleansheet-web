@@ -1,25 +1,30 @@
+"use client";
+
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import Image from "next/image";
 
 const LINKS = {
   Platform: [
-    { href: "/analyzer",       label: "Ask Clean"             },
-    { href: "/certified",      label: "Certified Products"    },
-    { href: "/brands",         label: "For Brands"            },
-    { href: "/brands#tiers",   label: "Certification Tiers"   },
+    { href: "/analyzer",      label: "Ask Clean"           },
+    { href: "/certified",     label: "Certified Products"  },
+    { href: "/brands",        label: "For Brands"          },
+    { href: "/certification", label: "Certification"       },
+    { href: "/learn",         label: "Learn"               },
   ],
   Learn: [
-    { href: "/learn",          label: "Ingredient Glossary"   },
-    { href: "/learn#scoring",  label: "How We Score"          },
-    { href: "/learn#inci",     label: "Understanding INCI"    },
-    { href: "/learn#india",    label: "India Regulations"     },
+    { href: "/ingredients",         label: "Ingredient Glossary"  },
+    { href: "/learn#scoring",       label: "How We Score"         },
+    { href: "/learn#inci",          label: "Understanding INCI"   },
+    { href: "/learn#india",         label: "India Regulations"    },
   ],
   Company: [
-    { href: "/about",          label: "About Us"              },
-    { href: "/about#mission",  label: "Our Mission"           },
-    { href: "/contact",        label: "Contact"               },
-    { href: "#get-certified",  label: "Apply for Certification"},
+    { href: "/about",         label: "About Us"            },
+    { href: "/about",         label: "Our Mission"         },
+    { href: "/contact",       label: "Contact"             },
+    { href: "/privacy-policy",label: "Privacy Policy"      },
+    { href: "/terms-of-use",  label: "Terms of Use"        },
+    { href: "/disclaimer",    label: "Disclaimer"          },
   ],
 };
 
@@ -90,44 +95,58 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Nav columns, 2-col on mobile, 1-each on desktop */}
+          {/* Nav columns */}
           <div className="md:contents grid grid-cols-2 sm:grid-cols-3 gap-8">
-          {Object.entries(LINKS).map(([category, items]) => (
-            <div key={category}>
-              <h3 className="font-normal text-xs uppercase tracking-widest mb-4" style={{ color: '#ffffff' }}>
-                {category}
+            {Object.entries(LINKS).map(([category, items]) => (
+              <div key={category}>
+                <h3 className="font-normal text-xs uppercase tracking-widest mb-4" style={{ color: "#ffffff" }}>
+                  {category}
+                </h3>
+                <ul className="space-y-2.5">
+                  {items.map(({ href, label }) => (
+                    <li key={label}>
+                      <Link href={href} className="text-teal-400 hover:text-teal-200 text-sm transition-colors">
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+            {/* Apply CTA column */}
+            <div>
+              <h3 className="font-normal text-xs uppercase tracking-widest mb-4" style={{ color: "#ffffff" }}>
+                Certification
               </h3>
               <ul className="space-y-2.5">
-                {items.map(({ href, label }) => (
-                  <li key={label}>
-                    <Link href={href} className="text-teal-400 hover:text-teal-200 text-sm transition-colors">
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+                <li>
+                  <button
+                    onClick={() => window.dispatchEvent(new Event("openCertifyForm"))}
+                    className="text-teal-400 hover:text-teal-200 text-sm transition-colors text-left"
+                  >
+                    Apply for Certification
+                  </button>
+                </li>
+                <li>
+                  <Link href="/certification" className="text-teal-400 hover:text-teal-200 text-sm transition-colors">
+                    How it Works
+                  </Link>
+                </li>
               </ul>
             </div>
-          ))}
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-teal-800 pt-8 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
-            {[
-              { label: "Privacy Policy", href: "/privacy-policy" },
-              { label: "Terms of Use",   href: "/terms-of-use"   },
-              { label: "Disclaimer",     href: "/disclaimer"     },
-              { label: "Contact",        href: "/contact"        },
-            ].map(({ label, href }) => (
-              <Link key={label} href={href} className="text-teal-600 hover:text-teal-400 text-xs transition-colors">
-                {label}
-              </Link>
-            ))}
-          </div>
+        <div className="border-t border-teal-800 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-teal-600 text-xs text-center sm:text-left">
             © {new Date().getFullYear()} The Clean Sheet™. All rights reserved. Est. 2025, India.
           </p>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
+            <Link href="/contact" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">Contact</Link>
+            <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">hello@thecleansheet.in</a>
+          </div>
         </div>
       </div>
     </footer>

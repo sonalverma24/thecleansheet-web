@@ -167,13 +167,13 @@ export default function AboutPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3" style={{ animation: "tcs-fadeUp 0.5s 0.2s ease both" }}>
-                <Link
-                  href="/certification"
+                <a
+                  href="#get-certified"
                   className="inline-flex items-center justify-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/30 active:scale-[0.97]"
                 >
                   Certify Your Brand
                   <ArrowRight size={15} />
-                </Link>
+                </a>
                 <Link
                   href="/analyzer"
                   className="inline-flex items-center justify-center gap-2 font-normal px-6 py-3.5 rounded-2xl transition-all"
