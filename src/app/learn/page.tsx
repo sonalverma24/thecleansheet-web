@@ -214,8 +214,8 @@ export default function LearnPage() {
               {/* Stats */}
               <div className="mt-12 flex flex-wrap gap-6">
                 {[
-                  { n: "513", label: "Ingredients evaluated" },
-                  { n: "4",   label: "Regulatory markets" },
+                  { n: "25k+", label: "Ingredients evaluated" },
+                  { n: "4",    label: "Regulatory markets" },
                   { n: "Free", label: "Skin guides" },
                 ].map(({ n, label }) => (
                   <div key={label}>
@@ -239,7 +239,7 @@ export default function LearnPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
-              <div className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-4">513 Ingredients</div>
+              <div className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-4">25,000+ Ingredients &amp; growing</div>
               <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight mb-5">
                 Ingredient Directory.
               </h2>
@@ -272,7 +272,7 @@ export default function LearnPage() {
                 <div className="flex gap-1.5">
                   {["#ff5f57","#ffbd2e","#28c840"].map(c => <div key={c} className="w-2.5 h-2.5 rounded-full" style={{ background:c }} />)}
                 </div>
-                <span className="text-[11px] text-white/30 font-mono flex-1 text-center">Ingredient Directory · 513 entries</span>
+                <span className="text-[11px] text-white/30 font-mono flex-1 text-center">Ingredient Directory · Updated daily</span>
               </div>
               <div className="bg-white">
                 <div className="px-5 py-3 border-b border-slate-50 flex items-center gap-3 text-[10px] font-normal text-slate-400 uppercase tracking-widest">
@@ -307,7 +307,7 @@ export default function LearnPage() {
                 })}
               </div>
               <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-slate-400 font-mono">Showing 6 of 513</span>
+                <span className="text-xs text-slate-400 font-mono">Browse the full directory</span>
                 <Link href="/ingredients" className="text-xs text-teal-600 hover:text-teal-800 font-normal flex items-center gap-1 transition-colors">
                   View all <ArrowRight size={11} />
                 </Link>
@@ -398,24 +398,24 @@ export default function LearnPage() {
       </section>
 
       {/* ── India Regulations Callout ─────────────────────────── */}
-      <section className="py-24 lg:py-28 relative overflow-hidden" style={{ background:"linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)" }}>
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage:"radial-gradient(#818cf8 1px,transparent 1px)", backgroundSize:"28px 28px" }} />
+      <section className="py-24 lg:py-28 relative overflow-hidden" style={{ background:"linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)" }}>
+        <div className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage:"radial-gradient(#5eead4 1px,transparent 1px)", backgroundSize:"28px 28px" }} />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-14">
-            <div className="text-indigo-400 text-xs font-normal uppercase tracking-widest mb-4">Regulatory Context</div>
+            <div className="text-teal-400 text-xs font-normal uppercase tracking-widest mb-4">Regulatory Context</div>
             <h2 className="text-4xl font-medium text-white tracking-tight mb-5">India Cosmetic Regulations</h2>
-            <p className="text-indigo-200/60 text-lg leading-relaxed">The landscape is tightening. Here is what you need to know.</p>
+            <p className="text-teal-200/50 text-lg leading-relaxed">The landscape is tightening. Here is what you need to know.</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4">
             {[
-              { title:"Drugs & Cosmetics Act", desc:"India's primary regulation, governs manufacture, sale, and import. No legal definition of 'clean' or 'natural'.", color:"#6366f1" },
-              { title:"INCI Compliance",       desc:"Products sold in India must list ingredients in INCI format. Many brands still don't comply fully.", color:"#a855f7" },
-              { title:"EU Banned List",        desc:"The Clean Sheet cross-references the EU's list of 1,328 banned cosmetic substances. India's regulation is far less restrictive.", color:"#3b82f6" },
+              { title:"Drugs & Cosmetics Act", desc:"India's primary regulation, governs manufacture, sale, and import. No legal definition of 'clean' or 'natural'.", color:"#5eead4" },
+              { title:"INCI Compliance",       desc:"Products sold in India must list ingredients in INCI format. Many brands still don't comply fully.", color:"#4ade80" },
+              { title:"EU Banned List",        desc:"The Clean Sheet cross-references the EU's list of 1,328 banned cosmetic substances. India's regulation is far less restrictive.", color:"#fbbf24" },
             ].map(({ title, desc, color }) => (
-              <div key={title} className="rounded-2xl p-6" style={{ background:"rgba(255,255,255,0.04)", border:`1px solid ${color}25` }}>
+              <div key={title} className="rounded-2xl p-6" style={{ background:"rgba(255,255,255,0.03)", border:`1px solid ${color}25` }}>
                 <div className="w-1 h-6 rounded-full mb-4" style={{ background:color }} />
                 <h3 className="font-normal text-white text-base mb-2">{title}</h3>
                 <p className="text-white/40 text-sm leading-relaxed">{desc}</p>

@@ -643,15 +643,9 @@ function IngredientStrip() {
 }
 
 /* ─────────────────────────────────────────────
-   CERTIFICATION TIERS
+   CERTIFICATION OUTCOMES
 ───────────────────────────────────────────── */
 function CertificationTiers() {
-  const tiers = [
-    { s:"✦",l:"Gold",          r:"90-100",c:"text-ink-950",      bg:"bg-yellow-500/90", b:"border-yellow-400",    dc:"text-ink-800",    d:"Best-in-class across every dimension. Exceptional safety profile, strong clinical evidence, excellent manufacturing, and meaningful ethics commitments." },
-    { s:"✓",l:"Silver",        r:"75-89", c:"text-teal-200",    bg:"bg-teal-50/10",    b:"border-teal-300/60",  dc:"text-teal-200",   d:"A strong product with solid documentation. Meets a high standard with minor gaps in one or two areas."                                                 },
-    { s:"◎",l:"Certified",     r:"60-74", c:"text-caution-100", bg:"bg-caution-600/10",b:"border-caution-500/50",dc:"text-caution-100",d:"Meets The Clean Sheet standard. Safe, compliant, honest claims, adequate manufacturing quality."                                                 },
-    { s:"✗",l:"Not Certified", r:"<60",   c:"text-coral-300",   bg:"bg-coral-500/10",  b:"border-coral-400/50", dc:"text-coral-200",  d:"Did not meet the standard. We tell brands exactly why, and exactly what would need to change."                                                  },
-  ];
   return (
     <section className="relative py-16 sm:py-24 lg:py-28 overflow-hidden">
       {/* Full-bleed image */}
@@ -668,25 +662,35 @@ function CertificationTiers() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 text-yellow-500 text-sm font-medium mb-4 uppercase tracking-wide">
-            <Award size={14} /> Certification Tiers
+            <Award size={14} /> The Verdict
           </div>
-          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4" style={{ color: '#ffffff' }}>No middle ground.</h2>
-          <p className="text-teal-300 text-lg max-w-lg mx-auto">Products earn their clean claim, or they don't.</p>
+          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4" style={{ color: "#ffffff" }}>No middle ground.</h2>
+          <p className="text-teal-300 text-lg max-w-lg mx-auto">Products earn their clean claim, or they don&apos;t.</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tiers.map(({s,l,r,c,bg,b,d,dc})=>(
-            <div key={l} className={`rounded-3xl p-7 border ${b} ${bg} backdrop-blur-sm hover:scale-[1.02] transition-transform cursor-default`}>
-              <div className={`text-4xl mb-3 ${c}`}>{s}</div>
-              <div className={`text-xl font-medium mb-0.5 ${c}`}>{l}</div>
-              <div className={`text-sm font-mono ${c} opacity-70 mb-4`}>{r} pts</div>
-              <p className={`text-sm leading-relaxed ${dc}`}>{d}</p>
-            </div>
-          ))}
+
+        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          {/* Certified */}
+          <div className="rounded-3xl p-8 border border-teal-400/40 bg-teal-500/10 backdrop-blur-sm hover:scale-[1.02] transition-transform cursor-default text-center">
+            <div className="text-5xl mb-4 text-teal-300">✓</div>
+            <div className="text-2xl font-medium text-teal-200 mb-3">Certified</div>
+            <p className="text-teal-300/70 text-sm leading-relaxed">
+              Meets The Clean Sheet standard. Safe, compliant, honest claims, and adequate manufacturing quality. Earns the badge.
+            </p>
+          </div>
+          {/* Not Certified */}
+          <div className="rounded-3xl p-8 border border-coral-400/40 bg-coral-500/10 backdrop-blur-sm hover:scale-[1.02] transition-transform cursor-default text-center">
+            <div className="text-5xl mb-4 text-coral-300">✗</div>
+            <div className="text-2xl font-medium text-coral-200 mb-3">Not Certified</div>
+            <p className="text-coral-200/60 text-sm leading-relaxed">
+              Did not meet the standard. We tell brands exactly why, and exactly what needs to change. The door stays open.
+            </p>
+          </div>
         </div>
+
         <div className="mt-10 text-center">
           <p className="text-teal-400 text-sm mb-5">Auto-fail if product contains banned substances, undisclosed allergens, or formaldehyde releasers.</p>
-          <Link href="/learn#scoring" className="inline-flex items-center gap-2 text-teal-300 hover:text-white text-sm font-medium transition-colors">
-            Read the full scoring methodology <ArrowRight size={14} />
+          <Link href="/certification" className="inline-flex items-center gap-2 text-teal-300 hover:text-white text-sm font-medium transition-colors">
+            Learn how we evaluate <ArrowRight size={14} />
           </Link>
         </div>
       </div>
