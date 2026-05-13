@@ -55,12 +55,23 @@ function extractProductHint(content: string): string {
 }
 
 // Fall back to extracting a human-readable product name from the URL slug
-// e.g. /nat-habit-fresh-whipped-skin-malai-double-cocoa-body-butter/p/123
-// → "nat habit fresh whipped skin malai double cocoa body butter"
+// e.g. /collections/all/products/facewash-clarifi → "facewash clarifi"
+// e.g. /nat-habit-fresh-whipped-skin-malai-double-cocoa-body-butter/p/123 → full name
+const SKIP_URL_SEGMENTS = new Set([
+  "collections", "products", "pages", "categories", "category",
+  "all", "shop", "store", "product", "items", "listing", "p", "dp",
+]);
+
 function productNameFromURL(url: string): string {
   try {
-    const path = new URL(url).pathname;
-    const slug = path.split("/").find((seg) => seg.length > 10 && !seg.match(/^\d+$/)) ?? "";
+    // Strip fragment (#...) before parsing so it doesn't land in the path
+    const cleanUrl = url.split("#")[0];
+    const path = new URL(cleanUrl).pathname;
+    const segments = path.split("/").filter(Boolean);
+    // Pick the LAST segment that isn't a generic path keyword or a bare number
+    const slug = [...segments].reverse().find(
+      (seg) => seg.length > 3 && !seg.match(/^\d+$/) && !SKIP_URL_SEGMENTS.has(seg.toLowerCase())
+    ) ?? "";
     return slug.replace(/-/g, " ").trim();
   } catch {
     return "";
