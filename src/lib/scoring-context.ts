@@ -120,7 +120,7 @@ Warn badges:
 - "Fragrance Allergens Present": EU 26 allergens identified in INCI
 - "Low Active Concentration": key actives appear after phenoxyethanol
 - "Preservative Sensitivity Risk": phenoxyethanol, methylisothiazolinone present
-- "Unsubstantiated Claims": "chemical-free", "toxin-free" without certification
+- "Unsubstantiated Claims": ONLY for "chemical-free" or "toxin-free" language used without any certification or proof. Do NOT assign for "clinically tested", "dermatologist tested", or "lab tested" claims unless you have affirmatively confirmed (after searching) that zero test evidence exists anywhere publicly
 
 Info badges:
 - "India Climate Optimized": formulation suited to tropical/humid conditions

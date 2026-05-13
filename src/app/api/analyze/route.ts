@@ -232,23 +232,24 @@ export async function POST(req: Request) {
 
     let prompt: string;
     if (urlInput) {
-      // URL flow: tell Gemini to extract product identity from the scraped page
-      // and then actively search for the INCI on external sources (IncIDecoder,
-      // Open Beauty Facts, Amazon, Nykaa) since e-commerce pages often render
-      // ingredient lists via JavaScript that the scraper cannot capture.
+      // Extract brand domain for targeted test search
+      let brandDomain = "";
+      try { brandDomain = new URL(urlInput).hostname; } catch { /* ignore */ }
+
       prompt = `The user submitted a product page URL: ${urlInput}
 
 This is a beauty/personal care product page URL. You MUST produce a full scorecard, never return {"type":"out_of_scope"} for a product URL. If you cannot find INCI data, score Full Ingredient Disclosure at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
 
-Below is the scraped content from that page. Use it to identify the product name and brand.
-Then, regardless of whether ingredients appear in the scraped content, run your full RESEARCH PROTOCOL:
-- Search for the full INCI list on incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, and the brand website
-- Search for the price and reviews
-- Apply the full scoring framework
+Below is scraped content from that page. E-commerce pages render most content (ingredients, test certificates, lab PDFs) via JavaScript which the scraper CANNOT capture. Treat the scraped content as a partial snapshot only.
 
-IMPORTANT: Do not rely solely on the scraped content for ingredients, most e-commerce pages load ingredient lists dynamically via JavaScript and they will be missing from the scrape. Always search externally for the INCI.
+RESEARCH PROTOCOL for this URL:
+1. Use scraped content to identify product name and brand.
+2. Search externally for the full INCI: incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, brand website.
+3. Search for price and reviews.
+4. CRITICAL — search for lab tests and certifications directly on the brand website: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested". Also search "[brand name] lab test certificate" and "[brand name] clinical study". The brand may have a dedicated tests/certifications page. If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests and award full transparency marks — do NOT flag as unsubstantiated.
+5. Only assign the "Unsubstantiated Claims" warn badge if the product uses "chemical-free" or "toxin-free" language WITHOUT any certification or proof. Do NOT assign this badge merely because the scraper could not capture JavaScript-rendered test PDFs.
 
-Scraped page content (use for product identity only):
+Scraped page content (partial — JavaScript-rendered sections will be missing):
 ${scrapedContext}`;
     } else {
       prompt = isComparison
