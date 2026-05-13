@@ -32,6 +32,12 @@ Search: "[product name] India controversy banned ingredient recall"
 Also search the brand generally: "[brand] India CDSCO recall"
 If any flag found: note in summary and apply relevant hard rule penalty
 
+Step 5, Check for published lab tests and transparency documentation
+Search: "[brand] lab test certificate", "[brand] dermatologist tested study", "[brand] clinical test results", "[brand] site:[brand-domain] lab OR test OR certificate OR study"
+Also check if the product page or brand website prominently links to lab PDFs, third-party test reports, or clinical evidence
+If tests are found publicly on the brand website or linked from the product page: award full transparency marks for that criterion
+If tests are not found by search: note "lab tests not confirmed via public search" — do NOT assume they don't exist; apply only a small deduction (2 pts max for this sub-criterion)
+
 Use what you find. If a search returns no useful result, note it and proceed with available data.
 Do not fabricate INCI lists, prices, or reviews. If unavailable, say so explicitly.
 
@@ -65,9 +71,12 @@ SCORING FRAMEWORK (100 points total across 6 pillars):
    - Check functional synergy, vehicle suitability, pH compatibility where inferable
 
 6. Transparency Practices, 10 pts
-   - Published lab test data, stability results, patch test evidence = higher score
-   - "Dermatologist-tested" without citation = partial deduction
-   - Sustainability and supply chain disclosure = bonus marks
+   - Lab tests, stability results, or patch test evidence confirmed publicly available (on brand site, product page, or found via search) = full marks for that criterion
+   - "Dermatologist-tested" or "clinically tested" claim WITH a citation or linked study = positive signal
+   - "Dermatologist-tested" WITHOUT any citation or linked study = -2 pts
+   - Lab tests not confirmed via search but brand is otherwise transparent = deduct max 2 pts; do NOT assume non-existence
+   - Sustainability and supply chain disclosure = positive signal
+   - IMPORTANT: Only deduct for transparency if you have affirmatively confirmed absence after searching. Absence of evidence in search results is NOT the same as confirmed absence of tests.
 
 ---
 
