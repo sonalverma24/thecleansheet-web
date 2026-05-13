@@ -583,11 +583,11 @@ export default function AnalyzerPage() {
     setChatMessages([]);
 
     const steps = [
-      "Searching INCI database…",
-      "Checking EU Cosmetics Regulation…",
-      "Pulling pricing from Nykaa & Amazon…",
-      "Reviewing user ratings…",
-      "Applying Clean Sheet™ scoring framework…",
+      "Hunting down the ingredient list…",
+      "Ignoring the marketing copy, reading the actual science…",
+      "Checking what EU, India & global regulators say…",
+      "Running the 6-pillar Clean Sheet framework…",
+      "Almost done — putting your verdict together…",
     ];
     let idx = 0;
     setStepIdx(0);
@@ -821,11 +821,11 @@ export default function AnalyzerPage() {
                 {/* Step list */}
                 <div className="space-y-2.5">
                   {[
-                    "Searching INCI database…",
-                    "Checking EU Cosmetics Regulation…",
-                    "Pulling pricing from Nykaa & Amazon…",
-                    "Reviewing user ratings…",
-                    "Applying Clean Sheet™ scoring framework…",
+                    "Hunting down the ingredient list…",
+                    "Ignoring the marketing copy, reading the actual science…",
+                    "Checking what EU, India & global regulators say…",
+                    "Running the 6-pillar Clean Sheet framework…",
+                    "Almost done — putting your verdict together…",
                   ].map((step, i) => {
                     const done = i < stepIdx;
                     const active = i === stepIdx;
@@ -847,7 +847,7 @@ export default function AnalyzerPage() {
                 </div>
 
                 <p className="mt-6 text-[11px] font-mono text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
-                  Searching INCI databases, scientific literature &amp; regulatory lists
+                  Scraping the web · cross-referencing the science · running the framework
                 </p>
               </div>
             </div>

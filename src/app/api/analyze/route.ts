@@ -81,11 +81,41 @@ function isExpertQuestion(query: string): boolean {
   const questionStarters = ["is ", "are ", "does ", "do ", "can ", "should ", "what is ", "what are ", "why is ", "why are ", "how does ", "how do ", "how safe ", "is it safe", "tell me about", "explain", "which is better", "which is safer", "which works"];
   const hasQuestionMark = q.includes("?");
   const startsLikeQuestion = questionStarters.some((s) => q.startsWith(s));
-  // Has no brand/product signals (no title-case multi-word, no % signs for serums, no brand-style formatting)
-  const looksLikeProduct = /\d+%/.test(q) || q.split(" ").filter((w) => /^[A-Z]/.test(w)).length >= 2;
-  // If the query starts with a question word (is/are/does/etc.), treat as expert even if it
-  // also matches a comparison pattern, "is keratin better or smoothening" is a general
-  // haircare question, not a branded product comparison.
+
+  // If query contains a specific product type word alongside a brand-sounding name,
+  // route to scorecard not expert — e.g. "is ponds moisturiser good for oily skin"
+  const productTypeWords = [
+    "moisturiser", "moisturizer", "serum", "sunscreen", "spf", "face wash", "cleanser",
+    "toner", "cream", "lotion", "gel", "oil", "mask", "sheet mask", "eye cream",
+    "lip balm", "shampoo", "conditioner", "body wash", "scrub", "exfoliant",
+    "primer", "foundation", "bb cream", "cc cream", "micellar", "mist", "essence",
+    "ampoule", "retinol", "vitamin c", "niacinamide", "aha", "bha", "spf", "face cream",
+  ];
+  const containsProductType = productTypeWords.some((w) => q.includes(w));
+
+  // Known Indian & global beauty brand names (lowercase)
+  const knownBrands = [
+    "ponds", "pond's", "lakme", "mamaearth", "minimalist", "cetaphil", "cerave",
+    "the ordinary", "dot & key", "plum", "wow", "biotique", "himalaya", "neutrogena",
+    "loreal", "l'oreal", "olay", "nivea", "garnier", "vaseline", "dove", "clinic plus",
+    "head & shoulders", "pantene", "sunsilk", "tresemme", "fiama", "santoor",
+    "vicco", "shahnaz", "forest essentials", "kama ayurveda", "beardo", "man matters",
+    "sugar", "nykaa", "mcaffeine", "re'equil", "fixderma", "cosdna", "cosrx",
+    "innisfree", "the face shop", "etude", "klairs", "pyunkang yul", "some by mi",
+    "dermalogica", "paula's choice", "la roche-posay", "vichy", "avene", "eucerin",
+    "aveeno", "bulldog", "jack black", "supergoop", "tatcha", "drunk elephant",
+    "beauty of joseon", "anua", "isntree", "torriden", "skin1004",
+  ];
+  const containsBrand = knownBrands.some((b) => q.includes(b));
+
+  // Has title-case multi-word or % signals — original product detector
+  const looksLikeProduct = /\d+%/.test(q)
+    || q.split(" ").filter((w) => /^[A-Z]/.test(w)).length >= 2
+    || containsProductType
+    || containsBrand;
+
+  // "is [ingredient] safe?" type questions — pure ingredient queries → expert
+  // "is ponds moisturiser good for oily skin?" → has product type → scorecard
   if (startsLikeQuestion && !looksLikeProduct) return true;
   return hasQuestionMark && !looksLikeProduct && !isComparisonQuery(query);
 }
