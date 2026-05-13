@@ -13,65 +13,94 @@ import type { Scorecard, ChatMessage, ComparisonResult, ExpertAnswer } from "@/l
 function uid() { return Math.random().toString(36).slice(2); }
 
 function scoreColor(s: number) {
-  if (s >= 90) return "#16A34A";
-  if (s >= 70) return "#2D9E72";
-  if (s >= 50) return "#D97706";
-  return "#DC2626";
+  if (s >= 90) return "#4ade80";
+  if (s >= 70) return "#2dd4bf";
+  if (s >= 50) return "#fbbf24";
+  return "#f87171";
 }
 
 function scoreLabel(s: number) {
-  if (s >= 90) return { label: "Excellent", color: "text-safe-600", bg: "bg-safe-100", border: "border-safe-500/30" };
-  if (s >= 70) return { label: "Good", color: "text-teal-700", bg: "bg-teal-100", border: "border-teal-300" };
-  if (s >= 50) return { label: "Fair", color: "text-caution-600", bg: "bg-caution-100", border: "border-caution-500/40" };
-  return { label: "Concern", color: "text-danger-600", bg: "bg-danger-100", border: "border-danger-500/30" };
+  if (s >= 90) return { label: "Excellent", color: "#4ade80" };
+  if (s >= 70) return { label: "Good",      color: "#2dd4bf" };
+  if (s >= 50) return { label: "Fair",      color: "#fbbf24" };
+  return              { label: "Concern",   color: "#f87171" };
 }
 
 function pillarIcon(name: string) {
-  if (name.includes("Safety")) return Shield;
-  if (name.includes("Irritation")) return AlertTriangle;
-  if (name.includes("Disclosure")) return FileText;
-  if (name.includes("Regulatory")) return Globe;
-  if (name.includes("Efficacy")) return FlaskConical;
+  if (name.includes("Safety"))      return Shield;
+  if (name.includes("Irritation"))  return AlertTriangle;
+  if (name.includes("Disclosure"))  return FileText;
+  if (name.includes("Regulatory"))  return Globe;
+  if (name.includes("Efficacy"))    return FlaskConical;
   if (name.includes("Transparency")) return Eye;
   return Zap;
 }
 
 function pillarBarColor(pct: number) {
-  if (pct >= 80) return "bg-safe-500";
-  if (pct >= 60) return "bg-teal-500";
-  if (pct >= 40) return "bg-caution-500";
-  return "bg-danger-500";
+  if (pct >= 80) return "#4ade80";
+  if (pct >= 60) return "#2dd4bf";
+  if (pct >= 40) return "#fbbf24";
+  return "#f87171";
 }
 
 /* ─── Score Gauge ─── */
 function ScoreGauge({ score }: { score: number }) {
-  const r = 52, sw = 9;
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setAnimated(true), 100); return () => clearTimeout(t); }, []);
+
+  const r = 60, sw = 10;
   const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
+  const offset = animated ? circ - (score / 100) * circ : circ;
   const col = scoreColor(score);
   const tier = scoreLabel(score);
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <svg width="136" height="136" viewBox="0 0 136 136">
-        <circle cx="68" cy="68" r={r} fill="none" stroke="#E8EDE9" strokeWidth={sw} />
-        <circle
-          cx="68" cy="68" r={r}
-          fill="none"
-          stroke={col}
-          strokeWidth={sw}
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          transform="rotate(-90 68 68)"
-          style={{ transition: "stroke-dashoffset 1.2s ease-out" }}
-        />
-        <text x="68" y="62" textAnchor="middle" fontSize="30" fontWeight="800" fill="#0A1F16" fontFamily="var(--font-geist-sans)">{score}</text>
-        <text x="68" y="79" textAnchor="middle" fontSize="11" fill="#5C7A66" fontFamily="var(--font-geist-sans)">/100</text>
-      </svg>
-      <span className={`inline-flex items-center text-sm font-medium px-4 py-1.5 rounded-full border ${tier.bg} ${tier.color} ${tier.border}`}>
+      <div className="relative">
+        {/* Outer glow ring */}
+        <div className="absolute inset-0 rounded-full blur-xl opacity-30" style={{ background: col }} />
+        <svg width="152" height="152" viewBox="0 0 152 152" className="relative">
+          {/* Track */}
+          <circle cx="76" cy="76" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={sw} />
+          {/* Progress arc */}
+          <circle
+            cx="76" cy="76" r={r}
+            fill="none"
+            stroke={col}
+            strokeWidth={sw}
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            transform="rotate(-90 76 76)"
+            style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)", filter: `drop-shadow(0 0 8px ${col}90)` }}
+          />
+          {/* Score text */}
+          <text x="76" y="70" textAnchor="middle" fontSize="34" fontWeight="600" fill="#f0fdfa" fontFamily="var(--font-geist-sans)">{score}</text>
+          <text x="76" y="88" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.35)" fontFamily="var(--font-geist-sans)">/100</text>
+        </svg>
+      </div>
+      <span className="text-sm font-medium px-4 py-1.5 rounded-full" style={{ color: col, background: `${col}18`, border: `1px solid ${col}35` }}>
         {tier.label}
       </span>
+    </div>
+  );
+}
+
+/* ─── Animated Pillar Bar ─── */
+function PillarBar({ pct, color }: { pct: number; color: string }) {
+  const [w, setW] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setW(pct), 150); return () => clearTimeout(t); }, [pct]);
+  return (
+    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: `${w}%`,
+          background: color,
+          boxShadow: `0 0 6px ${color}60`,
+          transition: "width 1s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      />
     </div>
   );
 }
@@ -99,27 +128,30 @@ function BadgeRow({
   );
 }
 
-/* ─── Ingredient Pill ─── */
+/* ─── Ingredient Row ─── */
 function IngredientRow({ name, note, flag }: { name: string; note: string; flag: "ok" | "warn" | "info" }) {
   const [open, setOpen] = useState(false);
-  const styles = {
-    ok:   { dot: "bg-safe-500",    text: "text-safe-700",    bg: "bg-safe-50" },
-    warn: { dot: "bg-caution-500", text: "text-caution-600", bg: "bg-caution-100/60" },
-    info: { dot: "bg-teal-400",    text: "text-teal-600",    bg: "bg-teal-50" },
+  const C = {
+    ok:   { dot: "#4ade80", text: "rgba(74,222,128,0.8)",   bg: "rgba(74,222,128,0.06)",   border: "rgba(74,222,128,0.15)" },
+    warn: { dot: "#fbbf24", text: "rgba(251,191,36,0.8)",   bg: "rgba(251,191,36,0.06)",   border: "rgba(251,191,36,0.15)" },
+    info: { dot: "#5eead4", text: "rgba(94,234,212,0.7)",   bg: "rgba(94,234,212,0.06)",   border: "rgba(94,234,212,0.15)" },
   }[flag];
 
   return (
     <button
       onClick={() => setOpen(!open)}
-      className={`w-full text-left rounded-xl px-3 py-2.5 transition-colors ${open ? styles.bg : "hover:" + styles.bg}`}
+      className="w-full text-left rounded-xl px-3 py-2.5 transition-all"
+      style={{ background: open ? C.bg : "transparent", border: `1px solid ${open ? C.border : "transparent"}` }}
     >
       <div className="flex items-center gap-2.5">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${styles.dot}`} />
-        <span className="text-sm font-medium text-ink-800 flex-1">{name}</span>
-        {flag === "warn" && <AlertTriangle size={13} className="text-caution-500 flex-shrink-0" />}
-        {open ? <ChevronUp size={13} className="text-ink-400 flex-shrink-0" /> : <ChevronDown size={13} className="text-ink-400 flex-shrink-0" />}
+        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: C.dot, boxShadow: `0 0 5px ${C.dot}80` }} />
+        <span className="text-sm font-normal flex-1" style={{ color: "rgba(255,255,255,0.8)" }}>{name}</span>
+        {flag === "warn" && <AlertTriangle size={12} style={{ color: "#fbbf24" }} className="flex-shrink-0" />}
+        {open
+          ? <ChevronUp size={12} style={{ color: "rgba(255,255,255,0.3)" }} className="flex-shrink-0" />
+          : <ChevronDown size={12} style={{ color: "rgba(255,255,255,0.3)" }} className="flex-shrink-0" />}
       </div>
-      {open && <p className={`mt-1.5 pl-5 text-xs leading-relaxed ${styles.text}`}>{note}</p>}
+      {open && <p className="mt-1.5 pl-5 text-xs leading-relaxed" style={{ color: C.text }}>{note}</p>}
     </button>
   );
 }
@@ -131,25 +163,34 @@ function ScorecardView({ card }: { card: Scorecard }) {
   const visibleIngredients = showAllIngredients ? ingredients : ingredients.slice(0, 10);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={{ animation: "tcs-fadeUp 0.4s ease both" }}>
+
       {/* ── Hero card ── */}
-      <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-lg shadow-teal-900/5">
-        {/* Top gradient band */}
-        <div className="h-1.5 bg-gradient-to-r from-teal-400 via-teal-600 to-teal-800" />
+      <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+        {/* Scan line */}
+        <div className="relative h-0.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+          <div className="absolute inset-y-0 w-24 opacity-60" style={{ background: "linear-gradient(90deg,transparent,#5eead4,transparent)", animation: "tcs-scan 2.5s ease-in-out infinite" }} />
+        </div>
 
         <div className="p-6 sm:p-8">
-          {/* Product info + gauge */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.5)" }}>Clean Sheet™ · Scoring Engine · Active</span>
+          </div>
+
+          {/* Product + gauge */}
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
             <ScoreGauge score={card.score} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-normal text-teal-500 uppercase tracking-widest mb-1">{card.brand}</p>
-              <h2 className="text-xl sm:text-2xl font-medium text-ink-950 leading-tight mb-2">{card.productName}</h2>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-ink-500">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] mb-2" style={{ color: "rgba(94,234,212,0.5)" }}>{card.brand}</p>
+              <h2 className="text-xl sm:text-2xl font-medium leading-tight mb-3" style={{ color: "#f0fdfa" }}>{card.productName}</h2>
+              <div className="flex flex-wrap items-center gap-2">
                 {card.priceRange && (
-                  <span className="font-normal text-ink-700">{card.priceRange}</span>
+                  <span className="text-sm font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{card.priceRange}</span>
                 )}
                 {card.productType && (
-                  <span className="bg-teal-50 text-teal-600 border border-teal-200 px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
+                  <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full"
+                    style={{ color: "#5eead4", background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
                     {card.productType}
                   </span>
                 )}
@@ -158,7 +199,8 @@ function ScorecardView({ card }: { card: Scorecard }) {
           </div>
 
           {/* Summary */}
-          <p className="text-ink-600 leading-relaxed text-sm sm:text-base mb-6 p-4 bg-teal-50/50 rounded-2xl border border-teal-100">
+          <p className="text-sm leading-relaxed mb-6 px-4 py-3 rounded-2xl"
+            style={{ color: "rgba(153,246,228,0.7)", background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.1)" }}>
             {card.summary}
           </p>
 
@@ -171,18 +213,18 @@ function ScorecardView({ card }: { card: Scorecard }) {
             </div>
           )}
 
-          {/* Disclaimer */}
-          <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
-Gives a clean sheet score based on publicly available data · Suggests science-backed safer alternatives
+          <p className="mt-5 text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.2)" }}>
+            Gives a clean sheet score based on publicly available data · Suggests science-backed safer alternatives
           </p>
         </div>
       </div>
 
       {/* ── Pillars ── */}
       {card.pillars?.length > 0 && (
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Score Breakdown</h3>
+        <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="px-6 py-4 border-b flex items-center gap-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>Score Breakdown</h3>
           </div>
           <div className="p-6 space-y-5">
             {card.pillars.map((p) => {
@@ -191,23 +233,18 @@ Gives a clean sheet score based on publicly available data · Suggests science-b
               const barCol = pillarBarColor(pct);
               return (
                 <div key={p.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-2 text-sm font-normal text-ink-700">
-                      <PIcon size={14} className="text-teal-500" />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="flex items-center gap-2 text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+                      <PIcon size={13} style={{ color: barCol }} />
                       {p.name}
                     </span>
-                    <span className="text-sm font-medium text-ink-900 tabular-nums">
-                      {p.score}<span className="text-ink-400 font-normal text-xs">/{p.max}</span>
+                    <span className="text-sm font-mono tabular-nums" style={{ color: barCol }}>
+                      {p.score}<span style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px" }}>/{p.max}</span>
                     </span>
                   </div>
-                  <div className="h-2 bg-teal-50 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${barCol}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+                  <PillarBar pct={pct} color={barCol} />
                   {p.note && (
-                    <p className="mt-1 text-xs text-ink-500 leading-relaxed">{p.note}</p>
+                    <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.3)" }}>{p.note}</p>
                   )}
                 </div>
               );
@@ -218,19 +255,20 @@ Gives a clean sheet score based on publicly available data · Suggests science-b
 
       {/* ── Key Actives ── */}
       {card.keyActives?.length > 0 && (
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Key Actives</h3>
+        <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="px-6 py-4 border-b flex items-center gap-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>Key Actives</h3>
           </div>
           <div className="p-6">
             <div className="grid sm:grid-cols-2 gap-3">
               {card.keyActives.map((a, i) => (
-                <div key={i} className="bg-teal-50/70 rounded-2xl p-4 border border-teal-100">
+                <div key={i} className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(94,234,212,0.1)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <Star size={13} className="text-teal-500 flex-shrink-0" />
-                    <span className="text-sm font-normal text-ink-800">{a.name}</span>
+                    <Star size={12} style={{ color: "#fbbf24" }} className="flex-shrink-0" />
+                    <span className="text-sm font-normal" style={{ color: "#f0fdfa" }}>{a.name}</span>
                   </div>
-                  <p className="text-xs text-ink-500 leading-relaxed">{a.function}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>{a.function}</p>
                 </div>
               ))}
             </div>
@@ -240,16 +278,19 @@ Gives a clean sheet score based on publicly available data · Suggests science-b
 
       {/* ── Ingredients ── */}
       {ingredients.length > 0 && (
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-teal-50 flex items-center justify-between">
-            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Full Ingredient List</h3>
-            <div className="flex items-center gap-3 text-xs text-ink-400">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-safe-500" />Safe</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-caution-500" />Flag</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-400" />Info</span>
+        <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+              <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>Full Ingredient List</h3>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />Safe</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />Caution</span>
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-400 inline-block" />Info</span>
             </div>
           </div>
-          <div className="p-4 space-y-1">
+          <div className="p-4 space-y-0.5">
             {visibleIngredients.map((ing, i) => (
               <IngredientRow key={i} name={ing.name} note={ing.note} flag={ing.flag} />
             ))}
@@ -258,9 +299,10 @@ Gives a clean sheet score based on publicly available data · Suggests science-b
             <div className="px-4 pb-4">
               <button
                 onClick={() => setShowAllIngredients(!showAllIngredients)}
-                className="w-full flex items-center justify-center gap-2 text-teal-600 hover:text-teal-800 text-sm font-normal py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl transition-all"
+                style={{ color: "#5eead4", border: "1px solid rgba(94,234,212,0.15)", background: "rgba(94,234,212,0.04)" }}
               >
-                {showAllIngredients ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                {showAllIngredients ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 {showAllIngredients ? "Show less" : `Show all ${ingredients.length} ingredients`}
               </button>
             </div>
@@ -270,65 +312,58 @@ Gives a clean sheet score based on publicly available data · Suggests science-b
 
       {/* ── India Context ── */}
       {card.indiaContext && (
-        <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-3xl p-6 text-white">
+        <div className="rounded-3xl p-6" style={{ background: "linear-gradient(135deg,#0d2b27,#0f3d38)", border: "1px solid rgba(94,234,212,0.15)" }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🇮🇳</span>
-            <h3 className="text-xs font-medium text-white uppercase tracking-widest">India Context</h3>
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>India Context</h3>
           </div>
-          <p className="text-teal-100 text-sm leading-relaxed">{card.indiaContext}</p>
+          <p className="text-sm leading-relaxed" style={{ color: "rgba(153,246,228,0.7)" }}>{card.indiaContext}</p>
         </div>
       )}
 
       {/* ── Data Source ── */}
       {card.dataSource && (
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Research Sources</h3>
+        <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div className="px-6 py-4 border-b flex items-center gap-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="w-1.5 h-1.5 rounded-full bg-teal-400" />
+            <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>Research Sources</h3>
           </div>
           <div className="p-6 grid sm:grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-xs text-ink-400 mb-1">INCI Source</div>
-              <div className={`font-medium ${card.dataSource.inciFound ? "text-safe-600" : "text-caution-600"}`}>
-                {card.dataSource.inciFound ? "✓ Found" : "✗ Not found"} · {card.dataSource.inciSource}
+              <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.25)" }}>INCI Source</div>
+              <div className="font-mono text-sm" style={{ color: card.dataSource.inciFound ? "#4ade80" : "#fbbf24" }}>
+                {card.dataSource.inciFound ? "✓ Found" : "⚠ Partial"} · {card.dataSource.inciSource}
               </div>
             </div>
             {card.dataSource.rating && (
               <div>
-                <div className="text-xs text-ink-400 mb-1">User Rating</div>
-                <div className="font-medium text-ink-800">
-                  ⭐ {card.dataSource.rating}/5 · {card.dataSource.reviewCount}
+                <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.25)" }}>User Rating</div>
+                <div className="font-mono text-sm" style={{ color: "#f0fdfa" }}>
+                  ★ {card.dataSource.rating}/5 · {card.dataSource.reviewCount}
                 </div>
               </div>
             )}
-            {card.dataSource.userSentiment && (
-              <div className="sm:col-span-2">
-                <div className="text-xs text-ink-400 mb-1">User Sentiment</div>
-                <p className="text-ink-600 leading-relaxed">{card.dataSource.userSentiment}</p>
-              </div>
-            )}
-            {card.dataSource.reviewPlatforms?.length > 0 && (
-              <div className="sm:col-span-2">
-                <div className="text-xs text-ink-400 mb-1">Reviewed on</div>
-                <div className="flex flex-wrap gap-2">
-                  {card.dataSource.reviewPlatforms.map((p, i) => (
-                    <span key={i} className="bg-teal-50 text-teal-600 border border-teal-100 px-2.5 py-0.5 rounded-full text-xs font-medium">{p}</span>
-                  ))}
-                </div>
+            {card.dataSource.priceSource && (
+              <div>
+                <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.25)" }}>Price Source</div>
+                <div className="font-mono text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>{card.dataSource.priceSource}</div>
               </div>
             )}
           </div>
         </div>
       )}
+
     </div>
   );
 }
 
-/* ─── Chat bubble ─── */
+/* ─── Chat Bubble ─── */
 function ChatBubble({ msg }: { msg: ChatMessage }) {
   if (msg.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="bg-teal-600 text-white rounded-2xl rounded-tr-md px-4 py-3 max-w-[80%] text-sm leading-relaxed">
+        <div className="rounded-2xl rounded-tr-md px-4 py-3 max-w-[80%] text-sm leading-relaxed"
+          style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.2)", color: "#f0fdfa" }}>
           {msg.content}
         </div>
       </div>
@@ -336,14 +371,16 @@ function ChatBubble({ msg }: { msg: ChatMessage }) {
   }
   return (
     <div className="flex items-start gap-3">
-      <div className="w-7 h-7 rounded-xl bg-teal-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Sparkles size={13} className="text-teal-200" />
+      <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+        style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.2)" }}>
+        <Sparkles size={13} style={{ color: "#5eead4" }} />
       </div>
-      <div className="bg-teal-50 border border-teal-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%] text-sm text-ink-700 leading-relaxed whitespace-pre-wrap">
+      <div className="rounded-2xl rounded-tl-md px-4 py-3 max-w-[85%] text-sm leading-relaxed whitespace-pre-wrap"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.75)" }}>
         {msg.isStreaming && !msg.content ? (
           <div className="flex gap-1.5 items-center py-1">
             {[0, 1, 2].map((i) => (
-              <span key={i} className="w-2 h-2 rounded-full bg-teal-400 animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+              <span key={i} className="w-2 h-2 rounded-full animate-bounce" style={{ background: "#5eead4", animationDelay: `${i * 150}ms` }} />
             ))}
           </div>
         ) : msg.content}
@@ -354,42 +391,44 @@ function ChatBubble({ msg }: { msg: ChatMessage }) {
 
 /* ─── Expert Answer View ─── */
 function AnswerView({ answer }: { answer: ExpertAnswer }) {
-  const verdictStyles = {
-    safe:    { bg: "bg-safe-100",    border: "border-safe-500/30",    text: "text-safe-700",    icon: CheckCircle2 },
-    caution: { bg: "bg-caution-100", border: "border-caution-500/40", text: "text-caution-600", icon: AlertTriangle },
-    avoid:   { bg: "bg-danger-100",  border: "border-danger-500/30",  text: "text-danger-700",  icon: AlertTriangle },
-    info:    { bg: "bg-teal-50",     border: "border-teal-200",       text: "text-teal-700",    icon: Info },
-  }[answer.verdict];
-  const VIcon = verdictStyles.icon;
+  const verdictCol = {
+    safe:    "#4ade80",
+    caution: "#fbbf24",
+    avoid:   "#f87171",
+    info:    "#5eead4",
+  }[answer.verdict] ?? "#5eead4";
+
+  const VIcon = answer.verdict === "safe" ? CheckCircle2 : answer.verdict === "info" ? Info : AlertTriangle;
 
   return (
-    <div className="space-y-4">
-      {/* Verdict card */}
-      <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-lg shadow-teal-900/5">
-        <div className="h-1.5 bg-gradient-to-r from-teal-400 via-teal-600 to-teal-800" />
+    <div className="space-y-4" style={{ animation: "tcs-fadeUp 0.4s ease both" }}>
+      <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+        <div className="relative h-0.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+          <div className="absolute inset-y-0 w-24 opacity-60" style={{ background: "linear-gradient(90deg,transparent,#5eead4,transparent)", animation: "tcs-scan 2.5s ease-in-out infinite" }} />
+        </div>
         <div className="p-6 sm:p-8">
           <div className="flex items-start gap-4 mb-5">
-            <div className={`flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center border ${verdictStyles.bg} ${verdictStyles.border}`}>
-              <VIcon size={20} className={verdictStyles.text} />
+            <div className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: `${verdictCol}15`, border: `1px solid ${verdictCol}30` }}>
+              <VIcon size={20} style={{ color: verdictCol }} />
             </div>
             <div>
-              <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-1">The Clean Sheet™ Verdict</p>
-              <h2 className="text-lg font-medium text-ink-950 leading-tight">{answer.question}</h2>
-              <span className={`inline-flex items-center mt-2 text-xs font-medium px-3 py-1 rounded-full border ${verdictStyles.bg} ${verdictStyles.text} ${verdictStyles.border}`}>
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] mb-1" style={{ color: "rgba(94,234,212,0.5)" }}>The Clean Sheet™ Verdict</p>
+              <h2 className="text-lg font-medium leading-tight mb-2" style={{ color: "#f0fdfa" }}>{answer.question}</h2>
+              <span className="inline-flex items-center text-xs font-mono px-3 py-1 rounded-full" style={{ color: verdictCol, background: `${verdictCol}15`, border: `1px solid ${verdictCol}30` }}>
                 {answer.verdictLabel}
               </span>
             </div>
           </div>
 
-          <p className="text-ink-600 leading-relaxed text-sm mb-5 p-4 bg-teal-50/50 rounded-2xl border border-teal-100">
+          <p className="text-sm leading-relaxed mb-5 px-4 py-3 rounded-2xl" style={{ color: "rgba(153,246,228,0.7)", background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.1)" }}>
             {answer.text}
           </p>
 
           {answer.keyPoints?.length > 0 && (
             <div className="space-y-2 mb-5">
               {answer.keyPoints.map((point, i) => (
-                <div key={i} className="flex items-start gap-2.5 text-sm text-ink-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0 mt-2" />
+                <div key={i} className="flex items-start gap-2.5 text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2" style={{ background: "#5eead4" }} />
                   {point}
                 </div>
               ))}
@@ -397,12 +436,12 @@ function AnswerView({ answer }: { answer: ExpertAnswer }) {
           )}
 
           {answer.indiaContext && (
-            <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-2xl p-4 text-white">
+            <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg,#0d2b27,#0f3d38)", border: "1px solid rgba(94,234,212,0.15)" }}>
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-base">🇮🇳</span>
-                <span className="text-xs font-medium text-white uppercase tracking-widest">India Context</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>India Context</span>
               </div>
-              <p className="text-teal-100 text-sm leading-relaxed">{answer.indiaContext}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(153,246,228,0.7)" }}>{answer.indiaContext}</p>
             </div>
           )}
         </div>
@@ -424,113 +463,75 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
   const isTie = result.winner === "tie";
 
   return (
-    <div className="space-y-4">
-      {/* ── Winner card ── */}
-      <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-3xl overflow-hidden">
+    <div className="space-y-4" style={{ animation: "tcs-fadeUp 0.4s ease both" }}>
+      {/* Winner */}
+      <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(94,234,212,0.15)" }}>
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Award size={14} className="text-teal-300" />
-            <span className="text-xs font-medium text-teal-300 uppercase tracking-widest">
+            <Award size={13} style={{ color: "#fbbf24" }} />
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.5)" }}>
               {isTie ? "It's a tie" : `Our pick for ${result.skinConcern}`}
             </span>
           </div>
 
-          {/* Score comparison */}
           <div className="flex items-center gap-3 mb-5">
             {products.map(({ key, product }) => {
               const isWinner = result.winner === key;
+              const col = scoreColor(product.score);
               return (
-                <div
-                  key={key}
-                  className={`flex-1 text-center p-3 rounded-2xl transition-all ${isWinner ? "bg-white/20" : "bg-white/5"}`}
-                >
-                  <div className={`text-4xl font-semibold ${isWinner ? "text-white" : "text-teal-300"}`}>
-                    {product.score}
-                  </div>
-                  <div className="text-[10px] text-teal-200 font-normal mt-1 leading-tight">{product.brand}</div>
-                  <div className="text-[10px] text-teal-300 leading-tight">{product.productName}</div>
-                  {isWinner && !isTie && (
-                    <div className="mt-1.5 text-[10px] font-medium text-teal-100 uppercase tracking-wide">✓ Winner</div>
-                  )}
+                <div key={key} className="flex-1 text-center p-4 rounded-2xl transition-all"
+                  style={{ background: isWinner ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.03)", border: `1px solid ${isWinner ? "rgba(94,234,212,0.25)" : "rgba(255,255,255,0.06)"}` }}>
+                  <div className="text-4xl font-semibold mb-1" style={{ color: col }}>{product.score}</div>
+                  <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.35)" }}>{key === "productA" ? result.productA.productName : result.productB.productName}</div>
+                  {isWinner && !isTie && <div className="text-[10px] font-mono" style={{ color: "#fbbf24" }}>★ Recommended</div>}
                 </div>
               );
             })}
-            <div className="text-teal-400 font-medium text-sm flex-shrink-0">vs</div>
           </div>
 
-          <p className="text-teal-100 text-sm leading-relaxed">{result.verdict}</p>
+          <p className="text-sm leading-relaxed px-4 py-3 rounded-2xl" style={{ color: "rgba(153,246,228,0.7)", background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.1)" }}>
+            {result.verdict}
+          </p>
         </div>
       </div>
 
-      {/* ── Individual product cards ── */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        {products.map(({ key, product, expanded, toggle }) => {
-          const isWinner = result.winner === key;
-          const tier = scoreLabel(product.score);
-          return (
-            <div
-              key={key}
-              className={`bg-white rounded-3xl border overflow-hidden shadow-sm ${isWinner ? "border-teal-400" : "border-teal-100"}`}
-            >
-              {isWinner && <div className="h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600" />}
-              <div className="p-5">
-                {isWinner && !isTie && (
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Award size={11} className="text-teal-500" />
-                    <span className="text-[10px] font-medium text-teal-500 uppercase tracking-wider">Winner</span>
-                  </div>
-                )}
-
-                <p className="text-xs font-normal text-teal-500 mb-0.5">{product.brand}</p>
-                <h3 className="font-medium text-ink-900 text-sm leading-tight mb-0.5">{product.productName}</h3>
-                <p className="text-xs text-ink-400 mb-3">{product.priceRange}</p>
-
-                {/* Score bar */}
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl font-semibold tabular-nums" style={{ color: scoreColor(product.score) }}>
-                    {product.score}
-                  </span>
-                  <div className="flex-1">
-                    <div className="h-2 bg-teal-50 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{ width: `${product.score}%`, backgroundColor: scoreColor(product.score) }}
-                      />
-                    </div>
-                    <div className={`text-[10px] mt-0.5 font-normal ${tier.color}`}>{tier.label}</div>
-                  </div>
-                </div>
-
-                <p className="text-xs text-ink-600 leading-relaxed mb-3 line-clamp-2">{product.summary}</p>
-
-                {/* Top badges */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {product.pass_badges.slice(0, 3).map((b, i) => (
-                    <span key={i} className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-safe-100 text-safe-700 border border-safe-500/30">{b}</span>
-                  ))}
-                  {product.warn_badges.slice(0, 1).map((b, i) => (
-                    <span key={i} className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-caution-100 text-caution-600 border border-caution-500/40">{b}</span>
-                  ))}
-                </div>
-
-                <button
-                  onClick={toggle}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-normal text-teal-600 hover:text-teal-800 py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
-                >
-                  {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                  {expanded ? "Hide full analysis" : "See full analysis"}
-                </button>
-              </div>
-
-              {expanded && (
-                <div className="border-t border-teal-50 p-4">
-                  <ScorecardView card={product} />
+      {/* Individual cards */}
+      {products.map(({ key, product, expanded, toggle }) => (
+        <div key={key} className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <button onClick={toggle} className="w-full px-6 py-4 flex items-center justify-between text-left border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: "rgba(94,234,212,0.5)" }}>{key === "productA" ? "Product A" : "Product B"}</div>
+              <div className="font-medium" style={{ color: "#f0fdfa" }}>{product.productName}</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl font-semibold font-mono" style={{ color: scoreColor(product.score) }}>{product.score}</span>
+              {expanded ? <ChevronUp size={15} style={{ color: "rgba(255,255,255,0.3)" }} /> : <ChevronDown size={15} style={{ color: "rgba(255,255,255,0.3)" }} />}
+            </div>
+          </button>
+          {expanded && (
+            <div className="p-6 space-y-4">
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.6)" }}>{product.summary}</p>
+              {product.pillars?.length > 0 && (
+                <div className="space-y-3">
+                  {product.pillars.map((p: { name: string; score: number; max: number }) => {
+                    const pct = Math.round((p.score / p.max) * 100);
+                    const col = pillarBarColor(pct);
+                    return (
+                      <div key={p.name}>
+                        <div className="flex justify-between text-xs mb-1.5">
+                          <span style={{ color: "rgba(255,255,255,0.5)" }}>{p.name}</span>
+                          <span className="font-mono" style={{ color: col }}>{p.score}/{p.max}</span>
+                        </div>
+                        <PillarBar pct={pct} color={col} />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          );
-        })}
-      </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -553,6 +554,7 @@ export default function AnalyzerPage() {
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [outOfScope, setOutOfScope] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
+  const [stepIdx, setStepIdx] = useState(0);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -587,11 +589,13 @@ export default function AnalyzerPage() {
       "Reviewing user ratings…",
       "Applying Clean Sheet™ scoring framework…",
     ];
-    let stepIdx = 0;
+    let idx = 0;
+    setStepIdx(0);
     setStatusMsg(steps[0]);
     const ticker = setInterval(() => {
-      stepIdx = Math.min(stepIdx + 1, steps.length - 1);
-      setStatusMsg(steps[stepIdx]);
+      idx = Math.min(idx + 1, steps.length - 1);
+      setStepIdx(idx);
+      setStatusMsg(steps[idx]);
     }, 4000);
 
     try {
@@ -603,34 +607,22 @@ export default function AnalyzerPage() {
       const data = await res.json();
       clearInterval(ticker);
 
-      if (data.type === "out_of_scope" || (!res.ok && !data.type)) {
-        setOutOfScope(true);
-        return;
-      }
-      if (data.error) {
-        setOutOfScope(true);
-        return;
-      }
+      if (data.type === "out_of_scope" || (!res.ok && !data.type)) { setOutOfScope(true); return; }
+      if (data.error) { setOutOfScope(true); return; }
+
       if (data.type === "comparison" && data.comparison) {
         setComparison(data.comparison);
-        const winnerCard = data.comparison.winner === "productB"
-          ? data.comparison.productB
-          : data.comparison.productA;
+        const winnerCard = data.comparison.winner === "productB" ? data.comparison.productB : data.comparison.productA;
         const opener = `${data.comparison.verdict}${winnerCard.chatOpener ? `\n\n${winnerCard.chatOpener}` : ""}`;
         setChatMessages([{ id: uid(), role: "assistant", content: opener, timestamp: new Date() }]);
       } else if (data.type === "answer" && data.answer) {
         setExpertAnswer(data.answer);
-        if (data.answer.chatOpener) {
-          setChatMessages([{ id: uid(), role: "assistant", content: data.answer.chatOpener, timestamp: new Date() }]);
-        }
+        if (data.answer.chatOpener) setChatMessages([{ id: uid(), role: "assistant", content: data.answer.chatOpener, timestamp: new Date() }]);
       } else {
         const card = data.scorecard;
-        // Guard: only accept a scorecard that has the minimum required fields
         if (card && typeof card.score === "number" && card.productName && Array.isArray(card.pillars) && card.pillars.length > 0) {
           setScorecard(card);
-          if (card.chatOpener) {
-            setChatMessages([{ id: uid(), role: "assistant", content: card.chatOpener, timestamp: new Date() }]);
-          }
+          if (card.chatOpener) setChatMessages([{ id: uid(), role: "assistant", content: card.chatOpener, timestamp: new Date() }]);
         } else {
           setOutOfScope(true);
         }
@@ -658,9 +650,7 @@ export default function AnalyzerPage() {
     setChatMessages((prev) => [...prev, userMsg, aiMsg]);
     setIsChatting(true);
 
-    const history = chatMessages
-      .filter((m) => !m.isStreaming)
-      .map((m) => ({ role: m.role, content: m.content }));
+    const history = chatMessages.filter((m) => !m.isStreaming).map((m) => ({ role: m.role, content: m.content }));
 
     try {
       const res = await fetch("/api/chat", {
@@ -674,97 +664,77 @@ export default function AnalyzerPage() {
             ?? (expertAnswer ? { question: expertAnswer.question, answer: expertAnswer.text, verdict: expertAnswer.verdict } : null),
         }),
       });
-
       if (!res.body) throw new Error("No response body");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = "";
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        setChatMessages((prev) =>
-          prev.map((m) => m.id === aiId ? { ...m, content: acc, isStreaming: false } : m)
-        );
+        setChatMessages((prev) => prev.map((m) => m.id === aiId ? { ...m, content: acc, isStreaming: false } : m));
       }
     } catch {
-      setChatMessages((prev) =>
-        prev.map((m) => m.id === aiId ? { ...m, content: "Sorry, couldn't connect. Please try again.", isStreaming: false } : m)
-      );
+      setChatMessages((prev) => prev.map((m) => m.id === aiId ? { ...m, content: "Something went wrong. Try again.", isStreaming: false } : m));
     } finally {
       setIsChatting(false);
+      setTimeout(() => chatInputRef.current?.focus(), 50);
     }
-  }, [chatInput, isChatting, chatMessages, scorecard]);
+  }, [chatInput, isChatting, chatMessages, scorecard, comparison, expertAnswer]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      analyze();
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); analyze(); }
+  };
+  const handleChatKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
   };
 
-  const handleChatKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendChat();
-    }
-  };
+  const hasResult = scorecard || comparison || expertAnswer;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50/40 to-white">
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg,#091c1a 0%,#0b2320 40%,#091c1a 100%)" }}>
+      <style>{`
+        @keyframes tcs-fadeUp  { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes tcs-scan    { 0%,100%{left:-25%} 50%{left:100%} }
+        @keyframes tcs-pulse   { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes tcs-grid    { 0%{background-position:0 0} 100%{background-position:28px 28px} }
+        @keyframes tcs-step    { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+      `}</style>
 
-      {/* ── Header ── */}
-      <section className="pt-14 pb-8 px-4">
-        <div className="max-w-2xl mx-auto text-center relative">
+      {/* Dot grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04]"
+        style={{ backgroundImage: "radial-gradient(circle, #5eead4 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
-          {/* Decorative molecule graphic */}
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-full pointer-events-none select-none" aria-hidden>
-            <svg width="100%" height="72" viewBox="0 0 480 72" fill="none" xmlns="http://www.w3.org/2000/svg"
-              className="opacity-30">
-              {/* Bond lines */}
-              {[
-                [60,36,120,20],[120,20,180,40],[180,40,240,18],[240,18,300,36],
-                [300,36,360,16],[360,16,420,34],[180,40,180,60],[300,36,300,58],
-                [120,20,100,4],[360,16,375,4],
-              ].map(([x1,y1,x2,y2],i) => (
-                <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#0d9488" strokeWidth="1.2" strokeDasharray="3 3"/>
+      {/* ── Hero ── */}
+      <section className="relative pt-14 pb-10 px-4">
+        <div className="max-w-2xl mx-auto text-center">
+
+          {/* Molecule decoration */}
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-full pointer-events-none select-none opacity-20" aria-hidden>
+            <svg width="100%" height="72" viewBox="0 0 480 72" fill="none">
+              {[[60,36,120,20],[120,20,180,40],[180,40,240,18],[240,18,300,36],[300,36,360,16],[360,16,420,34],[180,40,180,60],[300,36,300,58],[120,20,100,4],[360,16,375,4]].map(([x1,y1,x2,y2],i) => (
+                <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#5eead4" strokeWidth="1.2" strokeDasharray="3 3"/>
               ))}
-              {/* Nodes */}
-              {[
-                {cx:60,cy:36,r:4,fill:"#0d9488"},
-                {cx:120,cy:20,r:5,fill:"#14b8a6"},
-                {cx:180,cy:40,r:3.5,fill:"#0d9488"},
-                {cx:180,cy:60,r:3,fill:"#5eead4"},
-                {cx:240,cy:18,r:5,fill:"#0d9488"},
-                {cx:300,cy:36,r:4,fill:"#14b8a6"},
-                {cx:300,cy:58,r:3,fill:"#5eead4"},
-                {cx:360,cy:16,r:5,fill:"#0d9488"},
-                {cx:420,cy:34,r:3.5,fill:"#14b8a6"},
-                {cx:100,cy:4,r:3,fill:"#5eead4"},
-                {cx:375,cy:4,r:3,fill:"#5eead4"},
-              ].map(({cx,cy,r,fill},i) => (
-                <circle key={i} cx={cx} cy={cy} r={r} fill={fill} fillOpacity="0.6"/>
-              ))}
-              {/* Labels on key nodes */}
-              {[
-                {x:120,y:13,label:"C₁₂"},
-                {x:240,y:11,label:"OH"},
-                {x:360,y:9,label:"NH₂"},
-              ].map(({x,y,label},i)=>(
-                <text key={i} x={x} y={y} textAnchor="middle" fontSize="7" fill="#0d9488" fontFamily="monospace" fontWeight="600">{label}</text>
+              {[{cx:60,cy:36,r:4},{cx:120,cy:20,r:5},{cx:180,cy:40,r:3.5},{cx:180,cy:60,r:3},{cx:240,cy:18,r:5},{cx:300,cy:36,r:4},{cx:300,cy:58,r:3},{cx:360,cy:16,r:5},{cx:420,cy:34,r:3.5},{cx:100,cy:4,r:3},{cx:375,cy:4,r:3}].map(({cx,cy,r},i) => (
+                <circle key={i} cx={cx} cy={cy} r={r} fill="#5eead4" fillOpacity="0.6"/>
               ))}
             </svg>
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-600 text-xs font-normal px-4 py-1.5 rounded-full mb-5 relative z-10">
-            <Sparkles size={12} />
-            The Clean Sheet™ · Ask Clean
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 text-xs font-mono px-4 py-1.5 rounded-full mb-5 relative z-10"
+            style={{ background: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.2)", color: "#5eead4", animation: "tcs-fadeUp 0.4s ease both" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            The Clean Sheet™ · Scoring Engine · Active
           </div>
-          <h1 className="text-3xl sm:text-5xl font-medium text-ink-950 tracking-tight mb-3 relative z-10">
-            What&apos;s really<br />in your product?
+
+          <h1 className="text-3xl sm:text-5xl font-medium tracking-tight mb-3 relative z-10"
+            style={{ color: "#f0fdfa", animation: "tcs-fadeUp 0.4s 0.1s ease both" }}>
+            What&apos;s really<br />
+            <span style={{ color: "#5eead4" }}>in your product?</span>
           </h1>
-          <p className="text-ink-500 text-base sm:text-lg max-w-lg mx-auto leading-relaxed relative z-10">
+          <p className="text-base sm:text-lg max-w-lg mx-auto leading-relaxed relative z-10"
+            style={{ color: "rgba(153,246,228,0.55)", animation: "tcs-fadeUp 0.4s 0.2s ease both" }}>
             Analyse a product, compare two, or ask about any ingredient.
             India&apos;s most rigorous beauty science engine.
           </p>
@@ -772,37 +742,48 @@ export default function AnalyzerPage() {
       </section>
 
       {/* ── Search ── */}
-      <section className="px-4 pb-5">
+      <section className="px-4 pb-6" style={{ animation: "tcs-fadeUp 0.4s 0.25s ease both" }}>
         <div className="max-w-2xl mx-auto">
           <div className="relative">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none sm:left-5 sm:size-[18px]" />
+            <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none sm:left-5" style={{ color: "rgba(94,234,212,0.5)" }} />
             <input
               ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Product name, ingredient, or a question…"
-              className="w-full bg-white border-2 border-teal-100 focus:border-teal-400 rounded-2xl pl-10 pr-13 py-3.5 sm:pl-12 sm:pr-14 sm:py-4 text-ink-900 placeholder-ink-300 text-sm sm:text-base outline-none transition-colors shadow-sm shadow-teal-900/5"
+              placeholder="Product URL, name, ingredient, or a question…"
+              className="w-full rounded-2xl pl-11 pr-14 py-4 sm:pl-12 sm:pr-16 sm:py-4.5 text-sm sm:text-base outline-none transition-all"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1.5px solid rgba(94,234,212,0.2)",
+                color: "#f0fdfa",
+                fontFamily: "'Geist Mono', monospace",
+                boxShadow: "0 0 0 0 rgba(94,234,212,0)",
+              }}
+              onFocus={(e) => e.currentTarget.style.border = "1.5px solid rgba(94,234,212,0.5)"}
+              onBlur={(e) => e.currentTarget.style.border = "1.5px solid rgba(94,234,212,0.2)"}
               disabled={isAnalyzing}
             />
             <button
               onClick={() => analyze()}
               disabled={!query.trim() || isAnalyzing}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-200 text-white rounded-xl p-2 sm:p-2.5 transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-xl p-2.5 transition-all"
+              style={{ background: query.trim() && !isAnalyzing ? "#14b8a6" : "rgba(255,255,255,0.08)", color: "#f0fdfa" }}
             >
               {isAnalyzing ? <Loader2 size={17} className="animate-spin" /> : <Search size={17} />}
             </button>
           </div>
 
           {/* Suggestions */}
-          {!scorecard && !comparison && !expertAnswer && !isAnalyzing && (
-            <div className="flex flex-wrap gap-2 mt-3 justify-center">
+          {!hasResult && !isAnalyzing && (
+            <div className="flex flex-wrap gap-2 mt-4 justify-center" style={{ animation: "tcs-fadeUp 0.4s 0.35s ease both" }}>
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => { setQuery(s); analyze(s); }}
-                  className="text-xs text-teal-600 bg-white border border-teal-200 hover:border-teal-400 hover:bg-teal-50 px-3 py-1.5 rounded-full transition-colors font-medium"
+                  className="text-xs px-3 py-1.5 rounded-full transition-all font-mono"
+                  style={{ color: "rgba(94,234,212,0.7)", background: "rgba(94,234,212,0.06)", border: "1px solid rgba(94,234,212,0.15)" }}
                 >
                   {s}
                 </button>
@@ -816,35 +797,78 @@ export default function AnalyzerPage() {
       {isAnalyzing && (
         <section className="px-4 pb-10">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-3xl border border-teal-100 p-8 text-center shadow-sm">
-              <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto mb-5">
-                <Loader2 size={24} className="text-teal-600 animate-spin" />
+            <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(94,234,212,0.15)" }}>
+              {/* Scanning bar */}
+              <div className="relative h-0.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <div className="absolute inset-y-0 w-32 opacity-80" style={{ background: "linear-gradient(90deg,transparent,#5eead4,transparent)", animation: "tcs-scan 1.8s ease-in-out infinite" }} />
               </div>
-              <h3 className="font-medium text-ink-900 mb-2">Working on it…</h3>
-              <p className="text-sm text-teal-600 font-medium animate-pulse">{statusMsg}</p>
-              <p className="text-xs text-ink-400 mt-3">Searching INCI databases, scientific literature, and reviews</p>
+
+              <div className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
+                    <Loader2 size={20} className="animate-spin" style={{ color: "#5eead4" }} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: "#f0fdfa" }}>Scoring Engine Running</div>
+                    <div className="text-[10px] font-mono" style={{ color: "rgba(94,234,212,0.4)" }}>TCS · v2.1 · Active</div>
+                  </div>
+                  <div className="ml-auto flex gap-1">
+                    {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: "#4ade80", animation: `tcs-pulse 1.2s ${i * 0.3}s ease-in-out infinite` }} />)}
+                  </div>
+                </div>
+
+                {/* Step list */}
+                <div className="space-y-2.5">
+                  {[
+                    "Searching INCI database…",
+                    "Checking EU Cosmetics Regulation…",
+                    "Pulling pricing from Nykaa & Amazon…",
+                    "Reviewing user ratings…",
+                    "Applying Clean Sheet™ scoring framework…",
+                  ].map((step, i) => {
+                    const done = i < stepIdx;
+                    const active = i === stepIdx;
+                    return (
+                      <div key={step} className="flex items-center gap-3"
+                        style={{ opacity: done || active ? 1 : 0.25, animation: active ? "tcs-step 0.3s ease both" : "none" }}>
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{ background: done ? "rgba(74,222,128,0.2)" : active ? "rgba(94,234,212,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${done ? "#4ade80" : active ? "#5eead4" : "rgba(255,255,255,0.1)"}` }}>
+                          {done
+                            ? <span style={{ fontSize: 8, color: "#4ade80" }}>✓</span>
+                            : active
+                              ? <span className="w-1.5 h-1.5 rounded-full block animate-pulse" style={{ background: "#5eead4" }} />
+                              : null}
+                        </div>
+                        <span className="text-xs font-mono" style={{ color: done ? "#4ade80" : active ? "#5eead4" : "rgba(255,255,255,0.25)" }}>{step}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p className="mt-6 text-[11px] font-mono text-center" style={{ color: "rgba(255,255,255,0.2)" }}>
+                  Searching INCI databases, scientific literature &amp; regulatory lists
+                </p>
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* ── Out of scope / error ── */}
+      {/* ── Out of scope ── */}
       {(outOfScope || analyzeError) && !isAnalyzing && (
         <section className="px-4 pb-10">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-teal-50 border border-teal-200 rounded-3xl p-7 text-center">
-              <p className="text-2xl mb-3">🧴</p>
-              <p className="text-ink-900 font-normal text-base mb-2">
-                This one&apos;s outside my lane
-              </p>
-              <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto">
-                The Clean Sheet™ is built exclusively for beauty and personal care.
-                Try asking about a skincare product, a cosmetic ingredient, or a haircare brand
-                and I&apos;ll give you the full science.
+            <div className="rounded-3xl p-8 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <p className="text-3xl mb-4">🧴</p>
+              <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>This one&apos;s outside my lane</p>
+              <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+                The Clean Sheet™ is built exclusively for beauty and personal care. Try asking about a skincare product, a cosmetic ingredient, or a haircare brand.
               </p>
               <button
                 onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
-                className="mt-5 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-full transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
+                style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
               >
                 Try a beauty product →
               </button>
@@ -853,22 +877,20 @@ export default function AnalyzerPage() {
         </section>
       )}
 
-      {/* ── Scorecard / Comparison / Expert Answer ── */}
-      {(scorecard || comparison || expertAnswer) && !isAnalyzing && (
+      {/* ── Results ── */}
+      {hasResult && !isAnalyzing && (
         <section className="px-4 pb-6">
           <div className="max-w-2xl mx-auto">
-
-            {/* Reset button */}
             <div className="flex items-center justify-between mb-4">
-              <p className="text-xs text-ink-400">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.4)" }}>
                 {comparison ? "Clean Sheet™ Comparison" : expertAnswer ? "Clean Sheet™ Expert Answer" : "Clean Sheet™ Transparency Scorecard"}
               </p>
               <button
                 onClick={() => { setScorecard(null); setComparison(null); setExpertAnswer(null); setQuery(""); setChatMessages([]); }}
-                className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 font-medium"
+                className="flex items-center gap-1.5 text-xs font-mono transition-colors"
+                style={{ color: "rgba(94,234,212,0.5)" }}
               >
-                <RotateCcw size={12} />
-                New search
+                <RotateCcw size={11} /> New analysis
               </button>
             </div>
 
@@ -880,36 +902,36 @@ export default function AnalyzerPage() {
       )}
 
       {/* ── Chat ── */}
-      {(scorecard || comparison || expertAnswer) && !isAnalyzing && (
+      {hasResult && !isAnalyzing && (
         <section className="px-4 pb-16">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-              {/* Chat header */}
-              <div className="px-6 py-4 border-b border-teal-50 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-teal-800 flex items-center justify-center">
-                  <MessageSquare size={14} className="text-teal-200" />
+            <div className="rounded-3xl overflow-hidden" style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {/* Header */}
+              <div className="px-6 py-4 border-b flex items-center gap-3" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
+                  <MessageSquare size={14} style={{ color: "#5eead4" }} />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-ink-900">Ask the Ingredient Expert</div>
-                  <div className="text-xs text-ink-400">Powered by The Clean Sheet™ Science Engine</div>
+                  <div className="text-sm font-medium" style={{ color: "#f0fdfa" }}>Ask the Ingredient Expert</div>
+                  <div className="text-[10px] font-mono" style={{ color: "rgba(94,234,212,0.4)" }}>Powered by The Clean Sheet™ Science Engine</div>
+                </div>
+                <div className="ml-auto flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 </div>
               </div>
 
               {/* Messages */}
               <div className="p-4 space-y-4 max-h-72 sm:max-h-96 overflow-y-auto">
-                {chatMessages.map((m) => (
-                  <ChatBubble key={m.id} msg={m} />
-                ))}
+                {chatMessages.map((m) => <ChatBubble key={m.id} msg={m} />)}
                 {isChatting && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-xl bg-teal-800 flex items-center justify-center flex-shrink-0">
-                      <Sparkles size={13} className="text-teal-200" />
+                    <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
+                      <Sparkles size={13} style={{ color: "#5eead4" }} />
                     </div>
-                    <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3">
+                    <div className="rounded-2xl px-4 py-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
                       <div className="flex gap-1.5">
-                        {[0, 1, 2].map((i) => (
-                          <span key={i} className="w-2 h-2 rounded-full bg-teal-400 animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
-                        ))}
+                        {[0,1,2].map(i => <span key={i} className="w-2 h-2 rounded-full animate-bounce" style={{ background: "#5eead4", animationDelay: `${i * 150}ms` }} />)}
                       </div>
                     </div>
                   </div>
@@ -917,8 +939,8 @@ export default function AnalyzerPage() {
                 <div ref={chatBottomRef} />
               </div>
 
-              {/* Chat input */}
-              <div className="px-4 pb-4 border-t border-teal-50 pt-3">
+              {/* Input */}
+              <div className="px-4 pb-4 pt-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                 <div className="flex gap-2">
                   <input
                     ref={chatInputRef}
@@ -927,15 +949,19 @@ export default function AnalyzerPage() {
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={handleChatKey}
                     placeholder="Ask about ingredients, safety, skin type…"
-                    className="flex-1 bg-teal-50 border border-teal-100 focus:border-teal-300 rounded-xl px-4 py-2.5 text-sm text-ink-800 placeholder-ink-400 outline-none transition-colors"
+                    className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-all font-mono"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(94,234,212,0.15)", color: "#f0fdfa" }}
+                    onFocus={(e) => e.currentTarget.style.border = "1px solid rgba(94,234,212,0.35)"}
+                    onBlur={(e) => e.currentTarget.style.border = "1px solid rgba(94,234,212,0.15)"}
                     disabled={isChatting}
                   />
                   <button
                     onClick={sendChat}
                     disabled={!chatInput.trim() || isChatting}
-                    className="bg-teal-600 hover:bg-teal-700 disabled:bg-teal-200 text-white rounded-xl px-4 py-2.5 transition-colors"
+                    className="rounded-xl px-4 py-2.5 transition-all"
+                    style={{ background: chatInput.trim() && !isChatting ? "#14b8a6" : "rgba(255,255,255,0.06)", color: "#f0fdfa" }}
                   >
-                    <Send size={16} />
+                    <Send size={15} />
                   </button>
                 </div>
               </div>
@@ -943,17 +969,15 @@ export default function AnalyzerPage() {
 
             {/* WhatsApp CTA */}
             {process.env.NEXT_PUBLIC_WHATSAPP_URL && process.env.NEXT_PUBLIC_WHATSAPP_URL !== "https://chat.whatsapp.com/YOUR_LINK_HERE" && (
-              <div className="mt-4 bg-gradient-to-r from-teal-800 to-teal-900 rounded-3xl p-5 flex items-center justify-between gap-4">
+              <div className="mt-4 rounded-3xl p-5 flex items-center justify-between gap-4"
+                style={{ background: "linear-gradient(135deg,#0d2b27,#0f3d38)", border: "1px solid rgba(94,234,212,0.15)" }}>
                 <div>
-                  <div className="font-medium text-white text-sm mb-0.5">Join the Clean Sheet™ Community</div>
-                  <div className="text-teal-200 text-xs">1000+ members discussing ingredient safety, product reviews, and clean beauty in India.</div>
+                  <div className="font-medium text-sm mb-0.5" style={{ color: "#f0fdfa" }}>Join the Clean Sheet™ Community</div>
+                  <div className="text-xs" style={{ color: "rgba(153,246,228,0.5)" }}>1000+ members discussing ingredient safety and clean beauty in India.</div>
                 </div>
-                <a
-                  href={process.env.NEXT_PUBLIC_WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0 bg-white text-teal-800 font-medium text-sm px-4 py-2 rounded-xl hover:bg-teal-50 transition-colors flex items-center gap-1.5"
-                >
+                <a href={process.env.NEXT_PUBLIC_WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
+                  className="flex-shrink-0 text-sm font-medium px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
+                  style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}>
                   Join <ExternalLink size={13} />
                 </a>
               </div>
@@ -962,23 +986,25 @@ export default function AnalyzerPage() {
         </section>
       )}
 
-      {/* ── Empty state footer ── */}
-      {!scorecard && !comparison && !expertAnswer && !isAnalyzing && (
-        <section className="px-4 pb-20 pt-3">
+      {/* ── Empty state ── */}
+      {!hasResult && !isAnalyzing && (
+        <section className="px-4 pb-20 pt-2">
           <div className="max-w-2xl mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { icon: Shield, title: "Product Analysis", desc: "Score any beauty product across 6 safety pillars with real INCI data" },
-                { icon: Globe, title: "Comparisons", desc: "Ask 'X or Y for my skin type?' and get a head-to-head verdict" },
+                { icon: Globe,  title: "Comparisons",      desc: "Ask 'X or Y for my skin type?' and get a head-to-head verdict" },
                 { icon: FlaskConical, title: "Ingredient Questions", desc: "Is this ingredient safe? Answered with EU, India & CIR science" },
               ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="bg-white rounded-2xl border border-teal-100 p-4 sm:p-5 flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0">
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center flex-shrink-0 sm:mx-auto sm:mb-3">
-                    <Icon size={18} className="text-teal-600" />
+                <div key={title} className="rounded-2xl p-5 flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 transition-all"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 sm:mx-auto sm:mb-3"
+                    style={{ background: "rgba(94,234,212,0.08)", border: "1px solid rgba(94,234,212,0.15)" }}>
+                    <Icon size={17} style={{ color: "#5eead4" }} />
                   </div>
                   <div>
-                    <div className="font-medium text-ink-900 text-sm mb-1">{title}</div>
-                    <p className="text-xs text-ink-500 leading-relaxed">{desc}</p>
+                    <div className="font-medium text-sm mb-1" style={{ color: "#f0fdfa" }}>{title}</div>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{desc}</p>
                   </div>
                 </div>
               ))}
