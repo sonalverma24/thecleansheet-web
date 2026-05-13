@@ -4,6 +4,20 @@ import { CLEAN_SHEET_SYSTEM_PROMPT, COMPARISON_SYSTEM_PROMPT, EXPERT_ANSWER_SYST
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
+// Module-level result cache — persists across requests within the same server process.
+// Keyed by normalized query string so the same product always returns the same scorecard.
+const RESULT_CACHE = new Map<string, object>();
+
+function normalizeCacheKey(input: string): string {
+  try {
+    // For URLs: strip fragment + trailing slashes, lowercase
+    const url = new URL(input);
+    return `${url.protocol}//${url.host}${url.pathname}`.toLowerCase().replace(/\/+$/, "");
+  } catch {
+    return input.toLowerCase().trim();
+  }
+}
+
 function isURL(text: string): boolean {
   try {
     const url = new URL(text.trim());
@@ -201,12 +215,19 @@ export async function POST(req: Request) {
         ? EXPERT_ANSWER_SYSTEM_PROMPT
         : CLEAN_SHEET_SYSTEM_PROMPT;
 
+    // Check cache before calling Gemini — same product always returns the same scorecard
+    const cacheKey = normalizeCacheKey(urlInput || q);
+    const cached = RESULT_CACHE.get(cacheKey);
+    if (cached) {
+      return Response.json(cached);
+    }
+
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: [{ googleSearch: {} } as any],
       systemInstruction,
-      generationConfig: { temperature: 0.2 },
+      generationConfig: { temperature: 0 },
     });
 
     let prompt: string;
@@ -264,7 +285,9 @@ ${scrapedContext}`;
         const fallbackText = fallbackResult.response.text().trim();
         const fallbackParsed = parseJSON(fallbackText);
         if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
-          return Response.json({ type: "single", scorecard: fallbackParsed });
+          const body = { type: "single", scorecard: fallbackParsed };
+          RESULT_CACHE.set(cacheKey, body);
+          return Response.json(body);
         }
       }
       return outOfScope();
@@ -294,7 +317,9 @@ ${scrapedContext}`;
 
     // Comparison response
     if (isComparison && finalParsed.type === "comparison" && finalParsed.productA && finalParsed.productB) {
-      return Response.json({ type: "comparison", comparison: finalParsed });
+      const body = { type: "comparison", comparison: finalParsed };
+      RESULT_CACHE.set(cacheKey, body);
+      return Response.json(body);
     }
 
     // Validate scorecard has minimum required fields before returning
@@ -302,7 +327,9 @@ ${scrapedContext}`;
       return outOfScope();
     }
 
-    return Response.json({ type: "single", scorecard: finalParsed });
+    const body = { type: "single", scorecard: finalParsed };
+    RESULT_CACHE.set(cacheKey, body);
+    return Response.json(body);
   } catch (err: unknown) {
     console.error("[analyze]", err instanceof Error ? err.message : err);
     return outOfScope();
