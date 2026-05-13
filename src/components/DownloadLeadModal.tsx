@@ -30,7 +30,7 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
         body: JSON.stringify({ email: email.trim(), phone: phone.trim(), guide: guideName }),
       });
     } catch {
-      // Silently continue — user still gets their download
+      // Silently continue, user still gets their download
     }
 
     setDone(true);
@@ -68,8 +68,8 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
           {!done ? (
             <>
               <div className="mb-5">
-                <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">Free Download</p>
-                <h2 className="text-xl font-bold text-ink-950 leading-tight">
+                <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-1">Free Download</p>
+                <h2 className="text-xl font-medium text-ink-950 leading-tight">
                   The Clean Sheet™ Guide to {guideName}
                 </h2>
                 <p className="text-sm text-ink-500 mt-2 leading-relaxed">
@@ -79,7 +79,7 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-ink-700 mb-1.5">
+                  <label className="block text-xs font-normal text-ink-700 mb-1.5">
                     Email address <span className="text-coral-500">*</span>
                   </label>
                   <input
@@ -93,7 +93,7 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-ink-700 mb-1.5">
+                  <label className="block text-xs font-normal text-ink-700 mb-1.5">
                     Phone number <span className="text-ink-400 font-normal">(optional)</span>
                   </label>
                   <input
@@ -110,7 +110,7 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white font-bold py-3.5 rounded-xl transition-colors text-sm mt-1"
+                  className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-300 text-white font-medium py-3.5 rounded-xl transition-colors text-sm mt-1"
                 >
                   {loading ? (
                     <><Loader2 size={16} className="animate-spin" /> Preparing your guide…</>
@@ -129,13 +129,13 @@ export default function DownloadLeadModal({ guideName, guideFile: _guideFile, gu
               <div className="w-14 h-14 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 size={28} className="text-teal-600" />
               </div>
-              <h2 className="text-xl font-bold text-ink-950 mb-2">Your guide is downloading!</h2>
+              <h2 className="text-xl font-medium text-ink-950 mb-2">Your guide is downloading!</h2>
               <p className="text-sm text-ink-500 leading-relaxed mb-6">
                 The Clean Sheet™ Guide to {guideName} should appear in your downloads shortly.
               </p>
               <button
                 onClick={onClose}
-                className="text-sm font-semibold text-teal-600 hover:text-teal-800 transition-colors"
+                className="text-sm font-normal text-teal-600 hover:text-teal-800 transition-colors"
               >
                 Close
               </button>

@@ -48,7 +48,7 @@ export default function NineStepIllustration() {
       <circle cx="700" cy="80" r="130" fill="none" stroke="#0d9488" strokeWidth="1" strokeOpacity="0.15" />
       <circle cx="100" cy="520" r="150" fill="none" stroke="#f97316" strokeWidth="1" strokeOpacity="0.12" />
 
-      {/* Giant editorial "9" — background watermark */}
+      {/* Giant editorial "9", background watermark */}
       <text
         x="400" y="480"
         fontSize="520"
@@ -68,7 +68,7 @@ export default function NineStepIllustration() {
 
       {/* ── Products ── */}
 
-      {/* 1 — Tall pump bottle · coral */}
+      {/* 1, Tall pump bottle · coral */}
       <g filter="url(#softShadow)">
         <rect x="88" y="268" width="52" height="120" rx="10" fill="url(#coral1)" />
         {/* pump neck */}
@@ -81,7 +81,7 @@ export default function NineStepIllustration() {
         <rect x="95" y="323" width="20" height="3" rx="1" fill="#ffffff" fillOpacity="0.35" />
       </g>
 
-      {/* 2 — Squat cream jar · white/mint */}
+      {/* 2, Squat cream jar · white/mint */}
       <g filter="url(#softShadow)">
         <rect x="162" y="330" width="64" height="58" rx="14" fill="url(#white1)" />
         {/* lid */}
@@ -92,7 +92,7 @@ export default function NineStepIllustration() {
         <rect x="178" y="356" width="26" height="3" rx="1" fill="#0d9488" fillOpacity="0.2" />
       </g>
 
-      {/* 3 — Slim dropper serum · teal */}
+      {/* 3, Slim dropper serum · teal */}
       <g filter="url(#softShadow)">
         <rect x="251" y="248" width="38" height="140" rx="8" fill="url(#teal1)" />
         {/* dropper top */}
@@ -105,7 +105,7 @@ export default function NineStepIllustration() {
         <rect x="257" y="317" width="22" height="3" rx="1" fill="#ffffff" fillOpacity="0.3" />
       </g>
 
-      {/* 4 — Wide moisturiser tub · amber */}
+      {/* 4, Wide moisturiser tub · amber */}
       <g filter="url(#softShadow)">
         <rect x="308" y="308" width="82" height="80" rx="14" fill="url(#amber1)" />
         {/* lid */}
@@ -117,7 +117,7 @@ export default function NineStepIllustration() {
         <rect x="324" y="348" width="38" height="3" rx="1" fill="#92400e" fillOpacity="0.25" />
       </g>
 
-      {/* 5 — Tall slim bottle · blush */}
+      {/* 5, Tall slim bottle · blush */}
       <g filter="url(#softShadow)">
         <rect x="412" y="255" width="44" height="133" rx="9" fill="url(#blush1)" />
         {/* cap */}
@@ -129,7 +129,7 @@ export default function NineStepIllustration() {
         <rect x="419" y="327" width="26" height="3" rx="1" fill="#9f1239" fillOpacity="0.2" />
       </g>
 
-      {/* 6 — Spray bottle · coral dark */}
+      {/* 6, Spray bottle · coral dark */}
       <g filter="url(#softShadow)">
         <rect x="476" y="265" width="48" height="123" rx="10" fill="#f97316" />
         {/* trigger nozzle */}
@@ -141,7 +141,7 @@ export default function NineStepIllustration() {
         <rect x="484" y="333" width="24" height="3" rx="1" fill="#ffffff" fillOpacity="0.4" />
       </g>
 
-      {/* 7 — Mini eye cream box · teal dark */}
+      {/* 7, Mini eye cream box · teal dark */}
       <g filter="url(#softShadow)">
         <rect x="545" y="338" width="56" height="50" rx="8" fill="#0f766e" />
         {/* highlight edge */}
@@ -153,7 +153,7 @@ export default function NineStepIllustration() {
         <rect x="559" y="369" width="24" height="3" rx="1" fill="#5eead4" fillOpacity="0.35" />
       </g>
 
-      {/* 8 — Tall amber essence bottle */}
+      {/* 8, Tall amber essence bottle */}
       <g filter="url(#softShadow)">
         <rect x="618" y="242" width="42" height="146" rx="9" fill="url(#amber1)" />
         {/* neck */}
@@ -168,7 +168,7 @@ export default function NineStepIllustration() {
         <rect x="628" y="321" width="18" height="3" rx="1" fill="#78350f" fillOpacity="0.2" />
       </g>
 
-      {/* 9 — Small round pot · white teal */}
+      {/* 9, Small round pot · white teal */}
       <g filter="url(#softShadow)">
         <ellipse cx="714" cy="375" rx="34" ry="18" fill="#ccfbf1" />
         <rect x="680" y="358" width="68" height="30" rx="18" fill="url(#white1)" />
@@ -179,7 +179,7 @@ export default function NineStepIllustration() {
         <rect x="700" y="376" width="28" height="3" rx="1" fill="#0d9488" fillOpacity="0.3" />
       </g>
 
-      {/* ── Step count dots — 9 dots above products ── */}
+      {/* ── Step count dots, 9 dots above products ── */}
       {[102, 192, 268, 348, 432, 498, 572, 638, 714].map((cx, i) => (
         <circle key={i} cx={cx} cy={228} r={5} fill={i < 3 ? "#f97316" : "#5eead4"} fillOpacity={i < 3 ? 1 : 0.6} />
       ))}

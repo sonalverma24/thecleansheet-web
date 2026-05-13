@@ -49,8 +49,8 @@ export const SKIN_GUIDES: SkinGuide[] = [
     ],
     habits: [
       "Clean Scalp: Oily scalp oils can trickle down, causing forehead acne. Wash regularly.",
-      "Pillowcase Hygiene: Change every 2–3 days to avoid oil and bacteria buildup.",
-      "Separate Face Towel: Use a soft, microfiber towel strictly for the face. Wash it every 1–2 days.",
+      "Pillowcase Hygiene: Change every 2-3 days to avoid oil and bacteria buildup.",
+      "Separate Face Towel: Use a soft, microfiber towel strictly for the face. Wash it every 1-2 days.",
       "Oil Control: Keep blotting papers handy for mid-day shine instead of rewashing.",
       "Clay Masks: Use Bentonite or Multani Mitti before events to tighten pores and reduce oil.",
     ],
@@ -83,7 +83,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
         tips: [
           "Always choose Gel-based or Oil-free formulations. Avoid heavy occlusives.",
           "Moisturizer Ingredients: Hyaluronic Acid, Ceramide, Glycerin, Panthenol.",
-          "Sunscreens: Hybrid or pure chemical sunscreens are better — they don't leave a heavy white cast.",
+          "Sunscreens: Hybrid or pure chemical sunscreens are better, they don't leave a heavy white cast.",
           "Special Note: If you have severe active acne, temporarily skip sunscreen to avoid over-layering.",
         ],
       },
@@ -95,7 +95,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
     ],
     nightRoutine: [
       { step: 1, action: "Cleanser", detail: "Wash off the day's dirt and pollution." },
-      { step: 2, action: "Serum", detail: "Active treatment — Retinoid or Acid-based serum." },
+      { step: 2, action: "Serum", detail: "Active treatment, Retinoid or Acid-based serum." },
       { step: 3, action: "Moisturizer", detail: "Light gel-based formula to repair the skin." },
     ],
     checklist: [
@@ -134,16 +134,16 @@ export const SKIN_GUIDES: SkinGuide[] = [
     habits: [
       "Damp Skin Rule: Always apply moisturizer while the skin is still slightly damp to seal in hydration.",
       "The Morning Skip: If your skin is very dry, skip cleanser in the morning and wash with plain water only.",
-      "Short Showers: Keep showers under 2 minutes — longer exposure to water dries the skin further.",
+      "Short Showers: Keep showers under 2 minutes, longer exposure to water dries the skin further.",
       "Night Baths: Showering at night removes dust and allergens that cause itching during sleep.",
       "Humidifier: Using one in winter helps maintain moisture levels, especially for those with dermatitis.",
     ],
     mistakes: [
-      "Hot Water: Never wash your face or body with hot water — use lukewarm or room temperature water.",
+      "Hot Water: Never wash your face or body with hot water, use lukewarm or room temperature water.",
       "Harsh Towel Use: Do not rub or pull at the skin. Gently pat dry with a soft towel.",
       "Multiple Products: Avoid skincare maximalism. A damaged barrier is easily irritated by too many actives.",
       "Over-exfoliating: Avoid strong AHAs/BHAs. If necessary, use a very mild lactic acid.",
-      "Wool Sensitivity: Never let wool touch dry skin directly — always wear a cotton layer underneath.",
+      "Wool Sensitivity: Never let wool touch dry skin directly, always wear a cotton layer underneath.",
     ],
     ingredientSections: [
       {
@@ -151,7 +151,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
         tips: [
           "Cleansers: Gentle, non-foaming formulas with Glycerin or Ceramides.",
           "Hydrating Serums: Niacinamide, Hyaluronic Acid, Panthenol, and Centella Asiatica.",
-          "Brightening: Kojic Acid or Alpha Arbutin — must be mixed with moisturizers.",
+          "Brightening: Kojic Acid or Alpha Arbutin, must be mixed with moisturizers.",
         ],
       },
       {
@@ -167,13 +167,13 @@ export const SKIN_GUIDES: SkinGuide[] = [
         tips: [
           "Key Ingredients: Ceramides, Shea Butter, Cocoa Butter, Dimethicone, and Squalane.",
           "Body Care: Seal your body moisturizer with a layer of Coconut Oil for extra protection.",
-          "Sunscreens: Creamy or lotion-based formulations — avoid gels that might be too drying.",
+          "Sunscreens: Creamy or lotion-based formulations, avoid gels that might be too drying.",
         ],
       },
     ],
     morningRoutine: [
       { step: 1, action: "Cleanse", detail: "Plain water, or a very gentle cleanser if needed." },
-      { step: 2, action: "Serum", detail: "Hydrating serum — Hyaluronic Acid or Niacinamide." },
+      { step: 2, action: "Serum", detail: "Hydrating serum, Hyaluronic Acid or Niacinamide." },
       { step: 3, action: "Sunscreen", detail: "Creamy SPF 30 or SPF 50." },
     ],
     nightRoutine: [
@@ -193,7 +193,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
     title: "Combination Skin Care Guide",
     skinType: "Combination Skin",
     tagline: "Balance an oily T-zone and dry cheeks without compromising either area.",
-    silverLining: "Combination skin gives you flexibility — you can use targeted treatments for different zones, which often leads to a more refined and balanced complexion over time.",
+    silverLining: "Combination skin gives you flexibility, you can use targeted treatments for different zones, which often leads to a more refined and balanced complexion over time.",
     accentFrom: "from-teal-500",
     accentTo: "to-teal-800",
     causes: [
@@ -210,19 +210,19 @@ export const SKIN_GUIDES: SkinGuide[] = [
         items: [
           "Oily skin products may make cheeks too dry.",
           "Dry skin products may make the T-zone too shiny and acne-prone.",
-          "Requires 'titration' — using different product types for different zones.",
+          "Requires 'titration', using different product types for different zones.",
         ],
       },
     ],
     habits: [
       "Zone Washing: Focus active cleansers on the oily T-zone first, leave for 30 seconds, then use the residue on cheeks before rinsing.",
       "Multi-Masking: Use clay masks (Multani Mitti) only on the T-zone and hydrating masks on the cheeks.",
-      "Scalp Health: Wash your scalp at least 3× a week — scalp oil and dandruff often cause forehead and chin acne.",
+      "Scalp Health: Wash your scalp at least 3× a week, scalp oil and dandruff often cause forehead and chin acne.",
       "Spot Treatment: Apply acne medication only to active spots, not the whole face.",
-      "Pillow & Towel Care: Change pillowcases every 2–3 days and use a dedicated soft face towel.",
+      "Pillow & Towel Care: Change pillowcases every 2-3 days and use a dedicated soft face towel.",
     ],
     mistakes: [
-      "Over-washing: Limit face wash to twice daily — excessive washing triggers more oil production.",
+      "Over-washing: Limit face wash to twice daily, excessive washing triggers more oil production.",
       "Alcohol-based Toners: They offer a temporary matte look but eventually dehydrate the skin.",
       "Physical Scrubs: Avoid gritty scrubs that cause micro-tears and redness.",
       "Constant Touching: Bacteria cycle between your nails and pores, leading to more breakouts.",
@@ -234,7 +234,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
         tips: [
           "Cleansers: Gentle formulas. For oily T-zones, use Mandelic or Lactic Acid based washes.",
           "Oil-Control Serums: Niacinamide or Zinc PCA regulate oil without severe drying.",
-          "T-Zone Actives: Salicylic Acid — use primarily on the oily forehead and nose areas.",
+          "T-Zone Actives: Salicylic Acid, use primarily on the oily forehead and nose areas.",
         ],
       },
       {
@@ -248,26 +248,26 @@ export const SKIN_GUIDES: SkinGuide[] = [
       {
         heading: "Dietary Triggers",
         tips: [
-          "Avoid high glycemic triggers — sugar, processed foods, and excessive dairy spike hormone levels (IGF-1), increasing oil and acne in the T-zone.",
+          "Avoid high glycemic triggers, sugar, processed foods, and excessive dairy spike hormone levels (IGF-1), increasing oil and acne in the T-zone.",
         ],
       },
     ],
     morningRoutine: [
-      { step: 1, action: "Cleanse", detail: "Gentle face wash — focus on the T-zone." },
+      { step: 1, action: "Cleanse", detail: "Gentle face wash, focus on the T-zone." },
       { step: 2, action: "Serum", detail: "Niacinamide or Zinc PCA." },
       { step: 3, action: "Sunscreen", detail: "Lightweight Gel-based SPF." },
     ],
     nightRoutine: [
       { step: 1, action: "Cleanse", detail: "Thorough wash to remove dirt and pollution." },
       { step: 2, action: "Serum", detail: "Treatment serum (if needed) or Niacinamide." },
-      { step: 3, action: "Moisturize", detail: "Creamy moisturizer — focused on the cheeks." },
+      { step: 3, action: "Moisturize", detail: "Creamy moisturizer, focused on the cheeks." },
     ],
     checklist: [
       "Treat your T-zone and cheeks as two different skin types.",
       "Don't use face wash more than 2× a day.",
       "Use gel products for the day and creamier ones for the night.",
       "Avoid milk and sugar if you are prone to acne.",
-      "Air-dry your face or pat very gently — never rub.",
+      "Air-dry your face or pat very gently, never rub.",
     ],
   },
   {
@@ -275,7 +275,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
     title: "Normal Skin Care Guide",
     skinType: "Normal Skin",
     tagline: "Maintain your skin's natural balance and protect it from premature ageing with a simple, consistent routine.",
-    silverLining: "Normal skin is the most forgiving skin type — it responds well to a wide range of products and can achieve excellent long-term results with minimal effort.",
+    silverLining: "Normal skin is the most forgiving skin type, it responds well to a wide range of products and can achieve excellent long-term results with minimal effort.",
     accentFrom: "from-teal-300",
     accentTo: "to-teal-600",
     causes: [
@@ -297,17 +297,17 @@ export const SKIN_GUIDES: SkinGuide[] = [
     ],
     habits: [
       "Gentle Cleaning: Use non-foaming, creamy cleansers. Always dampen the face first with room-temperature water.",
-      "The Coin Size Rule: Use a coin-sized amount of cleanser. Don't over-wash — twice a day is the limit.",
-      "Sunscreen Re-application: Every 2 hours outdoors. Mostly indoors? Apply at 9–10 AM and again at 2–3 PM.",
-      "Sleep & Diet: Skincare won't work effectively without 7–8 hours of sleep, regular exercise, and a balanced diet.",
+      "The Coin Size Rule: Use a coin-sized amount of cleanser. Don't over-wash, twice a day is the limit.",
+      "Sunscreen Re-application: Every 2 hours outdoors. Mostly indoors? Apply at 9-10 AM and again at 2-3 PM.",
+      "Sleep & Diet: Skincare won't work effectively without 7-8 hours of sleep, regular exercise, and a balanced diet.",
       "Skip Morning Wash: If your skin feels balanced or slightly dry, skip cleanser in the morning and use water only.",
     ],
     mistakes: [
       "Starting with Serums: Never jump to serums before fixing your Cleanser-Moisturizer-Sunscreen pillars.",
       "Using Warm Water: Warm or hot water strips essential lipids even from normal skin.",
-      "Skincare Overload: Using 10+ products is unnecessary. 3–4 well-chosen products are sufficient.",
+      "Skincare Overload: Using 10+ products is unnecessary. 3-4 well-chosen products are sufficient.",
       "Harsh Home Remedies: Avoid scrubbing your face with kitchen ingredients like lemon or gritty sugars.",
-      "Giving Up Early: Real changes take at least 2 months. Peak results often take 3–4 months.",
+      "Giving Up Early: Real changes take at least 2 months. Peak results often take 3-4 months.",
     ],
     ingredientSections: [
       {
@@ -339,7 +339,7 @@ export const SKIN_GUIDES: SkinGuide[] = [
       { step: 1, action: "Cleanse", detail: "Gentle non-foaming face wash." },
       { step: 2, action: "Serum", detail: "Vitamin C or Niacinamide (if staying indoors)." },
       { step: 3, action: "Moisturize", detail: "Light lotion or cream." },
-      { step: 4, action: "Sunscreen", detail: "Essential final step — SPF 30 minimum." },
+      { step: 4, action: "Sunscreen", detail: "Essential final step, SPF 30 minimum." },
     ],
     nightRoutine: [
       { step: 1, action: "Cleanse", detail: "Thorough wash to remove daily pollution." },

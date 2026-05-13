@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Mail, Phone, Globe, MessageSquare } from "lucide-react";
+import { Mail, Phone, Globe, MessageSquare, ArrowRight } from "lucide-react";
 
 export const metadata = {
   title: "Contact | The Clean Sheet™",
-  description: "Get in touch with The Clean Sheet™ for enquiries, brand certification, press, and feedback.",
+  description: "Get in touch with The Clean Sheet™ for brand certification enquiries, consumer questions, or press.",
 };
 
 export default function ContactPage() {
@@ -12,16 +12,114 @@ export default function ContactPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
 
         <div className="mb-12">
-          <p className="text-teal-600 text-xs font-semibold uppercase tracking-widest mb-3">Get in touch</p>
-          <h1 className="text-4xl font-bold text-ink-950 tracking-tight mb-4">Contact Us</h1>
+          <p className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-3">Get in touch</p>
+          <h1 className="text-4xl font-medium text-ink-950 tracking-tight mb-4">Contact Us</h1>
           <p className="text-ink-500 text-lg max-w-xl">
-            Whether you&apos;re a consumer with a question, a brand exploring certification, or press, we&apos;d love to hear from you.
+            Whether you&apos;re a brand exploring certification, a consumer with a question, or press, we&apos;ll get back to you within 2 business days.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6 mb-14">
+        {/* Reason cards with separate emails */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-14">
+          {[
+            {
+              icon: Globe,
+              title: "For Brands",
+              desc: "Interested in certifying a product or want to understand the process before committing?",
+              email: "hello@thecleansheet.in",
+              cta: "#get-certified",
+              ctaLabel: "Apply for Certification →",
+            },
+            {
+              icon: MessageSquare,
+              title: "For Consumers",
+              desc: "Questions about a certified product, or want to report something about a brand?",
+              email: "hello@thecleansheet.in",
+            },
+            {
+              icon: Mail,
+              title: "Press & Media",
+              desc: "Interviews, data requests, editorial collaborations, and partnerships.",
+              email: "hello@thecleansheet.in",
+            },
+          ].map(({ icon: Icon, title, desc, email, cta, ctaLabel }) => (
+            <div key={title} className="bg-white border border-ink-100 rounded-3xl p-6 hover:border-teal-200 hover:shadow-md transition-all duration-200">
+              <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
+                <Icon size={16} className="text-teal-600" />
+              </div>
+              <h3 className="font-medium text-ink-950 text-sm mb-2">{title}</h3>
+              <p className="text-ink-500 text-xs leading-relaxed mb-3">{desc}</p>
+              <a href={`mailto:${email}`} className="text-teal-600 text-xs font-normal hover:underline block mb-2">
+                {email}
+              </a>
+              {cta && (
+                <Link href={cta} className="text-coral-500 text-xs font-normal hover:underline">
+                  {ctaLabel}
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
 
-          {/* Email */}
+        {/* Contact form */}
+        <div className="mb-14">
+          <h2 className="text-xl font-medium text-ink-950 mb-6">Send us a message</h2>
+          <form className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-normal text-ink-600 uppercase tracking-wide mb-1.5">Name</label>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  className="w-full border border-ink-200 rounded-2xl px-4 py-3 text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-normal text-ink-600 uppercase tracking-wide mb-1.5">Company</label>
+                <input
+                  type="text"
+                  placeholder="Brand or company name (optional)"
+                  className="w-full border border-ink-200 rounded-2xl px-4 py-3 text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-normal text-ink-600 uppercase tracking-wide mb-1.5">Email</label>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                className="w-full border border-ink-200 rounded-2xl px-4 py-3 text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-normal text-ink-600 uppercase tracking-wide mb-1.5">What are you enquiring about?</label>
+              <select className="w-full border border-ink-200 rounded-2xl px-4 py-3 text-sm text-ink-900 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors bg-white">
+                <option value="">Select an option</option>
+                <option value="brand-certification">Brand certification</option>
+                <option value="consumer-question">Consumer question</option>
+                <option value="press">Press &amp; media</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-normal text-ink-600 uppercase tracking-wide mb-1.5">Message</label>
+              <textarea
+                rows={5}
+                placeholder="Tell us what you're looking for..."
+                className="w-full border border-ink-200 rounded-2xl px-4 py-3 text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-400 transition-colors resize-none"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-lg active:scale-[0.98]"
+            >
+              Send message <ArrowRight size={15} />
+            </button>
+          </form>
+        </div>
+
+        {/* Direct contact */}
+        <div className="grid sm:grid-cols-2 gap-6 mb-14">
           <a
             href="mailto:hello@thecleansheet.in"
             className="group flex items-start gap-4 bg-teal-50 hover:bg-teal-100 border border-teal-100 hover:border-teal-200 rounded-3xl p-6 transition-all duration-200"
@@ -30,13 +128,12 @@ export default function ContactPage() {
               <Mail size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-teal-600 mb-1">Email</p>
-              <p className="font-semibold text-ink-950 text-sm">hello@thecleansheet.in</p>
-              <p className="text-ink-400 text-xs mt-1">We respond within 1–2 business days</p>
+              <p className="text-xs font-normal uppercase tracking-widest text-teal-600 mb-1">General</p>
+              <p className="font-normal text-ink-950 text-sm">hello@thecleansheet.in</p>
+              <p className="text-ink-400 text-xs mt-1">We respond within 2 business days</p>
             </div>
           </a>
 
-          {/* Phone */}
           <a
             href="tel:+919704443566"
             className="group flex items-start gap-4 bg-ink-50 hover:bg-ink-100 border border-ink-100 hover:border-ink-200 rounded-3xl p-6 transition-all duration-200"
@@ -45,59 +142,16 @@ export default function ContactPage() {
               <Phone size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-500 mb-1">Phone / WhatsApp</p>
-              <p className="font-semibold text-ink-950 text-sm">+91-9704443566</p>
-              <p className="text-ink-400 text-xs mt-1">Mon–Fri, 10 AM – 6 PM IST</p>
+              <p className="text-xs font-normal uppercase tracking-widest text-ink-500 mb-1">Phone / WhatsApp</p>
+              <p className="font-normal text-ink-950 text-sm">+91-9704443566</p>
+              <p className="text-ink-400 text-xs mt-1">Mon-Fri, 10 AM to 6 PM IST</p>
             </div>
           </a>
-
-        </div>
-
-        {/* Reason cards */}
-        <div className="mb-14">
-          <h2 className="text-xl font-bold text-ink-950 mb-6">What are you reaching out about?</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              {
-                icon: MessageSquare,
-                title: "General Enquiry",
-                desc: "Questions about our platform, methodology, or a specific analysis.",
-                email: "hello@thecleansheet.in",
-              },
-              {
-                icon: Globe,
-                title: "Brand & Certification",
-                desc: "Interested in getting your product certified? Let's talk.",
-                email: "hello@thecleansheet.in",
-                cta: "#get-certified",
-                ctaLabel: "Apply for Certification →",
-              },
-              {
-                icon: Mail,
-                title: "Press & Media",
-                desc: "Interviews, data requests, editorial collaborations, and partnerships.",
-                email: "hello@thecleansheet.in",
-              },
-            ].map(({ icon: Icon, title, desc, cta, ctaLabel }) => (
-              <div key={title} className="bg-white border border-ink-100 rounded-3xl p-6">
-                <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
-                  <Icon size={16} className="text-teal-600" />
-                </div>
-                <h3 className="font-bold text-ink-950 text-sm mb-2">{title}</h3>
-                <p className="text-ink-500 text-xs leading-relaxed mb-3">{desc}</p>
-                {cta && (
-                  <Link href={cta} className="text-teal-600 text-xs font-semibold hover:underline">
-                    {ctaLabel}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Social */}
         <div className="mb-14">
-          <h2 className="text-xl font-bold text-ink-950 mb-6">Follow us</h2>
+          <h2 className="text-xl font-medium text-ink-950 mb-6">Follow us</h2>
           <div className="flex flex-wrap gap-4">
             <a href="https://thecleansheet.in" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 border border-ink-200 hover:border-teal-400 hover:bg-teal-50 text-ink-600 hover:text-teal-700 text-sm font-medium px-4 py-2.5 rounded-2xl transition-all duration-200">
@@ -118,8 +172,8 @@ export default function ContactPage() {
 
         {/* Legal notice */}
         <div className="bg-ink-50 border border-ink-100 rounded-3xl p-6 text-xs text-ink-400 leading-relaxed">
-          <p className="font-semibold text-ink-600 mb-1">The Clean Sheet™</p>
-          <p>Est. 2025 · India&apos;s first independent beauty and personal care certification platform.</p>
+          <p className="font-normal text-ink-600 mb-1">The Clean Sheet™</p>
+          <p>Est. 2025 · India&apos;s first independent beauty and personal care certification body.</p>
           <p className="mt-2">
             For legal notices, please write to{" "}
             <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:underline">hello@thecleansheet.in</a>{" "}

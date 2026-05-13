@@ -11,8 +11,8 @@ export default function TermsOfUsePage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
 
         <div className="mb-12">
-          <p className="text-teal-600 text-xs font-semibold uppercase tracking-widest mb-3">Legal</p>
-          <h1 className="text-4xl font-bold text-ink-950 tracking-tight mb-4">Terms of Use</h1>
+          <p className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-3">Legal</p>
+          <h1 className="text-4xl font-medium text-ink-950 tracking-tight mb-4">Terms of Use</h1>
           <p className="text-ink-400 text-sm">Last updated: April 2026 &nbsp;·&nbsp; Effective: April 2026</p>
         </div>
 
@@ -139,7 +139,7 @@ export default function TermsOfUsePage() {
 
           <Section title="12. Contact">
             <div className="bg-teal-50 border border-teal-100 rounded-2xl p-5 text-sm space-y-1">
-              <p className="font-semibold text-ink-950">The Clean Sheet™</p>
+              <p className="font-normal text-ink-950">The Clean Sheet™</p>
               <p>Email: <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:underline">hello@thecleansheet.in</a></p>
               <p>Phone: <a href="tel:+919704443566" className="text-teal-600 hover:underline">+91-9704443566</a></p>
             </div>
@@ -161,7 +161,7 @@ export default function TermsOfUsePage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-lg font-bold text-ink-950 mb-3">{title}</h2>
+      <h2 className="text-lg font-medium text-ink-950 mb-3">{title}</h2>
       {children}
     </section>
   );

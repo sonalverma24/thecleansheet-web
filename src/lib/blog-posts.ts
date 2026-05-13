@@ -157,7 +157,7 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "cta",
         text: "Want to know if the products in your routine are actually doing anything?",
         href: "/analyzer",
-        label: "Ask Clean — Check Your Ingredients",
+        label: "Ask Clean, Check Your Ingredients",
       },
     ],
   },
@@ -210,11 +210,11 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "bullets",
         items: [
-          "\"Chemical-free\" — Scientifically impossible. A marketing fabrication. Full stop.",
-          "\"100% natural\" — Requires full ingredient substantiation. Most brands cannot back this up.",
-          "\"Dermatologist tested\" — Tested how? By one dermatologist in a room? On how many people? This claim is meaningless without specifics.",
-          "\"Clinically proven\" — Proven by what clinical trial? Where's the paper? If there's no citation, it's decoration.",
-          "\"Paraben-free\" used as a selling point — Regulators are now flagging this as fearmongering. Parabens at regulated levels are considered safe. Using their absence as a premium badge is increasingly scrutinised.",
+          "\"Chemical-free\", Scientifically impossible. A marketing fabrication. Full stop.",
+          "\"100% natural\", Requires full ingredient substantiation. Most brands cannot back this up.",
+          "\"Dermatologist tested\", Tested how? By one dermatologist in a room? On how many people? This claim is meaningless without specifics.",
+          "\"Clinically proven\", Proven by what clinical trial? Where's the paper? If there's no citation, it's decoration.",
+          "\"Paraben-free\" used as a selling point, Regulators are now flagging this as fearmongering. Parabens at regulated levels are considered safe. Using their absence as a premium badge is increasingly scrutinised.",
         ],
       },
       {
@@ -249,13 +249,13 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "Regulation is catching up, but it's not here yet. For the next 12–18 months, compliant and non-compliant products will sit side-by-side on the same shelves and in the same Instagram ads. So here's what you can do right now:",
+        text: "Regulation is catching up, but it's not here yet. For the next 12-18 months, compliant and non-compliant products will sit side-by-side on the same shelves and in the same Instagram ads. So here's what you can do right now:",
       },
       {
         type: "bullets",
         items: [
           "Learn to read the INCI list. It's the real ingredient list, not the marketing version. Every product sold in India must have one. If you can't find it, that's already a red flag.",
-          "Ask what's been tested. Not \"is it tested\" — everything is technically \"tested.\" Ask what was tested, how, and by whom. A brand that's done the work will have answers.",
+          "Ask what's been tested. Not \"is it tested\", everything is technically \"tested.\" Ask what was tested, how, and by whom. A brand that's done the work will have answers.",
           "Look for third-party verification. BIS marks, independent lab certifications, published safety assessments. If the only proof of quality is the brand's own Instagram caption, that's not proof.",
           "Stop rewarding aesthetic over evidence. A gorgeous label and a clean brand identity are not substitutes for formulation transparency. Some of the safest products on the market have the ugliest packaging.",
         ],
@@ -281,7 +281,7 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "cta",
         text: "Not sure what's actually in your products?",
         href: "/analyzer",
-        label: "Ask Clean — Check Your Ingredients",
+        label: "Ask Clean, Check Your Ingredients",
       },
     ],
   },
@@ -311,7 +311,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "In the EU, the Cosmetics Regulation has always required that claims be truthful, evidenced, and fair. But enforcement was inconsistent. In 2025–2026, that changed. The European Commission issued updated guidance specifically targeting 'green claims', words like natural, eco, clean, and sustainable, requiring brands to substantiate each one with documented evidence.",
+        text: "In the EU, the Cosmetics Regulation has always required that claims be truthful, evidenced, and fair. But enforcement was inconsistent. In 2025-2026, that changed. The European Commission issued updated guidance specifically targeting 'green claims', words like natural, eco, clean, and sustainable, requiring brands to substantiate each one with documented evidence.",
       },
       {
         type: "paragraph",
@@ -383,7 +383,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "India's primary cosmetics law is the Drugs and Cosmetics Act, 1940 (being replaced in 2025–26). The Central Drugs Standard Control Organisation (CDSCO) oversees licensing and enforcement.",
+        text: "India's primary cosmetics law is the Drugs and Cosmetics Act, 1940 (being replaced in 2025-26). The Central Drugs Standard Control Organisation (CDSCO) oversees licensing and enforcement.",
       },
       {
         type: "bullets",
@@ -418,7 +418,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "heading",
         level: 2,
-        text: "US, MoCRA (2022, enforced 2024–25)",
+        text: "US, MoCRA (2022, enforced 2024-25)",
       },
       {
         type: "paragraph",
@@ -451,7 +451,7 @@ export const BLOG_POSTS: BlogPost[] = [
     category: "Health",
     readTime: "15 min read",
     date: "December 21, 2024",
-    title: "Baby Skincare Products – Comparative Safety & Effectiveness Report",
+    title: "Baby Skincare Products to Comparative Safety & Effectiveness Report",
     subtitle: "Evaluation analyzing safety, effectiveness, transparency, and regulatory compliance across 50+ baby skincare products sold in India.",
     excerpt: "Evaluation analyzing safety, effectiveness, transparency, and regulatory compliance across 50+ baby skincare products sold in India.",
     author: "The Clean Sheet Team",
@@ -504,7 +504,7 @@ export const BLOG_POSTS: BlogPost[] = [
           "Full INCI list on the packaging, not just the website",
           "No 'parfum' or 'fragrance' listed as an ingredient",
           "Preservative system with low sensitization potential (e.g., sodium benzoate, potassium sorbate)",
-          "pH appropriate for baby skin (4.5–5.5 for most products)",
+          "pH appropriate for baby skin (4.5-5.5 for most products)",
           "Third-party safety testing documentation available on request",
         ],
       },
@@ -521,7 +521,7 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "cta",
         text: "Want to check a specific baby product?",
         href: "/analyzer",
-        label: "Ask Clean — Check Any Product",
+        label: "Ask Clean, Check Any Product",
       },
     ],
   },

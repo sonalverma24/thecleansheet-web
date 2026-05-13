@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Type Definitions
+   THE CLEAN SHEET™, Type Definitions
    Transparency Scorecard + Analyzer Chat
 ──────────────────────────────────────────────────────────────── */
 

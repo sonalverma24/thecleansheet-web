@@ -39,7 +39,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       <section className="relative overflow-hidden border-b border-teal-100">
         <div className={`absolute inset-0 bg-gradient-to-br ${guide.accentFrom} ${guide.accentTo} opacity-[0.07]`} />
 
-        {/* Molecule — desktop only */}
+        {/* Molecule, desktop only */}
         <div className="hidden sm:block absolute top-0 right-0 w-72 lg:w-96 h-72 lg:h-96 opacity-[0.04] pointer-events-none select-none" aria-hidden>
           <svg width="100%" height="100%" viewBox="0 0 480 480" fill="none">
             {[[60,120,160,80],[160,80,260,140],[260,140,360,80],[360,80,440,140],
@@ -64,12 +64,12 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             Back to Learn
           </Link>
 
-          <div className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 border border-teal-200 text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+          <div className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 border border-teal-200 text-xs font-normal px-3 py-1.5 rounded-full mb-3">
             <FlaskConical size={12} />
             Skin Type Guide · The Clean Sheet™
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-ink-950 tracking-tight leading-tight mb-3">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight leading-tight mb-3">
             {guide.skinType}
           </h1>
           <p className="text-base sm:text-lg text-ink-600 leading-relaxed max-w-2xl mb-6">
@@ -81,7 +81,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <div className="bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3.5 flex gap-3 flex-1">
               <Sparkles size={15} className="text-teal-500 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-teal-800 leading-relaxed">
-                <strong className="font-semibold">The upside: </strong>{guide.silverLining}
+                <strong className="font-normal">The upside: </strong>{guide.silverLining}
               </p>
             </div>
             <DownloadGuideButton guideName={guide.skinType} guideFile={guideFile} guideSlug={slug} />
@@ -97,7 +97,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <div className="grid sm:grid-cols-2 gap-3 mt-5">
             {guide.causes.map(({ label, items }) => (
               <div key={label} className="bg-white rounded-2xl sm:rounded-3xl border border-teal-100 p-5 shadow-sm">
-                <h3 className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-3">{label}</h3>
+                <h3 className="text-xs font-medium text-teal-600 uppercase tracking-wider mb-3">{label}</h3>
                 <ul className="space-y-2.5">
                   {items.map((item, i) => {
                     const [head, ...rest] = item.split(": ");
@@ -159,7 +159,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             {guide.ingredientSections.map(({ heading, tips }) => (
               <div key={heading} className="bg-white rounded-2xl sm:rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
                 <div className="px-5 py-3 border-b border-teal-50 bg-teal-50/60">
-                  <h3 className="text-xs font-bold text-teal-700 uppercase tracking-widest">{heading}</h3>
+                  <h3 className="text-xs font-medium text-teal-700 uppercase tracking-widest">{heading}</h3>
                 </div>
                 <div className="p-4 sm:p-5 space-y-2.5">
                   {tips.map((tip, i) => {
@@ -187,16 +187,16 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 px-5 py-3 flex items-center gap-2">
                 <Sun size={13} className="text-amber-500" />
-                <span className="text-xs font-bold text-amber-700 uppercase tracking-widest">Morning Routine</span>
+                <span className="text-xs font-medium text-amber-700 uppercase tracking-widest">Morning Routine</span>
               </div>
               <div className="p-4 sm:p-5 space-y-3">
                 {guide.morningRoutine.map(({ step, action, detail }) => (
                   <div key={step} className="flex gap-3 items-start">
-                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-medium flex items-center justify-center flex-shrink-0 mt-0.5">
                       {step}
                     </span>
                     <div className="text-sm">
-                      <span className="font-semibold text-ink-900">{action}: </span>
+                      <span className="font-normal text-ink-900">{action}: </span>
                       <span className="text-ink-600">{detail}</span>
                     </div>
                   </div>
@@ -208,16 +208,16 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <div className="bg-white rounded-2xl sm:rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
               <div className="bg-gradient-to-r from-teal-900 to-teal-800 px-5 py-3 flex items-center gap-2">
                 <Moon size={13} className="text-teal-300" />
-                <span className="text-xs font-bold text-teal-200 uppercase tracking-widest">Night Routine</span>
+                <span className="text-xs font-medium text-teal-200 uppercase tracking-widest">Night Routine</span>
               </div>
               <div className="p-4 sm:p-5 space-y-3">
                 {guide.nightRoutine.map(({ step, action, detail }) => (
                   <div key={step} className="flex gap-3 items-start">
-                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-medium flex items-center justify-center flex-shrink-0 mt-0.5">
                       {step}
                     </span>
                     <div className="text-sm">
-                      <span className="font-semibold text-ink-900">{action}: </span>
+                      <span className="font-normal text-ink-900">{action}: </span>
                       <span className="text-ink-600">{detail}</span>
                     </div>
                   </div>
@@ -254,7 +254,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
               <DownloadGuideButton guideName={guide.skinType} guideFile={guideFile} guideSlug={slug} />
               <Link
                 href="/analyzer"
-                className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors text-center whitespace-nowrap"
+                className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-xl transition-colors text-center whitespace-nowrap"
               >
                 Try Ask Clean →
               </Link>
@@ -270,8 +270,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 function SectionLabel({ number, label }: { number: string; label: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="text-xs font-black text-teal-300 font-mono">{number}</span>
-      <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-ink-950 tracking-tight">{label}</h2>
+      <span className="text-xs font-semibold text-teal-300 font-mono">{number}</span>
+      <h2 className="text-lg sm:text-xl lg:text-2xl font-medium text-ink-950 tracking-tight">{label}</h2>
     </div>
   );
 }

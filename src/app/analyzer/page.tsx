@@ -69,7 +69,7 @@ function ScoreGauge({ score }: { score: number }) {
         <text x="68" y="62" textAnchor="middle" fontSize="30" fontWeight="800" fill="#0A1F16" fontFamily="var(--font-geist-sans)">{score}</text>
         <text x="68" y="79" textAnchor="middle" fontSize="11" fill="#5C7A66" fontFamily="var(--font-geist-sans)">/100</text>
       </svg>
-      <span className={`inline-flex items-center text-sm font-bold px-4 py-1.5 rounded-full border ${tier.bg} ${tier.color} ${tier.border}`}>
+      <span className={`inline-flex items-center text-sm font-medium px-4 py-1.5 rounded-full border ${tier.bg} ${tier.color} ${tier.border}`}>
         {tier.label}
       </span>
     </div>
@@ -90,7 +90,7 @@ function BadgeRow({
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((b, i) => (
-        <span key={i} className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
+        <span key={i} className={`inline-flex items-center gap-1.5 text-xs font-normal px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
           <Icon size={11} />
           {b}
         </span>
@@ -142,11 +142,11 @@ function ScorecardView({ card }: { card: Scorecard }) {
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center mb-6">
             <ScoreGauge score={card.score} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-teal-500 uppercase tracking-widest mb-1">{card.brand}</p>
-              <h2 className="text-xl sm:text-2xl font-bold text-ink-950 leading-tight mb-2">{card.productName}</h2>
+              <p className="text-xs font-normal text-teal-500 uppercase tracking-widest mb-1">{card.brand}</p>
+              <h2 className="text-xl sm:text-2xl font-medium text-ink-950 leading-tight mb-2">{card.productName}</h2>
               <div className="flex flex-wrap items-center gap-3 text-sm text-ink-500">
                 {card.priceRange && (
-                  <span className="font-semibold text-ink-700">{card.priceRange}</span>
+                  <span className="font-normal text-ink-700">{card.priceRange}</span>
                 )}
                 {card.productType && (
                   <span className="bg-teal-50 text-teal-600 border border-teal-200 px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
@@ -173,7 +173,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
 
           {/* Disclaimer */}
           <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
-            Scores are AI-generated based on publicly available INCI data, regulatory databases, and user reviews. Results may vary if ingredient lists change or data is unavailable. Always patch-test new products.
+Gives a clean sheet score based on publicly available data · Suggests science-backed safer alternatives
           </p>
         </div>
       </div>
@@ -182,7 +182,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
       {card.pillars?.length > 0 && (
         <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-bold text-teal-600 uppercase tracking-widest">Score Breakdown</h3>
+            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Score Breakdown</h3>
           </div>
           <div className="p-6 space-y-5">
             {card.pillars.map((p) => {
@@ -192,11 +192,11 @@ function ScorecardView({ card }: { card: Scorecard }) {
               return (
                 <div key={p.name}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-ink-700">
+                    <span className="flex items-center gap-2 text-sm font-normal text-ink-700">
                       <PIcon size={14} className="text-teal-500" />
                       {p.name}
                     </span>
-                    <span className="text-sm font-bold text-ink-900 tabular-nums">
+                    <span className="text-sm font-medium text-ink-900 tabular-nums">
                       {p.score}<span className="text-ink-400 font-normal text-xs">/{p.max}</span>
                     </span>
                   </div>
@@ -220,7 +220,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
       {card.keyActives?.length > 0 && (
         <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-bold text-teal-600 uppercase tracking-widest">Key Actives</h3>
+            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Key Actives</h3>
           </div>
           <div className="p-6">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -228,7 +228,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
                 <div key={i} className="bg-teal-50/70 rounded-2xl p-4 border border-teal-100">
                   <div className="flex items-center gap-2 mb-1.5">
                     <Star size={13} className="text-teal-500 flex-shrink-0" />
-                    <span className="text-sm font-semibold text-ink-800">{a.name}</span>
+                    <span className="text-sm font-normal text-ink-800">{a.name}</span>
                   </div>
                   <p className="text-xs text-ink-500 leading-relaxed">{a.function}</p>
                 </div>
@@ -242,7 +242,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
       {ingredients.length > 0 && (
         <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-teal-50 flex items-center justify-between">
-            <h3 className="text-xs font-bold text-teal-600 uppercase tracking-widest">Full Ingredient List</h3>
+            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Full Ingredient List</h3>
             <div className="flex items-center gap-3 text-xs text-ink-400">
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-safe-500" />Safe</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-caution-500" />Flag</span>
@@ -258,7 +258,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
             <div className="px-4 pb-4">
               <button
                 onClick={() => setShowAllIngredients(!showAllIngredients)}
-                className="w-full flex items-center justify-center gap-2 text-teal-600 hover:text-teal-800 text-sm font-semibold py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-teal-600 hover:text-teal-800 text-sm font-normal py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
               >
                 {showAllIngredients ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                 {showAllIngredients ? "Show less" : `Show all ${ingredients.length} ingredients`}
@@ -273,7 +273,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
         <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-3xl p-6 text-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🇮🇳</span>
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest">India Context</h3>
+            <h3 className="text-xs font-medium text-white uppercase tracking-widest">India Context</h3>
           </div>
           <p className="text-teal-100 text-sm leading-relaxed">{card.indiaContext}</p>
         </div>
@@ -283,7 +283,7 @@ function ScorecardView({ card }: { card: Scorecard }) {
       {card.dataSource && (
         <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-teal-50">
-            <h3 className="text-xs font-bold text-teal-600 uppercase tracking-widest">Research Sources</h3>
+            <h3 className="text-xs font-medium text-teal-600 uppercase tracking-widest">Research Sources</h3>
           </div>
           <div className="p-6 grid sm:grid-cols-2 gap-4 text-sm">
             <div>
@@ -373,9 +373,9 @@ function AnswerView({ answer }: { answer: ExpertAnswer }) {
               <VIcon size={20} className={verdictStyles.text} />
             </div>
             <div>
-              <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1">The Clean Sheet™ Verdict</p>
-              <h2 className="text-lg font-bold text-ink-950 leading-tight">{answer.question}</h2>
-              <span className={`inline-flex items-center mt-2 text-xs font-bold px-3 py-1 rounded-full border ${verdictStyles.bg} ${verdictStyles.text} ${verdictStyles.border}`}>
+              <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-1">The Clean Sheet™ Verdict</p>
+              <h2 className="text-lg font-medium text-ink-950 leading-tight">{answer.question}</h2>
+              <span className={`inline-flex items-center mt-2 text-xs font-medium px-3 py-1 rounded-full border ${verdictStyles.bg} ${verdictStyles.text} ${verdictStyles.border}`}>
                 {answer.verdictLabel}
               </span>
             </div>
@@ -400,7 +400,7 @@ function AnswerView({ answer }: { answer: ExpertAnswer }) {
             <div className="bg-gradient-to-br from-teal-800 to-teal-900 rounded-2xl p-4 text-white">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-base">🇮🇳</span>
-                <span className="text-xs font-bold text-white uppercase tracking-widest">India Context</span>
+                <span className="text-xs font-medium text-white uppercase tracking-widest">India Context</span>
               </div>
               <p className="text-teal-100 text-sm leading-relaxed">{answer.indiaContext}</p>
             </div>
@@ -430,7 +430,7 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Award size={14} className="text-teal-300" />
-            <span className="text-xs font-bold text-teal-300 uppercase tracking-widest">
+            <span className="text-xs font-medium text-teal-300 uppercase tracking-widest">
               {isTie ? "It's a tie" : `Our pick for ${result.skinConcern}`}
             </span>
           </div>
@@ -444,18 +444,18 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
                   key={key}
                   className={`flex-1 text-center p-3 rounded-2xl transition-all ${isWinner ? "bg-white/20" : "bg-white/5"}`}
                 >
-                  <div className={`text-4xl font-black ${isWinner ? "text-white" : "text-teal-300"}`}>
+                  <div className={`text-4xl font-semibold ${isWinner ? "text-white" : "text-teal-300"}`}>
                     {product.score}
                   </div>
-                  <div className="text-[10px] text-teal-200 font-semibold mt-1 leading-tight">{product.brand}</div>
+                  <div className="text-[10px] text-teal-200 font-normal mt-1 leading-tight">{product.brand}</div>
                   <div className="text-[10px] text-teal-300 leading-tight">{product.productName}</div>
                   {isWinner && !isTie && (
-                    <div className="mt-1.5 text-[10px] font-bold text-teal-100 uppercase tracking-wide">✓ Winner</div>
+                    <div className="mt-1.5 text-[10px] font-medium text-teal-100 uppercase tracking-wide">✓ Winner</div>
                   )}
                 </div>
               );
             })}
-            <div className="text-teal-400 font-bold text-sm flex-shrink-0">vs</div>
+            <div className="text-teal-400 font-medium text-sm flex-shrink-0">vs</div>
           </div>
 
           <p className="text-teal-100 text-sm leading-relaxed">{result.verdict}</p>
@@ -477,17 +477,17 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
                 {isWinner && !isTie && (
                   <div className="flex items-center gap-1.5 mb-2">
                     <Award size={11} className="text-teal-500" />
-                    <span className="text-[10px] font-bold text-teal-500 uppercase tracking-wider">Winner</span>
+                    <span className="text-[10px] font-medium text-teal-500 uppercase tracking-wider">Winner</span>
                   </div>
                 )}
 
-                <p className="text-xs font-semibold text-teal-500 mb-0.5">{product.brand}</p>
-                <h3 className="font-bold text-ink-900 text-sm leading-tight mb-0.5">{product.productName}</h3>
+                <p className="text-xs font-normal text-teal-500 mb-0.5">{product.brand}</p>
+                <h3 className="font-medium text-ink-900 text-sm leading-tight mb-0.5">{product.productName}</h3>
                 <p className="text-xs text-ink-400 mb-3">{product.priceRange}</p>
 
                 {/* Score bar */}
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl font-black tabular-nums" style={{ color: scoreColor(product.score) }}>
+                  <span className="text-2xl font-semibold tabular-nums" style={{ color: scoreColor(product.score) }}>
                     {product.score}
                   </span>
                   <div className="flex-1">
@@ -497,7 +497,7 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
                         style={{ width: `${product.score}%`, backgroundColor: scoreColor(product.score) }}
                       />
                     </div>
-                    <div className={`text-[10px] mt-0.5 font-semibold ${tier.color}`}>{tier.label}</div>
+                    <div className={`text-[10px] mt-0.5 font-normal ${tier.color}`}>{tier.label}</div>
                   </div>
                 </div>
 
@@ -506,16 +506,16 @@ function ComparisonView({ result }: { result: ComparisonResult }) {
                 {/* Top badges */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {product.pass_badges.slice(0, 3).map((b, i) => (
-                    <span key={i} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-safe-100 text-safe-700 border border-safe-500/30">{b}</span>
+                    <span key={i} className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-safe-100 text-safe-700 border border-safe-500/30">{b}</span>
                   ))}
                   {product.warn_badges.slice(0, 1).map((b, i) => (
-                    <span key={i} className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-caution-100 text-caution-600 border border-caution-500/40">{b}</span>
+                    <span key={i} className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-caution-100 text-caution-600 border border-caution-500/40">{b}</span>
                   ))}
                 </div>
 
                 <button
                   onClick={toggle}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-800 py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 text-xs font-normal text-teal-600 hover:text-teal-800 py-2.5 rounded-xl border border-teal-100 hover:bg-teal-50 transition-colors"
                 >
                   {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                   {expanded ? "Hide full analysis" : "See full analysis"}
@@ -624,9 +624,15 @@ export default function AnalyzerPage() {
           setChatMessages([{ id: uid(), role: "assistant", content: data.answer.chatOpener, timestamp: new Date() }]);
         }
       } else {
-        setScorecard(data.scorecard);
-        if (data.scorecard?.chatOpener) {
-          setChatMessages([{ id: uid(), role: "assistant", content: data.scorecard.chatOpener, timestamp: new Date() }]);
+        const card = data.scorecard;
+        // Guard: only accept a scorecard that has the minimum required fields
+        if (card && typeof card.score === "number" && card.productName && Array.isArray(card.pillars) && card.pillars.length > 0) {
+          setScorecard(card);
+          if (card.chatOpener) {
+            setChatMessages([{ id: uid(), role: "assistant", content: card.chatOpener, timestamp: new Date() }]);
+          }
+        } else {
+          setOutOfScope(true);
         }
       }
     } catch {
@@ -749,11 +755,11 @@ export default function AnalyzerPage() {
             </svg>
           </div>
 
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-5 relative z-10">
+          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-600 text-xs font-normal px-4 py-1.5 rounded-full mb-5 relative z-10">
             <Sparkles size={12} />
             The Clean Sheet™ · Ask Clean
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-ink-950 tracking-tight mb-3 relative z-10">
+          <h1 className="text-3xl sm:text-5xl font-medium text-ink-950 tracking-tight mb-3 relative z-10">
             What&apos;s really<br />in your product?
           </h1>
           <p className="text-ink-500 text-base sm:text-lg max-w-lg mx-auto leading-relaxed relative z-10">
@@ -812,7 +818,7 @@ export default function AnalyzerPage() {
               <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center mx-auto mb-5">
                 <Loader2 size={24} className="text-teal-600 animate-spin" />
               </div>
-              <h3 className="font-bold text-ink-900 mb-2">Working on it…</h3>
+              <h3 className="font-medium text-ink-900 mb-2">Working on it…</h3>
               <p className="text-sm text-teal-600 font-medium animate-pulse">{statusMsg}</p>
               <p className="text-xs text-ink-400 mt-3">Searching INCI databases, scientific literature, and reviews</p>
             </div>
@@ -826,7 +832,7 @@ export default function AnalyzerPage() {
           <div className="max-w-2xl mx-auto">
             <div className="bg-teal-50 border border-teal-200 rounded-3xl p-7 text-center">
               <p className="text-2xl mb-3">🧴</p>
-              <p className="text-ink-900 font-semibold text-base mb-2">
+              <p className="text-ink-900 font-normal text-base mb-2">
                 This one&apos;s outside my lane
               </p>
               <p className="text-ink-500 text-sm leading-relaxed max-w-sm mx-auto">
@@ -836,7 +842,7 @@ export default function AnalyzerPage() {
               </p>
               <button
                 onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
-                className="mt-5 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+                className="mt-5 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-full transition-colors"
               >
                 Try a beauty product →
               </button>
@@ -882,7 +888,7 @@ export default function AnalyzerPage() {
                   <MessageSquare size={14} className="text-teal-200" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-ink-900">Ask the Ingredient Expert</div>
+                  <div className="text-sm font-medium text-ink-900">Ask the Ingredient Expert</div>
                   <div className="text-xs text-ink-400">Powered by The Clean Sheet™ Science Engine</div>
                 </div>
               </div>
@@ -937,14 +943,14 @@ export default function AnalyzerPage() {
             {process.env.NEXT_PUBLIC_WHATSAPP_URL && process.env.NEXT_PUBLIC_WHATSAPP_URL !== "https://chat.whatsapp.com/YOUR_LINK_HERE" && (
               <div className="mt-4 bg-gradient-to-r from-teal-800 to-teal-900 rounded-3xl p-5 flex items-center justify-between gap-4">
                 <div>
-                  <div className="font-bold text-white text-sm mb-0.5">Join the Clean Sheet™ Community</div>
+                  <div className="font-medium text-white text-sm mb-0.5">Join the Clean Sheet™ Community</div>
                   <div className="text-teal-200 text-xs">1000+ members discussing ingredient safety, product reviews, and clean beauty in India.</div>
                 </div>
                 <a
                   href={process.env.NEXT_PUBLIC_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 bg-white text-teal-800 font-bold text-sm px-4 py-2 rounded-xl hover:bg-teal-50 transition-colors flex items-center gap-1.5"
+                  className="flex-shrink-0 bg-white text-teal-800 font-medium text-sm px-4 py-2 rounded-xl hover:bg-teal-50 transition-colors flex items-center gap-1.5"
                 >
                   Join <ExternalLink size={13} />
                 </a>
@@ -969,7 +975,7 @@ export default function AnalyzerPage() {
                     <Icon size={18} className="text-teal-600" />
                   </div>
                   <div>
-                    <div className="font-bold text-ink-900 text-sm mb-1">{title}</div>
+                    <div className="font-medium text-ink-900 text-sm mb-1">{title}</div>
                     <p className="text-xs text-ink-500 leading-relaxed">{desc}</p>
                   </div>
                 </div>

@@ -92,7 +92,7 @@ export default function CertifiedPage() {
                 <Award size={14} />
                 Certified Products
               </div>
-              <h1 className="text-5xl lg:text-6xl font-bold text-ink-950 tracking-tight leading-tight mb-6">
+              <h1 className="text-5xl lg:text-6xl font-medium text-ink-950 tracking-tight leading-tight mb-6">
                 Products that
                 <br />
                 earned it.
@@ -108,7 +108,7 @@ export default function CertifiedPage() {
                   { value: "Annual", label: "Re-certification" },
                 ].map(({ value, label }) => (
                   <div key={value} className="bg-teal-50 border border-teal-200 rounded-2xl px-4 py-3">
-                    <div className="font-bold text-teal-700 text-sm">{value}</div>
+                    <div className="font-medium text-teal-700 text-sm">{value}</div>
                     <div className="text-teal-500 text-xs">{label}</div>
                   </div>
                 ))}
@@ -135,7 +135,7 @@ export default function CertifiedPage() {
                     className="object-contain"
                   />
                 </div>
-                <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-5 py-2.5 rounded-xl">
+                <div className="bg-white/15 backdrop-blur-md border border-white/20 text-white text-sm font-medium px-5 py-2.5 rounded-xl">
                   Coming Soon
                 </div>
               </div>
@@ -162,13 +162,13 @@ export default function CertifiedPage() {
                   <Star size={20} className="text-gold-400" />
                 </div>
                 <div>
-                  <div className="text-white font-bold text-lg">Founding Cohort, Now Accepting Applications</div>
+                  <div className="text-white font-medium text-lg">Founding Cohort, Now Accepting Applications</div>
                   <div className="text-teal-300 text-sm mt-0.5">Be among India's first Clean Sheet™ certified products.</div>
                 </div>
               </div>
               <a
                 href="#get-certified"
-                className="flex-shrink-0 flex items-center gap-2 bg-coral-500 hover:bg-coral-600 text-white font-semibold px-6 py-3 rounded-2xl transition-all hover:shadow-lg hover:shadow-coral-500/30 active:scale-95 whitespace-nowrap"
+                className="flex-shrink-0 flex items-center gap-2 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3 rounded-2xl transition-all hover:shadow-lg hover:shadow-coral-500/30 active:scale-95 whitespace-nowrap"
               >
                 Apply for Certification
                 <ArrowRight size={14} />
@@ -182,7 +182,7 @@ export default function CertifiedPage() {
       <section className="pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Coming Soon wrapper — blurs the grid and shows overlay */}
+          {/* Coming Soon wrapper, blurs the grid and shows overlay */}
           <div className="relative">
             {/* Blurred product grid */}
             <div className="blur-sm pointer-events-none select-none">
@@ -204,7 +204,7 @@ export default function CertifiedPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-teal-950/30" />
                         <div className="absolute top-3 right-3">
-                          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.color}`}>
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.color}`}>
                             {cfg.label}
                           </span>
                         </div>
@@ -213,13 +213,13 @@ export default function CertifiedPage() {
                       {/* Card body */}
                       <div className="p-5">
                         <div className="mb-3">
-                          <h3 className="font-bold text-ink-950 leading-tight">{name}</h3>
+                          <h3 className="font-medium text-ink-950 leading-tight">{name}</h3>
                           <p className="text-ink-400 text-sm mt-0.5">{brand}</p>
                         </div>
                         <div className="mb-3">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs text-ink-500">Clean Sheet Score</span>
-                            <span className={`text-lg font-bold ${cfg.color}`}>{score}</span>
+                            <span className={`text-lg font-medium ${cfg.color}`}>{score}</span>
                           </div>
                           <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden">
                             <div className={`h-full rounded-full ${cfg.bar}`} style={{ width: `${score}%` }} />
@@ -246,13 +246,13 @@ export default function CertifiedPage() {
                     className="object-contain drop-shadow-lg"
                   />
                 </div>
-                <h3 className="text-2xl font-bold text-ink-950 mb-2">Coming Soon</h3>
+                <h3 className="text-2xl font-medium text-ink-950 mb-2">Coming Soon</h3>
                 <p className="text-ink-500 text-sm leading-relaxed mb-6">
                   Certified products will appear here once the founding cohort is complete. Applications are open now.
                 </p>
                 <a
                   href="#get-certified"
-                  className="inline-flex items-center gap-2 bg-teal-800 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-2xl transition-all text-sm"
+                  className="inline-flex items-center gap-2 bg-teal-800 hover:bg-teal-700 text-white font-normal px-6 py-3 rounded-2xl transition-all text-sm"
                   style={{ color: '#ffffff' }}
                 >
                   Apply for Certification
@@ -266,14 +266,14 @@ export default function CertifiedPage() {
           <div className="mt-20 text-center">
             <div className="inline-block bg-white border border-teal-100 rounded-3xl p-10 shadow-sm max-w-lg w-full">
               <Award size={36} className="text-teal-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-ink-950 mb-3">Is your product ready?</h2>
+              <h2 className="text-2xl font-medium text-ink-950 mb-3">Is your product ready?</h2>
               <p className="text-ink-600 mb-8 text-sm leading-relaxed">
                 Apply for certification and join India's cleanest product directory. We're
                 currently accepting founding cohort applications.
               </p>
               <a
                 href="#get-certified"
-                className="inline-flex items-center gap-2.5 bg-teal-800 hover:bg-teal-700 text-white font-semibold px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-800/25 active:scale-[0.98]"
+                className="inline-flex items-center gap-2.5 bg-teal-800 hover:bg-teal-700 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-teal-800/25 active:scale-[0.98]"
               >
                 Apply for Certification
                 <ArrowRight size={16} />

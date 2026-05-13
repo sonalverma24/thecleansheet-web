@@ -18,7 +18,7 @@ function PostImage({ post, fill = true, className = "" }: { post: BlogPost; fill
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
           <div className="bg-amber-400 text-amber-950 rounded-2xl px-4 py-3 flex flex-col items-center gap-1 shadow-xl">
             <TriangleAlert size={28} strokeWidth={2.5} />
-            <span className="text-xs font-bold uppercase tracking-widest">Caution</span>
+            <span className="text-xs font-medium uppercase tracking-widest">Caution</span>
           </div>
         </div>
       )}
@@ -42,7 +42,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function CategoryBadge({ category }: { category: string }) {
   return (
-    <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${CATEGORY_COLORS[category] ?? "bg-ink-100 text-ink-600 border-ink-200"}`}>
+    <span className={`inline-flex items-center text-xs font-normal px-2.5 py-1 rounded-full border ${CATEGORY_COLORS[category] ?? "bg-ink-100 text-ink-600 border-ink-200"}`}>
       {category}
     </span>
   );
@@ -63,10 +63,10 @@ export default function BlogPage() {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
           backgroundSize: "200px 200px"
         }} />
-        {/* Radial glow — top left */}
+        {/* Radial glow, top left */}
         <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full opacity-20"
           style={{ background: "radial-gradient(circle, #2dd4bf 0%, transparent 65%)" }} />
-        {/* Radial glow — bottom right */}
+        {/* Radial glow, bottom right */}
         <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] rounded-full opacity-15"
           style={{ background: "radial-gradient(circle, #5eead4 0%, transparent 65%)" }} />
         {/* Soft coral accent top-right */}
@@ -79,10 +79,10 @@ export default function BlogPage() {
             <div className="flex items-center gap-4">
               <div className="w-px h-8 bg-teal-400/50 flex-shrink-0" />
               <div>
-                <div className="text-teal-300/60 text-[10px] font-semibold tracking-[0.3em] uppercase mb-1">
+                <div className="text-teal-300/60 text-[10px] font-normal tracking-[0.3em] uppercase mb-1">
                   Vol. I &middot; 2026 &middot; India
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-none" style={{ color: '#ffffff' }}>
+                <h1 className="text-3xl sm:text-4xl font-medium tracking-tight leading-none" style={{ color: '#ffffff' }}>
                   The&nbsp;
                   <span style={{ background: "linear-gradient(90deg, #5eead4, #99f6e4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Journal.</span>
                 </h1>
@@ -124,7 +124,7 @@ export default function BlogPage() {
                 )}
                 {/* Issue label */}
                 <div className="absolute top-6 left-6">
-                  <div className="bg-white/15 backdrop-blur-md border border-white/25 text-xs font-bold px-3 py-1.5 rounded-full tracking-widest uppercase" style={{ color: '#ffffff' }}>
+                  <div className="bg-white/15 backdrop-blur-md border border-white/25 text-xs font-medium px-3 py-1.5 rounded-full tracking-widest uppercase" style={{ color: '#ffffff' }}>
                     Lead Story
                   </div>
                 </div>
@@ -142,7 +142,7 @@ export default function BlogPage() {
                 <div className="text-xs font-medium tracking-widest uppercase mb-3" style={{ color: '#0d9488' }}>
                   {featured.date}
                 </div>
-                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold tracking-tight leading-snug mb-5 transition-colors duration-300" style={{ color: '#ffffff' }}>
+                <h2 className="text-2xl lg:text-3xl xl:text-4xl font-medium tracking-tight leading-snug mb-5 transition-colors duration-300" style={{ color: '#ffffff' }}>
                   {featured.title}
                 </h2>
                 <p className="leading-relaxed mb-8 text-sm lg:text-base" style={{ color: '#99f6e4' }}>
@@ -150,9 +150,9 @@ export default function BlogPage() {
                 </p>
                 <div className="flex items-center justify-between pt-6 border-t border-teal-800">
                   <div>
-                    <div className="text-sm font-semibold" style={{ color: '#ffffff' }}>{featured.author}</div>
+                    <div className="text-sm font-normal" style={{ color: '#ffffff' }}>{featured.author}</div>
                   </div>
-                  <div className="flex items-center gap-2 font-semibold text-sm transition-all" style={{ color: '#5eead4' }}>
+                  <div className="flex items-center gap-2 font-normal text-sm transition-all" style={{ color: '#5eead4' }}>
                     Read <ArrowRight size={15} />
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export default function BlogPage() {
         <section className="py-12 lg:py-16 border-b border-teal-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-4 mb-8">
-              <div className="text-xs font-semibold text-ink-400 uppercase tracking-widest">Editor's Pick</div>
+              <div className="text-xs font-normal text-ink-400 uppercase tracking-widest">Editor's Pick</div>
               <div className="flex-1 h-px bg-teal-100" />
             </div>
             <Link href={`/blog/${second.slug}`} className="group block">
@@ -186,11 +186,11 @@ export default function BlogPage() {
                     <span className="mx-1 text-ink-200">&middot;</span>
                     {second.date}
                   </div>
-                  <h2 className="text-xl lg:text-2xl font-bold text-ink-950 tracking-tight leading-snug mb-3 group-hover:text-teal-700 transition-colors">
+                  <h2 className="text-xl lg:text-2xl font-medium text-ink-950 tracking-tight leading-snug mb-3 group-hover:text-teal-700 transition-colors">
                     {second.title}
                   </h2>
                   <p className="text-ink-500 leading-relaxed text-sm mb-6">{second.excerpt}</p>
-                  <div className="flex items-center gap-2 text-teal-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                  <div className="flex items-center gap-2 text-teal-600 font-normal text-sm group-hover:gap-3 transition-all">
                     Read full article <ArrowRight size={14} />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function BlogPage() {
         <section className="py-12 lg:py-16 pb-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-4 mb-8">
-              <div className="text-xs font-semibold text-ink-400 uppercase tracking-widest">All Articles</div>
+              <div className="text-xs font-normal text-ink-400 uppercase tracking-widest">All Articles</div>
               <div className="flex-1 h-px bg-teal-100" />
               <div className="text-xs text-ink-400">{POSTS.length} articles</div>
             </div>
@@ -225,7 +225,7 @@ export default function BlogPage() {
                         <Clock size={12} />
                         {post.readTime}
                       </div>
-                      <h3 className="font-bold text-ink-950 text-lg leading-snug mb-3 group-hover:text-teal-700 transition-colors flex-1">
+                      <h3 className="font-medium text-ink-950 text-lg leading-snug mb-3 group-hover:text-teal-700 transition-colors flex-1">
                         {post.title}
                       </h3>
                       <p className="text-ink-500 text-sm leading-relaxed mb-5 line-clamp-3">
@@ -233,7 +233,7 @@ export default function BlogPage() {
                       </p>
                       <div className="flex items-center justify-between pt-4 border-t border-teal-50 mt-auto">
                         <div className="text-xs text-ink-400">{post.date}</div>
-                        <div className="flex items-center gap-1 text-teal-600 text-xs font-semibold group-hover:gap-1.5 transition-all">
+                        <div className="flex items-center gap-1 text-teal-600 text-xs font-normal group-hover:gap-1.5 transition-all">
                           Read <ArrowRight size={12} />
                         </div>
                       </div>
@@ -255,7 +255,7 @@ export default function BlogPage() {
                 <Shield size={14} />
                 For Brands
               </div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-ink-950 tracking-tight leading-tight mb-5">
+              <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight leading-tight mb-5">
                 Get your product
                 <br />
                 verified.
@@ -266,7 +266,7 @@ export default function BlogPage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
                   href="#get-certified"
-                  className="inline-flex items-center justify-center gap-2.5 bg-teal-800 hover:bg-teal-900 text-white font-semibold px-7 py-4 rounded-2xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-800/30 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center gap-2.5 bg-teal-800 hover:bg-teal-900 text-white font-normal px-7 py-4 rounded-2xl transition-all duration-200 hover:shadow-xl hover:shadow-teal-800/30 active:scale-[0.98]"
                 >
                   Apply for Certification
                   <ArrowRight size={16} />
@@ -281,14 +281,14 @@ export default function BlogPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: "0–100", label: "Transparent score", sub: "No black boxes" },
+                { value: "0-100", label: "Transparent score", sub: "No black boxes" },
                 { value: "4 pillars", label: "Evaluation framework", sub: "Safety · Efficacy · Transparency · Sustainability" },
                 { value: "EU + India", label: "Multi-regulatory", sub: "SCCS, FDA, BIS cross-referenced" },
                 { value: "QR verified", label: "Consumer-facing", sub: "Scan at the shelf" },
               ].map(({ value, label, sub }) => (
                 <div key={value} className="bg-white rounded-3xl border border-teal-100 p-5 hover:shadow-md hover:shadow-teal-100 transition-all">
-                  <div className="text-2xl font-bold text-teal-700 mb-1">{value}</div>
-                  <div className="font-semibold text-ink-950 text-sm mb-1">{label}</div>
+                  <div className="text-2xl font-medium text-teal-700 mb-1">{value}</div>
+                  <div className="font-normal text-ink-950 text-sm mb-1">{label}</div>
                   <div className="text-ink-400 text-xs leading-relaxed">{sub}</div>
                 </div>
               ))}
@@ -307,11 +307,11 @@ export default function BlogPage() {
               <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-teal-900/40 blur-3xl -translate-x-1/4 translate-y-1/4" />
             </div>
             <div className="relative z-10 px-8 py-16 lg:py-20 text-center max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-teal-300 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-teal-300 text-xs font-normal px-3 py-1.5 rounded-full mb-6">
                 <Rss size={12} />
                 The Journal
               </div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight mb-4">
+              <h2 className="text-3xl lg:text-4xl font-medium text-white tracking-tight mb-4">
                 Stay ahead of
                 <br />
                 the clean standard.
@@ -330,7 +330,7 @@ export default function BlogPage() {
                 />
                 <button
                   type="submit"
-                  className="bg-coral-500 hover:bg-coral-600 text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors whitespace-nowrap text-sm"
+                  className="bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-colors whitespace-nowrap text-sm"
                 >
                   Subscribe
                 </button>

@@ -42,7 +42,7 @@ export default function Footer() {
                 className="rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
               />
               <span
-                className="font-bold text-white text-lg tracking-tight"
+                className="font-medium text-white text-lg tracking-tight"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 The Clean Sheet
@@ -90,11 +90,11 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Nav columns — 2-col on mobile, 1-each on desktop */}
+          {/* Nav columns, 2-col on mobile, 1-each on desktop */}
           <div className="md:contents grid grid-cols-2 sm:grid-cols-3 gap-8">
           {Object.entries(LINKS).map(([category, items]) => (
             <div key={category}>
-              <h3 className="font-semibold text-xs uppercase tracking-widest mb-4" style={{ color: '#ffffff' }}>
+              <h3 className="font-normal text-xs uppercase tracking-widest mb-4" style={{ color: '#ffffff' }}>
                 {category}
               </h3>
               <ul className="space-y-2.5">

@@ -29,7 +29,7 @@ export default function WhatsAppBubble() {
           <div className="bg-gradient-to-r from-[#25D366] to-[#128C7E] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <WhatsAppIcon size={18} className="text-white" />
-              <span className="text-white text-xs font-bold tracking-wide">WhatsApp Community</span>
+              <span className="text-white text-xs font-medium tracking-wide">WhatsApp Community</span>
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); setDismissed(true); }}
@@ -41,7 +41,7 @@ export default function WhatsAppBubble() {
           </div>
           {/* Body */}
           <div className="px-4 py-3.5">
-            <p className="text-ink-800 text-[13px] font-semibold leading-snug mb-1">
+            <p className="text-ink-800 text-[13px] font-normal leading-snug mb-1">
               Join The Clean Sheet™ community
             </p>
             <p className="text-ink-400 text-[11px] leading-relaxed mb-3.5">
@@ -51,7 +51,7 @@ export default function WhatsAppBubble() {
               href={WA_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-medium py-2.5 rounded-xl transition-colors"
             >
               <WhatsAppIcon size={13} className="text-white" />
               Join for free →

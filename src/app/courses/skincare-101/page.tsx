@@ -10,7 +10,7 @@ function SessionEndedNotice({ className }: { className?: string }) {
   return (
     <div className={className}>
       <div className="inline-flex flex-col items-center gap-1 bg-teal-950/10 border border-teal-200 rounded-2xl px-5 py-3 text-center">
-        <p className="text-sm font-bold text-teal-900">Registrations are now closed.</p>
+        <p className="text-sm font-medium text-teal-900">Registrations are now closed.</p>
         <p className="text-xs text-ink-500">This session has ended. Stay tuned for the next one.</p>
       </div>
     </div>
@@ -88,7 +88,7 @@ export default function Skincare101Page() {
 
       {/* ── Session Ended Strip ── */}
       <div className="bg-teal-950 text-white text-center py-2.5 px-4 text-xs sm:text-sm font-medium sticky top-0 z-50">
-        <span className="text-teal-300 font-bold">This session has ended.</span>
+        <span className="text-teal-300 font-medium">This session has ended.</span>
         <span className="opacity-70 ml-2">Registrations are closed · Stay tuned for the next one</span>
       </div>
 
@@ -99,10 +99,10 @@ export default function Skincare101Page() {
         <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full pointer-events-none" />
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-teal-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-4 border border-white/10">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur text-teal-200 text-xs font-normal px-4 py-1.5 rounded-full mb-4 border border-white/10">
             <Sparkles size={12} /> The Clean Sheet™ presents · Skincare 101
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-3 tracking-tight text-white">
+          <h1 className="text-3xl sm:text-4xl font-medium leading-tight mb-3 tracking-tight text-white">
             Stop wasting money on skincare <span className="text-teal-300">that doesn&apos;t work.</span>
           </h1>
           <p className="text-teal-100 text-base sm:text-lg font-medium mb-2">
@@ -115,7 +115,7 @@ export default function Skincare101Page() {
           {/* meta pills */}
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur px-4 py-2 rounded-full text-xs font-medium mb-4 border border-white/10">
             <span className="w-1.5 h-1.5 bg-teal-300 rounded-full" />
-            Live online · 26 April 2026 · 12–2 PM IST
+            Live online · 26 April 2026 · 12-2 PM IST
           </div>
 
           <SessionEndedNotice className="flex justify-center mt-4" />
@@ -133,7 +133,7 @@ export default function Skincare101Page() {
           ].map(({ icon: Icon, label, sub }) => (
             <div key={label} className="flex flex-col items-center gap-0.5">
               <Icon size={16} className="text-teal-500 mb-0.5" />
-              <span className="text-xs font-bold text-ink-900">{label}</span>
+              <span className="text-xs font-medium text-ink-900">{label}</span>
               <span className="text-[10px] text-ink-400">{sub}</span>
             </div>
           ))}
@@ -143,8 +143,8 @@ export default function Skincare101Page() {
       {/* ── Instructors ── */}
       <section className="px-4 py-8 bg-teal-50/40">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-1 text-center">Your instructors</p>
-          <h2 className="text-xl sm:text-2xl font-bold text-teal-900 text-center mb-1">
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-1 text-center">Your instructors</p>
+          <h2 className="text-xl sm:text-2xl font-medium text-teal-900 text-center mb-1">
             Learn from people who build skincare for a living.
           </h2>
           <p className="text-ink-400 text-xs text-center mb-6">Not influencers. Scientists, formulators, and compliance experts.</p>
@@ -160,8 +160,8 @@ export default function Skincare101Page() {
                     sizes="(max-width: 640px) 80px, 112px"
                   />
                 </div>
-                <p className="font-bold text-ink-900 text-xs sm:text-sm mb-0.5 leading-tight">{inst.name}</p>
-                <p className="text-[10px] sm:text-xs text-teal-600 font-semibold mb-1 leading-tight">{inst.role}</p>
+                <p className="font-medium text-ink-900 text-xs sm:text-sm mb-0.5 leading-tight">{inst.name}</p>
+                <p className="text-[10px] sm:text-xs text-teal-600 font-normal mb-1 leading-tight">{inst.role}</p>
                 <p className="hidden sm:block text-xs text-ink-500 leading-relaxed">{inst.bio}</p>
               </div>
             ))}
@@ -172,20 +172,20 @@ export default function Skincare101Page() {
       {/* ── Problem ── */}
       <section className="px-4 py-10 bg-teal-950 text-white">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-400 uppercase tracking-widest mb-4">Sound familiar?</p>
-          <p className="text-xl sm:text-2xl font-bold leading-relaxed mb-8">
+          <p className="text-xs font-medium text-teal-400 uppercase tracking-widest mb-4">Sound familiar?</p>
+          <p className="text-xl sm:text-2xl font-medium leading-relaxed mb-8">
             You&apos;ve tried products. Followed routines. Watched endless videos.<br />
             <span className="text-teal-300">But still…</span>
           </p>
           <div className="grid sm:grid-cols-2 gap-3 mb-6">
             {PAIN_POINTS.map((p) => (
               <div key={p} className="flex items-start gap-3 bg-white/5 border-l-4 border-teal-400 rounded-r-2xl px-4 py-4">
-                <span className="text-teal-400 font-black text-lg leading-none mt-0.5">✕</span>
+                <span className="text-teal-400 font-semibold text-lg leading-none mt-0.5">✕</span>
                 <p className="text-sm text-white/90">{p}</p>
               </div>
             ))}
           </div>
-          <p className="text-center text-2xl font-black text-teal-300">This class fixes that.</p>
+          <p className="text-center text-2xl font-semibold text-teal-300">This class fixes that.</p>
         </div>
       </section>
 
@@ -193,8 +193,8 @@ export default function Skincare101Page() {
       <section className="px-4 py-8 bg-white">
         <div className="max-w-2xl mx-auto">
           <div className="bg-teal-900 rounded-3xl p-5 sm:p-8 text-white">
-            <p className="text-xs font-bold text-teal-300 uppercase tracking-widest mb-4">Did You Know?</p>
-            <p className="text-lg sm:text-xl font-semibold leading-relaxed mb-4">
+            <p className="text-xs font-medium text-teal-300 uppercase tracking-widest mb-4">Did You Know?</p>
+            <p className="text-lg sm:text-xl font-normal leading-relaxed mb-4">
               &ldquo;Toxin-free&rdquo;, &ldquo;natural&rdquo;, and &ldquo;clean&rdquo; claims in India are{" "}
               <span className="text-teal-300">not regulated by any government body.</span>
             </p>
@@ -208,8 +208,8 @@ export default function Skincare101Page() {
       {/* ── Outcomes ── */}
       <section className="px-4 py-10 bg-teal-50/40">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">What you walk away with</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-teal-900 text-center mb-2">Clear outcomes. Not just information.</h2>
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-2 text-center">What you walk away with</p>
+          <h2 className="text-2xl sm:text-3xl font-medium text-teal-900 text-center mb-2">Clear outcomes. Not just information.</h2>
           <p className="text-ink-400 text-sm text-center mb-8">After this session, you will be able to:</p>
           <div className="grid sm:grid-cols-2 gap-3">
             {OUTCOMES.map(({ icon: Icon, text }, i) => (
@@ -220,7 +220,7 @@ export default function Skincare101Page() {
                 <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center flex-shrink-0">
                   <Icon size={16} className="text-teal-600" />
                 </div>
-                <p className="text-sm font-semibold text-ink-800 leading-snug mt-1">{text}</p>
+                <p className="text-sm font-normal text-ink-800 leading-snug mt-1">{text}</p>
               </div>
             ))}
           </div>
@@ -230,8 +230,8 @@ export default function Skincare101Page() {
       {/* ── Modules ── */}
       <section className="px-4 py-10 bg-white">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">What you will learn</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-ink-950 text-center mb-2">9 modules. 2 hours. A lifetime of clarity.</h2>
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-2 text-center">What you will learn</p>
+          <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 text-center mb-2">9 modules. 2 hours. A lifetime of clarity.</h2>
           <p className="text-ink-400 text-sm text-center mb-8">Every module is designed for real-world application.</p>
           <div className="grid sm:grid-cols-2 gap-4">
             {MODULES.map((mod) => (
@@ -239,10 +239,10 @@ export default function Skincare101Page() {
                 key={mod.num}
                 className="bg-white border border-teal-100 rounded-2xl p-5 hover:border-teal-300 hover:shadow-md transition-all group"
               >
-                <p className="text-[10px] font-bold uppercase tracking-widest text-teal-500 mb-2">Module {mod.num}</p>
-                <h3 className="text-sm font-bold text-ink-900 mb-2 leading-snug">{mod.title}</h3>
+                <p className="text-[10px] font-medium uppercase tracking-widest text-teal-500 mb-2">Module {mod.num}</p>
+                <h3 className="text-sm font-medium text-ink-900 mb-2 leading-snug">{mod.title}</h3>
                 <p className="text-xs text-ink-400 flex items-center gap-1.5">
-                  <span className="text-teal-500 font-bold">→</span>
+                  <span className="text-teal-500 font-medium">→</span>
                   {mod.arrow}
                 </p>
               </div>
@@ -256,8 +256,8 @@ export default function Skincare101Page() {
         <div className="max-w-2xl mx-auto">
           <div className="bg-gradient-to-br from-teal-700 to-teal-950 rounded-3xl p-6 sm:p-10 text-white text-center">
             <p className="text-4xl mb-4">👜</p>
-            <p className="text-xs font-bold text-white uppercase tracking-widest mb-3">Module 09 · Live Session</p>
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Bring Your Beauty Bag to Class.</h3>
+            <p className="text-xs font-medium text-white uppercase tracking-widest mb-3">Module 09 · Live Session</p>
+            <h3 className="text-2xl sm:text-3xl font-medium text-white mb-3">Bring Your Beauty Bag to Class.</h3>
             <p className="text-white text-sm leading-relaxed max-w-md mx-auto">
               This isn&apos;t a lecture. Show us what&apos;s on your shelf and we decode it live: ingredients, claims, and all. Get your routine audited by people who actually build skincare for a living.
             </p>
@@ -268,13 +268,13 @@ export default function Skincare101Page() {
       {/* ── What's Included ── */}
       <section className="px-4 py-10 bg-white">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-2 text-center">Everything you get</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-ink-950 text-center mb-8">This is not just a class.</h2>
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-2 text-center">Everything you get</p>
+          <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 text-center mb-8">This is not just a class.</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {VALUE_ITEMS.map((v) => (
               <div key={v.title} className="bg-teal-50 border border-teal-100 rounded-2xl p-5 text-center">
                 <p className="text-3xl mb-2">{v.icon}</p>
-                <p className="text-xs font-bold text-ink-900 mb-1">{v.title}</p>
+                <p className="text-xs font-medium text-ink-900 mb-1">{v.title}</p>
                 <p className="text-[11px] text-ink-400">{v.sub}</p>
               </div>
             ))}
@@ -284,8 +284,8 @@ export default function Skincare101Page() {
             <div className="flex items-start gap-4">
               <div className="text-2xl flex-shrink-0">📋</div>
               <div>
-                <p className="text-[10px] font-bold text-teal-500 uppercase tracking-widest mb-1">Bonus: Free with Registration</p>
-                <p className="font-bold text-ink-900 text-sm mb-1">The Pocket Guide to Skincare Red Flags</p>
+                <p className="text-[10px] font-medium text-teal-500 uppercase tracking-widest mb-1">Bonus: Free with Registration</p>
+                <p className="font-medium text-ink-900 text-sm mb-1">The Pocket Guide to Skincare Red Flags</p>
                 <p className="text-xs text-ink-500 leading-relaxed">Your cheat sheet for every Nykaa visit: ingredient red flags, misleading claims, formulation loopholes. Yours to keep forever.</p>
               </div>
             </div>
@@ -296,8 +296,8 @@ export default function Skincare101Page() {
       {/* ── Pricing + Final CTA ── */}
       <section className="px-4 py-16 bg-gradient-to-br from-teal-800 to-teal-950 text-white">
         <div className="max-w-lg mx-auto text-center">
-          <p className="text-xs font-bold text-teal-300 uppercase tracking-widest mb-3">One decision. A lifetime of clarity.</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight">
+          <p className="text-xs font-medium text-teal-300 uppercase tracking-widest mb-3">One decision. A lifetime of clarity.</p>
+          <h2 className="text-3xl sm:text-4xl font-medium text-white mb-3 leading-tight">
             Your skin. Finally understood.
           </h2>
           <p className="text-teal-200 text-base mb-10 leading-relaxed">
@@ -306,7 +306,7 @@ export default function Skincare101Page() {
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 text-left shadow-2xl shadow-teal-950/40">
             <div className="text-center mb-6">
-              <p className="text-5xl font-black text-teal-700 mb-1">₹299</p>
+              <p className="text-5xl font-semibold text-teal-700 mb-1">₹299</p>
               <p className="text-ink-400 text-sm">One-time · No hidden fees · All inclusive</p>
             </div>
             <div className="space-y-2.5 mb-7">
@@ -320,7 +320,7 @@ export default function Skincare101Page() {
             <SessionEndedNotice className="flex justify-center mb-5" />
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mt-4 text-xs text-ink-400">
               <span className="flex items-center gap-1"><Calendar size={11} /> 26 April 2026</span>
-              <span className="flex items-center gap-1"><Clock size={11} /> 12–2 PM IST</span>
+              <span className="flex items-center gap-1"><Clock size={11} /> 12-2 PM IST</span>
               <span className="flex items-center gap-1"><Users size={11} /> Session ended</span>
             </div>
           </div>

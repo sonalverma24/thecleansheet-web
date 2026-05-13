@@ -34,10 +34,10 @@ export default function PaymentSuccessPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 border-4 border-teal-200 mb-5">
             <CheckCircle2 size={32} className="text-teal-600" />
           </div>
-          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-4">
+          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-600 text-xs font-normal px-4 py-1.5 rounded-full mb-4">
             <Sparkles size={12} /> The Clean Sheet™ · Skincare 101
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-ink-950 mb-3">
+          <h1 className="text-3xl sm:text-4xl font-medium text-ink-950 mb-3">
             You&apos;re in! 🎉
           </h1>
           <p className="text-ink-500 text-base leading-relaxed">
@@ -47,22 +47,22 @@ export default function PaymentSuccessPage() {
 
         {/* ── Session details ── */}
         <div className="bg-white rounded-3xl border border-teal-100 p-5 mb-4 shadow-sm">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-3">Your session details</p>
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-3">Your session details</p>
           <div className="space-y-2.5">
             <div className="flex items-center gap-3 text-sm text-ink-700">
               <Calendar size={15} className="text-teal-500 flex-shrink-0" />
-              <span><span className="font-semibold">26 April 2026</span> · Saturday</span>
+              <span><span className="font-normal">26 April 2026</span> · Saturday</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-ink-700">
               <Clock size={15} className="text-teal-500 flex-shrink-0" />
-              <span><span className="font-semibold">12:00 – 2:00 PM IST</span> · Live Online</span>
+              <span><span className="font-normal">12:00 to 2:00 PM IST</span> · Live Online</span>
             </div>
           </div>
           <a
             href={CALENDAR_LINKS.google}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 flex items-center justify-center gap-2 w-full border border-teal-200 text-teal-700 hover:bg-teal-50 text-sm font-semibold py-2.5 rounded-xl transition-colors"
+            className="mt-4 flex items-center justify-center gap-2 w-full border border-teal-200 text-teal-700 hover:bg-teal-50 text-sm font-normal py-2.5 rounded-xl transition-colors"
           >
             <ExternalLink size={14} /> Add to Google Calendar
           </a>
@@ -73,8 +73,8 @@ export default function PaymentSuccessPage() {
           <div className="flex items-start gap-4 mb-5">
             <div className="text-3xl flex-shrink-0">📋</div>
             <div>
-              <p className="text-xs font-bold text-teal-300 uppercase tracking-widest mb-1">Free gift · Yours to keep</p>
-              <h2 className="font-bold text-lg leading-tight mb-1">Pocket Guide to Skincare Red Flags</h2>
+              <p className="text-xs font-medium text-teal-300 uppercase tracking-widest mb-1">Free gift · Yours to keep</p>
+              <h2 className="font-medium text-lg leading-tight mb-1">Pocket Guide to Skincare Red Flags</h2>
               <p className="text-teal-200 text-xs leading-relaxed">
                 The cheat sheet to take with you every time you shop. Covers ingredient red flags, misleading claims, and formulation loopholes.
               </p>
@@ -83,7 +83,7 @@ export default function PaymentSuccessPage() {
           <a
             href={GUIDE_URL}
             download="The Clean Sheet - Pocket Guide to Skincare Red Flags.pdf"
-            className="flex items-center justify-center gap-2 w-full bg-white text-teal-800 hover:bg-teal-50 font-bold text-sm py-3.5 rounded-2xl transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-white text-teal-800 hover:bg-teal-50 font-medium text-sm py-3.5 rounded-2xl transition-colors"
           >
             <Download size={16} /> Download Now
           </a>
@@ -91,7 +91,7 @@ export default function PaymentSuccessPage() {
 
         {/* ── What's next ── */}
         <div className="bg-white rounded-3xl border border-teal-100 p-5 mb-8 shadow-sm">
-          <p className="text-xs font-bold text-teal-500 uppercase tracking-widest mb-3">What happens next</p>
+          <p className="text-xs font-medium text-teal-500 uppercase tracking-widest mb-3">What happens next</p>
           <ol className="space-y-3">
             {[
               "Check your email for a payment confirmation from Razorpay.",
@@ -100,7 +100,7 @@ export default function PaymentSuccessPage() {
               "After the session, you'll get recording access for 48 hours.",
             ].map((step, i) => (
               <li key={i} className="flex items-start gap-3 text-sm text-ink-600">
-                <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-xs font-medium flex items-center justify-center flex-shrink-0 mt-0.5">
                   {i + 1}
                 </span>
                 {step}
