@@ -76,6 +76,19 @@ const SKIP_URL_SEGMENTS = new Set([
   "all", "shop", "store", "product", "items", "listing", "p", "dp",
 ]);
 
+// Extract a rough brand hint from the domain (e.g. "discoverpilgrim.com" → "pilgrim",
+// "codeskin.in" → "codeskin", "mamaearth.in" → "mamaearth")
+function brandHintFromURL(url: string): string {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    const name = host.split(".")[0]; // "discoverpilgrim", "codeskin", etc.
+    // Strip common prefixes like "discover", "get", "shop", "try", "buy"
+    return name.replace(/^(discover|get|shop|try|buy|use|my)/, "").trim();
+  } catch {
+    return "";
+  }
+}
+
 function productNameFromURL(url: string): string {
   try {
     // Strip fragment (#...) before parsing so it doesn't land in the path
@@ -281,8 +294,10 @@ ${scrapedContext}`;
     // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
     if (urlInput && (!parsed || parsed.type === "out_of_scope" || !isValidScorecard(parsed as Record<string, unknown>))) {
       const fallbackName = productNameFromURL(urlInput);
-      if (fallbackName) {
-        const fallbackResult = await model.generateContent(`Analyze this product: ${fallbackName}`);
+      const fallbackBrand = brandHintFromURL(urlInput);
+      const fallbackQuery = [fallbackBrand, fallbackName].filter(Boolean).join(" ");
+      if (fallbackQuery) {
+        const fallbackResult = await model.generateContent(`Analyze this beauty/cosmetic product (this is definitely a beauty product — lipstick, skincare, makeup, personal care — do NOT return out_of_scope): ${fallbackQuery}`);
         const fallbackText = fallbackResult.response.text().trim();
         const fallbackParsed = parseJSON(fallbackText);
         if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
