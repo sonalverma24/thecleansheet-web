@@ -641,6 +641,8 @@ export default function AnalyzerPage() {
     } finally {
       setIsAnalyzing(false);
       setStatusMsg(null);
+      setQuery("");
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [query, isAnalyzing]);
 
