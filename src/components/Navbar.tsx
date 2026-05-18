@@ -7,7 +7,8 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 
 const NAV_LINKS = [
-  { href: "/certification", label: "Certification" },
+  { href: "/brands",        label: "Scorecards"     },
+  { href: "/certification", label: "Certification"  },
   { href: "/learn",         label: "Learn"          },
   { href: "/blog",          label: "Journal"        },
   { href: "/about",         label: "About"          },
