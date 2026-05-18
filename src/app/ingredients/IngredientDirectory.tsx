@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Search, X, ChevronDown, ChevronUp, ExternalLink, Filter } from "lucide-react";
+
+function toSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
+}
 
 export interface Ingredient {
   INCI_Name: string;
@@ -94,6 +99,13 @@ function DetailPanel({ ing, onClose }: { ing: Ingredient; onClose: () => void })
             {ing.Chemical_Name && ing.Chemical_Name !== ing.INCI_Name && (
               <p className="text-slate-400 text-sm mt-0.5 font-mono">{ing.Chemical_Name}</p>
             )}
+            <Link
+              href={`/ingredients/${toSlug(ing.INCI_Name)}`}
+              className="inline-flex items-center gap-1 text-teal-600 hover:text-teal-800 text-xs mt-2 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink size={11} /> View full ingredient page
+            </Link>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100 transition-colors flex-shrink-0">
             <X size={18} className="text-slate-500" />
@@ -364,10 +376,22 @@ export default function IngredientDirectory({ ingredients }: { ingredients: Ingr
                       onClick={() => setSelected(ing)}
                       className="hover:bg-slate-50 cursor-pointer transition-colors group">
                       <td className="py-3.5 pr-4">
-                        <div className="font-normal text-slate-900 group-hover:text-teal-700 transition-colors">{ing.INCI_Name}</div>
-                        {ing.Chemical_Name && ing.Chemical_Name !== ing.INCI_Name && (
-                          <div className="text-slate-400 text-xs font-mono mt-0.5 truncate max-w-[220px]">{ing.Chemical_Name}</div>
-                        )}
+                        <div className="flex items-start gap-2">
+                          <div>
+                            <div className="font-normal text-slate-900 group-hover:text-teal-700 transition-colors">{ing.INCI_Name}</div>
+                            {ing.Chemical_Name && ing.Chemical_Name !== ing.INCI_Name && (
+                              <div className="text-slate-400 text-xs font-mono mt-0.5 truncate max-w-[200px]">{ing.Chemical_Name}</div>
+                            )}
+                          </div>
+                          <Link
+                            href={`/ingredients/${toSlug(ing.INCI_Name)}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5 text-teal-500 hover:text-teal-700 flex-shrink-0"
+                            title="View full page"
+                          >
+                            <ExternalLink size={12} />
+                          </Link>
+                        </div>
                       </td>
                       <td className="py-3.5 pr-4 text-slate-500 text-xs leading-relaxed">
                         {ing.Function?.split("/")[0]?.trim() || ""}

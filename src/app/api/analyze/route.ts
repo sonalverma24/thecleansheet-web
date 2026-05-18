@@ -27,9 +27,41 @@ function isURL(text: string): boolean {
   }
 }
 
+// Strip UTM / ad-tracking params from e-commerce URLs so scrapers see the canonical page
+function cleanURL(url: string): string {
+  try {
+    const u = new URL(url);
+    const trackingParams = [
+      "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term",
+      "gclid", "gbraid", "wbraid", "fbclid", "gad_source", "gad_campaignid",
+      "msclkid", "ttclid", "li_fat_id", "mc_cid", "mc_eid",
+    ];
+    trackingParams.forEach((p) => u.searchParams.delete(p));
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+// Known Indian/global e-commerce platforms where the URL slug IS the product name
+const ECOM_PLATFORMS = new Set([
+  "nykaa.com", "myntra.com", "amazon.in", "flipkart.com", "purplle.com",
+  "tatacliq.com", "ajio.com", "bewakoof.com", "meesho.com", "jiomart.com",
+]);
+
+function isEcomPlatform(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return ECOM_PLATFORMS.has(host) || [...ECOM_PLATFORMS].some((p) => host.endsWith(`.${p}`));
+  } catch {
+    return false;
+  }
+}
+
 async function scrapeURL(url: string): Promise<string | null> {
   try {
-    const jinaUrl = `https://r.jina.ai/${url}`;
+    const cleanedUrl = cleanURL(url);
+    const jinaUrl = `https://r.jina.ai/${cleanedUrl}`;
     const res = await fetch(jinaUrl, {
       headers: {
         Accept: "text/plain",
@@ -50,11 +82,29 @@ const BOT_BLOCK_SIGNALS = [
   "access denied", "403 forbidden", "just a moment", "enable javascript",
   "security check", "please verify", "captcha", "cloudflare", "bot protection",
   "are you a human", "ddos protection", "checking your browser",
+  "javascript required", "javascript is required", "javascript is disabled",
+  "please enable js", "this page requires javascript",
+  "sign in to continue", "login to continue", "please log in",
+];
+
+// Navigation-noise signals: if first lines look like site nav rather than product content
+const NAV_NOISE_SIGNALS = [
+  "log in", "sign up", "register", "cart", "wishlist", "offers", "beauty",
+  "fashion", "wellness", "electronics", "all categories", "my orders",
+  "track order", "help center", "contact us", "download app",
 ];
 
 function isBlockedPage(content: string): boolean {
   const lower = content.toLowerCase().slice(0, 1000);
   return BOT_BLOCK_SIGNALS.some((signal) => lower.includes(signal));
+}
+
+// Returns true if the scraped content looks like site navigation rather than product info
+function isNavNoise(hint: string): boolean {
+  if (!hint) return true;
+  const lower = hint.toLowerCase();
+  const noiseCount = NAV_NOISE_SIGNALS.filter((s) => lower.includes(s)).length;
+  return noiseCount >= 2; // 2+ nav signals = likely nav page, not product
 }
 
 // Try to extract a usable product name + brand from scraped content
@@ -206,13 +256,26 @@ export async function POST(req: Request) {
     // If the query is a URL, scrape the page and build the product context
     if (isURL(q)) {
       urlInput = q;
+
+      // For known e-commerce platforms, the URL slug is always a reliable product name.
+      // Prefer it over scraped content (which is often nav noise on JS-heavy apps).
+      const slugFromURL = productNameFromURL(q);
+      const isEcom = isEcomPlatform(q);
+
       const pageContent = await scrapeURL(q);
       if (pageContent) {
         scrapedContext = pageContent;
-        q = extractProductHint(pageContent) || productNameFromURL(q);
+        const hint = extractProductHint(pageContent);
+        // Use scraped hint only if it looks like real product content (not nav noise)
+        // For e-com platforms: trust the URL slug — it's always SEO-accurate
+        if (isEcom || !hint || isNavNoise(hint)) {
+          q = slugFromURL || hint || q;
+        } else {
+          q = hint;
+        }
       } else {
         // Scraping failed, fall back to product name extracted from the URL slug
-        q = productNameFromURL(q);
+        q = slugFromURL;
         if (!q) return outOfScope();
       }
     }
@@ -294,10 +357,13 @@ ${scrapedContext}`;
     // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
     if (urlInput && (!parsed || parsed.type === "out_of_scope" || !isValidScorecard(parsed as Record<string, unknown>))) {
       const fallbackName = productNameFromURL(urlInput);
-      const fallbackBrand = brandHintFromURL(urlInput);
-      const fallbackQuery = [fallbackBrand, fallbackName].filter(Boolean).join(" ");
+      // For e-com platforms the domain (nykaa.com) is useless as brand — skip it
+      const fallbackBrand = isEcomPlatform(urlInput) ? "" : brandHintFromURL(urlInput);
+      const fallbackQuery = [fallbackBrand, fallbackName].filter(Boolean).join(" ").trim();
       if (fallbackQuery) {
-        const fallbackResult = await model.generateContent(`Analyze this beauty/cosmetic product (this is definitely a beauty product — lipstick, skincare, makeup, personal care — do NOT return out_of_scope): ${fallbackQuery}`);
+        const fallbackResult = await model.generateContent(
+          `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product — do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
+        );
         const fallbackText = fallbackResult.response.text().trim();
         const fallbackParsed = parseJSON(fallbackText);
         if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
@@ -305,6 +371,21 @@ ${scrapedContext}`;
           RESULT_CACHE.set(cacheKey, body);
           return Response.json(body);
         }
+      }
+      // Last-resort retry: use the full product name from URL slug with explicit instruction
+      if (fallbackName) {
+        try {
+          const lastResort = await model.generateContent(
+            `You are The Clean Sheet™ product analyzer. Analyze this skincare/beauty product and return a complete scorecard JSON. Product name extracted from URL: "${fallbackName}". Search the web for ingredients, price, and reviews. This is a beauty product — always return a scorecard, never out_of_scope.`
+          );
+          const lastText = lastResort.response.text().trim();
+          const lastParsed = parseJSON(lastText);
+          if (lastParsed && lastParsed.type !== "out_of_scope" && isValidScorecard(lastParsed as Record<string, unknown>)) {
+            const body = { type: "single", scorecard: lastParsed };
+            RESULT_CACHE.set(cacheKey, body);
+            return Response.json(body);
+          }
+        } catch { /* fall through */ }
       }
       return outOfScope();
     }

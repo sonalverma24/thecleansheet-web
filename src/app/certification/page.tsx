@@ -5,8 +5,21 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Certification | The Clean Sheet™",
-  description: "Our evaluation methodology, scientific standards, and certified product registry.",
+  title: "Get Your Beauty Product Certified in India",
+  description:
+    "India's first science-backed beauty product certification. The Clean Sheet evaluates products across 5 pillars — ingredients, compliance, manufacturing, claims, and ethics. Apply for certification now.",
+  keywords: [
+    "beauty product certification India", "clean beauty certification", "cosmetic safety certification India",
+    "ingredient compliance India", "beauty brand certification", "certified skincare India",
+  ],
+  alternates: { canonical: "https://thecleansheet.in/certification" },
+  openGraph: {
+    title: "Get Your Beauty Product Certified | The Clean Sheet™",
+    description:
+      "India's science-backed cosmetic certification. A rigorous five-pillar evaluation covering ingredients, claims, manufacturing, compliance, and ethics.",
+    url: "https://thecleansheet.in/certification",
+    type: "website",
+  },
 };
 
 const SECTIONS = [

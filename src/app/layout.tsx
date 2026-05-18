@@ -26,16 +26,59 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The Clean Sheet™, India's Clean Beauty Standard",
+  metadataBase: new URL("https://thecleansheet.in"),
+  title: {
+    default: "The Clean Sheet™ — India's Clean Beauty Standard",
+    template: "%s | The Clean Sheet™",
+  },
   description:
-    "Science-backed certification and AI-powered ingredient analysis for beauty and personal care products. Know exactly what's in your products.",
-  keywords: "clean beauty, ask clean, ingredient analysis, cosmetic safety, INCI, India, certification",
+    "India's first science-backed clean beauty platform. AI-powered ingredient analysis, certified product directory, and 25,000+ ingredient database. Know what's in your skincare.",
+  keywords: [
+    "clean beauty India", "ingredient safety checker", "cosmetic ingredient analysis",
+    "skincare product review India", "INCI ingredient checker", "clean beauty certification",
+    "is this product safe", "beauty product ingredients India", "Ask Clean",
+    "The Clean Sheet", "skincare certification India", "clean beauty tool",
+  ],
+  authors: [{ name: "The Clean Sheet", url: "https://thecleansheet.in" }],
+  creator: "The Clean Sheet",
+  publisher: "The Clean Sheet",
   openGraph: {
-    title: "The Clean Sheet™",
-    description: "India's first science-backed clean beauty certification.",
+    title: "The Clean Sheet™ — India's Clean Beauty Standard",
+    description:
+      "AI-powered ingredient analysis & science-backed certification for beauty products in India. Check if your skincare is truly safe.",
+    url: "https://thecleansheet.in",
     siteName: "The Clean Sheet",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: "/images/hero-illustration.jpg",
+        width: 1200,
+        height: 630,
+        alt: "The Clean Sheet — India's Clean Beauty Standard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Clean Sheet™ — India's Clean Beauty Standard",
+    description:
+      "AI-powered ingredient analysis & science-backed certification for beauty products in India.",
+    images: ["/images/hero-illustration.jpg"],
+    site: "@thecleansheet",
+  },
+  alternates: {
+    canonical: "https://thecleansheet.in",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -43,7 +86,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${geistMono.variable} h-full`}>
+    <html lang="en-IN" className={`${playfair.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen flex flex-col antialiased">
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-DXHG8FBXQT" strategy="afterInteractive" />
@@ -73,6 +116,87 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        {/* Structured data — Organization + WebSite with SearchAction */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://thecleansheet.in/#organization",
+                  name: "The Clean Sheet",
+                  url: "https://thecleansheet.in",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://thecleansheet.in/logo.png",
+                    width: 512,
+                    height: 512,
+                  },
+                  description:
+                    "India's first independent science-backed certification and AI-powered ingredient analysis platform for beauty and personal care products.",
+                  foundingLocation: {
+                    "@type": "Place",
+                    addressCountry: "IN",
+                  },
+                  sameAs: [
+                    "https://www.instagram.com/thecleansheet.in",
+                    "https://www.youtube.com/@thecleansheetindia",
+                  ],
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    email: "hello@thecleansheet.in",
+                    contactType: "customer support",
+                    availableLanguage: ["English", "Hindi"],
+                  },
+                  areaServed: "IN",
+                  knowsAbout: [
+                    "Clean Beauty",
+                    "Cosmetic Ingredient Safety",
+                    "INCI Ingredient Analysis",
+                    "Beauty Product Certification",
+                    "Skincare Science",
+                  ],
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://thecleansheet.in/#website",
+                  url: "https://thecleansheet.in",
+                  name: "The Clean Sheet",
+                  description:
+                    "India's clean beauty standard — AI ingredient analysis, product certification, and an ingredient database with 25,000+ cosmetic ingredients.",
+                  publisher: { "@id": "https://thecleansheet.in/#organization" },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: "https://thecleansheet.in/ingredients?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  name: "Ask Clean — AI Beauty Ingredient Analyzer",
+                  applicationCategory: "HealthApplication",
+                  operatingSystem: "Web",
+                  url: "https://thecleansheet.in/analyzer",
+                  description:
+                    "Paste any product URL or ingredient list to instantly check ingredient safety, regulatory compliance, and get a science-backed Clean Sheet Score.",
+                  publisher: { "@id": "https://thecleansheet.in/#organization" },
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "INR",
+                  },
+                  availableOnDevice: "Desktop, Mobile",
+                  applicationSubCategory: "Beauty & Skincare",
+                },
+              ],
+            }),
+          }}
+        />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -12,9 +12,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
+
+  const ogImage = post.image.startsWith("/")
+    ? `https://thecleansheet.in${post.image}`
+    : post.image;
+
   return {
-    title: `${post.title}, The Clean Sheet™`,
+    title: post.title,
     description: post.subtitle,
+    alternates: { canonical: `https://thecleansheet.in/blog/${slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.subtitle,
+      url: `https://thecleansheet.in/blog/${slug}`,
+      siteName: "The Clean Sheet",
+      type: "article",
+      publishedTime: post.date,
+      authors: [post.author],
+      section: post.category,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.subtitle,
+      images: [ogImage],
+    },
   };
 }
 
@@ -122,8 +145,54 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   // Related posts (other posts, max 2)
   const related = BLOG_POSTS.filter((p) => p.slug !== slug).slice(0, 2);
 
+  const ogImage = post.image.startsWith("/")
+    ? `https://thecleansheet.in${post.image}`
+    : post.image;
+
+  const blogJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
+          { "@type": "ListItem", position: 2, name: "Journal", item: "https://thecleansheet.in/blog" },
+          { "@type": "ListItem", position: 3, name: post.title, item: `https://thecleansheet.in/blog/${slug}` },
+        ],
+      },
+      {
+        "@type": "Article",
+        headline: post.title,
+        description: post.subtitle,
+        image: ogImage,
+        datePublished: post.date,
+        author: {
+          "@type": "Organization",
+          name: post.author,
+          url: "https://thecleansheet.in",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "The Clean Sheet",
+          url: "https://thecleansheet.in",
+          logo: { "@type": "ImageObject", url: "https://thecleansheet.in/logo.png" },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `https://thecleansheet.in/blog/${slug}`,
+        },
+        articleSection: post.category,
+        keywords: ["clean beauty", "skincare", "ingredient safety", "India", post.category],
+      },
+    ],
+  };
+
   return (
     <div className="bg-white min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+      />
 
       {/* ── Hero image ──────────────────────────── */}
       <div className="relative h-[50vh] lg:h-[60vh] overflow-hidden">

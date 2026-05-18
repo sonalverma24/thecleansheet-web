@@ -2,8 +2,21 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, QrCode, Shield, Star, Leaf, Award } from "lucide-react";
 
 export const metadata = {
-  title: "Know What's In Your Skincare | The Clean Sheet™",
-  description: "Scan the QR code on any Clean Sheet certified product to see exactly what was evaluated, what score it received, and which claims are backed by evidence.",
+  title: "Know What's In Your Skincare — For Consumers",
+  description:
+    "Check any skincare product for harmful ingredients, misleading claims, and safety issues — for free. The Clean Sheet gives Indian consumers honest, science-backed information about every product in their routine.",
+  keywords: [
+    "check skincare ingredients India", "safe beauty products India", "how to read INCI label",
+    "skincare safety consumer India", "verify product claims India", "ingredient transparency India",
+  ],
+  alternates: { canonical: "https://thecleansheet.in/consumers" },
+  openGraph: {
+    title: "Know What's In Your Skincare | The Clean Sheet™",
+    description:
+      "Free ingredient safety checks for Indian consumers. Scan certified products, verify claims, and discover what's really in your skincare routine.",
+    url: "https://thecleansheet.in/consumers",
+    type: "website",
+  },
 };
 
 function ProofPageMock() {

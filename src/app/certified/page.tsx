@@ -3,8 +3,21 @@ import Link from "next/link";
 import { Sparkles, ArrowRight, Star, Award, CheckCircle2 } from "lucide-react";
 
 export const metadata = {
-  title: "Certified Products, The Clean Sheet™",
-  description: "Browse products that have earned The Clean Sheet™ certification.",
+  title: "Clean Beauty Certified Products in India",
+  description:
+    "Browse beauty and skincare products certified by The Clean Sheet™. Every product has a public scorecard covering ingredients, claims, manufacturing, and regulatory compliance.",
+  keywords: [
+    "clean beauty certified products India", "safe skincare products India",
+    "clean beauty certification", "ingredient-safe products", "certified skincare India",
+  ],
+  alternates: { canonical: "https://thecleansheet.in/certified" },
+  openGraph: {
+    title: "Clean Beauty Certified Products | The Clean Sheet™",
+    description:
+      "Browse science-certified beauty and skincare products in India. Every product scored for safety, transparency, and regulatory compliance.",
+    url: "https://thecleansheet.in/certified",
+    type: "website",
+  },
 };
 
 const PLACEHOLDER_PRODUCTS = [

@@ -7,9 +7,21 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Our Methodology, The Clean Sheet™",
+  title: "Our Methodology — How We Score Beauty Products",
   description:
-    "Science-backed. Independently assessed. Publicly documented. How The Clean Sheet evaluates beauty and personal care products.",
+    "Science-backed. Independently assessed. Publicly documented. Learn exactly how The Clean Sheet evaluates beauty products across 5 pillars: ingredient safety, legal compliance, manufacturing, claims, and ethics.",
+  keywords: [
+    "clean beauty scoring methodology", "cosmetic safety assessment India",
+    "ingredient risk rating", "how to check skincare safety", "beauty product evaluation criteria",
+  ],
+  alternates: { canonical: "https://thecleansheet.in/methodology" },
+  openGraph: {
+    title: "Our Methodology — How We Score Beauty Products | The Clean Sheet™",
+    description:
+      "Five scoring pillars. Zero brand bias. See exactly how we evaluate every product from ingredient safety to manufacturing standards.",
+    url: "https://thecleansheet.in/methodology",
+    type: "website",
+  },
 };
 
 /* ─────────────────────────────────────────────

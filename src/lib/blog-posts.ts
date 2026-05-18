@@ -525,6 +525,254 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
   },
+  {
+    slug: "how-to-check-if-skincare-product-is-safe-india",
+    category: "Consumer Safety",
+    readTime: "6 min read",
+    date: "May 10, 2026",
+    title: "How to Check If Your Skincare Product Is Safe in India",
+    subtitle: "Most Indians have no idea what's inside their moisturiser. Here's a step-by-step guide to checking ingredients, reading labels, and using free tools to protect yourself.",
+    excerpt: "India has over 100,000 cosmetic products on the market and almost no easy way for consumers to verify what's actually in them. Here's how to change that.",
+    author: "The Clean Sheet Team",
+    image: "/images/ingredient-transparency.jpg",
+    content: [
+      {
+        type: "paragraph",
+        text: "India has one of the fastest-growing beauty markets in the world. By 2025, Indians were spending over ₹2 lakh crore on personal care products every year. And yet most consumers have no reliable way to verify whether what they're putting on their skin is actually safe.",
+      },
+      {
+        type: "paragraph",
+        text: "The information is technically available — it's on the label, in INCI format — but it's deliberately impenetrable to anyone who hasn't studied cosmetic chemistry. That's a design choice, not an accident.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Step 1: Find the INCI List",
+      },
+      {
+        type: "paragraph",
+        text: "INCI stands for International Nomenclature of Cosmetic Ingredients. It's the standardised scientific naming system used on cosmetic labels globally. In India, the Drugs and Cosmetics Act requires all cosmetics to list ingredients in INCI order (highest concentration first). This is the list you need to evaluate.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "On physical packaging: look for 'Ingredients:' on the back or bottom label",
+          "On Nykaa / Myntra / Amazon: check the 'Ingredients' tab on the product page",
+          "On brand websites: usually under 'About', 'Details', or 'How to Use' sections",
+          "On the product itself: required by law to be printed on the label in India",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Step 2: Use a Free Ingredient Checker",
+      },
+      {
+        type: "paragraph",
+        text: "If you're in India and want to quickly check whether a beauty product is safe, The Clean Sheet is a free tool you can use. Go to thecleansheet.in/analyzer, paste the product URL or copy-paste the ingredient list, and you'll get an instant safety analysis.",
+      },
+      {
+        type: "callout",
+        text: "The Clean Sheet's 'Ask Clean' tool checks every ingredient against Indian, EU, and US safety databases and gives you a Clean Sheet Score — a 0 to 100 rating for the entire product.",
+      },
+      {
+        type: "paragraph",
+        text: "The tool flags high-concern ingredients, identifies allergens, checks for banned substances under Indian regulations, and highlights any claims that aren't backed by evidence. It works with product URLs from Nykaa, Myntra, Amazon, and most brand websites.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Step 3: Know the Red Flags",
+      },
+      {
+        type: "paragraph",
+        text: "You don't need to memorise a thousand chemical names. Focus on the most commonly problematic categories:",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Formaldehyde releasers: DMDM Hydantoin, Quaternium-15, Diazolidinyl Urea — preservatives that slowly release formaldehyde",
+          "Undisclosed fragrance: 'Fragrance' or 'Parfum' as a single ingredient can mask dozens of undisclosed chemicals",
+          "High-concern parabens: Propylparaben and Butylparaben have endocrine-disrupting potential at high concentrations",
+          "Oxybenzone in sunscreens: flagged by the EU and Hawaii as a potential hormone disruptor and reef-damaging",
+          "Mercury compounds: still found in some skin-lightening products — illegal in India but hard to detect",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Step 4: Check for Certified Products",
+      },
+      {
+        type: "paragraph",
+        text: "The easiest way to skip all of this is to buy from brands that have already been independently verified. The Clean Sheet maintains a public registry of certified products — each one has been evaluated across five pillars including ingredient safety, legal compliance, and manufacturing standards.",
+      },
+      {
+        type: "cta",
+        text: "Skip the guesswork — check any product in seconds.",
+        href: "/analyzer",
+        label: "Check Your Product Now",
+      },
+    ],
+  },
+  {
+    slug: "parabens-in-indian-skincare-the-truth",
+    category: "Science",
+    readTime: "8 min read",
+    date: "May 5, 2026",
+    title: "Parabens in Indian Skincare: The Science, The Fear, and What Actually Matters",
+    subtitle: "They're in almost every moisturiser you've ever used. The internet says they cause cancer. The science says something more complicated. Here's what you need to know.",
+    excerpt: "Parabens are the most tested preservatives in cosmetic history. They're also one of the most misunderstood. Let's sort out the signal from the noise.",
+    author: "The Clean Sheet Team",
+    image: "/images/evidence-over-marketing.jpg",
+    content: [
+      {
+        type: "paragraph",
+        text: "Type 'parabens' into any beauty forum and you'll find a wall of panic: they cause cancer, they disrupt hormones, they accumulate in breast tissue. The 'paraben-free' label has become one of the most powerful marketing tools in the beauty industry. But what does the science actually say?",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What Are Parabens?",
+      },
+      {
+        type: "paragraph",
+        text: "Parabens are a family of synthetic preservatives used in cosmetics since the 1920s. The most common are methylparaben, ethylparaben, propylparaben, and butylparaben. They prevent the growth of bacteria and mould, which would otherwise make your moisturiser dangerous to use within days of opening.",
+      },
+      {
+        type: "paragraph",
+        text: "Without preservatives, your serum is a warm, nutrient-rich environment perfect for microbial growth. The alternative to parabens is either a different preservative system (most of which have their own concerns) or a completely anhydrous (water-free) formula.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The 2004 Study That Started Everything",
+      },
+      {
+        type: "paragraph",
+        text: "The paraben scare traces back to a 2004 study by Philippa Darbre that found parabens in breast tumour tissue. Headlines wrote themselves. What the headlines didn't mention: the study found parabens in tissue but didn't establish that they caused the tumours. It didn't have a control group of non-cancerous tissue. And it tested just 20 samples.",
+      },
+      {
+        type: "callout",
+        text: "Finding a substance in tumour tissue doesn't prove it caused the tumour. Many harmless substances are also present. This is correlation, not causation.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What Regulators Actually Say",
+      },
+      {
+        type: "bullets",
+        items: [
+          "EU (SCCS): Methylparaben and ethylparaben are safe at current concentrations (up to 0.4% each, 0.8% combined)",
+          "India (CDSCO): Parabens are permitted under the Drugs and Cosmetics Act",
+          "US FDA: Currently considers parabens safe in cosmetics, continues to monitor research",
+          "Long-chain parabens (isopropylparaben, isobutylparaben): banned in EU cosmetics since 2014",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "The concern is specifically about long-chain parabens (propyl, butyl, and longer) at high concentrations, particularly in products applied to large skin areas and left on. Short-chain parabens (methyl, ethyl) have a much stronger safety record. This distinction matters and is almost always missing from 'paraben-free' marketing.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The Clean Sheet's Stance",
+      },
+      {
+        type: "paragraph",
+        text: "The Clean Sheet rates methylparaben and ethylparaben as Low concern at typical cosmetic concentrations. Propylparaben and butylparaben are rated Medium concern — not because the evidence is conclusive, but because the precautionary principle applies when there's a plausible mechanistic concern (weak estrogenic activity) and alternatives are available.",
+      },
+      {
+        type: "paragraph",
+        text: "What we don't support is the wholesale 'paraben-free' movement that pushes consumers toward preservative alternatives — like formaldehyde releasers or phenoxyethanol — that have worse safety profiles or less data. The goal is safe preservation, not preservation-free products that go rancid and harbour bacteria.",
+      },
+      {
+        type: "cta",
+        text: "Want to check the preservative system in your product?",
+        href: "/analyzer",
+        label: "Analyse Your Product for Free",
+      },
+    ],
+  },
+  {
+    slug: "best-sunscreen-ingredients-india-2026",
+    category: "Science",
+    readTime: "9 min read",
+    date: "April 28, 2026",
+    title: "The Best (and Worst) Sunscreen Ingredients in India in 2026",
+    subtitle: "Indian summers are brutal. Most sunscreens sold here use filter combinations that the EU banned years ago. Here's what to look for and what to avoid.",
+    excerpt: "SPF 50 doesn't tell you anything about which UV filters are actually in your sunscreen. The filter choice matters more than the number on the bottle.",
+    author: "The Clean Sheet Team",
+    image: "/images/cosmetic-regulations-world.jpg",
+    content: [
+      {
+        type: "paragraph",
+        text: "Indians have some of the highest UV exposure in the world. We also have a sunscreen market dominated by products using UV filter combinations that have been flagged, restricted, or outright banned in the EU and by the US FDA. The number on the bottle — SPF 30, 50, 50+ — tells you nothing about which chemicals are creating that protection.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "How UV Filters Work",
+      },
+      {
+        type: "paragraph",
+        text: "UV filters are the active ingredients in sunscreen. They either absorb UV radiation (chemical/organic filters) or reflect it (physical/mineral filters like zinc oxide and titanium dioxide). Most modern sunscreens use a combination of both.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Filters to Avoid in India",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Oxybenzone (Benzophenone-3): Highest concern. Penetrates skin, found in blood at significant concentrations, potential endocrine disruptor. Banned in Hawaii and parts of the US for reef damage. Still common in Indian products.",
+          "Homosalate: Used at up to 15% in many Indian sunscreens. SCCS (EU) found it's only safe up to 0.5%. Most products use it at 10–15%.",
+          "Octocrylene: Converts to benzophenone on skin over time, particularly in products that also contain avobenzone.",
+          "Benzophenone-4: A water-soluble UV absorber with sensitisation concerns — frequently found in Indian sunscreens despite limited safety data.",
+        ],
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Filters That Are Genuinely Safe",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Zinc Oxide: Broad-spectrum UVA+UVB protection. Mineral. Does not penetrate skin. Safe for babies, pregnancy, and sensitive skin. Only downside: white cast.",
+          "Titanium Dioxide: Excellent UVB filter. Mineral. Very safe profile. Often combined with zinc oxide for full-spectrum protection.",
+          "Tinosorb S (Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine): A next-generation chemical filter approved in EU. Photostable. Minimal skin penetration. Not yet approved by US FDA but widely used in Europe and Asia.",
+          "Tinosorb M: Another advanced EU-approved filter. Hybrid (both absorbs and reflects). Photostable. Used in many premium European and Korean sunscreens.",
+          "Mexoryl SX (Ecamsule): Excellent UVA filter. Photostable. Very low skin penetration. Available in India through some premium brands.",
+        ],
+      },
+      {
+        type: "callout",
+        text: "If you're in India and want to check whether your sunscreen uses safe UV filters, you can paste the product URL or ingredient list into The Clean Sheet's free analyzer at thecleansheet.in/analyzer.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What to Look For on Indian Labels",
+      },
+      {
+        type: "paragraph",
+        text: "In India, UV filter labelling follows the INCI system. Look for these names on your sunscreen label: Zinc Oxide or Titanium Dioxide for mineral filters. For safer chemical filters: Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine (Tinosorb S), Methylene Bis-Benzotriazolyl Tetramethylbutylphenol (Tinosorb M), or Terephthalylidene Dicamphor Sulfonic Acid (Mexoryl SX).",
+      },
+      {
+        type: "paragraph",
+        text: "The Indian sunscreen market is catching up — several newer brands like Earth Rhythm, Minimalist, and Sugandha have started using better filter combinations. But the majority of mass-market products still use the same cheap, high-concern filter cocktails they've used for 20 years.",
+      },
+      {
+        type: "cta",
+        text: "Check your sunscreen's UV filters for free.",
+        href: "/analyzer",
+        label: "Analyse Your Sunscreen Now",
+      },
+    ],
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {

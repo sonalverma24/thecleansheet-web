@@ -1071,11 +1071,85 @@ function CTABanner() {
 }
 
 /* ─────────────────────────────────────────────
+   FAQ SECTION — SEO / featured snippets
+───────────────────────────────────────────── */
+const HOME_FAQS = [
+  {
+    q: "How do I check if a beauty product is safe in India?",
+    a: "The easiest way is to use The Clean Sheet's free AI tool 'Ask Clean'. Paste the product URL or ingredient list and the tool instantly checks every ingredient against Indian, EU, and US safety standards, flags harmful chemicals, and gives you a science-backed Clean Sheet Score.",
+  },
+  {
+    q: "What is The Clean Sheet?",
+    a: "The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide AI-powered ingredient analysis (Ask Clean), a certified product directory, a database of 25,000+ cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.",
+  },
+  {
+    q: "Is The Clean Sheet's ingredient analysis free?",
+    a: "Yes. The Ask Clean tool is completely free to use. Paste any product URL (Nykaa, Myntra, Amazon, brand website) or paste an ingredient list directly, and you'll get a full safety analysis including a Clean Sheet Score within seconds.",
+  },
+  {
+    q: "What does the Clean Sheet Score mean?",
+    a: "The Clean Sheet Score is a 0–100 rating based on five pillars: ingredient safety & toxicity, legal compliance with Indian regulations, manufacturing standards, evidence-based claims, and ethical sourcing. A score above 80 is considered 'Good', 90+ is 'Excellent'.",
+  },
+  {
+    q: "Which beauty products are certified by The Clean Sheet in India?",
+    a: "You can browse all certified products at thecleansheet.in/certified. Each certified product has a public scorecard showing its Clean Sheet Score, ingredient analysis, and verified claims. Brands can apply for certification at thecleansheet.in/brands.",
+  },
+  {
+    q: "Is niacinamide safe for Indian skin?",
+    a: "Yes, niacinamide (Vitamin B3) is considered safe and is rated Low concern by The Clean Sheet. It is permitted under Indian, EU, and US cosmetic regulations with no concentration limit. It is commonly used in serums and moisturisers for its brightening, pore-minimising, and anti-inflammatory properties.",
+  },
+  {
+    q: "Are parabens banned in India?",
+    a: "Parabens are not fully banned in India but are restricted. Short-chain parabens like methylparaben and propylparaben are permitted up to 0.4% (individual) or 0.8% (mixed) under Indian cosmetics regulations. However, they are classified as Medium concern by The Clean Sheet due to potential endocrine effects at high concentrations.",
+  },
+];
+
+function HomeFAQ() {
+  return (
+    <section className="py-16 sm:py-20 bg-teal-50/40 border-t border-teal-100">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <div className="text-xs font-normal text-ink-400 uppercase tracking-widest mb-3 text-center">Common Questions</div>
+        <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight mb-10 text-center">
+          Everything you wanted to know about clean beauty in India
+        </h2>
+        <div className="space-y-0 divide-y divide-teal-100 border border-teal-100 rounded-2xl overflow-hidden bg-white">
+          {HOME_FAQS.map(({ q, a }) => (
+            <details key={q} className="group">
+              <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none hover:bg-teal-50/60 transition-colors">
+                <span className="font-medium text-ink-900 text-sm sm:text-base">{q}</span>
+                <ChevronRight size={16} className="text-teal-500 flex-shrink-0 group-open:rotate-90 transition-transform" />
+              </summary>
+              <div className="px-6 pb-5 text-ink-600 leading-relaxed text-sm sm:text-base border-t border-teal-50">
+                {a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const homeFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: HOME_FAQS.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
+/* ─────────────────────────────────────────────
    PAGE
 ───────────────────────────────────────────── */
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqJsonLd) }}
+      />
       <Hero />
       <StatsBar />
       <TheProblem />
@@ -1087,6 +1161,7 @@ export default function HomePage() {
       <ForBrands />
       <ForConsumers />
       <HowItWorks />
+      <HomeFAQ />
       <CTABanner />
     </>
   );
