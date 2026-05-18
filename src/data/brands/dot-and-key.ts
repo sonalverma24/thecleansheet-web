@@ -51,7 +51,7 @@ export const dotAndKeyBrand: Brand = {
       productType: "sunscreen",
       concern: "Sun protection + brightening",
       summary:
-        "A broad-spectrum SPF 50+ sunscreen combining a modern UV filter system (Uvinul A Plus, Tinosorb S, Ethylhexyl Triazone) with Vitamin C (Ascorbyl Glucoside, a stable derivative) and Hyaluronic Acid. No Benzophenone-3. Texture is lightweight and non-greasy. INCI-verified formulation with no fragrance and no dyes, the cleanest sunscreen in the Dot & Key range. Minor deduction: Ascorbyl Glucoside is a stable but less potent Vitamin C form compared to L-Ascorbic Acid; the brightening claim is directionally accurate but efficacy is moderate.",
+        "A broad-spectrum SPF 50+ sunscreen combining a modern UV filter system (Uvinul A Plus, Tinosorb S, Ethylhexyl Triazone) with Vitamin C (Ascorbyl Glucoside, a stable derivative) and Hyaluronic Acid. No Benzophenone-3, no fragrance, no dyes. Texture is lightweight and non-greasy. Ascorbyl Glucoside is a stable Vitamin C form that converts to active Vitamin C in skin; brightening activity is real but gradual.",
       score: 82,
       scoreLabel: "Good",
       image: "https://www.dotandkey.com/cdn/shop/files/VitaminCSunscreenListing1-1_637b02a6-7537-475e-989f-bd472a2e415c.jpg?v=1778839085",
@@ -89,7 +89,7 @@ export const dotAndKeyBrand: Brand = {
       warn_badges: [],
       info_badges: ["Vitamin C Derivative (Not L-Ascorbic Acid)"],
       indiaContext:
-        "SPF 50+ with PA++++ is the recommended minimum for Indian climate. This formulation uses EU-approved modern UV filters not yet available in US sunscreens, a genuine formulation advantage. No Benzophenone-3 (unlike the Watermelon Sunscreen), making this the safer Dot & Key SPF choice.",
+        "SPF 50+ with PA++++ is the recommended minimum for Indian climate. This formulation uses EU-approved modern UV filters, which have a strong safety track record. No Benzophenone-3 and no fragrance make this a good option for sensitive skin types.",
     },
 
     // ─── 2. Vitamin C + E Sorbet Moisturizer ──────────────────────────────────
@@ -510,7 +510,7 @@ export const dotAndKeyBrand: Brand = {
       analyzedAt: "2026-05-18",
       pillars: [
         { name: "Ingredient Safety",    score: 22, max: 25, note: "Modern UV filters with good safety profiles. Iron oxides (tint) are inert mineral pigments, safe and provide VL protection. No Benzophenone-3. No azo dyes. Minor deduction for Ethylhexyl Methoxycinnamate at lower INCI position (some endocrine data exists)." },
-        { name: "Irritation Potential", score: 17, max: 20, note: "No fragrance. Iron oxides are non-irritating. Overall low irritation risk. Suitable for sensitive skin compared to the Watermelon Sunscreen." },
+        { name: "Irritation Potential", score: 17, max: 20, note: "No fragrance. Iron oxides are inert, non-irritating mineral pigments. Overall low irritation risk, well-suited for sensitive skin." },
         { name: "Disclosure Quality",   score: 16, max: 20, note: "INCI published. Iron oxide pigments clearly listed. UV filter system transparent. No fragrance disclosed as absent." },
         { name: "Regulatory",           score:  9, max: 10, note: "All UV filters permissible under Indian cosmetics regulations. Iron oxides are approved cosmetic pigments globally." },
         { name: "Efficacy",             score: 11, max: 15, note: "SPF 50+/PA++++ is excellent protection. Iron oxides provide additional visible light protection (relevant for melasma management). Niacinamide and Strawberry antioxidants add skin benefits. Strawberry at trace concentration limits efficacy contribution." },

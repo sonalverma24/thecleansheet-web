@@ -239,19 +239,19 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
               <p className="text-teal-300/80 text-sm mb-5">{product.concern}</p>
 
               {/* Badges */}
-              <div className="flex flex-wrap gap-1.5 mb-6">
+              <div className="mb-6">
                 {product.pass_badges.map((b) => (
-                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded">
+                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded whitespace-nowrap">
                     {b}
                   </span>
                 ))}
                 {product.warn_badges.map((b) => (
-                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-red-500/15 border border-red-500/30 text-red-300 px-2 py-0.5 rounded">
+                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-red-500/15 border border-red-500/30 text-red-300 px-2 py-0.5 rounded whitespace-nowrap">
                     {b}
                   </span>
                 ))}
                 {product.info_badges.map((b) => (
-                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded">
+                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded whitespace-nowrap">
                     {b}
                   </span>
                 ))}

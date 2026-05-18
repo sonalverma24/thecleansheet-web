@@ -119,7 +119,7 @@ function BadgeRow({
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((b, i) => (
-        <span key={i} className={`whitespace-nowrap inline-flex items-center gap-1.5 text-xs font-normal px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
+        <span key={i} style={{ width: 'fit-content', whiteSpace: 'nowrap' }} className={`inline-flex items-center gap-1.5 text-xs font-normal px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
           <Icon size={11} />
           {b}
         </span>
