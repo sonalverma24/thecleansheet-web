@@ -4,9 +4,9 @@ import IngredientDirectory from "./IngredientDirectory";
 import type { Ingredient } from "./IngredientDirectory";
 
 export const metadata: Metadata = {
-  title: "Cosmetic Ingredient Directory — 25,000+ Ingredients",
+  title: "Cosmetic Ingredient Directory, 25,000+ Ingredients",
   description:
-    "Search 25,000+ cosmetic ingredients. Get safety ratings, regulatory status across India, EU, US and Korea, allergen and CMR flags — all backed by science. Free to use.",
+    "Search 25,000+ cosmetic ingredients. Get safety ratings, regulatory status across India, EU, US and Korea, allergen and CMR flags, all backed by science. Free to use.",
   keywords: [
     "cosmetic ingredient list", "INCI ingredient safety", "parabens in skincare India",
     "is niacinamide safe", "fragrance allergy ingredients", "CMR cosmetic ingredients",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://thecleansheet.in/ingredients" },
   openGraph: {
-    title: "Cosmetic Ingredient Directory — 25,000+ Ingredients | The Clean Sheet™",
+    title: "Cosmetic Ingredient Directory, 25,000+ Ingredients | The Clean Sheet™",
     description:
       "Check safety, regulatory status, and allergen flags for any cosmetic ingredient. India's most comprehensive ingredient database.",
     url: "https://thecleansheet.in/ingredients",

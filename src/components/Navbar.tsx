@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { href: "/brands",        label: "Scorecards"     },
   { href: "/certification", label: "Certification"  },
   { href: "/learn",         label: "Learn"          },
-  { href: "/blog",          label: "Journal"        },
+  { href: "/blog",          label: "Reads"          },
   { href: "/about",         label: "About"          },
 ];
 

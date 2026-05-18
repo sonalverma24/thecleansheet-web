@@ -20,11 +20,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     concern === "low"
       ? "Generally considered safe for cosmetic use."
       : concern === "medium"
-      ? "Use with caution — some restrictions apply."
-      : "High concern — flagged for safety review.";
+      ? "Use with caution, some restrictions apply."
+      : "High concern, flagged for safety review.";
 
-  const title = `${ing.INCI_Name} — Safety, Uses & Regulatory Status`;
-  const description = `Is ${ing.INCI_Name} safe? ${safetyLine} See TCS concern level, India/EU/US regulatory status, allergen flags, concentration limits, and safety notes — backed by science.`;
+  const title = `${ing.INCI_Name}, Safety, Uses & Regulatory Status`;
+  const description = `Is ${ing.INCI_Name} safe? ${safetyLine} See TCS concern level, India/EU/US regulatory status, allergen flags, concentration limits, and safety notes, backed by science.`;
 
   return {
     title,
@@ -37,14 +37,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ].filter(Boolean),
     alternates: { canonical: `https://thecleansheet.in/ingredients/${slug}` },
     openGraph: {
-      title: `${ing.INCI_Name} — Is it Safe? | The Clean Sheet™`,
+      title: `${ing.INCI_Name}, Is it Safe? | The Clean Sheet™`,
       description,
       url: `https://thecleansheet.in/ingredients/${slug}`,
       type: "website",
     },
     twitter: {
       card: "summary",
-      title: `${ing.INCI_Name} — Is it Safe?`,
+      title: `${ing.INCI_Name}, Is it Safe?`,
       description,
     },
   };
@@ -241,19 +241,19 @@ export default async function IngredientDetailPage({ params }: { params: Promise
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Function</div>
-                  <p className="text-ink-700">{ing.Function || "—"}</p>
+                  <p className="text-ink-700">{ing.Function || "-"}</p>
                 </div>
                 <div>
                   <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Category</div>
-                  <p className="text-ink-700">{ing.Category_Name || "—"}</p>
+                  <p className="text-ink-700">{ing.Category_Name || "-"}</p>
                 </div>
                 <div>
                   <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Common In</div>
-                  <p className="text-ink-700">{ing.Common_Products || "—"}</p>
+                  <p className="text-ink-700">{ing.Common_Products || "-"}</p>
                 </div>
                 <div>
                   <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Origin</div>
-                  <p className="text-ink-700">{ing.Ingredient_Origin || "—"}</p>
+                  <p className="text-ink-700">{ing.Ingredient_Origin || "-"}</p>
                 </div>
               </div>
             </div>
@@ -337,7 +337,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                     <div className="flex items-center gap-1.5">
                       <StatusIcon status={status} />
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(status)}`}>
-                        {status || "—"}
+                        {status || "-"}
                       </span>
                     </div>
                   </div>

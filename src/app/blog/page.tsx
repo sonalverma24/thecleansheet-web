@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Clock, BookOpen, Rss, Shield, TriangleAlert } from "lucide-react";
 import { BLOG_POSTS, BlogPost } from "@/lib/blog-posts";
+import NewsletterForm from "@/components/NewsletterForm";
 const ILLUSTRATIONS: Record<string, React.ComponentType> = {};
 
 function PostImage({ post, fill = true, className = "" }: { post: BlogPost; fill?: boolean; className?: string }) {
@@ -27,7 +28,7 @@ function PostImage({ post, fill = true, className = "" }: { post: BlogPost; fill
 }
 
 export const metadata = {
-  title: "The Journal, The Clean Sheet™",
+  title: "Reads, The Clean Sheet™",
   description: "Science, regulation, and transparency in beauty. Insights on skincare ingredients, cosmetic law, and what it really means to be clean.",
 };
 
@@ -84,7 +85,7 @@ export default function BlogPage() {
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-medium tracking-tight leading-none" style={{ color: '#ffffff' }}>
                   The&nbsp;
-                  <span style={{ background: "linear-gradient(90deg, #5eead4, #99f6e4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Journal.</span>
+                  <span style={{ background: "linear-gradient(90deg, #5eead4, #99f6e4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Reads.</span>
                 </h1>
               </div>
             </div>
@@ -283,7 +284,7 @@ export default function BlogPage() {
               {[
                 { value: "0-100", label: "Transparent score", sub: "No black boxes" },
                 { value: "4 pillars", label: "Evaluation framework", sub: "Safety · Efficacy · Transparency · Sustainability" },
-                { value: "EU + India", label: "Multi-regulatory", sub: "SCCS, FDA, BIS cross-referenced" },
+                { value: "EU · India · US · Korea", label: "Multi-regulatory", sub: "SCCS, FDA, BIS, MFDS cross-referenced" },
                 { value: "QR verified", label: "Consumer-facing", sub: "Scan at the shelf" },
               ].map(({ value, label, sub }) => (
                 <div key={value} className="bg-white rounded-3xl border border-teal-100 p-5 hover:shadow-md hover:shadow-teal-100 transition-all">
@@ -309,7 +310,7 @@ export default function BlogPage() {
             <div className="relative z-10 px-8 py-16 lg:py-20 text-center max-w-xl mx-auto">
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-teal-300 text-xs font-normal px-3 py-1.5 rounded-full mb-6">
                 <Rss size={12} />
-                The Journal
+                Reads
               </div>
               <h2 className="text-3xl lg:text-4xl font-medium text-white tracking-tight mb-4">
                 Stay ahead of
@@ -319,22 +320,7 @@ export default function BlogPage() {
               <p className="text-teal-300 text-lg leading-relaxed mb-8">
                 New articles on ingredients, regulation, and safety, straight to your inbox. No brand deals. No sponsored content.
               </p>
-              <form
-                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-              >
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  required
-                  className="flex-1 bg-white/10 border border-white/20 text-white placeholder-teal-400 px-5 py-3.5 rounded-2xl focus:outline-none focus:border-teal-400 text-sm"
-                />
-                <button
-                  type="submit"
-                  className="bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-colors whitespace-nowrap text-sm"
-                >
-                  Subscribe
-                </button>
-              </form>
+              <NewsletterForm />
               <p className="text-teal-600 text-xs mt-3">No spam. Unsubscribe anytime.</p>
             </div>
           </div>

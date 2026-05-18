@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, XCircle, BookOpen, ArrowRight, FlaskConica
 
 export const metadata = {
   title: "Learn | The Clean Sheet™",
-  description: "Ingredient education, skin type guides, and courses — everything you need to make smarter decisions about your skincare.",
+  description: "Ingredient education, skin type guides, and courses, everything you need to make smarter decisions about your skincare.",
 };
 
 const GLOSSARY = [
@@ -226,7 +226,7 @@ export default function LearnPage() {
               </div>
             </div>
 
-            {/* Right — scan graphic */}
+            {/* Right, scan graphic */}
             <div className="learn-reveal" style={{ animationDelay:"0.3s" }}>
               <ScanGraphic />
             </div>

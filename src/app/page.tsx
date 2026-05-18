@@ -167,7 +167,7 @@ function Hero() {
 
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-5 mt-5 sm:mt-6"
               style={{ animation: "tcs-fadeUp 0.5s 0.5s ease both" }}>
-              {["25k+ Ingredients Scored", "EU · India · US Regulations", "No Paid Placements. Ever."].map(t => (
+              {["25k+ Ingredients Scored", "EU · India · US · Korea", "No Paid Placements. Ever."].map(t => (
                 <div key={t} className="flex items-center gap-2 text-ink-400 text-xs sm:text-sm">
                   <CheckCircle2 size={12} className="text-teal-500 flex-shrink-0" />
                   {t}
@@ -417,7 +417,7 @@ function VisualProof() {
     {
       graphic: <GraphicDatabase />,
       heading: "25,000+ ingredients. Every one scored.",
-      body: "Our database covers carcinogens, endocrine disruptors, sensitizers, and formaldehyde releasers, cross-referenced against EU, FDA, and Indian standards.",
+      body: "Our database covers carcinogens, endocrine disruptors, sensitizers, and formaldehyde releasers, cross-referenced against EU, India, US & Korean standards.",
     },
     {
       graphic: <GraphicNaturalSynthetic />,
@@ -1003,7 +1003,7 @@ function StepGraphicPublish() {
 function HowItWorks() {
   const steps = [
     { n:"01", title:"Submit your formulation",    body:"Complete INCI lists, TDS, MSDS, COA, and independent lab results through our verification portal.", graphic: <StepGraphicSubmit /> },
-    { n:"02", title:"We analyze every ingredient", body:"Each ingredient evaluated for toxicity, exposure risk, sensitization, and regulatory compliance across EU, FDA, and Indian standards.", graphic: <StepGraphicAnalysis /> },
+    { n:"02", title:"We analyze every ingredient", body:"Each ingredient evaluated for toxicity, exposure risk, sensitization, and regulatory compliance across EU, India, US & Korean standards.", graphic: <StepGraphicAnalysis /> },
     { n:"03", title:"Score. Certify. Publish.",    body:"Products receive a Clean Sheet Score and tier. A QR code links to the public scorecard for real-time consumer verification.", graphic: <StepGraphicPublish /> },
   ];
   return (
@@ -1071,12 +1071,12 @@ function CTABanner() {
 }
 
 /* ─────────────────────────────────────────────
-   FAQ SECTION — SEO / featured snippets
+   FAQ SECTION, SEO / featured snippets
 ───────────────────────────────────────────── */
 const HOME_FAQS = [
   {
     q: "How do I check if a beauty product is safe in India?",
-    a: "The easiest way is to use The Clean Sheet's free AI tool 'Ask Clean'. Paste the product URL or ingredient list and the tool instantly checks every ingredient against Indian, EU, and US safety standards, flags harmful chemicals, and gives you a science-backed Clean Sheet Score.",
+    a: "The easiest way is to use The Clean Sheet's free AI tool 'Ask Clean'. Paste the product URL or ingredient list and the tool instantly checks every ingredient against India, EU, US & Korean safety standards, flags harmful chemicals, and gives you a science-backed Clean Sheet Score.",
   },
   {
     q: "What is The Clean Sheet?",
@@ -1088,7 +1088,7 @@ const HOME_FAQS = [
   },
   {
     q: "What does the Clean Sheet Score mean?",
-    a: "The Clean Sheet Score is a 0–100 rating based on five pillars: ingredient safety & toxicity, legal compliance with Indian regulations, manufacturing standards, evidence-based claims, and ethical sourcing. A score above 80 is considered 'Good', 90+ is 'Excellent'.",
+    a: "The Clean Sheet Score is a 0-100 rating based on five pillars: ingredient safety & toxicity, legal compliance with Indian regulations, manufacturing standards, evidence-based claims, and ethical sourcing. A score above 80 is considered 'Good', 90+ is 'Excellent'.",
   },
   {
     q: "Which beauty products are certified by The Clean Sheet in India?",
@@ -1096,7 +1096,7 @@ const HOME_FAQS = [
   },
   {
     q: "Is niacinamide safe for Indian skin?",
-    a: "Yes, niacinamide (Vitamin B3) is considered safe and is rated Low concern by The Clean Sheet. It is permitted under Indian, EU, and US cosmetic regulations with no concentration limit. It is commonly used in serums and moisturisers for its brightening, pore-minimising, and anti-inflammatory properties.",
+    a: "Yes, niacinamide (Vitamin B3) is considered safe and is rated Low concern by The Clean Sheet. It is permitted under Indian, EU, US & Korean cosmetic regulations with no concentration limit. It is commonly used in serums and moisturisers for its brightening, pore-minimising, and anti-inflammatory properties.",
   },
   {
     q: "Are parabens banned in India?",

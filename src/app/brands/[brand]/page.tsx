@@ -13,15 +13,15 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   const brand = getBrandBySlug(slug);
   if (!brand) return {};
   return {
-    title: `${brand.name} Skincare Review — Clean Sheet Score ${brand.avgScore}/100`,
-    description: `Is ${brand.name} clean beauty? See science-backed scores for all ${brand.products.length} ${brand.name} products — ingredient safety, regulatory compliance, and formulation analysis. Average score: ${brand.avgScore}/100.`,
+    title: `${brand.name} Skincare Review, Clean Sheet Score ${brand.avgScore}/100`,
+    description: `Is ${brand.name} clean beauty? See science-backed scores for all ${brand.products.length} ${brand.name} products, ingredient safety, regulatory compliance, and formulation analysis. Average score: ${brand.avgScore}/100.`,
     keywords: [
       `${brand.name} review India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
       `${brand.name} products score`, `${brand.name} skincare India`, `${brand.name} ingredient analysis`,
     ],
     alternates: { canonical: `https://thecleansheet.in/brands/${slug}` },
     openGraph: {
-      title: `${brand.name} — Clean Sheet Score ${brand.avgScore}/100`,
+      title: `${brand.name}, Clean Sheet Score ${brand.avgScore}/100`,
       description: `Science-backed ingredient analysis for all ${brand.name} products. Average score: ${brand.avgScore}/100 (${brand.verdict}).`,
       url: `https://thecleansheet.in/brands/${slug}`,
       type: "website",
@@ -31,38 +31,69 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
 }
 
 function ScoreRing({ score, size = 72 }: { score: number; size?: number }) {
-  const r = (size - 8) / 2;
+  const sw = 7;
+  const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
   const c = scoreColors(score);
+  // Logo fills the inner circle (stroke inner edge = r - sw/2), minus 1px gap
+  const logoSize = Math.round((r - sw / 2) * 2) - 1;
+  // Score badge sits on circumference at top-right (−45° from horizontal = northeast)
+  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
+  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
+  const br = Math.round(size * 0.13);
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={7} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={7}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      <text x={size / 2} y={size / 2 + 5} textAnchor="middle" fontSize={15} fontWeight={700} fill="#fff" fontFamily="serif">
-        {score}
-      </text>
-    </svg>
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      {/* Layer 1, track ring */}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={sw} />
+      </svg>
+      {/* Layer 2, logo fills inner circle */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+        <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
+      </div>
+      {/* Layer 3, colored arc + score badge on top */}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+        <circle cx={bx} cy={by} r={br} fill={c.ring} />
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+          {score}
+        </text>
+      </svg>
+    </div>
   );
 }
 
 function ProductScoreRing({ score, size = 56 }: { score: number; size?: number }) {
-  const r = (size - 6) / 2;
+  const sw = 5;
+  const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
   const c = scoreColors(score);
+  const logoSize = Math.round((r - sw / 2) * 2) - 1;
+  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
+  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
+  const br = Math.round(size * 0.145);
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#f1f5f9" strokeWidth={5} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={5}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      <text x={size / 2} y={size / 2 + 4} textAnchor="middle" fontSize={11} fontWeight={700} fill="#1e293b" fontFamily="serif">
-        {score}
-      </text>
-    </svg>
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+        <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
+      </div>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+        <circle cx={bx} cy={by} r={br} fill={c.ring} />
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+          {score}
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -151,7 +182,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
               </div>
             </div>
 
-            {/* Right — score card */}
+            {/* Right, score card */}
             <div className="bg-white/8 border border-white/12 rounded-3xl p-7 backdrop-blur-sm">
               <div className="flex items-center gap-5 mb-6">
                 <ScoreRing score={brand.avgScore} size={80} />
@@ -239,15 +270,15 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
                         </h3>
                         <p className="text-xs text-ink-400 mb-3 line-clamp-1">{product.concern}</p>
 
-                        {/* Badges — show max 3 */}
+                        {/* Badges, show max 3 */}
                         <div className="flex flex-wrap gap-1 mb-3 flex-1">
                           {product.pass_badges.slice(0, 2).map((b) => (
-                            <span key={b} className="font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded">
+                            <span key={b} className="whitespace-nowrap font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded">
                               {b}
                             </span>
                           ))}
                           {product.warn_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="font-mono text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded">
+                            <span key={b} className="whitespace-nowrap font-mono text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded">
                               {b}
                             </span>
                           ))}

@@ -113,6 +113,25 @@ function renderBlock(block: BlogBlock, i: number) {
         </ul>
       );
 
+    case "image":
+      return (
+        <figure key={i} className="my-12 -mx-4 sm:mx-0">
+          <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden">
+            <Image
+              src={block.src}
+              alt={block.alt}
+              fill
+              className="object-cover"
+            />
+          </div>
+          {block.caption && (
+            <figcaption className="mt-3 text-sm text-ink-400 text-center italic leading-relaxed">
+              {block.caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+
     case "divider":
       return <hr key={i} className="my-10 border-teal-100" />;
 
@@ -156,7 +175,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
-          { "@type": "ListItem", position: 2, name: "Journal", item: "https://thecleansheet.in/blog" },
+          { "@type": "ListItem", position: 2, name: "Reads", item: "https://thecleansheet.in/blog" },
           { "@type": "ListItem", position: 3, name: post.title, item: `https://thecleansheet.in/blog/${slug}` },
         ],
       },
@@ -221,7 +240,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             style={{ color: '#ffffff' }}
           >
             <ArrowLeft size={14} />
-            Back to Journal
+            Back to Reads
           </Link>
         </div>
 
@@ -301,7 +320,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <section className="border-t border-teal-100 py-16 bg-teal-50/40">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-xs font-normal text-ink-400 uppercase tracking-widest mb-8">
-              More from The Journal
+              More from The Clean Sheet
             </div>
             <div className="grid sm:grid-cols-2 gap-6">
               {related.map((p) => (

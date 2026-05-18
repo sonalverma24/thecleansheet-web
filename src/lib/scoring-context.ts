@@ -36,7 +36,7 @@ Step 5, Check for published lab tests and transparency documentation
 Search: "[brand] lab test certificate", "[brand] dermatologist tested study", "[brand] clinical test results", "[brand] site:[brand-domain] lab OR test OR certificate OR study"
 Also check if the product page or brand website prominently links to lab PDFs, third-party test reports, or clinical evidence
 If tests are found publicly on the brand website or linked from the product page: award full transparency marks for that criterion
-If tests are not found by search: note "lab tests not confirmed via public search" — do NOT assume they don't exist; apply only a small deduction (2 pts max for this sub-criterion)
+If tests are not found by search: note "lab tests not confirmed via public search", do NOT assume they don't exist; apply only a small deduction (2 pts max for this sub-criterion)
 
 Use what you find. If a search returns no useful result, note it and proceed with available data.
 Do not fabricate INCI lists, prices, or reviews. If unavailable, say so explicitly.
@@ -151,7 +151,7 @@ SCORING BANDS:
 
 SCOPE RULE:
 Always search the web first before deciding if a query is out of scope.
-IN SCOPE (always analyze, never return out_of_scope): skincare, haircare, body care, personal hygiene, color cosmetics (lipstick, lip gloss, lip liner, foundation, concealer, blush, eyeshadow, mascara, eyeliner, nail polish, BB cream, CC cream, tinted moisturizer, glitter products), sunscreen, deodorant, perfume/fragrance, soap, shampoo, conditioner, hair color, hair oil, serum, moisturizer, face wash, toner, exfoliant, scrub, mask — anything applied to the human body for hygiene, grooming, or aesthetic purposes.
+IN SCOPE (always analyze, never return out_of_scope): skincare, haircare, body care, personal hygiene, color cosmetics (lipstick, lip gloss, lip liner, foundation, concealer, blush, eyeshadow, mascara, eyeliner, nail polish, BB cream, CC cream, tinted moisturizer, glitter products), sunscreen, deodorant, perfume/fragrance, soap, shampoo, conditioner, hair color, hair oil, serum, moisturizer, face wash, toner, exfoliant, scrub, mask, anything applied to the human body for hygiene, grooming, or aesthetic purposes.
 OUT OF SCOPE: queries clearly unrelated to beauty and personal care (e.g. finance, sports, food, technology, clothing). When in doubt, treat it as IN SCOPE.
 If the query is beauty-related but the specific product cannot be found, make your best attempt using whatever data is available, do NOT return out_of_scope just because a product is obscure or lesser-known.
 
@@ -289,7 +289,7 @@ SCORING BANDS: 90-100 Excellent · 70-89 Good · 50-69 Fair · Below 50 Concern
 ---
 
 SCOPE RULE:
-Always search the web first. IN SCOPE: anything applied to the body — skincare, haircare, makeup, color cosmetics (lipstick, foundation, mascara, eyeshadow, blush, nail polish, glitter products, lip gloss, etc.), sunscreen, deodorant, fragrance, personal hygiene. OUT OF SCOPE: finance, sports, food, technology, clothing. When in doubt, treat as IN SCOPE. Never return out_of_scope for lesser-known or regional beauty brands.
+Always search the web first. IN SCOPE: anything applied to the body, skincare, haircare, makeup, color cosmetics (lipstick, foundation, mascara, eyeshadow, blush, nail polish, glitter products, lip gloss, etc.), sunscreen, deodorant, fragrance, personal hygiene. OUT OF SCOPE: finance, sports, food, technology, clothing. When in doubt, treat as IN SCOPE. Never return out_of_scope for lesser-known or regional beauty brands.
 
 Return ONLY valid JSON. No markdown, no preamble. Start directly with {
 

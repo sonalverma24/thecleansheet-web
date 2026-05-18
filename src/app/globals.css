@@ -51,7 +51,7 @@
   --color-coral-50:  #FFF2F1;
 
   /* ── Background (white-first) ── */
-  --color-cream-50:  #FFFFFF;   /* ← Page background — pure white */
+  --color-cream-50:  #FFFFFF;   /* ← Page background, pure white */
   --color-cream-100: #F7F7F5;   /* ← Off-white for card sections */
   --color-cream-200: #EFEFEC;   /* ← Subtle divider/section bg */
 
@@ -68,8 +68,8 @@
   --color-ink-100: #EEEDED;
   --color-ink-50:  #F7F6F6;
 
-  /* ── Neon Yellow (editorial accent — use sparingly) ── */
-  --color-yellow-600: #AACC18;   /* dark — for text on light bg */
+  /* ── Neon Yellow (editorial accent, use sparingly) ── */
+  --color-yellow-600: #AACC18;   /* dark, for text on light bg */
   --color-yellow-500: #D6FF3E;   /* ← Primary neon yellow accent */
   --color-yellow-400: #E3FF72;   /* lighter */
   --color-yellow-100: #F4FFCC;   /* subtle bg */

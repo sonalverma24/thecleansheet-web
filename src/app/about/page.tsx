@@ -2,12 +2,12 @@ import Link from "next/link";
 import { ArrowRight, Shield, Heart, FlaskConical, CheckCircle2, Sparkles } from "lucide-react";
 
 export const metadata = {
-  title: "About The Clean Sheet™ — India's Clean Beauty Standard",
+  title: "About The Clean Sheet™, India's Clean Beauty Standard",
   description:
-    "The Clean Sheet is India's first independent, science-backed clean beauty platform. We analyse ingredients, certify products, and give consumers honest information — with zero brand bias.",
+    "The Clean Sheet is India's first independent, science-backed clean beauty platform. We analyse ingredients, certify products, and give consumers honest information, with zero brand bias.",
   alternates: { canonical: "https://thecleansheet.in/about" },
   openGraph: {
-    title: "About The Clean Sheet™ — India's Clean Beauty Standard",
+    title: "About The Clean Sheet™, India's Clean Beauty Standard",
     description:
       "Science before marketing. The Clean Sheet is India's only independent clean beauty certification body, built on open scorecards and zero brand conflicts.",
     url: "https://thecleansheet.in/about",
@@ -16,7 +16,7 @@ export const metadata = {
 };
 
 /* ─────────────────────────────────────────────
-   MANIFESTO GRAPHIC — terminal-style
+   MANIFESTO GRAPHIC, terminal-style
 ───────────────────────────────────────────── */
 function ManifestoGraphic() {
   const believe = [

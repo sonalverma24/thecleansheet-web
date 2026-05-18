@@ -20,9 +20,314 @@ export type BlogBlock =
   | { type: "callout"; text: string }
   | { type: "bullets"; items: string[] }
   | { type: "divider" }
+  | { type: "image"; src: string; alt: string; caption?: string }
   | { type: "cta"; text: string; href: string; label: string };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "the-concentration-illusion",
+    category: "Science",
+    readTime: "15 min read",
+    date: "May 18, 2026",
+    title: "The Concentration Illusion",
+    subtitle: "Why the percentage on your skincare label may not mean what you think it means.",
+    excerpt: "A beauty label can make a product feel scientific before you understand a single ingredient. But in skincare, a percentage is not automatically proof. It is only the beginning of a much longer question.",
+    author: "The Clean Sheet Team",
+    image: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=1200&q=80",
+    content: [
+      {
+        type: "paragraph",
+        text: "A beauty label can make a product feel scientific before you understand a single ingredient.",
+      },
+      {
+        type: "callout",
+        text: "10% niacinamide. 20% vitamin C. 1% retinol complex. Multi peptide technology. Clinically proven brightening actives.",
+      },
+      {
+        type: "paragraph",
+        text: "These phrases look precise. That is their power. They give the consumer a number, and the number creates the feeling of proof.",
+      },
+      {
+        type: "paragraph",
+        text: "But in skincare, a percentage is not automatically proof. It is only the beginning of a much longer question. What form of the ingredient is being used? Is the percentage for the pure active or for a supplier blend? Is the ingredient stable through shelf life? Is the pH compatible with performance? Is the active present at a level where evidence supports the promised benefit? Is the claim based on the finished formula, or borrowed from ingredient level literature?",
+      },
+      {
+        type: "callout",
+        text: "At The Clean Sheet, we believe this is one of the most important trust gaps in modern beauty. Presence is not proof. Concentration is the claim.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The number has become the new luxury code",
+      },
+      {
+        type: "paragraph",
+        text: "For years, beauty marketing relied on sensory language. Glow. Repair. Nourish. Detox. Natural. Dermat tested. Then came the skintellectual consumer.",
+      },
+      {
+        type: "paragraph",
+        text: "Consumers began reading ingredient lists. They learned words like niacinamide, ceramide, retinal, tranexamic acid, salicylic acid and peptide. Brands responded by making the formula itself the marketing asset. This was not a bad shift. Ingredient literacy is a good thing.",
+      },
+      {
+        type: "paragraph",
+        text: "But ingredient literacy also created a new form of manipulation. Instead of saying 'brightening serum,' brands could say '10% brightening complex.' Instead of saying 'anti ageing cream,' they could say 'peptide powered repair.' Instead of saying 'gentle exfoliation,' they could say 'AHA BHA resurfacing technology.' The language became more technical. The proof did not always become stronger.",
+      },
+      {
+        type: "paragraph",
+        text: "The Clean Sheet exists because the gap in beauty is not simply between safe products and unsafe products. The deeper gap is between what brands claim and what they can actually prove.",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1620916297397-a4a5402a3c6c?auto=format&fit=crop&w=1200&q=80",
+        alt: "Hand holding a black glass dropper bottle against a white background, editorial skincare photography",
+        caption: "The formula has become the marketing asset. But presence is not the same as performance.",
+      },
+      {
+        type: "numbered-heading",
+        n: "01",
+        text: "The ingredient presence illusion",
+      },
+      {
+        type: "paragraph",
+        text: "An ingredient can appear on a label at a level that is meaningful, decorative, functional, incidental, or practically irrelevant.",
+      },
+      {
+        type: "paragraph",
+        text: "A product can contain retinol and still not behave like a retinol product. A product can contain peptides and still not deliver peptide supported benefits. A product can contain vitamin C and still be too unstable, too poorly formulated, or too weakly supported to justify a brightening claim.",
+      },
+      {
+        type: "paragraph",
+        text: "This is why The Clean Sheet's Active Verified module starts with a simple principle: the active ingredients in a product must be confirmed at concentrations where evidence supports the stated benefit. If a product claims retinol powered anti ageing benefits but contains retinol at 0.001%, the claim is not verified.",
+      },
+      {
+        type: "paragraph",
+        text: "This is not about attacking low concentration ingredients. Sometimes low concentrations are appropriate. Some ingredients work at very low levels. Some are used for preservation, pH adjustment, chelation, texture, fragrance, solubilization or stabilization. The problem begins when a low level ingredient is promoted as the reason the product works. That is the concentration illusion.",
+      },
+      {
+        type: "numbered-heading",
+        n: "02",
+        text: "The supplier blend illusion",
+      },
+      {
+        type: "paragraph",
+        text: "One of the most common ways percentage claims become confusing is through supplier blends. A brand may say '2% peptide complex' or '5% botanical active blend.' That does not always mean the finished product contains 2% pure peptide or 5% pure active molecules. It may mean the brand added 2% of a supplier blend that itself contains water, solvent, stabilizers, preservatives, carriers and a much smaller amount of the hero ingredient.",
+      },
+      {
+        type: "paragraph",
+        text: "This matters because consumers read the front of pack claim as active strength. Formulators often understand it as blend input. Those are not the same thing. A '1% retinol complex' may not mean 1% retinol. A '10% vitamin C complex' may not mean 10% L ascorbic acid. A 'multi peptide complex' may contain multiple peptides, but the biologically relevant amount of each peptide may be tiny.",
+      },
+      {
+        type: "callout",
+        text: "Credible verification cannot stop at the public INCI list. Brands must be able to submit the formula with exact percentages or verified concentration ranges, supplier documents, stability data, test reports and claim support under NDA. Consumer facing truth cannot be built from marketing copy alone.",
+      },
+      {
+        type: "numbered-heading",
+        n: "03",
+        text: "The INCI order illusion",
+      },
+      {
+        type: "paragraph",
+        text: "INCI lists are essential, but they are not the same as full formula disclosure. They tell you what is inside. They do not reliably tell you how much is inside.",
+      },
+      {
+        type: "paragraph",
+        text: "In most cosmetic systems, ingredients are listed in descending order until a certain low concentration threshold, after which ingredients may be ordered with more flexibility depending on local rules. This means consumers can sometimes infer broad structure from the first part of the list, but cannot precisely reverse engineer concentration from the label.",
+      },
+      {
+        type: "paragraph",
+        text: "This is especially important in active skincare. A consumer may see niacinamide high on the list and assume strength. They may see peptides low on the list and assume weakness. Sometimes that instinct is directionally useful. Sometimes it is misleading.",
+      },
+      {
+        type: "callout",
+        text: "A formula is not just an ingredient list. It is a system. The same active can behave differently depending on concentration, pH, delivery system, solvent, packaging, preservative system, stability, exposure pattern and what else the consumer layers with it.",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1526930382372-67bf22c0fce2?auto=format&fit=crop&w=1200&q=80",
+        alt: "White microscope on a laboratory table, scientific research setting",
+        caption: "Verification requires formula access, supplier documents, and stability data, not just a label.",
+      },
+      {
+        type: "numbered-heading",
+        n: "04",
+        text: "The more is better illusion",
+      },
+      {
+        type: "paragraph",
+        text: "Percentage marketing has trained consumers to chase strength. Higher niacinamide. Stronger acids. More retinol. More vitamin C. More actives in one bottle. But skin does not reward arithmetic. Skin responds to exposure, tolerance, barrier condition and formulation logic.",
+      },
+      {
+        type: "paragraph",
+        text: "A 10% active is not automatically better than a 5% active if the formula is unstable, irritating, poorly delivered or mismatched to the consumer's routine. A product can be impressive on paper and still be difficult to use in real life.",
+      },
+      {
+        type: "paragraph",
+        text: "This is especially true in India, where consumers often layer multiple active products across heat, humidity, pollution, sweat, sunscreen, makeup and inconsistent routines. The risk is not one ingredient in isolation. The risk is the full exposure burden.",
+      },
+      {
+        type: "paragraph",
+        text: "The Clean Sheet specifically evaluates whether high potency actives may compromise the skin barrier when used together, whether a product increases irritation risk when paired with retinoids, vitamin C, exfoliating acids, benzoyl peroxide, peels or prescription actives, and whether the formula is suitable for daily use, occasional use, sensitive skin, adolescent skin, eye area use or compromised skin.",
+      },
+      {
+        type: "numbered-heading",
+        n: "05",
+        text: "The borrowed evidence illusion",
+      },
+      {
+        type: "paragraph",
+        text: "A product can use an ingredient with strong published evidence and still make a weak product claim. Evidence belongs to a context. A study may have tested a different concentration, a different form, a different pH, a different vehicle, a different population, a different usage frequency, a different endpoint, a different duration.",
+      },
+      {
+        type: "paragraph",
+        text: "'Niacinamide is known to brighten skin' is not the same as 'this finished formula brightens pigmentation in the target consumer.' 'Vitamin C supports antioxidant protection' is not the same as 'this product delivers stable vitamin C at a concentration and pH that supports the claim.' 'Peptides support firmness' is not the same as 'this peptide blend is present at a verified level and has clinical evidence at the formula concentration.'",
+      },
+      {
+        type: "callout",
+        text: "The Clean Sheet does not accept vague claim support as enough. Its claims evidence mapping requires each material claim to connect to a specific piece of evidence, the concentration at which that evidence was generated, and the population tested. Product specific evidence matters because ingredient level logic can be over extended.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What this means for popular active claims",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Niacinamide",
+      },
+      {
+        type: "paragraph",
+        text: "Niacinamide is one of the most heavily marketed actives in modern skincare because it can support barrier function, uneven tone, oil regulation and visible skin quality depending on concentration and formula design. But a niacinamide claim still needs precision. Is it 2%, 5% or 10%? Is the product claiming barrier support, brightening, oil control or pore appearance? Is the finished formula tested, or is the claim borrowed from niacinamide literature? Is the product being layered with acids, retinoids or other high activity products that may change tolerability? The Clean Sheet benchmark for niacinamide in Active Verified sits in an evidence backed range of 4% to 10%, with claim review depending on the exact benefit being promised.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Vitamin C",
+      },
+      {
+        type: "paragraph",
+        text: "Vitamin C is a category where the percentage can be especially misleading. First, 'vitamin C' may refer to L ascorbic acid or to derivatives. These are not interchangeable. Second, L ascorbic acid is highly formulation dependent. pH, packaging, oxygen exposure, water content and stability matter enormously. Third, a 20% claim may sound superior, but irritation and stability can become real issues if the formula is not well built. For L ascorbic acid, The Clean Sheet references an evidence backed range of 10% to 20%, while derivatives require separate evaluation. It also requires pH verification, with L ascorbic acid typically needing a low pH environment to support performance.",
+      },
+      {
+        type: "callout",
+        text: "The real question is not how much vitamin C is on the label. The question is: what form, what pH, what stability data, what packaging, what claim and what evidence?",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Retinol",
+      },
+      {
+        type: "paragraph",
+        text: "Retinol marketing often uses strength language because consumers associate retinoids with transformation. But retinol is not a casual claim. Concentration matters. Stability matters. Packaging matters. Conversion pathway matters. Irritation potential matters. Use instructions matter. A low level retinol may be appropriate for gentle introduction. A higher level retinol may be appropriate for experienced users. But a product should not imply strong anti ageing performance unless the concentration, stability and evidence support that implication. The Clean Sheet Active Verified benchmark for retinol sits in an evidence backed range of 0.1% to 1.0%, with claims requiring support at formula concentration.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Acids",
+      },
+      {
+        type: "paragraph",
+        text: "Acids are one of the clearest examples of why percentage alone is not enough. A 5% glycolic acid product at the wrong pH may not behave like a meaningful exfoliant. A 10% AHA product may be too aggressive for certain users if the formula and use guidance are poor. A salicylic acid product must be assessed differently depending on whether it is rinse off, leave on, acne positioned, scalp positioned or used by sensitive users. The Clean Sheet requires exfoliating claims to specify AHA or BHA concentration and pH, because both shape real world performance.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Peptides",
+      },
+      {
+        type: "paragraph",
+        text: "Peptides are perhaps the most elegant concentration illusion in skincare. They sound scientific. They look premium. They are often present in small quantities. They are frequently supplied as blends. Their evidence can be highly peptide specific. A 'multi peptide' product may sound broader and stronger than a single peptide product, but the number of peptides is not the same as claim strength. Each peptide needs to be assessed by identity, concentration, supplier data, evidence, delivery context and finished formula relevance. The Clean Sheet treats peptides case by case, precisely because the category is too diverse for a simple percentage rule.",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1631390179406-0bfe17e9f89d?auto=format&fit=crop&w=1200&q=80",
+        alt: "Collection of cosmetic bottles arranged on a table, skincare product variety",
+        caption: "Multi-active formulas raise the question of combined exposure risk, not just individual concentration.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Why brands use the concentration illusion",
+      },
+      {
+        type: "paragraph",
+        text: "Not every misleading concentration claim is malicious. Sometimes it is inherited from supplier language. Sometimes the marketing team simplifies what the formulation team understands. Sometimes the brand founder genuinely believes that adding a fashionable active makes the product more credible. Sometimes the manufacturer supplies a formula with hero ingredients included mainly for label appeal.",
+      },
+      {
+        type: "paragraph",
+        text: "But intent does not erase consumer impact. When a consumer buys a product because of a percentage claim, that percentage becomes material to the purchase decision. If the number does not reflect pure active content, evidence backed performance, stability through shelf life or finished product substantiation, the claim is not doing the work consumers think it is doing.",
+      },
+      {
+        type: "callout",
+        text: "This is why concentration has to move from marketing language to verification language.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What The Clean Sheet verifies",
+      },
+      {
+        type: "paragraph",
+        text: "For active based skincare, The Clean Sheet does not simply ask whether the ingredient is present. It asks whether the active is present at a concentration where evidence supports the stated benefit. It checks whether pH is compatible with active stability and performance. It reviews whether the active remains stable through shelf life. It assesses interaction risk when actives are combined. It maps claims to evidence at the actual formula concentration.",
+      },
+      {
+        type: "paragraph",
+        text: "This is the difference between a label that says 'contains vitamin C' and a verification page that says: the form of vitamin C was reviewed, the concentration range was verified, the pH was checked, the stability data was reviewed, the claim was mapped to evidence, the interaction risk was assessed, and the consumer guidance was written in plain language.",
+      },
+      {
+        type: "callout",
+        text: "That is product truth infrastructure.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The consumer does not need more numbers",
+      },
+      {
+        type: "paragraph",
+        text: "The beauty industry often assumes that transparency means showing more information. More ingredients. More percentages. More clinical language. More badges. More claims. But transparency without interpretation can become another burden on the consumer.",
+      },
+      {
+        type: "paragraph",
+        text: "A 30 ingredient INCI list does not tell a consumer whether the product is suitable for them. A 10% active claim does not tell them whether the product is stable. A clinical claim does not tell them whether the study was well designed. A 'dermatologist tested' line does not tell them how many people were tested, what was measured or whether the result was meaningful.",
+      },
+      {
+        type: "paragraph",
+        text: "The Clean Sheet's position is simple: verification must be consumer readable. It should tell people what was checked, what was proven, what was not proven, who the product may suit, who should use caution and whether the certification is still active. This is why The Clean Sheet issues QR linked public proof pages, live certification status, claim summaries and suitability guidance instead of asking consumers to decode everything alone.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The future of skincare marketing should be less theatrical",
+      },
+      {
+        type: "paragraph",
+        text: "A good formula does not need to hide behind inflated percentages. A good brand should be able to say: this is the active, this is the form, this is the verified concentration range, this is the pH, this is the testing we have, this is the claim we can support, this is what we are not claiming, and this is who should use caution.",
+      },
+      {
+        type: "paragraph",
+        text: "That kind of clarity will become a competitive advantage. Because consumers are not tired of science. They are tired of science shaped language without scientific accountability.",
+      },
+      {
+        type: "callout",
+        text: "The next era of beauty will not be won by the brand with the loudest percentage. It will be won by the brand that can prove what the percentage means.",
+      },
+      {
+        type: "paragraph",
+        text: "At The Clean Sheet, that is the standard we are building. Presence is not proof. Concentration is the claim. And claims deserve evidence.",
+      },
+      {
+        type: "divider",
+      },
+      {
+        type: "cta",
+        text: "Is your active skincare verified at the concentration you claim? The Clean Sheet founding cohort is open now.",
+        href: "/certification",
+        label: "Apply for Certification",
+      },
+    ],
+  },
   {
     slug: "your-9-step-routine-is-not-a-personality-trait",
     category: "Consumer Safety",
@@ -542,7 +847,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "The information is technically available — it's on the label, in INCI format — but it's deliberately impenetrable to anyone who hasn't studied cosmetic chemistry. That's a design choice, not an accident.",
+        text: "The information is technically available, it's on the label, in INCI format, but it's deliberately impenetrable to anyone who hasn't studied cosmetic chemistry. That's a design choice, not an accident.",
       },
       {
         type: "heading",
@@ -573,7 +878,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "callout",
-        text: "The Clean Sheet's 'Ask Clean' tool checks every ingredient against Indian, EU, and US safety databases and gives you a Clean Sheet Score — a 0 to 100 rating for the entire product.",
+        text: "The Clean Sheet's 'Ask Clean' tool checks every ingredient against Indian, EU, and US safety databases and gives you a Clean Sheet Score, a 0 to 100 rating for the entire product.",
       },
       {
         type: "paragraph",
@@ -591,11 +896,11 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "bullets",
         items: [
-          "Formaldehyde releasers: DMDM Hydantoin, Quaternium-15, Diazolidinyl Urea — preservatives that slowly release formaldehyde",
+          "Formaldehyde releasers: DMDM Hydantoin, Quaternium-15, Diazolidinyl Urea, preservatives that slowly release formaldehyde",
           "Undisclosed fragrance: 'Fragrance' or 'Parfum' as a single ingredient can mask dozens of undisclosed chemicals",
           "High-concern parabens: Propylparaben and Butylparaben have endocrine-disrupting potential at high concentrations",
           "Oxybenzone in sunscreens: flagged by the EU and Hawaii as a potential hormone disruptor and reef-damaging",
-          "Mercury compounds: still found in some skin-lightening products — illegal in India but hard to detect",
+          "Mercury compounds: still found in some skin-lightening products, illegal in India but hard to detect",
         ],
       },
       {
@@ -605,11 +910,11 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "The easiest way to skip all of this is to buy from brands that have already been independently verified. The Clean Sheet maintains a public registry of certified products — each one has been evaluated across five pillars including ingredient safety, legal compliance, and manufacturing standards.",
+        text: "The easiest way to skip all of this is to buy from brands that have already been independently verified. The Clean Sheet maintains a public registry of certified products, each one has been evaluated across five pillars including ingredient safety, legal compliance, and manufacturing standards.",
       },
       {
         type: "cta",
-        text: "Skip the guesswork — check any product in seconds.",
+        text: "Skip the guesswork, check any product in seconds.",
         href: "/analyzer",
         label: "Check Your Product Now",
       },
@@ -681,11 +986,11 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "The Clean Sheet rates methylparaben and ethylparaben as Low concern at typical cosmetic concentrations. Propylparaben and butylparaben are rated Medium concern — not because the evidence is conclusive, but because the precautionary principle applies when there's a plausible mechanistic concern (weak estrogenic activity) and alternatives are available.",
+        text: "The Clean Sheet rates methylparaben and ethylparaben as Low concern at typical cosmetic concentrations. Propylparaben and butylparaben are rated Medium concern, not because the evidence is conclusive, but because the precautionary principle applies when there's a plausible mechanistic concern (weak estrogenic activity) and alternatives are available.",
       },
       {
         type: "paragraph",
-        text: "What we don't support is the wholesale 'paraben-free' movement that pushes consumers toward preservative alternatives — like formaldehyde releasers or phenoxyethanol — that have worse safety profiles or less data. The goal is safe preservation, not preservation-free products that go rancid and harbour bacteria.",
+        text: "What we don't support is the wholesale 'paraben-free' movement that pushes consumers toward preservative alternatives, like formaldehyde releasers or phenoxyethanol, that have worse safety profiles or less data. The goal is safe preservation, not preservation-free products that go rancid and harbour bacteria.",
       },
       {
         type: "cta",
@@ -708,7 +1013,7 @@ export const BLOG_POSTS: BlogPost[] = [
     content: [
       {
         type: "paragraph",
-        text: "Indians have some of the highest UV exposure in the world. We also have a sunscreen market dominated by products using UV filter combinations that have been flagged, restricted, or outright banned in the EU and by the US FDA. The number on the bottle — SPF 30, 50, 50+ — tells you nothing about which chemicals are creating that protection.",
+        text: "Indians have some of the highest UV exposure in the world. We also have a sunscreen market dominated by products using UV filter combinations that have been flagged, restricted, or outright banned in the EU and by the US FDA. The number on the bottle, SPF 30, 50, 50+, tells you nothing about which chemicals are creating that protection.",
       },
       {
         type: "heading",
@@ -728,9 +1033,9 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "bullets",
         items: [
           "Oxybenzone (Benzophenone-3): Highest concern. Penetrates skin, found in blood at significant concentrations, potential endocrine disruptor. Banned in Hawaii and parts of the US for reef damage. Still common in Indian products.",
-          "Homosalate: Used at up to 15% in many Indian sunscreens. SCCS (EU) found it's only safe up to 0.5%. Most products use it at 10–15%.",
+          "Homosalate: Used at up to 15% in many Indian sunscreens. SCCS (EU) found it's only safe up to 0.5%. Most products use it at 10-15%.",
           "Octocrylene: Converts to benzophenone on skin over time, particularly in products that also contain avobenzone.",
-          "Benzophenone-4: A water-soluble UV absorber with sensitisation concerns — frequently found in Indian sunscreens despite limited safety data.",
+          "Benzophenone-4: A water-soluble UV absorber with sensitisation concerns, frequently found in Indian sunscreens despite limited safety data.",
         ],
       },
       {
@@ -763,7 +1068,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "The Indian sunscreen market is catching up — several newer brands like Earth Rhythm, Minimalist, and Sugandha have started using better filter combinations. But the majority of mass-market products still use the same cheap, high-concern filter cocktails they've used for 20 years.",
+        text: "The Indian sunscreen market is catching up, several newer brands like Earth Rhythm, Minimalist, and Sugandha have started using better filter combinations. But the majority of mass-market products still use the same cheap, high-concern filter cocktails they've used for 20 years.",
       },
       {
         type: "cta",

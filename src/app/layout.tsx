@@ -28,7 +28,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://thecleansheet.in"),
   title: {
-    default: "The Clean Sheet™ — India's Clean Beauty Standard",
+    default: "The Clean Sheet™, India's Clean Beauty Standard",
     template: "%s | The Clean Sheet™",
   },
   description:
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   creator: "The Clean Sheet",
   publisher: "The Clean Sheet",
   openGraph: {
-    title: "The Clean Sheet™ — India's Clean Beauty Standard",
+    title: "The Clean Sheet™, India's Clean Beauty Standard",
     description:
       "AI-powered ingredient analysis & science-backed certification for beauty products in India. Check if your skincare is truly safe.",
     url: "https://thecleansheet.in",
@@ -55,13 +55,13 @@ export const metadata: Metadata = {
         url: "/images/hero-illustration.jpg",
         width: 1200,
         height: 630,
-        alt: "The Clean Sheet — India's Clean Beauty Standard",
+        alt: "The Clean Sheet, India's Clean Beauty Standard",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Clean Sheet™ — India's Clean Beauty Standard",
+    title: "The Clean Sheet™, India's Clean Beauty Standard",
     description:
       "AI-powered ingredient analysis & science-backed certification for beauty products in India.",
     images: ["/images/hero-illustration.jpg"],
@@ -116,7 +116,7 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-        {/* Structured data — Organization + WebSite with SearchAction */}
+        {/* Structured data, Organization + WebSite with SearchAction */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -165,7 +165,7 @@ export default function RootLayout({
                   url: "https://thecleansheet.in",
                   name: "The Clean Sheet",
                   description:
-                    "India's clean beauty standard — AI ingredient analysis, product certification, and an ingredient database with 25,000+ cosmetic ingredients.",
+                    "India's clean beauty standard, AI ingredient analysis, product certification, and an ingredient database with 25,000+ cosmetic ingredients.",
                   publisher: { "@id": "https://thecleansheet.in/#organization" },
                   potentialAction: {
                     "@type": "SearchAction",
@@ -178,7 +178,7 @@ export default function RootLayout({
                 },
                 {
                   "@type": "SoftwareApplication",
-                  name: "Ask Clean — AI Beauty Ingredient Analyzer",
+                  name: "Ask Clean, AI Beauty Ingredient Analyzer",
                   applicationCategory: "HealthApplication",
                   operatingSystem: "Web",
                   url: "https://thecleansheet.in/analyzer",

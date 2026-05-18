@@ -119,7 +119,7 @@ function BadgeRow({
   return (
     <div className="flex flex-wrap gap-2">
       {items.map((b, i) => (
-        <span key={i} className={`inline-flex items-center gap-1.5 text-xs font-normal px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
+        <span key={i} className={`whitespace-nowrap inline-flex items-center gap-1.5 text-xs font-normal px-3 py-1.5 rounded-full border ${bg} ${color} ${border}`}>
           <Icon size={11} />
           {b}
         </span>
@@ -585,9 +585,9 @@ export default function AnalyzerPage() {
     const steps = [
       "Hunting down the ingredient list…",
       "Ignoring the marketing copy, reading the actual science…",
-      "Checking what EU, India & global regulators say…",
+      "Checking what EU, India, US & Korea regulators say…",
       "Running the 6-pillar Clean Sheet framework…",
-      "Almost done — putting your verdict together…",
+      "Almost done, putting your verdict together…",
     ];
     let idx = 0;
     setStepIdx(0);
@@ -823,9 +823,9 @@ export default function AnalyzerPage() {
                   {[
                     "Hunting down the ingredient list…",
                     "Ignoring the marketing copy, reading the actual science…",
-                    "Checking what EU, India & global regulators say…",
+                    "Checking what EU, India, US & Korea regulators say…",
                     "Running the 6-pillar Clean Sheet framework…",
-                    "Almost done — putting your verdict together…",
+                    "Almost done, putting your verdict together…",
                   ].map((step, i) => {
                     const done = i < stepIdx;
                     const active = i === stepIdx;

@@ -87,7 +87,7 @@ export default function FormModal() {
         {/* Form area */}
         <div className="flex-1 relative" style={{ minHeight: 540 }}>
 
-          {/* Loading skeleton — shown until iframe fires onLoad */}
+          {/* Loading skeleton, shown until iframe fires onLoad */}
           {!loaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white z-10">
               <Loader2 size={28} className="text-teal-500 animate-spin" />

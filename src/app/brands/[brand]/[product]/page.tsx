@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   if (!product || !brand) return {};
 
   return {
-    title: `${product.productName} Review — Clean Sheet Score ${product.score}/100`,
+    title: `${product.productName} Review, Clean Sheet Score ${product.score}/100`,
     description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${product.score}/100 (${product.scoreLabel}). Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
     keywords: [
       `${product.productName} review`, `${product.productName} India`, `is ${product.productName} safe`,
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
     ],
     alternates: { canonical: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}` },
     openGraph: {
-      title: `${product.productName} — Score ${product.score}/100 | The Clean Sheet™`,
+      title: `${product.productName}, Score ${product.score}/100 | The Clean Sheet™`,
       description: `${product.scoreLabel} rating. ${product.summary.slice(0, 150)}...`,
       url: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
       type: "article",
@@ -43,20 +43,33 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
 }
 
 function ScoreRing({ score, size = 88 }: { score: number; size?: number }) {
-  const r = (size - 10) / 2;
+  const sw = 8;
+  const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (score / 100) * circ;
   const c = scoreColors(score);
+  const logoSize = Math.round((r - sw / 2) * 2) - 1;
+  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
+  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
+  const br = Math.round(size * 0.13);
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={8} />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={8}
-        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      <text x={size / 2} y={size / 2 + 6} textAnchor="middle" fontSize={18} fontWeight={700} fill="#fff" fontFamily="serif">
-        {score}
-      </text>
-    </svg>
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={sw} />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+        <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
+      </div>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
+          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+        <circle cx={bx} cy={by} r={br} fill={c.ring} />
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+          {score}
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -101,9 +114,15 @@ function IngredientRow({ name, note, flag }: { name: string; note: string; flag:
 
 function RelatedProductCard({ product, brandSlug }: { product: ProductScorecard; brandSlug: string }) {
   const c = scoreColors(product.score);
-  const r = 21;
+  const size = 48;
+  const sw = 5;
+  const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (product.score / 100) * circ;
+  const logoSize = Math.round((r - sw / 2) * 2) - 1;
+  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
+  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
+  const br = Math.round(size * 0.145);
   return (
     <Link href={`/brands/${brandSlug}/${product.slug}`} className="group flex items-center gap-3 p-3 rounded-xl border border-ink-100 hover:border-teal-200 hover:shadow-sm transition-all bg-white">
       <div className="w-12 h-12 rounded-lg bg-ink-50 overflow-hidden flex-shrink-0">
@@ -115,13 +134,23 @@ function RelatedProductCard({ product, brandSlug }: { product: ProductScorecard;
         </div>
         <div className="text-[10px] text-ink-400 mt-0.5">{product.priceRange}</div>
       </div>
-      <svg width={48} height={48} viewBox="0 0 48 48" className="flex-shrink-0">
-        <circle cx={24} cy={24} r={r} fill="none" stroke="#f1f5f9" strokeWidth={5} />
-        <circle cx={24} cy={24} r={r} fill="none" stroke={c.ring} strokeWidth={5}
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          transform="rotate(-90 24 24)" />
-        <text x={24} y={28} textAnchor="middle" fontSize={10} fontWeight={700} fill="#1e293b" fontFamily="serif">{product.score}</text>
-      </svg>
+      <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
+          <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
+        </div>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
+            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+            transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+          <circle cx={bx} cy={by} r={br} fill={c.ring} />
+          <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+            {product.score}
+          </text>
+        </svg>
+      </div>
     </Link>
   );
 }
@@ -158,7 +187,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
         brand: { "@type": "Brand", name: brand.name },
         image: product.image,
         description: product.summary,
-        offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.priceRange.split("–")[0].replace(/[₹,\s]/g, "") },
+        offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.priceRange.split("-")[0].replace(/[₹,\s]/g, "") },
         review: {
           "@type": "Review",
           reviewRating: { "@type": "Rating", ratingValue: product.score, bestRating: 100, worstRating: 0 },
@@ -196,7 +225,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
           </nav>
 
           <div className="grid lg:grid-cols-2 gap-10 items-start">
-            {/* Left — product info */}
+            {/* Left, product info */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs text-teal-400 uppercase tracking-widest">{brand.name}</span>
@@ -212,17 +241,17 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
               {/* Badges */}
               <div className="flex flex-wrap gap-1.5 mb-6">
                 {product.pass_badges.map((b) => (
-                  <span key={b} className="font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded">
+                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded">
                     {b}
                   </span>
                 ))}
                 {product.warn_badges.map((b) => (
-                  <span key={b} className="font-mono text-[10px] uppercase tracking-wider bg-red-500/15 border border-red-500/30 text-red-300 px-2 py-0.5 rounded">
+                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-red-500/15 border border-red-500/30 text-red-300 px-2 py-0.5 rounded">
                     {b}
                   </span>
                 ))}
                 {product.info_badges.map((b) => (
-                  <span key={b} className="font-mono text-[10px] uppercase tracking-wider bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded">
+                  <span key={b} className="whitespace-nowrap font-mono text-[10px] uppercase tracking-wider bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded">
                     {b}
                   </span>
                 ))}
@@ -235,7 +264,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
               </div>
             </div>
 
-            {/* Right — score card */}
+            {/* Right, score card */}
             <div className="bg-white/8 border border-white/12 rounded-3xl p-7 backdrop-blur-sm">
               <div className="flex items-center gap-5 mb-6">
                 <ScoreRing score={product.score} size={88} />
@@ -381,7 +410,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
           <div className="flex-1 text-center sm:text-left">
             <div className="text-white font-medium mb-1">About this scorecard</div>
             <p className="text-teal-300/80 text-sm leading-relaxed">
-              Clean Sheet Scores are generated by analysing every ingredient against India, EU, and US safety regulations.
+              Clean Sheet Scores are generated by analysing every ingredient against India, EU, US & Korean safety regulations.
               No brand sponsorship. No affiliate relationships. Independent science-backed analysis only.
             </p>
           </div>

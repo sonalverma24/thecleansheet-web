@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, QrCode, Shield, Star, Leaf, Award } from "lucide-react";
 
 export const metadata = {
-  title: "Know What's In Your Skincare — For Consumers",
+  title: "Know What's In Your Skincare, For Consumers",
   description:
-    "Check any skincare product for harmful ingredients, misleading claims, and safety issues — for free. The Clean Sheet gives Indian consumers honest, science-backed information about every product in their routine.",
+    "Check any skincare product for harmful ingredients, misleading claims, and safety issues, for free. The Clean Sheet gives Indian consumers honest, science-backed information about every product in their routine.",
   keywords: [
     "check skincare ingredients India", "safe beauty products India", "how to read INCI label",
     "skincare safety consumer India", "verify product claims India", "ingredient transparency India",
@@ -178,7 +178,7 @@ export default function ConsumersPage() {
               {
                 icon: QrCode,
                 title: "Certificate details",
-                desc: "The certificate number, the date it was issued, and when it expires. Every two years, certified products are re-evaluated. The proof stays current.",
+                desc: "The certificate number, the date it was issued, and when it expires. Every year, certified products are re-evaluated. The proof stays current.",
                 color: "bg-ink-50 border-ink-200",
                 iconColor: "text-ink-600 bg-ink-100",
               },

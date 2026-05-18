@@ -4,7 +4,7 @@ import { CLEAN_SHEET_SYSTEM_PROMPT, COMPARISON_SYSTEM_PROMPT, EXPERT_ANSWER_SYST
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
-// Module-level result cache — persists across requests within the same server process.
+// Module-level result cache, persists across requests within the same server process.
 // Keyed by normalized query string so the same product always returns the same scorecard.
 const RESULT_CACHE = new Map<string, object>();
 
@@ -171,7 +171,7 @@ function isExpertQuestion(query: string): boolean {
   const startsLikeQuestion = questionStarters.some((s) => q.startsWith(s));
 
   // If query contains a specific product type word alongside a brand-sounding name,
-  // route to scorecard not expert — e.g. "is ponds moisturiser good for oily skin"
+  // route to scorecard not expert, e.g. "is ponds moisturiser good for oily skin"
   const productTypeWords = [
     "moisturiser", "moisturizer", "serum", "sunscreen", "spf", "face wash", "cleanser",
     "toner", "cream", "lotion", "gel", "oil", "mask", "sheet mask", "eye cream",
@@ -196,13 +196,13 @@ function isExpertQuestion(query: string): boolean {
   ];
   const containsBrand = knownBrands.some((b) => q.includes(b));
 
-  // Has title-case multi-word or % signals — original product detector
+  // Has title-case multi-word or % signals, original product detector
   const looksLikeProduct = /\d+%/.test(q)
     || q.split(" ").filter((w) => /^[A-Z]/.test(w)).length >= 2
     || containsProductType
     || containsBrand;
 
-  // "is [ingredient] safe?" type questions — pure ingredient queries → expert
+  // "is [ingredient] safe?" type questions, pure ingredient queries → expert
   // "is ponds moisturiser good for oily skin?" → has product type → scorecard
   if (startsLikeQuestion && !looksLikeProduct) return true;
   return hasQuestionMark && !looksLikeProduct && !isComparisonQuery(query);
@@ -267,7 +267,7 @@ export async function POST(req: Request) {
         scrapedContext = pageContent;
         const hint = extractProductHint(pageContent);
         // Use scraped hint only if it looks like real product content (not nav noise)
-        // For e-com platforms: trust the URL slug — it's always SEO-accurate
+        // For e-com platforms: trust the URL slug, it's always SEO-accurate
         if (isEcom || !hint || isNavNoise(hint)) {
           q = slugFromURL || hint || q;
         } else {
@@ -291,7 +291,7 @@ export async function POST(req: Request) {
         ? EXPERT_ANSWER_SYSTEM_PROMPT
         : CLEAN_SHEET_SYSTEM_PROMPT;
 
-    // Check cache before calling Gemini — same product always returns the same scorecard
+    // Check cache before calling Gemini, same product always returns the same scorecard
     const cacheKey = normalizeCacheKey(urlInput || q);
     const cached = RESULT_CACHE.get(cacheKey);
     if (cached) {
@@ -322,10 +322,10 @@ RESEARCH PROTOCOL for this URL:
 1. Use scraped content to identify product name and brand.
 2. Search externally for the full INCI: incidecoder.com, openbeautyfacts.org, amazon.in, nykaa.com, brand website.
 3. Search for price and reviews.
-4. CRITICAL — search for lab tests and certifications directly on the brand website: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested". Also search "[brand name] lab test certificate" and "[brand name] clinical study". The brand may have a dedicated tests/certifications page. If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests and award full transparency marks — do NOT flag as unsubstantiated.
+4. CRITICAL, search for lab tests and certifications directly on the brand website: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested". Also search "[brand name] lab test certificate" and "[brand name] clinical study". The brand may have a dedicated tests/certifications page. If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests and award full transparency marks, do NOT flag as unsubstantiated.
 5. Only assign the "Unsubstantiated Claims" warn badge if the product uses "chemical-free" or "toxin-free" language WITHOUT any certification or proof. Do NOT assign this badge merely because the scraper could not capture JavaScript-rendered test PDFs.
 
-Scraped page content (partial — JavaScript-rendered sections will be missing):
+Scraped page content (partial, JavaScript-rendered sections will be missing):
 ${scrapedContext}`;
     } else {
       prompt = isComparison
@@ -357,12 +357,12 @@ ${scrapedContext}`;
     // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
     if (urlInput && (!parsed || parsed.type === "out_of_scope" || !isValidScorecard(parsed as Record<string, unknown>))) {
       const fallbackName = productNameFromURL(urlInput);
-      // For e-com platforms the domain (nykaa.com) is useless as brand — skip it
+      // For e-com platforms the domain (nykaa.com) is useless as brand, skip it
       const fallbackBrand = isEcomPlatform(urlInput) ? "" : brandHintFromURL(urlInput);
       const fallbackQuery = [fallbackBrand, fallbackName].filter(Boolean).join(" ").trim();
       if (fallbackQuery) {
         const fallbackResult = await model.generateContent(
-          `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product — do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
+          `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product, do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
         );
         const fallbackText = fallbackResult.response.text().trim();
         const fallbackParsed = parseJSON(fallbackText);
@@ -376,7 +376,7 @@ ${scrapedContext}`;
       if (fallbackName) {
         try {
           const lastResort = await model.generateContent(
-            `You are The Clean Sheet™ product analyzer. Analyze this skincare/beauty product and return a complete scorecard JSON. Product name extracted from URL: "${fallbackName}". Search the web for ingredients, price, and reviews. This is a beauty product — always return a scorecard, never out_of_scope.`
+            `You are The Clean Sheet™ product analyzer. Analyze this skincare/beauty product and return a complete scorecard JSON. Product name extracted from URL: "${fallbackName}". Search the web for ingredients, price, and reviews. This is a beauty product, always return a scorecard, never out_of_scope.`
           );
           const lastText = lastResort.response.text().trim();
           const lastParsed = parseJSON(lastText);

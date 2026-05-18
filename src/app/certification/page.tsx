@@ -7,7 +7,7 @@ import {
 export const metadata = {
   title: "Get Your Beauty Product Certified in India",
   description:
-    "India's first science-backed beauty product certification. The Clean Sheet evaluates products across 5 pillars — ingredients, compliance, manufacturing, claims, and ethics. Apply for certification now.",
+    "India's first science-backed beauty product certification. The Clean Sheet evaluates products across 5 pillars, ingredients, compliance, manufacturing, claims, and ethics. Apply for certification now.",
   keywords: [
     "beauty product certification India", "clean beauty certification", "cosmetic safety certification India",
     "ingredient compliance India", "beauty brand certification", "certified skincare India",
@@ -35,7 +35,7 @@ const LAYERS = [
   {
     num: "01", icon: Shield, color: "#ef4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.2)",
     name: "Legal Compliance", badge: "Pass / Fail gate", points: null,
-    body: "Every ingredient is checked against prohibited and restricted substance lists for your target markets — India, EU, US, Korea, or all of them. If anything fails here, we tell you exactly what and why before proceeding.",
+    body: "Every ingredient is checked against prohibited and restricted substance lists for your target markets, India, EU, US, Korea, or all of them. If anything fails here, we tell you exactly what and why before proceeding.",
   },
   {
     num: "02", icon: FlaskConical, color: "#14b8a6", bg: "rgba(20,184,166,0.06)", border: "rgba(20,184,166,0.2)",
@@ -55,7 +55,7 @@ const LAYERS = [
   {
     num: "05", icon: Leaf, color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)",
     name: "Ethics & Sustainability", badge: "Scored dimension", points: 10,
-    body: "Cruelty-free status, vegan ingredients, palm oil and mica sourcing, packaging sustainability, and environmental claims. We verify — not just ask.",
+    body: "Cruelty-free status, vegan ingredients, palm oil and mica sourcing, packaging sustainability, and environmental claims. We verify, not just ask.",
   },
 ];
 
@@ -76,11 +76,11 @@ const STANDARDS = [
 ];
 
 const PROCESS_STEPS = [
-  { step: "Week 1",    title: "Application & NDA",     body: "Submit your application. We agree scope — which products, which markets, which PRISM modules. An NDA is signed. You receive a dossier checklist specific to your product categories.", color: "#14b8a6" },
+  { step: "Week 1",    title: "Application & NDA",     body: "Submit your application. We agree scope, which products, which markets, which PRISM modules. An NDA is signed. You receive a dossier checklist specific to your product categories.", color: "#14b8a6" },
   { step: "Wks 1-3",  title: "Dossier Submission",    body: "You submit your formula, test data, manufacturing documentation, and marketing materials. We review for completeness. Your formula concentrations are seen only by the scientific panel.", color: "#3b82f6" },
   { step: "Wks 3-9",  title: "Scientific Evaluation", body: "Our independent panel evaluates across all five layers. Questions are routed through your account contact. Evaluators never communicate directly with brands. No informal score discussions.", color: "#a855f7" },
   { step: "Wks 9-10", title: "Result & Certificate",  body: "You receive a full written evaluation report with score breakdown layer by layer. If certified: certificate, badge files, QR code, and public proof page. If not: specific gap analysis.", color: "#f59e0b" },
-  { step: "Ongoing",  title: "Post-Certification",    body: "We monitor regulatory developments affecting your certified products. Certificates are valid for two years. Formula or label changes trigger a review.", color: "#22c55e" },
+  { step: "Ongoing",  title: "Post-Certification",    body: "We monitor regulatory developments affecting your certified products. Certificates are valid for one year. Formula or label changes trigger a review.", color: "#22c55e" },
 ];
 
 const PRISM_MODULES = [
@@ -90,7 +90,7 @@ const PRISM_MODULES = [
   { icon: Leaf,          name: "Sensitive Skin",    desc: "Tolerability assessment and patch testing review for products positioned for reactive or sensitised skin.", color: "#22c55e" },
   { icon: Shield,        name: "Pregnancy Safe",    desc: "Teratogen screen and ingredient restriction for products positioned for use during pregnancy.", color: "#a855f7" },
   { icon: CheckCircle2,  name: "Natural & Organic", desc: "ISO 16128 natural origin index calculation and COSMOS-alignment assessment.", color: "#10b981" },
-  { icon: Globe,         name: "Vegan Verified",    desc: "Full supply chain vegan assessment — ingredients, processing aids, and testing methodology.", color: "#6366f1" },
+  { icon: Globe,         name: "Vegan Verified",    desc: "Full supply chain vegan assessment, ingredients, processing aids, and testing methodology.", color: "#6366f1" },
 ];
 
 
@@ -133,7 +133,7 @@ function ScoreGraphic() {
         <div className="px-4 py-3 border-b" style={{ borderColor:"rgba(255,255,255,0.04)" }}>
           <div className="text-[9px] uppercase tracking-[0.2em] mb-1" style={{ color:"rgba(255,255,255,0.2)" }}>Certification Run · TCS-2025-00089</div>
           <div className="text-sm" style={{ color:"#5eead4" }}>Daily Hydrating Moisturiser SPF 30</div>
-          <div className="text-[10px] mt-0.5" style={{ color:"rgba(255,255,255,0.18)" }}>Leave-on · Face · India + EU markets · 5 layers</div>
+          <div className="text-[10px] mt-0.5" style={{ color:"rgba(255,255,255,0.18)" }}>Leave-on · Face · India · EU · US · Korea · 5 layers</div>
         </div>
 
         {/* Layer bars */}
@@ -245,7 +245,7 @@ export default function CertificationPage() {
               </div>
             </div>
 
-            {/* Right — graphic */}
+            {/* Right, graphic */}
             <div className="cert-reveal" style={{ animationDelay:"0.35s" }}>
               <ScoreGraphic />
             </div>
@@ -439,7 +439,7 @@ export default function CertificationPage() {
                 <span className="text-indigo-300/50 text-sm mt-1">Product Review for Ingredient Safety and Marketing Integrity</span>
               </div>
               <p className="text-indigo-200/70 text-lg leading-relaxed mb-6">
-                Baby care, sunscreens, clinical actives, products for sensitive skin — these categories carry higher consumer trust stakes. PRISM modules are specialist add-ons to Core certification that apply a deeper evaluation where it matters most.
+                Baby care, sunscreens, clinical actives, products for sensitive skin, these categories carry higher consumer trust stakes. PRISM modules are specialist add-ons to Core certification that apply a deeper evaluation where it matters most.
               </p>
               <p className="text-indigo-300/40 text-base leading-relaxed mb-8">
                 PRISM modules appear as additional verified badges on your public proof page, alongside your Core certification status.
@@ -474,7 +474,7 @@ export default function CertificationPage() {
             <div className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-4">Public Registry</div>
             <h2 className="text-4xl font-medium text-ink-950 tracking-tight mb-5">Certified products.</h2>
             <p className="text-ink-600 text-lg leading-relaxed">
-              Every certified product has a public proof page — score, tier, verified claims, certificate details. Anyone can verify any certified product at any time, via QR code or search.
+              Every certified product has a public proof page, score, tier, verified claims, certificate details. Anyone can verify any certified product at any time, via QR code or search.
             </p>
           </div>
 
