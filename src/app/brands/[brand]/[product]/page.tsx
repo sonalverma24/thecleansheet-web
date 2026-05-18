@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Info, FlaskConical, ShieldCheck } from "lucide-react";
-import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors, scoreLabel } from "@/data/brands";
+import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 import type { ProductScorecard } from "@/data/brands";
 
 export function generateStaticParams() {
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
     description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${product.score}/100 (${product.scoreLabel}). Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
     keywords: [
       `${product.productName} review`, `${product.productName} India`, `is ${product.productName} safe`,
-      `${brand.name} ${product.concern.split(",")[0].trim()} serum review`,
+      `${brand.name} ${product.concern.split(",")[0].trim()} ${product.productType === "sunscreen" ? "sunscreen" : product.productType === "treatment" ? "peel" : product.productType === "toner" ? "toner" : "serum"} review`,
       `${brand.name} ingredients safe`, `${product.productName} ingredients`,
       "clean beauty India", "ingredient checker India",
     ],
@@ -158,7 +158,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
         brand: { "@type": "Brand", name: brand.name },
         image: product.image,
         description: product.summary,
-        offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.priceRange.replace(/[₹–₹,]/g, "").split("–")[0] },
+        offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.priceRange.split("–")[0].replace(/[₹,\s]/g, "") },
         review: {
           "@type": "Review",
           reviewRating: { "@type": "Rating", ratingValue: product.score, bestRating: 100, worstRating: 0 },

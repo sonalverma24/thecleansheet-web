@@ -97,7 +97,7 @@ const products: ProductScorecard[] = [
     pass_badges: ["INCI Verified", "Fragrance-Free", "Paraben-Free", "Sulfate-Free"],
     warn_badges: [],
     info_badges: ["Contains Penetration Enhancers", "India Climate Optimized"],
-    indiaContext: "Niacinamide at 10% is particularly effective for Fitzpatrick III–V skin tones (dominant in India) by inhibiting melanosome transfer and reducing PIH from UV-triggered inflammation. The lightweight, water-based vehicle suits India's humid climate without occluding pores. Note: niacin flush risk is rare but slightly more reported in individuals with higher baseline histamine sensitivity, which some studies associate with South Asian skin.",
+    indiaContext: "Niacinamide at 10% is particularly effective for Fitzpatrick III–V skin tones (dominant in India) by inhibiting melanosome transfer and reducing PIH from UV-triggered inflammation. The lightweight, water-based vehicle suits India's humid climate without occluding pores. Niacin flush is rare but can occur — if you experience transient redness or warmth on first use, reduce frequency and build up gradually.",
     analyzedAt: "2026-05-18",
   },
 
@@ -399,7 +399,7 @@ const products: ProductScorecard[] = [
       {
         name: "Efficacy & Formulation Logic",
         score: 13, max: 15,
-        note: "Anhydrous delivery system (positions 1–7: Caprylic/Capric Triglyceride, Isododecane, Squalane, Coco-Caprylate/Caprate, Triheptanoin) maximises retinol stability and bioavailability — retinol is lipophilic and absorbs most efficiently in a lipid vehicle. Bakuchiol at position 7 (1%) has published clinical evidence for anti-wrinkle synergy with retinol (IJCP 2019). Ubiquinone (CoQ10) at position 10 adds antioxidant anti-ageing support. Polysorbate 20 at position 9 enables formula texture control. BHT at final position protects formula integrity.",
+        note: "Anhydrous delivery system (positions 1–7: Caprylic/Capric Triglyceride, Isododecane, Squalane, Coco-Caprylate/Caprate, Triheptanoin) maximises retinol stability and bioavailability — retinol is lipophilic and absorbs most efficiently in a lipid vehicle. Bakuchiol at position 7 (1%) has published clinical evidence for anti-wrinkle synergy with retinol (Dhaliwal et al., British Journal of Dermatology, 2019 — prospective, randomised, double-blind trial). Ubiquinone (CoQ10) at position 10 adds antioxidant anti-ageing support. BHT at final position protects formula integrity.",
       },
       {
         name: "Transparency Practices",
@@ -416,8 +416,8 @@ const products: ProductScorecard[] = [
     ],
     ingredients: [
       { name: "Caprylic/Capric Triglyceride", note: "Primary carrier oil — optimal lipid vehicle for retinol; derived from coconut/palm kernel oil",                   flag: "ok"   },
-      { name: "Isododecane",                  note: "Lightweight volatile silicone alternative — reduces greasy feel; evaporates after application",                    flag: "ok"   },
-      { name: "Squalane",                     note: "Non-comedogenic emollient derived from sugarcane — closely mimics skin's natural sebum lipids",                   flag: "ok"   },
+      { name: "Isododecane",                  note: "Volatile isoalkane (hydrocarbon, not a silicone) — evaporates after application, leaving a non-greasy finish",   flag: "ok"   },
+      { name: "Squalane",                     note: "Non-comedogenic plant-derived emollient — closely mimics skin's natural sebum lipids",                            flag: "ok"   },
       { name: "Coco-Caprylate/Caprate",       note: "Lightweight emollient ester — improves spreadability and feel",                                                   flag: "ok"   },
       { name: "Triheptanoin",                 note: "Synthetic ester — skin-conditioning emollient with excellent skin tolerance",                                     flag: "ok"   },
       { name: "Tocopheryl Acetate",           note: "Vitamin E derivative — antioxidant, helps stabilise retinol against oxidation",                                  flag: "ok"   },
@@ -531,7 +531,7 @@ const products: ProductScorecard[] = [
     brand: BRAND_NAME,
     brandSlug: BRAND_SLUG,
     priceRange: "₹379–₹399",
-    productType: "leave-on",
+    productType: "sunscreen",
     concern: "Sun protection, anti-ageing, vitamin enrichment",
     summary: "A hybrid (chemical + physical) SPF 50 PA++++ sunscreen with a multi-vitamin active complex. Octocrylene (position 2) is the dominant UV filter — a UVB absorber present at high concentration. Avobenzone (Butyl Methoxydibenzoylmethane, position 3) provides UVA protection. Titanium Dioxide (position 8) is the physical UV filter for photostability. Ethylhexyl Triazone (position 11) is an EU/India-approved UVA filter not available in the US market. Niacinamide appears at INCI position 5 — before Titanium Dioxide — indicating a meaningful concentration. The formula also contains Retinol (position 16) and Panthenol (position 17), though concentrations are not brand-disclosed. PA++++ rating indicates PPD (Persistent Pigment Darkening) ≥ 16.",
     score: 83,

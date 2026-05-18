@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ExternalLink, FlaskConical, Award } from "lucide-react";
-import { getBrandBySlug, getAllBrandSummaries, scoreColors, scoreLabel } from "@/data/brands";
+import { ArrowLeft, ArrowRight, ExternalLink, FlaskConical } from "lucide-react";
+import { getBrandBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 
 export function generateStaticParams() {
   return getAllBrandSummaries().map((b) => ({ brand: b.slug }));
