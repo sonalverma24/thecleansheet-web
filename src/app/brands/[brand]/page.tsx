@@ -234,60 +234,66 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
             <span className="text-xs text-ink-400 font-mono">{brand.products.length} products</span>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
             {brand.products
               .sort((a, b) => b.score - a.score)
               .map((product) => {
                 const pc = scoreColors(product.score);
                 return (
                   <Link key={product.slug} href={`/brands/${slug}/${product.slug}`} className="group">
-                    <article className="border border-ink-100 hover:border-teal-200 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-teal-900/8 transition-all duration-300 hover:-translate-y-0.5 bg-white h-full flex flex-col">
+                    <article className="border border-ink-100 hover:border-teal-200 rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-teal-900/8 transition-all duration-300 hover:-translate-y-0.5 bg-white h-full flex flex-col">
                       {/* Product image */}
                       <div className="relative aspect-square bg-ink-50 overflow-hidden">
                         <Image
                           src={product.image}
                           alt={product.productName}
                           fill
-                          className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                          className="object-contain p-2 sm:p-4 group-hover:scale-105 transition-transform duration-500"
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
                         {/* Score badge */}
-                        <div className="absolute top-2.5 right-2.5">
-                          <ProductScoreRing score={product.score} />
+                        <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5">
+                          <ProductScoreRing score={product.score} size={40} />
                         </div>
                         {/* Verdict badge */}
-                        <div className="absolute top-2.5 left-2.5">
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${pc.bg} ${pc.text} ${pc.border}`}>
+                        <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5">
+                          <span className={`text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full border ${pc.bg} ${pc.text} ${pc.border}`}>
                             {product.scoreLabel}
                           </span>
                         </div>
                       </div>
 
                       {/* Info */}
-                      <div className="p-4 flex flex-col flex-1">
-                        <h3 className="text-sm font-medium text-ink-900 group-hover:text-teal-700 transition-colors leading-snug mb-1.5 line-clamp-2">
+                      <div className="p-2.5 sm:p-4 flex flex-col flex-1">
+                        <h3 className="text-[11px] sm:text-sm font-medium text-ink-900 group-hover:text-teal-700 transition-colors leading-snug mb-1 sm:mb-1.5 line-clamp-2">
                           {product.productName}
                         </h3>
-                        <p className="text-xs text-ink-400 mb-3 line-clamp-1">{product.concern}</p>
+                        <p className="hidden sm:block text-xs text-ink-400 mb-3 line-clamp-1">{product.concern}</p>
 
-                        {/* Badges, show max 3 */}
-                        <div className="mb-3 flex-1">
-                          {product.pass_badges.slice(0, 2).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded whitespace-nowrap">
+                        {/* Badges */}
+                        <div className="mb-2 sm:mb-3 flex-1">
+                          {product.pass_badges.slice(0, 1).map((b) => (
+                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
                               {b}
                             </span>
                           ))}
                           {product.warn_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
+                              {b}
+                            </span>
+                          ))}
+                          {/* Show second pass badge only on larger screens */}
+                          {product.pass_badges.slice(1, 2).map((b) => (
+                            <span key={b} className="hidden sm:inline-block mr-1 mb-1 font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded whitespace-nowrap">
                               {b}
                             </span>
                           ))}
                         </div>
 
-                        <div className="flex items-center justify-between pt-3 border-t border-ink-50 mt-auto">
-                          <span className="text-xs text-ink-500">{product.priceRange}</span>
-                          <span className="text-teal-600 text-xs font-medium flex items-center gap-0.5 group-hover:gap-1 transition-all">
-                            Details <ArrowRight size={11} />
+                        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-ink-50 mt-auto">
+                          <span className="text-[10px] sm:text-xs text-ink-500">{product.priceRange}</span>
+                          <span className="text-teal-600 text-[10px] sm:text-xs font-medium flex items-center gap-0.5 group-hover:gap-1 transition-all">
+                            Details <ArrowRight size={10} />
                           </span>
                         </div>
                       </div>
