@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/lib/blog-posts";
 import { getAllGuideSlugs } from "@/lib/skin-guides";
 import { getAllIngredientSlugs } from "@/lib/ingredient-utils";
+import { getAllBrandSummaries, getBrandBySlug } from "@/data/brands";
 
 const BASE = "https://thecleansheet.in";
 
@@ -48,5 +49,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticRoutes, ...blogRoutes, ...guideRoutes, ...ingredientRoutes];
+  const brandSummaries = getAllBrandSummaries();
+
+  const brandRoutes: MetadataRoute.Sitemap = brandSummaries.map((b) => ({
+    url: `${BASE}/brands/${b.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.9,
+  }));
+
+  const productRoutes: MetadataRoute.Sitemap = brandSummaries.flatMap((b) => {
+    const brand = getBrandBySlug(b.slug);
+    return (brand?.products ?? []).map((p) => ({
+      url: `${BASE}/brands/${b.slug}/${p.slug}`,
+      lastModified: new Date(p.analyzedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    }));
+  });
+
+  return [...staticRoutes, ...blogRoutes, ...guideRoutes, ...ingredientRoutes, ...brandRoutes, ...productRoutes];
 }
