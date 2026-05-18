@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, QrCode, Shield, Star, Leaf, Award } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Know What's In Your Skincare, For Consumers",
@@ -95,6 +96,9 @@ function ProofPageMock() {
 export default function ConsumersPage() {
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className="relative py-20 sm:py-28 lg:py-36 overflow-hidden bg-ink-950">

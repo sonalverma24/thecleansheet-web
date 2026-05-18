@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowRight, FlaskConical, Shield, CheckCircle2, Microscope } from "lucide-react";
 import { getAllBrandSummaries, scoreColors } from "@/data/brands";
+import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = {
   title: "Clean Beauty Brand Scores, India's Scored Brand Directory",
@@ -114,6 +115,9 @@ export default function BrandsPage() {
 
   return (
     <div className="bg-white min-h-screen">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
       <style>{`
         @keyframes drawArc {
           from { stroke-dashoffset: 1000; }

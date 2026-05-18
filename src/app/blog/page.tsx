@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, BookOpen, Rss, Shield, TriangleAlert } from "lucide-react";
 import { BLOG_POSTS, BlogPost } from "@/lib/blog-posts";
 import NewsletterForm from "@/components/NewsletterForm";
+import BackButton from "@/components/BackButton";
 const ILLUSTRATIONS: Record<string, React.ComponentType> = {};
 
 function PostImage({ post, fill = true, className = "" }: { post: BlogPost; fill?: boolean; className?: string }) {
@@ -54,6 +55,9 @@ export default function BlogPage() {
 
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
 
       {/* ── Editorial Masthead ───────────────────────────── */}
       <section className="relative overflow-hidden" style={{

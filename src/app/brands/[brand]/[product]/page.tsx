@@ -98,14 +98,14 @@ function IngredientRow({ name, note, flag }: { name: string; note: string; flag:
   }[flag];
   return (
     <tr className={`${styles.row} border-b border-ink-50`}>
-      <td className="py-2.5 px-4 text-sm font-medium text-ink-900 whitespace-nowrap">
-        <div className="flex items-center gap-2">
-          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${styles.dot}`} />
-          {name}
+      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs sm:text-sm font-medium text-ink-900 w-[35%] sm:w-auto">
+        <div className="flex items-start gap-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-0.5 ${styles.dot}`} />
+          <span className="break-words min-w-0">{name}</span>
         </div>
       </td>
-      <td className="py-2.5 px-4 text-xs text-ink-500 leading-relaxed">{note}</td>
-      <td className="py-2.5 px-4 text-xs font-medium text-right whitespace-nowrap">
+      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs text-ink-500 leading-relaxed">{note}</td>
+      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs font-medium text-right whitespace-nowrap">
         <span className={styles.labelCls}>{styles.label}</span>
       </td>
     </tr>
@@ -224,22 +224,42 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
             <span className="text-teal-200 line-clamp-1">{product.productName}</span>
           </nav>
 
+          {/* Mobile hero: score ring inline with name */}
+          <div className="flex items-start gap-4 mb-4 lg:hidden">
+            <div className="flex-shrink-0">
+              <ScoreRing score={product.score} size={64} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                <span className="text-[10px] text-teal-400 uppercase tracking-widest">{brand.name}</span>
+                <span className="w-1 h-1 rounded-full bg-teal-600 flex-shrink-0" />
+                <span className="text-[10px] text-teal-500 capitalize">{product.productType.replace("-", " ")}</span>
+              </div>
+              <h1 className="text-xl font-medium text-white tracking-tight leading-tight mb-1">
+                {product.productName}
+              </h1>
+              <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${c.bg} ${c.text} ${c.border}`}>
+                {product.scoreLabel}
+              </span>
+            </div>
+          </div>
+
           <div className="grid lg:grid-cols-2 gap-10 items-start">
             {/* Left, product info */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="hidden lg:flex items-center gap-2 mb-4">
                 <span className="text-xs text-teal-400 uppercase tracking-widest">{brand.name}</span>
                 <span className="w-1 h-1 rounded-full bg-teal-600" />
                 <span className="text-xs text-teal-500 capitalize">{product.productType.replace("-", " ")}</span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-medium text-white tracking-tight mb-3 leading-tight">
+              <h1 className="hidden lg:block text-2xl sm:text-3xl font-medium text-white tracking-tight mb-3 leading-tight">
                 {product.productName}
               </h1>
-              <p className="text-teal-300/80 text-sm mb-5">{product.concern}</p>
+              <p className="text-teal-300/80 text-sm mb-4">{product.concern}</p>
 
               {/* Badges */}
-              <div className="mb-6">
+              <div className="mb-4">
                 {product.pass_badges.map((b) => (
                   <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded whitespace-nowrap">
                     {b}
@@ -257,6 +277,20 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
                 ))}
               </div>
 
+              {/* Mobile: ingredient stats strip */}
+              <div className="grid grid-cols-3 gap-2 mb-4 lg:hidden">
+                {[
+                  { label: "Safe",    value: okCount,   color: "text-teal-400" },
+                  { label: "Note",    value: infoCount, color: "text-blue-400" },
+                  { label: "Caution", value: warnCount, color: "text-amber-400" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="bg-white/8 rounded-xl p-2.5 text-center">
+                    <div className={`text-lg font-medium ${color}`}>{value}</div>
+                    <div className="text-white/40 text-[9px] mt-0.5">{label}</div>
+                  </div>
+                ))}
+              </div>
+
               <div className="flex items-center gap-3 text-sm text-teal-400">
                 <span>{product.priceRange}</span>
                 <span className="w-1 h-1 rounded-full bg-teal-700" />
@@ -264,8 +298,8 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
               </div>
             </div>
 
-            {/* Right, score card */}
-            <div className="bg-white/8 border border-white/12 rounded-3xl p-7 backdrop-blur-sm">
+            {/* Right, score card — desktop only */}
+            <div className="hidden lg:block bg-white/8 border border-white/12 rounded-3xl p-7 backdrop-blur-sm">
               <div className="flex items-center gap-5 mb-6">
                 <ScoreRing score={product.score} size={88} />
                 <div>
@@ -304,7 +338,7 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
           {/* Product image */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <div className="aspect-square rounded-3xl bg-ink-50 border border-ink-100 overflow-hidden flex items-center justify-center p-8 mb-4">
+              <div className="aspect-[3/2] sm:aspect-square rounded-2xl sm:rounded-3xl bg-ink-50 border border-ink-100 overflow-hidden flex items-center justify-center p-4 sm:p-8 mb-4">
                 <Image
                   src={product.image}
                   alt={product.productName}
@@ -383,9 +417,9 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-ink-50 border-b border-ink-100">
-                      <th className="py-2.5 px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Ingredient (INCI)</th>
-                      <th className="py-2.5 px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Note</th>
-                      <th className="py-2.5 px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider text-right">Status</th>
+                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Ingredient</th>
+                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Note</th>
+                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider text-right">Status</th>
                     </tr>
                   </thead>
                   <tbody>

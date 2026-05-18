@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Shield, Heart, FlaskConical, CheckCircle2, Sparkles } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "About The Clean Sheet™, India's Clean Beauty Standard",
@@ -120,6 +121,9 @@ function ManifestoGraphic() {
 export default function AboutPage() {
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
       <style>{`
         @keyframes tcs-rowIn   { from { opacity:0; transform:translateX(-8px) } to { opacity:1; transform:translateX(0) } }
         @keyframes tcs-fadeUp  { from { opacity:0; transform:translateY(18px) } to { opacity:1; transform:translateY(0) } }

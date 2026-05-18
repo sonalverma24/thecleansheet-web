@@ -5,6 +5,7 @@ import {
   ArrowRight, CheckCircle2, FileText, Microscope,
   Award, AlertTriangle, BookOpen,
 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Our Methodology, How We Score Beauty Products",
@@ -601,6 +602,9 @@ function CTA() {
 export default function MethodologyPage() {
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
       <Hero />
       <DecisionFlow />
       <FiveLayers />

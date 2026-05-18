@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Privacy Policy | The Clean Sheet™",
@@ -9,6 +10,9 @@ export default function PrivacyPolicyPage() {
   return (
     <main className="bg-white min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+        <div className="mb-6">
+          <BackButton />
+        </div>
 
         <div className="mb-12">
           <p className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-3">Legal</p>

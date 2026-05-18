@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, XCircle, BookOpen, ArrowRight, FlaskConical, Shield, Microscope } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Learn | The Clean Sheet™",
@@ -168,6 +169,9 @@ function StatusBadge({ status }: { status: string }) {
 export default function LearnPage() {
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
       <style>{`
         @keyframes learn-fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
         .learn-reveal { animation: learn-fadeUp 0.6s ease both; }

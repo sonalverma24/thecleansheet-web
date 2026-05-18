@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ingredientsData from "@/data/ingredients.json";
 import IngredientDirectory from "./IngredientDirectory";
 import type { Ingredient } from "./IngredientDirectory";
+import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = {
   title: "Cosmetic Ingredient Directory, 25,000+ Ingredients",
@@ -57,6 +58,9 @@ export default function IngredientsPage() {
       {/* Page header */}
       <div className="bg-ink-950 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-4">
+            <BackButton />
+          </div>
           <div className="max-w-2xl">
             <div className="text-teal-400 text-xs font-normal uppercase tracking-widest mb-3">
               Ingredient Directory

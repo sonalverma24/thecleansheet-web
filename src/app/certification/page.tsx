@@ -3,6 +3,7 @@ import {
   Shield, FlaskConical, Award, Eye, Leaf, CheckCircle2,
   ArrowRight, Baby, Sun, Globe, Zap,
 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Get Your Beauty Product Certified in India",
@@ -186,6 +187,9 @@ export default function CertificationPage() {
 
   return (
     <div className="bg-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
       <style>{`
         @keyframes cert-fadeUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
         @keyframes cert-lineGrow { from { height:0 } to { height:100% } }

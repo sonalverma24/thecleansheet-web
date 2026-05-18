@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, ArrowRight, Star, Award, CheckCircle2 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export const metadata = {
   title: "Clean Beauty Certified Products in India",
@@ -95,6 +96,9 @@ const TIER_CONFIG: Record<string, { label: string; color: string; bg: string; ba
 export default function CertifiedPage() {
   return (
     <div className="bg-white min-h-[80vh]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <BackButton />
+      </div>
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <section className="relative bg-white border-b border-teal-100 overflow-hidden">
