@@ -239,16 +239,16 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
                         </h3>
                         <p className="text-xs text-ink-400 mb-3 line-clamp-1">{product.concern}</p>
 
-                        {/* Pass badges — show max 2 */}
+                        {/* Badges — show max 3 */}
                         <div className="flex flex-wrap gap-1 mb-3 flex-1">
                           {product.pass_badges.slice(0, 2).map((b) => (
-                            <span key={b} className="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full">
+                            <span key={b} className="font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded">
                               {b}
                             </span>
                           ))}
                           {product.warn_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
-                              ⚠ {b}
+                            <span key={b} className="font-mono text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded">
+                              {b}
                             </span>
                           ))}
                         </div>
