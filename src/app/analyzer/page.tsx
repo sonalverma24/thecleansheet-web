@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Sparkles, Send, Search, RotateCcw, ChevronDown, ChevronUp,
   CheckCircle2, AlertTriangle, Info, MessageSquare,
@@ -8,6 +9,54 @@ import {
   Star, Loader2, ExternalLink, Award
 } from "lucide-react";
 import type { Scorecard, ChatMessage, ComparisonResult, ExpertAnswer } from "@/lib/types";
+
+/* ─── Known product redirect map ───────────────────────────────────────────
+   If a user pastes a brand product URL for a product we already have a full
+   scorecard for, skip the AI engine entirely and redirect to the static page.
+   Patterns are checked against a lowercased version of the input.
+   Order matters: more specific patterns (e.g. strawberry + sunscreen) must
+   appear before generic ones (e.g. just vitamin-c).
+─────────────────────────────────────────────────────────────────────────── */
+const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> = [
+  // ── Minimalist (beminimalist.co) ──────────────────────────────────────────
+  { test: u => u.includes("beminimalist.co") && u.includes("niacinamide"),   path: "/brands/minimalist/niacinamide-10-face-serum" },
+  { test: u => u.includes("beminimalist.co") && u.includes("vitamin-c"),     path: "/brands/minimalist/vitamin-c-10-face-serum" },
+  { test: u => u.includes("beminimalist.co") && u.includes("salicylic"),     path: "/brands/minimalist/salicylic-acid-2-face-serum" },
+  { test: u => u.includes("beminimalist.co") && u.includes("alpha-arbutin"), path: "/brands/minimalist/alpha-arbutin-2-face-serum" },
+  { test: u => u.includes("beminimalist.co") && u.includes("retinol"),       path: "/brands/minimalist/retinol-03-face-serum" },
+  { test: u => u.includes("beminimalist.co") && u.includes("aha"),           path: "/brands/minimalist/aha-pha-bha-face-peel" },
+  { test: u => u.includes("beminimalist.co") && u.includes("spf"),           path: "/brands/minimalist/spf-50-pa-sunscreen" },
+  { test: u => u.includes("beminimalist.co") && u.includes("vitamin-b5"),    path: "/brands/minimalist/vitamin-b5-10-moisturizer" },
+
+  // ── Dot & Key (dotandkey.com) ─────────────────────────────────────────────
+  { test: u => u.includes("dotandkey.com") && u.includes("strawberry-dew"),                           path: "/brands/dot-and-key/strawberry-dew-tinted-sunscreen" },
+  { test: u => u.includes("dotandkey.com") && u.includes("watermelon") && u.includes("sunscreen"),    path: "/brands/dot-and-key/watermelon-cooling-sunscreen-spf-50" },
+  { test: u => u.includes("dotandkey.com") && u.includes("vitamin-c") && u.includes("sunscreen"),     path: "/brands/dot-and-key/vitamin-c-e-sunscreen-spf-50" },
+  { test: u => u.includes("dotandkey.com") && u.includes("barrier-repair") && u.includes("face-wash"),path: "/brands/dot-and-key/barrier-repair-face-wash" },
+  { test: u => u.includes("dotandkey.com") && u.includes("barrier-repair"),                           path: "/brands/dot-and-key/barrier-repair-restore-moisturizer" },
+  { test: u => u.includes("dotandkey.com") && u.includes("niacinamide"),                              path: "/brands/dot-and-key/strawberry-bright-niacinamide-serum" },
+  { test: u => u.includes("dotandkey.com") && u.includes("vitamin-c") && u.includes("sorbet"),        path: "/brands/dot-and-key/vitamin-c-e-sorbet-moisturizer" },
+  { test: u => u.includes("dotandkey.com") && u.includes("vitamin-c") && u.includes("serum"),         path: "/brands/dot-and-key/vitamin-c-e-face-serum" },
+  { test: u => u.includes("dotandkey.com") && (u.includes("72hr") || u.includes("hydrating-gel")),    path: "/brands/dot-and-key/72hr-hydrating-gel-moisturizer" },
+  { test: u => u.includes("dotandkey.com") && u.includes("retinol"),                                  path: "/brands/dot-and-key/retinol-ceramide-night-cream" },
+
+  // ── Kiehl's (kiehls.com) ──────────────────────────────────────────────────
+  { test: u => u.includes("kiehls.com") && u.includes("ultra-facial-cleanser"),   path: "/brands/kiehls/ultra-facial-cleanser" },
+  { test: u => u.includes("kiehls.com") && u.includes("ultra-facial-cream"),      path: "/brands/kiehls/ultra-facial-cream" },
+  { test: u => u.includes("kiehls.com") && u.includes("calendula"),               path: "/brands/kiehls/calendula-herbal-extract-toner" },
+  { test: u => u.includes("kiehls.com") && u.includes("clearly-corrective"),      path: "/brands/kiehls/clearly-corrective-dark-spot-solution" },
+  { test: u => u.includes("kiehls.com") && u.includes("midnight-recovery"),       path: "/brands/kiehls/midnight-recovery-concentrate" },
+  { test: u => u.includes("kiehls.com") && u.includes("powerful-strength"),       path: "/brands/kiehls/powerful-strength-line-reducing-concentrate" },
+  { test: u => u.includes("kiehls.com") && u.includes("rare-earth"),              path: "/brands/kiehls/rare-earth-deep-pore-cleansing-masque" },
+  { test: u => u.includes("kiehls.com") && u.includes("creamy-eye"),              path: "/brands/kiehls/creamy-eye-treatment-with-avocado" },
+];
+
+function findProductRedirect(query: string): string | null {
+  const q = query.trim().toLowerCase();
+  if (!q.includes(".")) return null; // not a URL-like string
+  const match = PRODUCT_REDIRECTS.find(r => r.test(q));
+  return match ? match.path : null;
+}
 
 /* ─── Helpers ─── */
 function uid() { return Math.random().toString(36).slice(2); }
@@ -546,6 +595,7 @@ const SUGGESTIONS = [
 
 /* ─── Main Page ─── */
 export default function AnalyzerPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [scorecard, setScorecard] = useState<Scorecard | null>(null);
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);
@@ -572,6 +622,14 @@ export default function AnalyzerPage() {
   const analyze = useCallback(async (q?: string) => {
     const text = (q || query).trim();
     if (!text || isAnalyzing) return;
+
+    // If this looks like a URL for a product we already have a scorecard for,
+    // redirect straight to the static scorecard page - no AI call needed.
+    const redirectPath = findProductRedirect(text);
+    if (redirectPath) {
+      router.push(redirectPath);
+      return;
+    }
 
     setQuery(text);
     setIsAnalyzing(true);
@@ -636,7 +694,7 @@ export default function AnalyzerPage() {
       setQuery("");
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [query, isAnalyzing]);
+  }, [query, isAnalyzing, router]);
 
   /* ─── Chat ─── */
   const sendChat = useCallback(async () => {
