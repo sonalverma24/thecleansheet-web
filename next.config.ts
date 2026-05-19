@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "adn-static1.nykaa.com" },
       { protocol: "https", hostname: "www.dotandkey.com" },
       { protocol: "https", hostname: "incidecoder-content.storage.googleapis.com" },
+      { protocol: "https", hostname: "discoverpilgrim.com" },
     ],
     dangerouslyAllowSVG: true,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

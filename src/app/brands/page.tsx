@@ -341,16 +341,19 @@ export default function BrandsPage() {
                 Join India's growing registry of independently verified beauty products. A Clean Sheet Score is proof you stand behind your ingredients.
               </p>
               <div className="space-y-2 mb-6">
-                {["Full ingredient safety evaluation", "Regulatory compliance across India, EU & US", "Public scorecard published on this directory"].map((pt) => (
+                {["Full ingredient safety evaluation", "Compliance checked across India, EU, US, Korea & Japan", "Public scorecard published on this directory"].map((pt) => (
                   <div key={pt} className="flex items-center gap-2 text-teal-200 text-sm">
                     <CheckCircle2 size={14} className="text-teal-400 flex-shrink-0" />
                     {pt}
                   </div>
                 ))}
               </div>
+              <p className="text-teal-300/60 text-xs leading-relaxed mb-4">
+                Scored well? Take your transparency and trust to the next level - get certified.
+              </p>
               <Link href="/certification"
                 className="inline-flex items-center gap-2 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-coral-500/30">
-                Apply for certification <ArrowRight size={14} />
+                Get certified <ArrowRight size={14} />
               </Link>
             </div>
           </div>

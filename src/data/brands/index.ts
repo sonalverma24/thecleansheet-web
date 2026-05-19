@@ -1,11 +1,12 @@
 import { minimalistBrand } from "./minimalist";
 import { dotAndKeyBrand } from "./dot-and-key";
 import { kiehlsBrand } from "./kiehls";
+import { pilgrimBrand } from "./pilgrim";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand];
+export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);

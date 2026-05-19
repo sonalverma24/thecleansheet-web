@@ -49,6 +49,16 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("kiehls.com") && u.includes("powerful-strength"),       path: "/brands/kiehls/powerful-strength-line-reducing-concentrate" },
   { test: u => u.includes("kiehls.com") && u.includes("rare-earth"),              path: "/brands/kiehls/rare-earth-deep-pore-cleansing-masque" },
   { test: u => u.includes("kiehls.com") && u.includes("creamy-eye"),              path: "/brands/kiehls/creamy-eye-treatment-with-avocado" },
+
+  // ── Pilgrim (discoverpilgrim.com) ─────────────────────────────────────────
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("hyaluronic"),                                          path: "/brands/pilgrim/2-percent-hyaluronic-acid-serum" },
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("niacinamide") && u.includes("kojic"),                 path: "/brands/pilgrim/10-percent-niacinamide-kojic-acid-serum" },
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("salicylic") && u.includes("niacinamide"),             path: "/brands/pilgrim/salicylic-acid-2-niacinamide-3-oil-control-serum" },
+  { test: u => u.includes("discoverpilgrim.com") && (u.includes("vitamin-c") || u.includes("eaa")),                   path: "/brands/pilgrim/15-percent-vitamin-c-eaa-serum" },
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("red-vine") && u.includes("retinol"),                  path: "/brands/pilgrim/red-vine-retinol-night-gel-creme" },
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("red-vine"),                                            path: "/brands/pilgrim/red-vine-anti-ageing-serum" },
+  { test: u => u.includes("discoverpilgrim.com") && u.includes("aha"),                                                 path: "/brands/pilgrim/25-aha-2-bha-5-pha-peeling-solution" },
+  { test: u => u.includes("discoverpilgrim.com") && (u.includes("sunscreen") || u.includes("spf")),                   path: "/brands/pilgrim/2-percent-niacinamide-glow-sunscreen-spf-50" },
 ];
 
 // Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
@@ -80,6 +90,15 @@ const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
   { test: q => q.includes("kiehl") && q.includes("powerful"),        path: "/brands/kiehls/powerful-strength-line-reducing-concentrate" },
   { test: q => q.includes("kiehl") && q.includes("ultra facial cream"), path: "/brands/kiehls/ultra-facial-cream" },
   { test: q => q.includes("kiehl") && q.includes("ultra facial cleanser"), path: "/brands/kiehls/ultra-facial-cleanser" },
+  // Pilgrim
+  { test: q => q.includes("pilgrim") && (q.includes("hyaluronic") || q.includes("ha serum")),                                       path: "/brands/pilgrim/2-percent-hyaluronic-acid-serum" },
+  { test: q => q.includes("pilgrim") && q.includes("niacinamide") && q.includes("kojic"),                                           path: "/brands/pilgrim/10-percent-niacinamide-kojic-acid-serum" },
+  { test: q => q.includes("pilgrim") && q.includes("salicylic") && q.includes("niacinamide"),                                       path: "/brands/pilgrim/salicylic-acid-2-niacinamide-3-oil-control-serum" },
+  { test: q => q.includes("pilgrim") && (q.includes("vitamin c") || q.includes("eaa")),                                             path: "/brands/pilgrim/15-percent-vitamin-c-eaa-serum" },
+  { test: q => q.includes("pilgrim") && q.includes("retinol") && (q.includes("night") || q.includes("red vine")),                   path: "/brands/pilgrim/red-vine-retinol-night-gel-creme" },
+  { test: q => q.includes("pilgrim") && q.includes("red vine") && q.includes("serum"),                                              path: "/brands/pilgrim/red-vine-anti-ageing-serum" },
+  { test: q => q.includes("pilgrim") && (q.includes("aha") || q.includes("peeling") || q.includes("peel")),                        path: "/brands/pilgrim/25-aha-2-bha-5-pha-peeling-solution" },
+  { test: q => q.includes("pilgrim") && (q.includes("sunscreen") || q.includes("spf")),                                             path: "/brands/pilgrim/2-percent-niacinamide-glow-sunscreen-spf-50" },
 ];
 
 function findProductRedirect(query: string): string | null {
