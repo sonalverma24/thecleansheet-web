@@ -3,11 +3,12 @@ import { dotAndKeyBrand } from "./dot-and-key";
 import { kiehlsBrand } from "./kiehls";
 import { pilgrimBrand } from "./pilgrim";
 import { hyphenBrand } from "./hyphen";
+import { plumBrand } from "./plum";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand];
+export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);

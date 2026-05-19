@@ -67,6 +67,15 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("letshyphen.com") && (u.includes("sunscreen") || u.includes("spf")),                         path: "/brands/hyphen/all-i-need-sunscreen-spf-50" },
   { test: u => u.includes("letshyphen.com") && (u.includes("depigment") || u.includes("pigment")),                    path: "/brands/hyphen/advanced-depigmentation-serum" },
   { test: u => u.includes("letshyphen.com") && (u.includes("ceramide") || u.includes("barrier")),                     path: "/brands/hyphen/ceramide-peptide-barrier-repair-moisturizer" },
+  // ── Plum (plumgoodness.com) ────────────────────────────────────────────────
+  { test: u => u.includes("plumgoodness.com") && u.includes("vitamin-c-face-serum"),                                   path: "/brands/plum/vitamin-c-mandarin-glow-serum" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("niacinamide"),                                             path: "/brands/plum/10-percent-niacinamide-rice-water-serum" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("retinol"),                                                 path: "/brands/plum/1-percent-retinol-bakuchiol-serum" },
+  { test: u => u.includes("plumgoodness.com") && (u.includes("sunscreen") || u.includes("spf")),                       path: "/brands/plum/green-tea-zinc-sunscreen-spf-50" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("salicylic"),                                               path: "/brands/plum/2-percent-salicylic-acid-serum" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("hyaluronic"),                                              path: "/brands/plum/bulgarian-rose-hyaluronic-acid-serum" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("toner"),                                                   path: "/brands/plum/vitamin-c-mandarin-toner" },
+  { test: u => u.includes("plumgoodness.com") && u.includes("eye"),                                                     path: "/brands/plum/vitamin-c-peptide-caffeine-eye-cream" },
 ];
 
 // Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
@@ -115,6 +124,15 @@ const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
   { test: q => q.includes("hyphen") && (q.includes("sunscreen") || q.includes("spf")),                                              path: "/brands/hyphen/all-i-need-sunscreen-spf-50" },
   { test: q => q.includes("hyphen") && (q.includes("depigment") || q.includes("pigment") || q.includes("tranexamic")),             path: "/brands/hyphen/advanced-depigmentation-serum" },
   { test: q => q.includes("hyphen") && (q.includes("ceramide") || q.includes("barrier") || q.includes("moisturizer")),             path: "/brands/hyphen/ceramide-peptide-barrier-repair-moisturizer" },
+  // Plum
+  { test: q => q.includes("plum") && q.includes("vitamin c") && !q.includes("eye"),                                                path: "/brands/plum/vitamin-c-mandarin-glow-serum" },
+  { test: q => q.includes("plum") && q.includes("niacinamide"),                                                                     path: "/brands/plum/10-percent-niacinamide-rice-water-serum" },
+  { test: q => q.includes("plum") && q.includes("retinol"),                                                                          path: "/brands/plum/1-percent-retinol-bakuchiol-serum" },
+  { test: q => q.includes("plum") && (q.includes("sunscreen") || q.includes("spf")),                                                path: "/brands/plum/green-tea-zinc-sunscreen-spf-50" },
+  { test: q => q.includes("plum") && q.includes("salicylic"),                                                                        path: "/brands/plum/2-percent-salicylic-acid-serum" },
+  { test: q => q.includes("plum") && (q.includes("hyaluronic") || q.includes("rose")),                                              path: "/brands/plum/bulgarian-rose-hyaluronic-acid-serum" },
+  { test: q => q.includes("plum") && q.includes("toner"),                                                                            path: "/brands/plum/vitamin-c-mandarin-toner" },
+  { test: q => q.includes("plum") && q.includes("eye"),                                                                              path: "/brands/plum/vitamin-c-peptide-caffeine-eye-cream" },
 ];
 
 function findProductRedirect(query: string): string | null {
