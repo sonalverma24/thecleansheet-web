@@ -76,6 +76,13 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("plumgoodness.com") && u.includes("hyaluronic"),                                              path: "/brands/plum/bulgarian-rose-hyaluronic-acid-serum" },
   { test: u => u.includes("plumgoodness.com") && u.includes("toner"),                                                   path: "/brands/plum/vitamin-c-mandarin-toner" },
   { test: u => u.includes("plumgoodness.com") && u.includes("eye"),                                                     path: "/brands/plum/vitamin-c-peptide-caffeine-eye-cream" },
+  // ── Antinorm (antinorm.co) ────────────────────────────────────────────────
+  { test: u => u.includes("antinorm.co") && (u.includes("set-to-protect") || u.includes("sunscreen")),                  path: "/brands/antinorm/set-to-protect-sunscreen" },
+  { test: u => u.includes("antinorm.co") && u.includes("shower-in-seconds"),                                             path: "/brands/antinorm/shower-in-seconds" },
+  { test: u => u.includes("antinorm.co") && u.includes("facial-in-a-flash"),                                             path: "/brands/antinorm/facial-in-a-flash" },
+  { test: u => u.includes("antinorm.co") && (u.includes("bye-bye-blow") || u.includes("blow-dry")),                     path: "/brands/antinorm/bye-bye-blow-dry" },
+  { test: u => u.includes("antinorm.co") && u.includes("hair-and-everywhere"),                                           path: "/brands/antinorm/hair-and-everywhere" },
+  { test: u => u.includes("antinorm.co") && (u.includes("fuller") || u.includes("lip")),                                path: "/brands/antinorm/fuller-without-filler-lip-plumper" },
 ];
 
 // Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
@@ -133,6 +140,13 @@ const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
   { test: q => q.includes("plum") && (q.includes("hyaluronic") || q.includes("rose")),                                              path: "/brands/plum/bulgarian-rose-hyaluronic-acid-serum" },
   { test: q => q.includes("plum") && q.includes("toner"),                                                                            path: "/brands/plum/vitamin-c-mandarin-toner" },
   { test: q => q.includes("plum") && q.includes("eye"),                                                                              path: "/brands/plum/vitamin-c-peptide-caffeine-eye-cream" },
+  // Antinorm
+  { test: q => q.includes("antinorm") && (q.includes("sunscreen") || q.includes("spf") || q.includes("set to protect")), path: "/brands/antinorm/set-to-protect-sunscreen" },
+  { test: q => q.includes("antinorm") && (q.includes("shower") || q.includes("cleanser") || q.includes("body wash")),    path: "/brands/antinorm/shower-in-seconds" },
+  { test: q => q.includes("antinorm") && (q.includes("facial") || q.includes("flash") || q.includes("face wash")),       path: "/brands/antinorm/facial-in-a-flash" },
+  { test: q => q.includes("antinorm") && (q.includes("blow dry") || q.includes("blow-dry") || q.includes("hair mask")),  path: "/brands/antinorm/bye-bye-blow-dry" },
+  { test: q => q.includes("antinorm") && (q.includes("hair") || q.includes("body") || q.includes("everywhere")),         path: "/brands/antinorm/hair-and-everywhere" },
+  { test: q => q.includes("antinorm") && (q.includes("lip") || q.includes("plumper") || q.includes("fuller")),           path: "/brands/antinorm/fuller-without-filler-lip-plumper" },
 ];
 
 function findProductRedirect(query: string): string | null {
