@@ -59,6 +59,14 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("discoverpilgrim.com") && u.includes("red-vine"),                                            path: "/brands/pilgrim/red-vine-anti-ageing-serum" },
   { test: u => u.includes("discoverpilgrim.com") && u.includes("aha"),                                                 path: "/brands/pilgrim/25-aha-2-bha-5-pha-peeling-solution" },
   { test: u => u.includes("discoverpilgrim.com") && (u.includes("sunscreen") || u.includes("spf")),                   path: "/brands/pilgrim/2-percent-niacinamide-glow-sunscreen-spf-50" },
+  // ── Hyphen (letshyphen.com) ────────────────────────────────────────────────
+  { test: u => u.includes("letshyphen.com") && u.includes("golden-hour"),                                              path: "/brands/hyphen/golden-hour-glow-face-serum" },
+  { test: u => u.includes("letshyphen.com") && u.includes("vitamin-c"),                                                path: "/brands/hyphen/10-percent-vitamin-c-ferulic-acid-serum" },
+  { test: u => u.includes("letshyphen.com") && u.includes("acne-defence"),                                             path: "/brands/hyphen/acne-defence-daily-serum" },
+  { test: u => u.includes("letshyphen.com") && u.includes("retinal"),                                                  path: "/brands/hyphen/01-percent-retinal-reset-serum-pro" },
+  { test: u => u.includes("letshyphen.com") && (u.includes("sunscreen") || u.includes("spf")),                         path: "/brands/hyphen/all-i-need-sunscreen-spf-50" },
+  { test: u => u.includes("letshyphen.com") && (u.includes("depigment") || u.includes("pigment")),                    path: "/brands/hyphen/advanced-depigmentation-serum" },
+  { test: u => u.includes("letshyphen.com") && (u.includes("ceramide") || u.includes("barrier")),                     path: "/brands/hyphen/ceramide-peptide-barrier-repair-moisturizer" },
 ];
 
 // Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
@@ -99,6 +107,14 @@ const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
   { test: q => q.includes("pilgrim") && q.includes("red vine") && q.includes("serum"),                                              path: "/brands/pilgrim/red-vine-anti-ageing-serum" },
   { test: q => q.includes("pilgrim") && (q.includes("aha") || q.includes("peeling") || q.includes("peel")),                        path: "/brands/pilgrim/25-aha-2-bha-5-pha-peeling-solution" },
   { test: q => q.includes("pilgrim") && (q.includes("sunscreen") || q.includes("spf")),                                             path: "/brands/pilgrim/2-percent-niacinamide-glow-sunscreen-spf-50" },
+  // Hyphen
+  { test: q => q.includes("hyphen") && (q.includes("golden") || q.includes("glow") || q.includes("kakadu")),                       path: "/brands/hyphen/golden-hour-glow-face-serum" },
+  { test: q => q.includes("hyphen") && q.includes("vitamin c"),                                                                     path: "/brands/hyphen/10-percent-vitamin-c-ferulic-acid-serum" },
+  { test: q => q.includes("hyphen") && q.includes("acne"),                                                                          path: "/brands/hyphen/acne-defence-daily-serum" },
+  { test: q => q.includes("hyphen") && (q.includes("retinal") || q.includes("retinol")),                                            path: "/brands/hyphen/01-percent-retinal-reset-serum-pro" },
+  { test: q => q.includes("hyphen") && (q.includes("sunscreen") || q.includes("spf")),                                              path: "/brands/hyphen/all-i-need-sunscreen-spf-50" },
+  { test: q => q.includes("hyphen") && (q.includes("depigment") || q.includes("pigment") || q.includes("tranexamic")),             path: "/brands/hyphen/advanced-depigmentation-serum" },
+  { test: q => q.includes("hyphen") && (q.includes("ceramide") || q.includes("barrier") || q.includes("moisturizer")),             path: "/brands/hyphen/ceramide-peptide-barrier-repair-moisturizer" },
 ];
 
 function findProductRedirect(query: string): string | null {

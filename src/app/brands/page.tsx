@@ -312,7 +312,7 @@ export default function BrandsPage() {
         {/* ── Methodology strip ── */}
         <div className="mt-14 mb-12 grid sm:grid-cols-3 gap-4">
           {[
-            { icon: "🔬", title: "6 Scored Pillars", desc: "Safety · Irritation · Disclosure · Regulatory · Efficacy · Transparency" },
+            { icon: "🔬", title: "4 Scored Pillars", desc: "Safety & Toxicity · Formulation Quality · Claims & Transparency · Ethics & Sustainability" },
             { icon: "📋", title: "INCI-First Analysis", desc: "Every ingredient verified against the declared INCI list from the brand's own website" },
             { icon: "🇮🇳", title: "India Context", desc: "Scores account for Indian climate, skin concerns, and CDSCO regulatory framework" },
           ].map(({ icon, title, desc }) => (
