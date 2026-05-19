@@ -167,7 +167,7 @@ export const kiehlsBrand: Brand = {
       summary:
         "Kiehl's flagship brightening serum using 3-O-Ethyl Ascorbic Acid (a stable Vitamin C ether derivative) alongside Hydroxypropyl Tetrahydropyrantriol (a Hyaluronic Acid analogue). The formula has notable concerns: Alcohol Denat appears at position 4, a meaningful concentration that may contribute to barrier disruption with prolonged daily use on compromised skin. Lavender Oil (Lavandula Angustifolia) and its disclosed allergen Linalool appear in the formula. In a brightening leave-on product, this is a sensitisation concern given that fragrance allergy is the most common cause of contact dermatitis. Salicylic Acid at position 10 functions at brightening/exfoliant levels in this context, adding efficacy but also irritation potential when combined with alcohol.",
       score: 59,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://incidecoder-content.storage.googleapis.com/defb0b39-b173-4405-a3af-b0b16469e015/products/kiehls-kiehls-clearly-corrective-dark-spot-solution/kiehls-kiehls-clearly-corrective-dark-spot-solution_front_photo_original.jpeg",
       analyzedAt: "2026-05-18",
       pillars: [
@@ -216,7 +216,7 @@ export const kiehlsBrand: Brand = {
       summary:
         "A cult facial oil marketed for overnight skin recovery. The base is well-formulated: Rosehip Oil (Rosa Canina), Evening Primrose Oil (Oenothera Biennis), Jojoba Oil (Simmondsia Chinensis), and Squalane are all evidence-backed skin emollients with barrier-repair activity. However, the formula carries one of the highest fragrance allergen loads of any Kiehl's product: Lavender Oil, Geranium Oil, Rosemary Oil, and Coriander Oil are all listed with their declared IFRA allergens, namely Linalool, Limonene, Citral, Citronellol, and Geraniol. Five allergens declared in a single leave-on overnight product represents significant sensitisation risk, particularly on the skin's barrier recovery cycle during sleep. The fragrance serves no therapeutic role in skin recovery.",
       score: 52,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://incidecoder-content.storage.googleapis.com/4a174042-a2a7-4a1e-bb71-63fa02bc330a/products/kiehls-midnight-recovery-concentrate/kiehls-midnight-recovery-concentrate_front_photo_original.jpeg",
       analyzedAt: "2026-05-18",
       pillars: [
@@ -269,7 +269,7 @@ export const kiehlsBrand: Brand = {
       summary:
         "Kiehl's vitamin C serum with a dual-form approach: 10.5% L-Ascorbic Acid (potent, low pH) combined with 2% Ascorbyl Glucoside (stable derivative). The dual-C system is genuinely well-designed for potency plus stability. However, significant formulation concerns exist: Cyclohexasiloxane (D6 silicone) is EU-restricted for rinse-off products (>0.1% banned since June 2020). This is a leave-on product, so it is technically still permitted at limited concentrations, but it is a silicone under increasing regulatory and environmental scrutiny. Acrylonitrile/Methyl Methacrylate/Vinylidene Chloride Copolymer is a synthetic polymer (microplastic concern) used as a mattifying agent. Citrus peel oils (Orange and Lemon) plus Limonene and Citral are fragrance ingredients in a product typically used in the morning, creating real phototoxicity and UV sensitisation risk.",
       score: 57,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://incidecoder-content.storage.googleapis.com/8bed46ed-5200-4b48-9ada-2b1518fce0c1/products/kiehls-powerful-strength-line-reducing-concentrate/kiehls-powerful-strength-line-reducing-concentrate_front_photo_original.jpeg",
       analyzedAt: "2026-05-18",
       pillars: [
@@ -375,7 +375,7 @@ export const kiehlsBrand: Brand = {
       summary:
         "One of Kiehl's most iconic and long-standing products, and the one most in need of a formula update. The Creamy Eye Treatment contains four parabens: Methylparaben, Ethylparaben, Propylparaben, and Butylparaben. Butylparaben is the most scrutinised of the paraben family: it has the highest lipophilicity, longest half-life, and the greatest endocrine disruption potential in in-vitro studies. While the EU SCCS concluded Butylparaben is safe at current cosmetic use levels (re-evaluated 2023), it has been removed from most modern eye cream formulations, and its presence in a product applied daily to the periocular area (thin, vascular skin) is worth flagging. The avocado oil and shea butter base is genuinely emollient for the eye area, but this is a heritage formula that hasn't been modernised.",
       score: 54,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://incidecoder-content.storage.googleapis.com/d8bf8e08-cb2c-483a-971e-764d7ebda411/products/kiehls-creamy-eye-treatment-with-avocado/kiehls-creamy-eye-treatment-with-avocado_front_photo_original.jpeg",
       analyzedAt: "2026-05-18",
       pillars: [
@@ -427,7 +427,7 @@ export const kiehlsBrand: Brand = {
       summary:
           "The Ultra Facial Cleanser leads with Sodium Laureth Sulfate (SLES) at position 2, a strong anionic surfactant that effectively cleanses but can disrupt the skin's natural barrier with daily use, particularly on sensitive or compromised skin. The formula also contains three parabens (Methylparaben, Propylparaben, Sodium Methylparaben) and Polyaminopropyl Biguanide (PHMB), an antimicrobial preservative restricted in EU rinse-off cosmetics at >0.1% since 2019. The formula does include conditioning ingredients: Squalane, Sweet Almond Oil, and Avocado Oil help offset the drying effect of SLES post-wash.",
       score: 51,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://incidecoder-content.storage.googleapis.com/f0524f41-1571-405d-9013-57debfdaf823/products/kiehls-ultra-facial-cleanser/kiehls-ultra-facial-cleanser_front_photo_original.jpeg",
       analyzedAt: "2026-05-18",
       pillars: [

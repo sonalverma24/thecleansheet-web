@@ -436,7 +436,7 @@ export const dotAndKeyBrand: Brand = {
       summary:
         "This is the most significant transparency concern in the Dot & Key range. The product is named and marketed as a 'Retinol' night cream, but the active ingredient in the INCI list is Retinyl Palmitate, a retinol ester with substantially lower bioactivity. Retinyl Palmitate requires two metabolic conversion steps to reach the active form (retinoic acid), versus one for actual Retinol. Clinical evidence for Retinyl Palmitate at cosmetic concentrations is materially weaker. Additionally, the INCI position of Retinyl Palmitate suggests low concentration. The product also contains three cosmetic dyes (CI 16185, CI 19140, CI 42090) and Parfum. The ceramide complex (Ceramide NP, AP, EOP) is genuinely present and beneficial, but the naming and ingredient mismatch is a clear disclosure concern.",
       score: 52,
-      scoreLabel: "Fair",
+      scoreLabel: "Concern",
       image: "https://www.dotandkey.com/cdn/shop/files/1_7.jpg?v=1764061107",
       analyzedAt: "2026-05-18",
       pillars: [
