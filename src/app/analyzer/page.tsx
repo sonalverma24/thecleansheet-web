@@ -51,11 +51,47 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("kiehls.com") && u.includes("creamy-eye"),              path: "/brands/kiehls/creamy-eye-treatment-with-avocado" },
 ];
 
+// Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
+const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
+  // Minimalist
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && (q.includes("sunscreen") || q.includes("spf")), path: "/brands/minimalist/spf-50-pa-sunscreen" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("niacinamide"),  path: "/brands/minimalist/niacinamide-10-face-serum" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("vitamin c"),    path: "/brands/minimalist/vitamin-c-10-face-serum" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("salicylic"),    path: "/brands/minimalist/salicylic-acid-2-face-serum" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("arbutin"),      path: "/brands/minimalist/alpha-arbutin-2-face-serum" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("retinol"),      path: "/brands/minimalist/retinol-03-face-serum" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && q.includes("aha"),          path: "/brands/minimalist/aha-pha-bha-face-peel" },
+  { test: q => (q.includes("minimalist") || q.includes("beminimalist")) && (q.includes("b5") || q.includes("panthenol")), path: "/brands/minimalist/vitamin-b5-10-moisturizer" },
+  // Dot & Key
+  { test: q => q.includes("dot") && q.includes("key") && (q.includes("sunscreen") || q.includes("spf")) && q.includes("watermelon"), path: "/brands/dot-and-key/watermelon-cooling-sunscreen-spf-50" },
+  { test: q => q.includes("dot") && q.includes("key") && (q.includes("sunscreen") || q.includes("spf")) && q.includes("strawberry"), path: "/brands/dot-and-key/strawberry-dew-tinted-sunscreen" },
+  { test: q => q.includes("dot") && q.includes("key") && (q.includes("sunscreen") || q.includes("spf")) && q.includes("vitamin c"), path: "/brands/dot-and-key/vitamin-c-e-sunscreen-spf-50" },
+  { test: q => q.includes("dot") && q.includes("key") && q.includes("barrier") && q.includes("wash"),  path: "/brands/dot-and-key/barrier-repair-face-wash" },
+  { test: q => q.includes("dot") && q.includes("key") && q.includes("barrier"),                        path: "/brands/dot-and-key/barrier-repair-restore-moisturizer" },
+  { test: q => q.includes("dot") && q.includes("key") && q.includes("niacinamide"),                    path: "/brands/dot-and-key/strawberry-bright-niacinamide-serum" },
+  { test: q => q.includes("dot") && q.includes("key") && q.includes("vitamin c") && q.includes("serum"), path: "/brands/dot-and-key/vitamin-c-e-face-serum" },
+  { test: q => q.includes("dot") && q.includes("key") && q.includes("retinol"),                        path: "/brands/dot-and-key/retinol-ceramide-night-cream" },
+  // Kiehl's
+  { test: q => q.includes("kiehl") && q.includes("calendula"),       path: "/brands/kiehls/calendula-herbal-extract-toner" },
+  { test: q => q.includes("kiehl") && q.includes("midnight"),        path: "/brands/kiehls/midnight-recovery-concentrate" },
+  { test: q => q.includes("kiehl") && q.includes("clearly corrective"), path: "/brands/kiehls/clearly-corrective-dark-spot-solution" },
+  { test: q => q.includes("kiehl") && q.includes("rare earth"),      path: "/brands/kiehls/rare-earth-deep-pore-cleansing-masque" },
+  { test: q => q.includes("kiehl") && q.includes("creamy eye"),      path: "/brands/kiehls/creamy-eye-treatment-with-avocado" },
+  { test: q => q.includes("kiehl") && q.includes("powerful"),        path: "/brands/kiehls/powerful-strength-line-reducing-concentrate" },
+  { test: q => q.includes("kiehl") && q.includes("ultra facial cream"), path: "/brands/kiehls/ultra-facial-cream" },
+  { test: q => q.includes("kiehl") && q.includes("ultra facial cleanser"), path: "/brands/kiehls/ultra-facial-cleanser" },
+];
+
 function findProductRedirect(query: string): string | null {
   const q = query.trim().toLowerCase();
-  if (!q.includes(".")) return null; // not a URL-like string
-  const match = PRODUCT_REDIRECTS.find(r => r.test(q));
-  return match ? match.path : null;
+  // URL-based matching
+  if (q.includes(".")) {
+    const urlMatch = PRODUCT_REDIRECTS.find(r => r.test(q));
+    if (urlMatch) return urlMatch.path;
+  }
+  // Name/text-based matching
+  const nameMatch = NAME_REDIRECTS.find(r => r.test(q));
+  return nameMatch ? nameMatch.path : null;
 }
 
 /* ─── Helpers ─── */
