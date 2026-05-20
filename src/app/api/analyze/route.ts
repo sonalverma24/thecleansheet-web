@@ -235,6 +235,7 @@ function parseJSON(text: string) {
 }
 
 const outOfScope = () => Response.json({ type: "out_of_scope" });
+const noDataFound = (productHint?: string) => Response.json({ type: "no_data_found", productHint });
 
 export async function POST(req: Request) {
   try {
@@ -387,7 +388,9 @@ ${scrapedContext}`;
           }
         } catch { /* fall through */ }
       }
-      return outOfScope();
+      // All attempts exhausted for a URL input - it's definitely a beauty product
+      // but we couldn't get ingredient data. Return no_data_found rather than out_of_scope.
+      return noDataFound(fallbackName || productNameFromURL(urlInput));
     }
 
     // Retry once if Gemini returns out_of_scope or an invalid/incomplete scorecard

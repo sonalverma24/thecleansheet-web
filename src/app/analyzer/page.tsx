@@ -706,6 +706,7 @@ export default function AnalyzerPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [outOfScope, setOutOfScope] = useState(false);
+  const [noData, setNoData] = useState<{ productHint?: string } | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [stepIdx, setStepIdx] = useState(0);
 
@@ -738,6 +739,7 @@ export default function AnalyzerPage() {
     setIsAnalyzing(true);
     setAnalyzeError(null);
     setOutOfScope(false);
+    setNoData(null);
     setScorecard(null);
     setComparison(null);
     setExpertAnswer(null);
@@ -768,6 +770,7 @@ export default function AnalyzerPage() {
       const data = await res.json();
       clearInterval(ticker);
 
+      if (data.type === "no_data_found") { setNoData({ productHint: data.productHint }); return; }
       if (data.type === "out_of_scope" || (!res.ok && !data.type)) { setOutOfScope(true); return; }
       if (data.error) { setOutOfScope(true); return; }
 
@@ -1011,6 +1014,33 @@ export default function AnalyzerPage() {
                   Scraping the web · cross-referencing the science · running the framework
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── No ingredient data found (URL input, beauty product but INCI unavailable) ── */}
+      {noData && !isAnalyzing && (
+        <section className="px-4 pb-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-3xl p-8 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <p className="text-3xl mb-4">🔍</p>
+              <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>Ingredient data not found</p>
+              <p className="text-sm leading-relaxed max-w-sm mx-auto mb-4" style={{ color: "rgba(255,255,255,0.45)" }}>
+                This looks like a beauty product, but we couldn&apos;t pull the INCI list for it. The brand&apos;s website may not have their ingredient list indexed yet.
+              </p>
+              {noData.productHint && (
+                <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Try searching by name instead: &ldquo;{noData.productHint}&rdquo;
+                </p>
+              )}
+              <button
+                onClick={() => { setNoData(null); setQuery(""); inputRef.current?.focus(); }}
+                className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
+                style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
+              >
+                Try again →
+              </button>
             </div>
           </div>
         </section>
