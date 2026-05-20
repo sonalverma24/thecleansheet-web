@@ -5,11 +5,12 @@ import { pilgrimBrand } from "./pilgrim";
 import { hyphenBrand } from "./hyphen";
 import { plumBrand } from "./plum";
 import { antinormBrand } from "./antinorm";
+import { simpleBrand } from "./simple";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand];
+export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);

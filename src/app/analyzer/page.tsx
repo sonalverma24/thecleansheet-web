@@ -83,6 +83,14 @@ const PRODUCT_REDIRECTS: Array<{ test: (u: string) => boolean; path: string }> =
   { test: u => u.includes("antinorm.co") && (u.includes("bye-bye-blow") || u.includes("blow-dry")),                     path: "/brands/antinorm/bye-bye-blow-dry" },
   { test: u => u.includes("antinorm.co") && u.includes("hair-and-everywhere"),                                           path: "/brands/antinorm/hair-and-everywhere" },
   { test: u => u.includes("antinorm.co") && (u.includes("fuller") || u.includes("lip")),                                path: "/brands/antinorm/fuller-without-filler-lip-plumper" },
+  // ── Simple Skincare (simpleskincare.in) ───────────────────────────────────
+  { test: u => u.includes("simpleskincare.in") && u.includes("moisturising-facial-wash"),                               path: "/brands/simple/moisturising-facial-wash" },
+  { test: u => u.includes("simpleskincare.in") && u.includes("micellar"),                                               path: "/brands/simple/micellar-cleansing-water" },
+  { test: u => u.includes("simpleskincare.in") && u.includes("hydrating-light"),                                        path: "/brands/simple/hydrating-light-moisturiser" },
+  { test: u => u.includes("simpleskincare.in") && u.includes("rich-moisturiser"),                                       path: "/brands/simple/replenishing-rich-moisturiser" },
+  { test: u => u.includes("simpleskincare.in") && (u.includes("spf") || u.includes("protecting")),                     path: "/brands/simple/protecting-light-moisturiser-spf-15" },
+  { test: u => u.includes("simpleskincare.in") && u.includes("refreshing-facial-wash"),                                 path: "/brands/simple/refreshing-facial-wash" },
+  { test: u => u.includes("simpleskincare.in") && u.includes("niacinamide"),                                            path: "/brands/simple/10-percent-niacinamide-booster-serum" },
 ];
 
 // Text-based name queries for known products (handles "minimalist sunscreen", "dot and key retinol" etc.)
@@ -147,6 +155,14 @@ const NAME_REDIRECTS: Array<{ test: (q: string) => boolean; path: string }> = [
   { test: q => q.includes("antinorm") && (q.includes("blow dry") || q.includes("blow-dry") || q.includes("hair mask")),  path: "/brands/antinorm/bye-bye-blow-dry" },
   { test: q => q.includes("antinorm") && (q.includes("hair") || q.includes("body") || q.includes("everywhere")),         path: "/brands/antinorm/hair-and-everywhere" },
   { test: q => q.includes("antinorm") && (q.includes("lip") || q.includes("plumper") || q.includes("fuller")),           path: "/brands/antinorm/fuller-without-filler-lip-plumper" },
+  // Simple Skincare
+  { test: q => q.includes("simple") && (q.includes("moisturising") || q.includes("moisturizing")) && q.includes("wash"), path: "/brands/simple/moisturising-facial-wash" },
+  { test: q => q.includes("simple") && q.includes("refreshing") && q.includes("wash"),                                   path: "/brands/simple/refreshing-facial-wash" },
+  { test: q => q.includes("simple") && q.includes("micellar"),                                                           path: "/brands/simple/micellar-cleansing-water" },
+  { test: q => q.includes("simple") && (q.includes("hydrating") || (q.includes("light") && q.includes("moistur"))),     path: "/brands/simple/hydrating-light-moisturiser" },
+  { test: q => q.includes("simple") && q.includes("rich") && q.includes("moistur"),                                     path: "/brands/simple/replenishing-rich-moisturiser" },
+  { test: q => q.includes("simple") && (q.includes("spf") || q.includes("protecting")),                                 path: "/brands/simple/protecting-light-moisturiser-spf-15" },
+  { test: q => q.includes("simple") && q.includes("niacinamide"),                                                       path: "/brands/simple/10-percent-niacinamide-booster-serum" },
 ];
 
 function findProductRedirect(query: string): string | null {
