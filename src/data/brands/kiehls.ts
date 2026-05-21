@@ -8,26 +8,33 @@
  * Concentrations: inferred from INCI declaration order (descending by weight, per global
  *   cosmetics labelling law). No percentage stated unless published by the brand.
  * Image URLs: INCIDecoder product photography (storage.googleapis.com CDN).
- * Pillar scores: independently calculated; see inline notes.
+ * Pillar scores: independently calculated under 4-pillar framework (v2); see inline notes.
+ *
+ * SCORING FRAMEWORK (v2, effective May 2026)
+ * -------------------------------------------
+ * Safety & Toxicity:                 max 40
+ * Formulation Quality & Efficacy:    max 25
+ * Ingredient Disclosure & Transparency: max 25
+ * Ethics & Sustainability:           max 10
  *
  * KEY CONCERNS IDENTIFIED
  * -----------------------
  * - Midnight Recovery Concentrate: 5+ declared IFRA allergens (Linalool, Limonene, Citral,
  *   Citronellol, Geraniol) in a leave-on facial oil. High fragrance load.
  * - Creamy Eye Treatment: 4 parabens (Methyl-, Ethyl-, Propyl-, Butylparaben). Butylparaben
- *   is the most scrutinised paraben; removed by most modern brands.
+ *   and Propylparaben are the most scrutinised parabens in leave-on products.
  * - Powerful-Strength Vitamin C: Cyclohexasiloxane (D6)  -  EU restricted for rinse-off
  *   products since 2020; in leave-on at restricted concentration. Acrylonitrile copolymer
  *   (microplastic concern). Citrus oils + Limonene/Citral in a daytime product.
  * - Clearly Corrective: Alcohol Denat at position 4 (drying, potential barrier disruption
  *   with extended use); Lavender oil (Linalool allergen) in a brightening spot treatment.
- * - Ultra Facial Cleanser: SLES at position 2; 3 parabens; Polyaminopropyl Biguanide
- *   (antimicrobial preservative with sensitisation data in some populations).
+ * - Ultra Facial Cleanser: SLES at position 2 (primary surfactant); 3 parabens;
+ *   Polyaminopropyl Biguanide (antimicrobial preservative EU-restricted in rinse-off).
  *
  * Kiehl's is a heritage pharmacy brand (est. 1851) with a loyal following. Several
  * formulations date back decades and have not been updated to reflect modern ingredient
  * science. Newer products (Clearly Corrective, Rare Earth Masque) show cleaner formulation
- * logic. Overall brand scores in the Fair–Good range.
+ * logic. Overall brand scores in the Fair-Good range under the updated framework.
  */
 
 import type { Brand } from "./types";
@@ -38,18 +45,18 @@ export const kiehlsBrand: Brand = {
   logo: "/images/kiehls-logo.png",
   tagline: "Apothecary-inspired skincare since 1851",
   description:
-    "Kiehl's is a New York–founded apothecary brand established in 1851, acquired by L'Oréal in 2000. Known for no-frills packaging, generous sampling, and loyal global following, Kiehl's occupies the prestige segment in India. Their formulations range from genuinely clean and well-structured (Rare Earth Masque, Calendula Toner) to heritage recipes that haven't been updated for modern ingredient standards (Creamy Eye Treatment with 4 parabens, Midnight Recovery Concentrate with high fragrance allergen load). India prices are premium relative to the formulation tier.",
+    "Kiehl's is a New York-founded apothecary brand established in 1851, acquired by L'Oréal in 2000. Known for no-frills packaging, generous sampling, and loyal global following, Kiehl's occupies the prestige segment in India. Their formulations range from genuinely clean and well-structured (Rare Earth Masque, Calendula Toner) to heritage recipes that haven't been updated for modern ingredient standards (Creamy Eye Treatment with 4 parabens, Midnight Recovery Concentrate with high fragrance allergen load). India prices are premium relative to the formulation tier.",
   founded: "1851",
   headquarters: "New York, USA",
   website: "https://www.kiehls.com",
   instagramHandle: "@kiehls",
   nykaaUrl: "https://www.nykaa.com/brands/kiehl-s/c/3068",
-  avgScore: 63,
-  verdict: "Fair",
+  avgScore: 75,
+  verdict: "Good",
 
   products: [
 
-    // ─── 1. Ultra Facial Cream ────────────────────────────────────────────────
+    // --- 1. Ultra Facial Cream -----------------------------------------------
     {
       productName: "Ultra Facial Cream",
       slug: "ultra-facial-cream",
@@ -59,16 +66,16 @@ export const kiehlsBrand: Brand = {
       productType: "leave-on",
       concern: "Daily moisturisation + barrier support",
       summary:
-        "Kiehl's best-selling moisturiser: a fragrance-free, alcohol-free daily cream with a well-layered emollient base (Squalane, Apricot Kernel Oil, Avocado Oil, Sweet Almond Oil). The formula includes Hydroxypalmitoyl Sphinganine (a ceramide precursor), Pseudoalteromonas Ferment Extract (barrier conditioning), and Tocopherol. Salicylic Acid appears at the tail end; at this position, it functions as a preservative booster, not as an active exfoliant. Myristyl Myristate (position 10) has some comedogenicity data; those prone to milia or closed comedones should note this. No fragrance, no parabens, no dyes: this is the cleanest product in the Kiehl's range.",
-      score: 78,
+        "Kiehl's best-selling moisturiser: a fragrance-free, alcohol-free daily cream with a well-layered emollient base (Squalane, Apricot Kernel Oil, Avocado Oil, Sweet Almond Oil). The formula includes Hydroxypalmitoyl Sphinganine (a ceramide precursor), Pseudoalteromonas Ferment Extract (barrier conditioning), and Tocopherol. Salicylic Acid appears at the tail end; at this position, it functions as a preservative booster, not as an active exfoliant at this concentration. Myristyl Myristate (position 10) has some comedogenicity data; those prone to milia or closed comedones should note this. No fragrance, no parabens, no dyes: this is the cleanest product in the Kiehl's range.",
+      score: 83,
       scoreLabel: "Good",
       image: "https://incidecoder-content.storage.googleapis.com/1da656e9-998f-4ece-beac-b9daca507ced/products/kiehls-ultra-facial-cream-7/kiehls-ultra-facial-cream-7_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 44, max: 50, note: "Fragrance-free, no parabens, all ingredients compliant. Minor: Myristyl Myristate at position 10 has moderate comedogenicity data in occlusion studies. Chlorphenesin within safe limits. Leave-on daily use." },
-        { name: "Formulation Quality",     score: 15, max: 20, note: "Moisturiser claims fully substantiated. Multi-oil emollient base is stable. Standard preservation. Heritage formula, not innovative but sound." },
-        { name: "Claims & Transparency",   score: 14, max: 20, note: "Full INCI published. No concentrations disclosed for actives. Myristyl Myristate comedogenicity risk not communicated to consumers. 'Original formula' heritage claim is accurate." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "L'Oréal group sells in mainland China, animal testing requirement applies. RSPO palm derivative sourcing not independently verified. Standard plastic and glass packaging." },
+        { name: "Safety & Toxicity",                      score: 38, max: 40, note: "Fragrance-free, no parabens, no DMDM, no MIT, no Alcohol Denat. Myristyl Myristate at position 10 has moderate comedogenicity data in occlusion studies (relevant for acne-prone users). Bis-PEG-18 Methyl Ether Dimethyl Silane is a single PEG compound at low concern. Chlorphenesin within safe limits at tail position. Leave-on daily use with no systemic concerns." },
+        { name: "Formulation Quality & Efficacy",          score: 20, max: 25, note: "Multi-oil emollient base is stable and well-ordered. Hydroxypalmitoyl Sphinganine (ceramide precursor) and Pseudoalteromonas Ferment Extract add evidence-backed barrier support. Standard preservation. Heritage formula with sound structure, not innovative but well-executed for its claim." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "Full INCI published on Kiehl's PDP. No SPF, no 'clinically proven' claim. No active concentrations disclosed. Myristyl Myristate comedogenicity risk not communicated to consumers. 'Original formula' heritage claim is accurate. Minor gap: no concentration transparency for ceramide precursor." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group sells in mainland China, animal testing requirement applies. RSPO palm derivative sourcing not independently verified. Standard plastic and glass packaging. No PETA certification." },
       ],
       keyActives: [
         { name: "Squalane", function: "A skin-identical emollient that is non-comedogenic, antioxidant, and barrier-supportive" },
@@ -105,7 +112,7 @@ export const kiehlsBrand: Brand = {
         "For Indian consumers: the multi-oil base is well-suited for dry to normal skin but may feel heavy in humid conditions. During monsoon and summer, a lighter gel moisturiser may be preferable. The fragrance-free formula is well-suited for sensitive skin types prevalent in India's pollution-exposed urban population.",
     },
 
-    // ─── 2. Calendula Herbal Extract Alcohol-Free Toner ───────────────────────
+    // --- 2. Calendula Herbal Extract Alcohol-Free Toner ----------------------
     {
       productName: "Calendula Herbal Extract Alcohol-Free Toner",
       slug: "calendula-herbal-extract-toner",
@@ -116,15 +123,15 @@ export const kiehlsBrand: Brand = {
       concern: "Soothing + prep toning",
       summary:
         "One of Kiehl's most iconic products: a botanical prep toner featuring Calendula Officinalis Flower Extract (anti-inflammatory, antioxidant), Burdock Root Extract (Arctium Lappa), and Allantoin (soothing). The formula is genuinely minimal and clean: no alcohol, no fragrance, no essential oils, no dyes. Propylene Glycol is the second ingredient (after water), and at this position it functions as humectant and vehicle for botanical actives, though high concentrations of PG can be drying for some skin types. Chlorphenesin at position 6 (before Calendula extract at position 8) is a notable placement, higher than typical, but is within safe limits for a leave-on product.",
-      score: 75,
+      score: 81,
       scoreLabel: "Good",
       image: "https://incidecoder-content.storage.googleapis.com/d6f9c688-1a23-4802-88da-c98f1b5d3002/products/kiehls-calendula-herbal-extract-alcohol-free-toner/kiehls-calendula-herbal-extract-alcohol-free-toner_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 42, max: 50, note: "No fragrance, no alcohol, no parabens. Propylene Glycol at position 2 indicates high concentration, mild drying risk for some. Chlorphenesin appears at position 6, above Calendula Extract at position 8  -  within safe limits but higher than typical preservative placement for a leave-on toner." },
-        { name: "Formulation Quality",     score: 13, max: 20, note: "Prep toner with anti-inflammatory and soothing botanicals. Claims of soothing and conditioning are substantiated. Limited high-potency actives: this is a prep step, not a treatment. Standard preservation and packaging." },
-        { name: "Claims & Transparency",   score: 15, max: 20, note: "Full INCI published. Honest herb-focused positioning. Notable gap: Chlorphenesin appears before Calendula Extract in INCI order, suggesting preservative concentration may exceed botanical active. Calendula concentration not disclosed." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "Same L'Oréal group ethics position as above." },
+        { name: "Safety & Toxicity",                      score: 38, max: 40, note: "No fragrance, no alcohol, no parabens. Propylene Glycol at position 2 indicates high concentration with mild drying risk for some skin types. Chlorphenesin appears at position 6, above Calendula Extract at position 8 - within safe limits for a leave-on toner but higher than typical preservative placement." },
+        { name: "Formulation Quality & Efficacy",          score: 18, max: 25, note: "Prep toner with anti-inflammatory and soothing botanicals (Calendula, Burdock Root, Allantoin, Marshmallow Root). Claims of soothing and conditioning are substantiated. Limited high-potency actives: this is a prep step, not a treatment. Standard preservation and packaging." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "Full INCI published on Kiehl's PDP. Honest herb-focused positioning. Notable observation: Chlorphenesin appears before Calendula Extract in INCI order, suggesting preservative concentration may exceed botanical active concentration. Calendula concentration not disclosed, standard for the market." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group ethics position as above. Standard packaging." },
       ],
       keyActives: [
         { name: "Calendula Officinalis Flower Extract", function: "Anti-inflammatory and antioxidant, soothing for reactive skin" },
@@ -155,7 +162,7 @@ export const kiehlsBrand: Brand = {
         "A prep toner without alcohol is particularly relevant in India where over-toning with astringent products is common and contributes to barrier damage. Calendula's anti-inflammatory properties are useful for post-sun soothing in India's high-UV environment. The price point (~₹3,500 for 250ml) is premium relative to comparable Indian toners.",
     },
 
-    // ─── 3. Clearly Corrective Dark Spot Solution ─────────────────────────────
+    // --- 3. Clearly Corrective Dark Spot Solution ----------------------------
     {
       productName: "Clearly Corrective Dark Spot Solution",
       slug: "clearly-corrective-dark-spot-solution",
@@ -166,15 +173,15 @@ export const kiehlsBrand: Brand = {
       concern: "Dark spots + brightening",
       summary:
         "Kiehl's flagship brightening serum using 3-O-Ethyl Ascorbic Acid (a stable Vitamin C ether derivative) alongside Hydroxypropyl Tetrahydropyrantriol (a Hyaluronic Acid analogue). The formula has notable concerns: Alcohol Denat appears at position 4, a meaningful concentration that may contribute to barrier disruption with prolonged daily use on compromised skin. Lavender Oil (Lavandula Angustifolia) and its disclosed allergen Linalool appear in the formula. In a brightening leave-on product, this is a sensitisation concern given that fragrance allergy is the most common cause of contact dermatitis. Salicylic Acid at position 10 functions at brightening/exfoliant levels in this context, adding efficacy but also irritation potential when combined with alcohol.",
-      score: 59,
-      scoreLabel: "Concern",
+      score: 74,
+      scoreLabel: "Good",
       image: "https://incidecoder-content.storage.googleapis.com/defb0b39-b173-4405-a3af-b0b16469e015/products/kiehls-kiehls-clearly-corrective-dark-spot-solution/kiehls-kiehls-clearly-corrective-dark-spot-solution_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 28, max: 50, note: "Alcohol Denat at position 4 in a leave-on daily brightening serum is a significant concern for skin barrier disruption with extended use. Lavandula Angustifolia Oil (Lavender) with disclosed allergen Linalool adds sensitisation risk in a leave-on product. Salicylic Acid can enhance transdermal penetration alongside Alcohol Denat. Target users (dark spots, PIH-prone skin) often have reactive or compromised barriers." },
-        { name: "Formulation Quality",     score: 13, max: 20, note: "3-O-Ethyl Ascorbic Acid is a well-regarded stable Vitamin C derivative with brightening evidence. Hydroxypropyl Tetrahydropyrantriol provides hydration. Efficacy is real but delivery vehicle compromises long-term barrier integrity." },
-        { name: "Claims & Transparency",   score: 13, max: 20, note: "Full INCI published. Linalool declared per EU regulation. Active concentration not disclosed. The 'clearly corrective' positioning implies a clean, corrective formula; the presence of Alcohol Denat at position 4 and Lavender Oil are not consistent with that framing, and neither is disclosed as a concern in marketing." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "L'Oréal group as above." },
+        { name: "Safety & Toxicity",                      score: 33, max: 40, note: "No 'Parfum' or 'Fragrance' listed in INCI (essential oils declared by botanical name). Alcohol Denat at position 4 indicates meaningful concentration with documented barrier disruption risk in daily leave-on use. Lavandula Angustifolia Oil contains the declared Linalool allergen, a sensitisation concern in a leave-on brightening serum used on PIH-prone skin. Target users with PIH often have reactive or sensitised skin, amplifying these risks." },
+        { name: "Formulation Quality & Efficacy",          score: 16, max: 25, note: "3-O-Ethyl Ascorbic Acid is a well-regarded stable Vitamin C derivative with brightening evidence. Hydroxypropyl Tetrahydropyrantriol provides hydration. Adenosine adds soothing benefit. Efficacy is real, but the Alcohol Denat delivery vehicle compromises long-term barrier integrity. Salicylic Acid adds brightening/exfoliant activity but increases irritation potential in combination." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "Full INCI published on Kiehl's PDP. Linalool declared per EU regulation. Active concentration not disclosed. 'Clearly Corrective' positioning implies a clean, corrective formula; the presence of Alcohol Denat at position 4 and Lavender Oil are not consistent with that framing and neither is disclosed as a concern in marketing." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group as above." },
       ],
       keyActives: [
         { name: "3-O-Ethyl Ascorbic Acid", function: "Stable Vitamin C ether derivative for brightening, antioxidant activity, and PIH reduction" },
@@ -204,7 +211,7 @@ export const kiehlsBrand: Brand = {
         "Dark spot treatment is one of the highest-demand skincare categories in India due to high UV exposure, post-acne PIH, and melasma. The active (3-O-Ethyl Ascorbic Acid) is effective for brightening. However, the Alcohol Denat and fragrance combination is worth noting for Indian consumers with post-inflammatory hyperpigmentation, whose skin is typically reactive or sensitised. Patch testing is recommended.",
     },
 
-    // ─── 4. Midnight Recovery Concentrate ────────────────────────────────────
+    // --- 4. Midnight Recovery Concentrate ------------------------------------
     {
       productName: "Midnight Recovery Concentrate",
       slug: "midnight-recovery-concentrate",
@@ -215,15 +222,15 @@ export const kiehlsBrand: Brand = {
       concern: "Overnight skin recovery + barrier repair",
       summary:
         "A cult facial oil marketed for overnight skin recovery. The base is well-formulated: Rosehip Oil (Rosa Canina), Evening Primrose Oil (Oenothera Biennis), Jojoba Oil (Simmondsia Chinensis), and Squalane are all evidence-backed skin emollients with barrier-repair activity. However, the formula carries one of the highest fragrance allergen loads of any Kiehl's product: Lavender Oil, Geranium Oil, Rosemary Oil, and Coriander Oil are all listed with their declared IFRA allergens, namely Linalool, Limonene, Citral, Citronellol, and Geraniol. Five allergens declared in a single leave-on overnight product represents significant sensitisation risk, particularly on the skin's barrier recovery cycle during sleep. The fragrance serves no therapeutic role in skin recovery.",
-      score: 52,
-      scoreLabel: "Concern",
+      score: 72,
+      scoreLabel: "Good",
       image: "https://incidecoder-content.storage.googleapis.com/4a174042-a2a7-4a1e-bb71-63fa02bc330a/products/kiehls-midnight-recovery-concentrate/kiehls-midnight-recovery-concentrate_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 22, max: 50, note: "Five declared IFRA fragrance allergens (Linalool, Limonene, Citral, Citronellol, Geraniol) in a leave-on overnight facial oil. Lavender, Geranium, Rosemary, and Coriander essential oils all present. Leave-on overnight contact means 8+ hours of sensitisation exposure during skin's repair cycle. Sensitisation risk is cumulative and significant." },
-        { name: "Formulation Quality",     score: 13, max: 20, note: "Oil base  -  Rosehip, Evening Primrose, Jojoba, Squalane  -  is genuinely effective for emolliency and barrier support. Antioxidant actives (Curcuma Longa, Cucumber Extract) add minor benefit. Product delivers emollient recovery; fragrance complex serves no therapeutic role." },
-        { name: "Claims & Transparency",   score: 12, max: 20, note: "All allergens declared as required by EU regulation. INCI fully published. However, 'Recovery Concentrate' positioning implies active skin repair; the recovery mechanism is the oil base, not the essential oil fragrance blend  -  this distinction is never communicated. Price (~₹6,000) is high for a fragrant plant oil blend." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "L'Oréal group as above." },
+        { name: "Safety & Toxicity",                      score: 32, max: 40, note: "Essential oils are declared by botanical name, not as 'Parfum' or 'Fragrance'. The fragrance allergen load is severe: five declared IFRA allergens (Linalool, Limonene, Citral, Citronellol, Geraniol) across four essential oils (Lavender, Geranium, Rosemary, Coriander) in a leave-on overnight facial oil. Leave-on overnight contact means 8+ hours of sensitisation exposure during the skin's repair cycle; sensitisation risk is cumulative and elevated." },
+        { name: "Formulation Quality & Efficacy",          score: 15, max: 25, note: "Oil base of Rosehip, Evening Primrose, Jojoba, and Squalane is genuinely effective for emolliency and barrier support. Antioxidant actives (Curcuma Longa, Cucumber Extract) add minor benefit. Product delivers real emollient recovery. Essential oil fragrance complex serves no therapeutic role and undermines the 'recovery' positioning." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "All allergens declared as required by EU regulation. INCI fully published on Kiehl's PDP. 'Recovery Concentrate' positioning implies active skin repair; the recovery mechanism is the oil base, not the essential oil fragrance blend - this distinction is never communicated. Price (~₹6,000) is high for a fragrant plant oil blend." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group as above." },
       ],
       keyActives: [
         { name: "Rosa Canina Fruit Oil (Rosehip)", function: "Rich in linoleic acid, beta-carotene, and Vitamin C, supporting barrier repair and hyperpigmentation" },
@@ -257,7 +264,7 @@ export const kiehlsBrand: Brand = {
         "Overnight facial oils are popular in India for their skin recovery benefits. Those with sensitive skin or a history of fragrance reactions should be cautious: 5 declared EU allergens in a leave-on overnight product means extended skin contact and higher absorption. Those prone to PIH should avoid applying fragrant products near hyperpigmented areas.",
     },
 
-    // ─── 5. Powerful-Strength Line-Reducing Concentrate ───────────────────────
+    // --- 5. Powerful-Strength Line-Reducing Concentrate ----------------------
     {
       productName: "Powerful-Strength Line-Reducing Concentrate",
       slug: "powerful-strength-line-reducing-concentrate",
@@ -268,15 +275,15 @@ export const kiehlsBrand: Brand = {
       concern: "Anti-ageing + brightening (Vitamin C)",
       summary:
         "Kiehl's vitamin C serum with a dual-form approach: 10.5% L-Ascorbic Acid (potent, low pH) combined with 2% Ascorbyl Glucoside (stable derivative). The dual-C system is genuinely well-designed for potency plus stability. However, significant formulation concerns exist: Cyclohexasiloxane (D6 silicone) is EU-restricted for rinse-off products (>0.1% banned since June 2020). This is a leave-on product, so it is technically still permitted at limited concentrations, but it is a silicone under increasing regulatory and environmental scrutiny. Acrylonitrile/Methyl Methacrylate/Vinylidene Chloride Copolymer is a synthetic polymer (microplastic concern) used as a mattifying agent. Citrus peel oils (Orange and Lemon) plus Limonene and Citral are fragrance ingredients in a product typically used in the morning, creating real phototoxicity and UV sensitisation risk.",
-      score: 57,
-      scoreLabel: "Concern",
+      score: 72,
+      scoreLabel: "Good",
       image: "https://incidecoder-content.storage.googleapis.com/8bed46ed-5200-4b48-9ada-2b1518fce0c1/products/kiehls-powerful-strength-line-reducing-concentrate/kiehls-powerful-strength-line-reducing-concentrate_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 26, max: 50, note: "Cyclohexasiloxane (D6) is EU-restricted for rinse-off products since June 2020; present in this leave-on at restricted concentration. Acrylonitrile/Methyl Methacrylate/Vinylidene Chloride Copolymer raises microplastic concern under EU Microplastics Restriction 2023. Citrus peel oils (Orange and Lemon) with Limonene and Citral in a daytime serum carry phototoxic potential under India's intense UV conditions." },
-        { name: "Formulation Quality",     score: 15, max: 20, note: "10.5% L-Ascorbic Acid combined with 2% Ascorbyl Glucoside is a well-designed dual Vitamin C system. L-Ascorbic Acid at 10.5% is clinically potent. Hydrolyzed HA and Adenosine add supporting benefits. Efficacy is genuine; formulation concerns are around specific ingredients rather than the active system." },
-        { name: "Claims & Transparency",   score: 12, max: 20, note: "Brand discloses 10.5% L-Ascorbic Acid and 2% Ascorbyl Glucoside  -  good active transparency. D6 silicone regulatory trajectory, microplastic concern from the copolymer, and phototoxicity risk from citrus oils in a daytime product are not disclosed or acknowledged in marketing." },
-        { name: "Ethics & Sustainability", score:  4, max: 10, note: "L'Oréal group as above. D6 silicone is a persistent aquatic pollutant, additional sustainability deduction. Microplastic-contributing ingredient further reduces environmental score." },
+        { name: "Safety & Toxicity",                      score: 32, max: 40, note: "No 'Parfum' or 'Fragrance' INCI name present (citrus oils declared by botanical name). Citrus Aurantium Dulcis Peel Oil and Citrus Limon Peel Oil with Limonene and Citral in a daytime leave-on serum carry documented phototoxic and UV sensitisation risk, particularly problematic under India's high-UV conditions. Cyclohexasiloxane (D6) is a persistent aquatic pollutant with EU regulatory restrictions for rinse-off; presence in a leave-on serum adds environmental and emerging regulatory concern. Acrylonitrile/Methyl Methacrylate/Vinylidene Chloride Copolymer raises microplastic concern per EU Microplastics Restriction 2023." },
+        { name: "Formulation Quality & Efficacy",          score: 17, max: 25, note: "10.5% L-Ascorbic Acid combined with 2% Ascorbyl Glucoside is a well-designed dual Vitamin C system with brand-disclosed concentrations - a positive formulation transparency signal. L-Ascorbic Acid at 10.5% is clinically potent. Hydrolyzed HA and Adenosine add supporting benefits. Efficacy is genuine; D6 silicone and microplastic-contributing copolymer are formulation quality concerns." },
+        { name: "Ingredient Disclosure & Transparency",    score: 19, max: 25, note: "Brand discloses 10.5% L-Ascorbic Acid and 2% Ascorbyl Glucoside - good active transparency. Full INCI on Kiehl's PDP. D6 silicone regulatory trajectory, microplastic concern from the copolymer, and phototoxicity risk from citrus oils in a daytime product are not disclosed or acknowledged in marketing materials." },
+        { name: "Ethics & Sustainability",                 score:  4, max: 10, note: "L'Oréal group as above. D6 silicone is a persistent aquatic pollutant with documented aquatic toxicity. Microplastic-contributing ingredient raises additional environmental concern." },
       ],
       keyActives: [
         { name: "L-Ascorbic Acid (10.5%)", function: "Pure Vitamin C in its most potent and clinically studied form, supporting collagen stimulation, antioxidant activity, and brightening" },
@@ -307,7 +314,7 @@ export const kiehlsBrand: Brand = {
         "A high-potency Vitamin C serum is highly relevant for India, where UV-induced oxidative stress, hyperpigmentation, and dull skin are among the most common skin concerns. However, using a citrus-oil fragrant daytime Vitamin C in India's intense UV environment compounds phototoxicity risk. Indian consumers using this should follow with broad-spectrum SPF 50+ and avoid applying to broken or reactive skin.",
     },
 
-    // ─── 6. Rare Earth Deep Pore Cleansing Masque ─────────────────────────────
+    // --- 6. Rare Earth Deep Pore Cleansing Masque ----------------------------
     {
       productName: "Rare Earth Deep Pore Cleansing Masque",
       slug: "rare-earth-deep-pore-cleansing-masque",
@@ -318,15 +325,15 @@ export const kiehlsBrand: Brand = {
       concern: "Pore cleansing + oil control",
       summary:
         "Kiehl's cleanest product by score. A kaolin and bentonite clay mask that is fragrance-free, alcohol-free, and paraben-free, with no dyes and no essential oils. Kaolin and Bentonite at positions 2 and 3 confirm high active clay concentrations, as these are the product's core function. Glycerin at position 4 prevents the classic problem of clay masks over-drying the skin. Aloe Barbadensis Leaf Juice and Avena Sativa Flour (Oat) provide soothing and skin conditioning. Allantoin adds anti-irritant activity. This is a well-formulated, clean clay mask with appropriate ingredients at appropriate positions.",
-      score: 80,
-      scoreLabel: "Good",
+      score: 85,
+      scoreLabel: "Excellent",
       image: "https://incidecoder-content.storage.googleapis.com/3699a90a-653e-4e75-a483-51ae681e15ce/products/kiehls-rare-earth-deep-pore-cleansing-masque/kiehls-rare-earth-deep-pore-cleansing-masque_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 44, max: 50, note: "Fragrance-free, paraben-free, no dyes, no essential oils. Kaolin and Bentonite are inert mineral clays with no systemic safety concerns. Ceteareth-20 is a PEG-derived emulsifier with trace ethylene oxide potential  -  an industry-wide issue at standard concentrations. Rinse-off format significantly limits exposure time and systemic absorption." },
-        { name: "Formulation Quality",     score: 16, max: 20, note: "Kaolin at position 2 and Bentonite at position 3 confirm high clay concentrations, matching the formula's primary function. Glycerin at position 4 prevents over-drying. Aloe, Oat, and Allantoin actively buffer the clay's astringency. Product does exactly what it claims." },
-        { name: "Claims & Transparency",   score: 15, max: 20, note: "Full INCI published. Clay types clearly named. 'Rare Earth' branding refers to Amazonian White Clay (Kaolin by another name)  -  not misleading but a marketing embellishment. No concentration disclosures, standard for the market." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "L'Oréal group as above." },
+        { name: "Safety & Toxicity",                      score: 38, max: 40, note: "Fragrance-free, paraben-free, no dyes, no essential oils. Ceteareth-20 is a PEG-derived emulsifier; at a single compound it presents low concern, though trace ethylene oxide potential is an industry-wide issue with PEG derivatives. Kaolin and Bentonite are inert mineral clays with no systemic safety concerns. Rinse-off format significantly limits exposure time and systemic absorption." },
+        { name: "Formulation Quality & Efficacy",          score: 22, max: 25, note: "Kaolin at position 2 and Bentonite at position 3 confirm high clay concentrations, matching the formula's primary function. Glycerin at position 4 prevents over-drying. Aloe, Oat, and Allantoin actively buffer the clay's astringency. Product does exactly what it claims at appropriate ingredient positions." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "Full INCI published on Kiehl's PDP. Clay types clearly named. 'Rare Earth' branding refers to Amazonian White Clay (Kaolin) - not misleading but a marketing embellishment. No concentration disclosures, standard for the market." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group as above." },
       ],
       keyActives: [
         { name: "Kaolin", function: "Mineral clay that absorbs sebum, draws out impurities, and provides mild physical exfoliation" },
@@ -360,10 +367,10 @@ export const kiehlsBrand: Brand = {
       warn_badges: [],
       info_badges: ["Ceteareth-20 (PEG Emulsifier)"],
       indiaContext:
-        "Oiliness, enlarged pores, and clogged pores are among the most common skin complaints in India due to heat and humidity. A clay mask 1–2× weekly is a well-evidenced approach. This is among the cleanest clay masks at the premium price point and a good Kiehl's recommendation for Indian consumers.",
+        "Oiliness, enlarged pores, and clogged pores are among the most common skin complaints in India due to heat and humidity. A clay mask 1-2x weekly is a well-evidenced approach. This is among the cleanest clay masks at the premium price point and a good Kiehl's recommendation for Indian consumers.",
     },
 
-    // ─── 7. Creamy Eye Treatment with Avocado ─────────────────────────────────
+    // --- 7. Creamy Eye Treatment with Avocado --------------------------------
     {
       productName: "Creamy Eye Treatment with Avocado",
       slug: "creamy-eye-treatment-with-avocado",
@@ -374,15 +381,15 @@ export const kiehlsBrand: Brand = {
       concern: "Eye area hydration",
       summary:
         "One of Kiehl's most iconic and long-standing products, and the one most in need of a formula update. The Creamy Eye Treatment contains four parabens: Methylparaben, Ethylparaben, Propylparaben, and Butylparaben. Butylparaben is the most scrutinised of the paraben family: it has the highest lipophilicity, longest half-life, and the greatest endocrine disruption potential in in-vitro studies. While the EU SCCS concluded Butylparaben is safe at current cosmetic use levels (re-evaluated 2023), it has been removed from most modern eye cream formulations, and its presence in a product applied daily to the periocular area (thin, vascular skin) is worth flagging. The avocado oil and shea butter base is genuinely emollient for the eye area, but this is a heritage formula that hasn't been modernised.",
-      score: 54,
-      scoreLabel: "Concern",
+      score: 68,
+      scoreLabel: "Fair",
       image: "https://incidecoder-content.storage.googleapis.com/d8bf8e08-cb2c-483a-971e-764d7ebda411/products/kiehls-creamy-eye-treatment-with-avocado/kiehls-creamy-eye-treatment-with-avocado_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 25, max: 50, note: "Four parabens: Methylparaben, Ethylparaben, Propylparaben, and Butylparaben. Butylparaben has the highest lipophilicity and endocrine disruption concern in the paraben family. Daily application to the periocular area  -  thinner skin, higher vascularity  -  warrants particular attention. EU SCCS confirmed safety at current levels (2023 re-evaluation) but the industry standard has moved strongly away from Butylparaben. Isopropyl Palmitate at position 20 has reported comedogenicity, relevant to milia formation under the eye." },
-        { name: "Formulation Quality",     score: 12, max: 20, note: "Butyrospermum Parkii (Shea) and Persea Gratissima (Avocado) are effective emollients for the dry periocular area. Sodium PCA provides natural humectancy. No peptides, retinoids, or contemporary anti-ageing actives. Primarily a moisturising eye cream with a dated preservative system." },
-        { name: "Claims & Transparency",   score: 13, max: 20, note: "Full INCI published. All four parabens clearly listed  -  no attempt to obscure. Honest in disclosure. However, a legacy formula at premium price sold without acknowledging the dated preservation approach." },
-        { name: "Ethics & Sustainability", score:  4, max: 10, note: "L'Oréal group as above. No evidence of updated formulation in multiple years, poor sustainability signal for a product with known better alternatives." },
+        { name: "Safety & Toxicity",                      score: 30, max: 40, note: "Propylparaben and Butylparaben are both present in this leave-on eye product. Butylparaben has the highest lipophilicity and endocrine disruption concern in the paraben family. Daily application to the periocular area (thinner skin, higher vascularity) warrants particular attention. EU SCCS confirmed safety at current levels (2023 re-evaluation) but the industry standard has moved strongly away from Butylparaben in leave-on eye products. Isopropyl Palmitate at position 20 has reported comedogenicity, relevant to milia formation under the eye." },
+        { name: "Formulation Quality & Efficacy",          score: 14, max: 25, note: "Butyrospermum Parkii (Shea) and Persea Gratissima (Avocado) are effective emollients for the dry periocular area. Sodium PCA provides natural humectancy. No peptides, retinoids, or contemporary anti-ageing actives. Primarily a moisturising eye cream with a dated preservative system. Score reflects effective but basic emollient function without modern active support." },
+        { name: "Ingredient Disclosure & Transparency",    score: 20, max: 25, note: "Full INCI published on Kiehl's PDP. All four parabens clearly listed - no attempt to obscure. Honest in disclosure. This is a heritage formula at a premium price point sold without acknowledging the dated preservation approach; no active concentration disclosures." },
+        { name: "Ethics & Sustainability",                 score:  4, max: 10, note: "L'Oréal group as above. No evidence of updated formulation in multiple years, poor sustainability signal for a product with known better preservation alternatives available." },
       ],
       keyActives: [
         { name: "Butyrospermum Parkii Butter (Shea)", function: "Rich emollient with skin barrier, anti-inflammatory, and moisturising properties" },
@@ -400,8 +407,8 @@ export const kiehlsBrand: Brand = {
         { name: "Ozokerite", note: "Petroleum-derived mineral wax used as an occlusive thickener. No safety concern at cosmetic use levels", flag: "info" },
         { name: "Methylparaben", note: "Paraben preservative, widely studied and safe at cosmetic use levels; lowest concern in the paraben family", flag: "info" },
         { name: "Ethylparaben", note: "Paraben preservative with low concern and short half-life", flag: "info" },
-        { name: "Propylparaben", note: "Paraben preservative with moderate concern; restricted in some applications and removed by most modern brands", flag: "warn" },
-        { name: "Butylparaben", note: "Paraben preservative with the highest endocrine disruption concern in the paraben family. Lipophilic with a long half-life. Daily periocular use warrants attention. EU SCCS approved (2023), but the industry trend is strongly away from this ingredient", flag: "warn" },
+        { name: "Propylparaben", note: "Paraben preservative in leave-on product. Removed by most modern brands for leave-on use.", flag: "warn" },
+        { name: "Butylparaben", note: "Paraben preservative in leave-on product. Highest endocrine disruption concern in the paraben family; most lipophilic with the longest half-life. Daily periocular use warrants attention. EU SCCS approved at current cosmetic use levels (2023), but industry trend is strongly away from this ingredient in leave-on formulations.", flag: "warn" },
         { name: "Isopropyl Palmitate", note: "Ester emollient with some reported comedogenicity; relevant to milia under the eye", flag: "info" },
         { name: "Tocopheryl Acetate", note: "Vitamin E ester, an antioxidant", flag: "ok" },
         { name: "Phenoxyethanol", note: "Preservative", flag: "ok" },
@@ -409,13 +416,13 @@ export const kiehlsBrand: Brand = {
         { name: "Beta-Carotene", note: "Pro-vitamin A antioxidant with minor antioxidant activity and colour contribution", flag: "ok" },
       ],
       pass_badges: ["Fragrance Free", "INCI Verified", "Dry Skin"],
-      warn_badges: ["4 Parabens Including Butylparaben"],
-      info_badges: ["Heritage Formula  -  Not Updated"],
+      warn_badges: ["Propylparaben in Leave-On", "Butylparaben in Leave-On", "4 Parabens Including Butylparaben"],
+      info_badges: ["Heritage Formula - Not Updated"],
       indiaContext:
         "Eye creams are a high-purchase category in India. The periocular area has thinner skin than the rest of the face, so ingredient choices matter more here. Consumers who prefer to avoid parabens, particularly Butylparaben, should check this formula before purchasing.",
     },
 
-    // ─── 8. Ultra Facial Cleanser ─────────────────────────────────────────────
+    // --- 8. Ultra Facial Cleanser --------------------------------------------
     {
       productName: "Ultra Facial Cleanser",
       slug: "ultra-facial-cleanser",
@@ -425,16 +432,16 @@ export const kiehlsBrand: Brand = {
       productType: "rinse-off",
       concern: "Daily face cleansing",
       summary:
-          "The Ultra Facial Cleanser leads with Sodium Laureth Sulfate (SLES) at position 2, a strong anionic surfactant that effectively cleanses but can disrupt the skin's natural barrier with daily use, particularly on sensitive or compromised skin. The formula also contains three parabens (Methylparaben, Propylparaben, Sodium Methylparaben) and Polyaminopropyl Biguanide (PHMB), an antimicrobial preservative restricted in EU rinse-off cosmetics at >0.1% since 2019. The formula does include conditioning ingredients: Squalane, Sweet Almond Oil, and Avocado Oil help offset the drying effect of SLES post-wash.",
-      score: 51,
-      scoreLabel: "Concern",
+          "The Ultra Facial Cleanser has Sodium Laureth Sulfate (SLES) at position 2 as the primary surfactant. SLES effectively cleanses but can disrupt the skin's natural barrier with daily use, particularly on sensitive or compromised skin. The formula also contains three parabens (Methylparaben, Propylparaben, Sodium Methylparaben) and Polyaminopropyl Biguanide (PHMB), an antimicrobial preservative restricted in EU rinse-off cosmetics at >0.1% since 2019. The formula does include conditioning ingredients: Squalane, Sweet Almond Oil, and Avocado Oil help offset the drying effect of SLES post-wash.",
+      score: 68,
+      scoreLabel: "Fair",
       image: "https://incidecoder-content.storage.googleapis.com/f0524f41-1571-405d-9013-57debfdaf823/products/kiehls-ultra-facial-cleanser/kiehls-ultra-facial-cleanser_front_photo_original.jpeg",
-      analyzedAt: "2026-05-18",
+      analyzedAt: "2026-05-20",
       pillars: [
-        { name: "Safety & Toxicity",       score: 23, max: 50, note: "Polyaminopropyl Biguanide (PHMB) is restricted in rinse-off cosmetics in the EU at >0.1% since 2019. Three parabens including Propylparaben. SLES (Sodium Laureth Sulfate) at position 2 is an effective but harsh anionic surfactant with barrier disruption risk at daily use. Triethanolamine carries low nitrosamine formation risk at neutral pH. Multiple overlapping concerns in a single daily-use cleanser." },
-        { name: "Formulation Quality",     score: 12, max: 20, note: "SLES effectively cleanses. Decyl Glucoside and Cocamidopropyl Betaine add mildness. Conditioning oils (Squalane, Almond, Avocado) soften post-wash feel. Rinse-off format limits exposure time. PHMB's EU regulatory status is a formulation quality concern." },
-        { name: "Claims & Transparency",   score: 11, max: 20, note: "Full INCI published. PHMB's EU restriction is not acknowledged in product communications. Parabens named clearly. SLES as primary surfactant not called out for consumers monitoring surfactant types." },
-        { name: "Ethics & Sustainability", score:  5, max: 10, note: "L'Oréal group. Standard packaging." },
+        { name: "Safety & Toxicity",                      score: 33, max: 40, note: "SLES is the primary surfactant at position 2. Polyaminopropyl Biguanide (PHMB) is EU-restricted in rinse-off cosmetics at >0.1% since 2019, with documented contact sensitisation in some studies - a significant safety and regulatory concern in a daily rinse-off product. Three parabens are present; Propylparaben in a rinse-off product has lower systemic exposure concern than in a leave-on format. Triethanolamine carries low nitrosamine formation risk at neutral pH." },
+        { name: "Formulation Quality & Efficacy",          score: 13, max: 25, note: "SLES effectively cleanses. Decyl Glucoside and Cocamidopropyl Betaine add mildness and reduce irritation. Conditioning oils (Squalane, Almond, Avocado) soften post-wash feel. Rinse-off format limits exposure time. PHMB's EU regulatory restricted status is a formulation quality concern. Three parabens in a rinse-off product is dated formulation practice." },
+        { name: "Ingredient Disclosure & Transparency",    score: 17, max: 25, note: "Full INCI published on Kiehl's PDP. Parabens named clearly. PHMB's EU restriction is not acknowledged in product communications; SLES as primary surfactant not called out for consumers monitoring surfactant types; no acknowledgement of dated preservation system." },
+        { name: "Ethics & Sustainability",                 score:  5, max: 10, note: "L'Oréal group. Standard packaging." },
       ],
       keyActives: [
         { name: "Squalane", function: "Skin-conditioning in rinse-off context, reducing post-wash tightness" },
@@ -443,13 +450,13 @@ export const kiehlsBrand: Brand = {
       ],
       ingredients: [
         { name: "Water", note: "Solvent base", flag: "ok" },
-        { name: "Sodium Laureth Sulfate (SLES)", note: "Primary anionic surfactant, an effective cleanser but stronger than amino acid alternatives. Daily use may disrupt the skin barrier over time", flag: "warn" },
+        { name: "Sodium Laureth Sulfate (SLES)", note: "Primary anionic surfactant at position 2. An effective cleanser but stronger than amino acid alternatives. Daily use may disrupt the skin barrier over time.", flag: "warn" },
         { name: "Decyl Glucoside", note: "Mild non-ionic surfactant that gentles the SLES system", flag: "ok" },
         { name: "Glycerin", note: "Humectant", flag: "ok" },
         { name: "Cocamidopropyl Betaine", note: "Amphoteric surfactant used as a foam booster; mild and reduces irritation", flag: "ok" },
         { name: "Polyaminopropyl Biguanide (PHMB)", note: "Antimicrobial preservative that is EU-restricted in rinse-off cosmetics at >0.1% since 2019. Documented contact sensitisation in some studies.", flag: "warn" },
         { name: "Methylparaben", note: "Paraben preservative with the lowest concern in the paraben family", flag: "info" },
-        { name: "Propylparaben", note: "Paraben preservative removed by most modern brands for leave-on use; less concerning in rinse-off", flag: "info" },
+        { name: "Propylparaben", note: "Paraben preservative; rinse-off format significantly reduces systemic exposure concern compared to leave-on use.", flag: "info" },
         { name: "Sodium Methylparaben", note: "Sodium salt of Methylparaben used as a preservative", flag: "info" },
         { name: "Triethanolamine", note: "pH adjuster with potential nitrosamine formation concern at high concentration; low risk at neutral pH in this context", flag: "info" },
         { name: "Squalane", note: "Skin-conditioning emollient that reduces post-wash tightness", flag: "ok" },

@@ -6,6 +6,13 @@
  * Concentration inferences marked as "position-based" are analytical deductions, not brand claims.
  * Only percentages stated explicitly by the brand are asserted as fact.
  * Plum is certified 100% vegan and PETA cruelty-free.
+ *
+ * Scoring framework updated 2026-05-20: 4-pillar system
+ *   Safety & Toxicity: max 40
+ *   Formulation Quality & Efficacy: max 25
+ *   Ingredient Disclosure & Transparency: max 25
+ *   Ethics & Sustainability: max 10
+ * Bands: Excellent 85-100 | Good 70-84 | Fair 50-69 | Concern 35-49 | Avoid <35
  */
 
 import type { Brand, ProductScorecard } from "./types";
@@ -28,29 +35,29 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Dullness, hyperpigmentation, antioxidant protection, uneven tone",
     summary: "A vitamin C serum built on Ethyl Ascorbic Acid (3-O-Ethyl Ascorbic Acid), a stable ethylated derivative that converts to ascorbic acid enzymatically in the epidermis. At 15% (brand-stated), concentration is at the high end of the effective range for this derivative. Kakadu Plum extract provides natural vitamin C synergy. Two formulation flags: (1) Ethoxy Diglycol (Ethoxydiglycol = Transcutol) at position 6 is a confirmed chemical penetration enhancer (CPE) that increases systemic absorption of all co-formulated actives; (2) Rosa Damascena Extract contains known EU fragrance allergens (geraniol, citronellol, farnesol, linalool) in a leave-on product. Unlike benchmark vitamin C formulas (Phloretin CF, CE Ferulic), this serum lacks Ferulic Acid or Tocopherol co-antioxidants, which limits UV photoprotective synergy.",
-    score: 76,
+    score: 80,
     scoreLabel: "Good",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_15_Serum_30ml_1001x1001_px.webp?v=1776943410",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 39, max: 50,
-        note: "Ethoxy Diglycol (Ethoxydiglycol, Transcutol) at position 6 is a confirmed CPE. SCCS guidance requires enhanced safety assessment for CPE-containing formulas due to increased percutaneous absorption of all co-formulated actives. Rosa Damascena (Rose) Extract contains geraniol, citronellol, farnesol, and linalool - all designated EU fragrance allergens under Regulation 2023/1545. In a leave-on product, the reporting threshold for allergen labelling is 0.01% (2026 transition). Mandarin Peel Extract at position 9 may contain furanocoumarins (bergapten, bergamottin) at phototoxic concentrations; phototoxicity depends on extraction method. Benzyl Alcohol at position 12 is both a preservative and an EU fragrance allergen. Ethyl Ascorbic Acid, Betaine, Citric Acid, Sodium Gluconate, and remaining ingredients are compliant with EU/India CDSCO regulations.",
+        score: 33, max: 40,
+        note: "Ethoxydiglycol (Transcutol) CPE at position 6: SCCS guidance requires enhanced safety assessment for CPE-containing formulas due to increased percutaneous absorption of all co-formulated actives. Rosa Damascena (Rose) Extract contains geraniol, citronellol, farnesol, and linalool, designated EU fragrance allergens under Regulation 2023/1545; leave-on threshold of 0.01% applies from 2026. Benzyl Alcohol at position 12 has a dual role as preservative and EU fragrance allergen, not typically communicated to consumers. Mandarin Peel Extract at position 9: peel extracts may contain phototoxic furanocoumarins (bergapten, bergamottin) depending on extraction method. Ethyl Ascorbic Acid, Betaine, Citric Acid, Sodium Gluconate, and remaining ingredients are compliant with EU/India CDSCO regulations.",
       },
       {
-        name: "Formulation Quality",
-        score: 17, max: 20,
-        note: "Ethyl Ascorbic Acid is a photostable and hydrolytically stable vitamin C derivative at acidic pH; at 15%, it is at the high end of effective dosing for this form. The Cyclodextrin (Sodium Polyacryloyldimethyl Taurate + Xanthan Gum system) supports stable delivery. Kakadu Plum Extract provides supplementary natural vitamin C content with antioxidant polyphenols. Mandarin Peel Extract adds citrus flavonoids. However, the absence of Ferulic Acid and Tocopherol (Vitamin E) is a limitation: the clinically validated CE Ferulic combination (Pinnell 2005) doubles photoprotective efficacy and photostabilises the vitamin C + E pair. Isodecyl Neopentanoate is a lightweight emollient ester for skin feel.",
+        name: "Formulation Quality & Efficacy",
+        score: 20, max: 25,
+        note: "Ethyl Ascorbic Acid is a photostable and hydrolytically stable vitamin C derivative at acidic pH; at 15% (brand-stated), it is at the high end of effective dosing for this form. The Cyclodextrin and polymer rheology system supports stable delivery. Kakadu Plum Extract provides supplementary natural vitamin C content with antioxidant polyphenols. Mandarin Peel Extract adds citrus flavonoids. Ferulic Acid and Tocopherol (Vitamin E) are absent; the clinically validated CE Ferulic combination (Pinnell 2005) doubles photoprotective efficacy and photostabilises the vitamin C + E pair. Non-INCI naming: 'Ethoxy Diglycol' as two words (standard INCI is 'Ethoxydiglycol'), a minor naming inconsistency per labelling standards. Isodecyl Neopentanoate is a lightweight emollient ester for skin feel.",
       },
       {
-        name: "Claims & Transparency",
-        score: 13, max: 20,
-        note: "15% Ethyl Ascorbic Acid concentration is brand-disclosed - good transparency. Full INCI list available on product page. Rosa Damascena Extract and Benzyl Alcohol are fragrance allergens; their dual role as fragrance/preservative is not communicated to consumers. Mandarin Peel phototoxicity potential not communicated. No clinical study data published for this formula. 'Ethoxy Diglycol' is listed as two words; standard INCI is 'Ethoxydiglycol' - minor naming inconsistency.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 19, max: 25,
+        note: "15% Ethyl Ascorbic Acid concentration is brand-disclosed. Full INCI list available on product page (Plum generally publishes INCI on PDPs). No published clinical study or dermatologist-tested citation for this formula. Rosa Damascena Extract and Benzyl Alcohol fragrance allergen roles not communicated to consumers. Mandarin Peel phototoxicity potential not disclosed for AM use. Overall INCI disclosure is above average for the Indian market.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan and PETA cruelty-free certified. Indian brand, Thane-based. Ethoxydiglycol is a synthetic petrochemical CPE. Rosa Damascena sourcing and sustainability not disclosed. Citrus Reticulata Peel Extract - citrus peel is a by-product of juice production, lower environmental footprint. No palm certification noted.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan = +3 above baseline of 5). Indian brand, Thane-based. Ethoxydiglycol is a synthetic petrochemical CPE. Rosa Damascena sourcing and sustainability not disclosed. Citrus Reticulata Peel Extract - citrus peel is a by-product of juice production, lower environmental footprint. No palm certification noted.",
       },
     ],
     keyActives: [
@@ -65,12 +72,12 @@ const products: ProductScorecard[] = [
       { name: "Propanediol",                           note: "Plant-derived humectant and solvent",                                                                                   flag: "ok"   },
       { name: "Betaine",                               note: "Natural humectant derived from sugar beet; skin-conditioning, osmolyte function",                                      flag: "ok"   },
       { name: "Isodecyl Neopentanoate",                note: "Lightweight synthetic ester emollient; non-comedogenic, fast-absorbing skin feel",                                     flag: "ok"   },
-      { name: "Ethoxy Diglycol",                       note: "Ethoxydiglycol (Transcutol) - confirmed CPE. Increases percutaneous absorption of all co-formulated actives. Position 6 suggests meaningful concentration", flag: "warn" },
+      { name: "Ethoxy Diglycol",                       note: "Ethoxydiglycol (Transcutol) - confirmed CPE. Increases percutaneous absorption of all co-formulated actives. Position 6 suggests meaningful concentration. Non-standard INCI spelling.", flag: "warn" },
       { name: "Sodium Citrate",                        note: "Buffer salt maintaining acidic pH for vitamin C stability",                                                             flag: "ok"   },
       { name: "Citric Acid",                           note: "pH adjuster maintaining acidic environment required for Ethyl Ascorbic Acid stability",                               flag: "ok"   },
       { name: "Citrus Reticulata (Mandarin) Peel Extract", note: "Citrus flavonoids and limonene; antioxidant and brightening. Peel extracts may contain phototoxic furanocoumarins depending on extraction method", flag: "info" },
       { name: "Terminalia Ferdinandiana (Kakadu Plum) Fruit Extract", note: "Natural Vitamin C synergy; polyphenol antioxidants",                                                   flag: "ok"   },
-      { name: "Rosa Damascena (Rose) Extract",         note: "Anti-inflammatory polyphenols but contains EU fragrance allergens: geraniol, citronellol, farnesol, linalool. Leave-on allergen threshold (0.01%) applies", flag: "warn" },
+      { name: "Rosa Damascena (Rose) Extract",         note: "Anti-inflammatory polyphenols but contains EU fragrance allergens: geraniol, citronellol, farnesol, linalool. Leave-on allergen threshold (0.01%) applies under EU 2023/1545", flag: "warn" },
       { name: "Benzyl Alcohol",                        note: "Dual role: preservative and EU-listed fragrance allergen. In a leave-on product, allergen labelling threshold applies at 0.01% under EU 2023/1545", flag: "warn" },
       { name: "Hydroxyacetophenone",                   note: "Antioxidant and preservative booster; low sensitisation risk",                                                          flag: "ok"   },
       { name: "Caprylyl Glycol",                       note: "Mild preservative booster and humectant",                                                                              flag: "ok"   },
@@ -83,7 +90,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Ethoxydiglycol (CPE)", "Rose Extract (Fragrance Allergen)", "Benzyl Alcohol (Allergen)"],
     info_badges: ["15% Ethyl Ascorbic Acid", "Kakadu Plum", "No Ferulic/Vit E Combo"],
     indiaContext: "A 15% stable vitamin C derivative is a strong dose for daily brightening in India's hyperpigmentation-prone population. Ethyl Ascorbic Acid outperforms L-ascorbic acid in stability during India's high heat and humidity - a critical advantage. The Ethoxydiglycol CPE boosts active penetration which may accelerate brightening results but also means co-applied sensitisers penetrate deeper. The lack of Ferulic Acid is a missed opportunity for photo-synergy that would otherwise amplify efficacy under India's UV Index 8-11+ conditions. Apply in the evening if not pairing with a high-SPF sunscreen.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -99,29 +106,29 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Hyperpigmentation, uneven tone, blemishes, oiliness, pore appearance",
     summary: "A 10% Niacinamide serum supported by a well-chosen supporting cast: Rice Ferment Filtrate (Sake) with established brightening and barrier evidence, Glycyrrhiza Glabra (Licorice Root) for tyrosinase synergy with Niacinamide, and Caffeine for anti-inflammatory and anti-puffiness benefit. The formula is tactically built for melanin-transfer inhibition (Niacinamide), enzyme-level depigmentation (Licorice/Glabridin), and barrier support (Squalane, Rice Extract). Two concerns: (1) Rosa Damascena (Rose) Flower Water at position 11 introduces EU fragrance allergens (geraniol, citronellol, farnesol, linalool) into a leave-on serum. (2) Hydrolyzed Sesame Protein PG-Propyl Methylsilanediol at position 17 - sesame protein hydrolysate is a potential allergen for individuals with sesame hypersensitivity.",
-    score: 79,
+    score: 84,
     scoreLabel: "Good",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Nia_Serum_50ml_1001x1001_px_5.webp?v=1778132412",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 42, max: 50,
-        note: "All ingredients are EU Regulation 1223/2009 and India CDSCO compliant. Rosa Damascena (Rose) Flower Water at position 11 contains geraniol, citronellol, farnesol, and linalool - designated EU fragrance allergens under Regulation 2023/1545. Hydrolyzed Sesame Protein PG-Propyl Methylsilanediol at position 17: sesame is a major food allergen and cross-sensitisation to topical sesame protein hydrolysates has been reported in literature. Individuals with sesame allergy should be cautious. Benzyl Alcohol is both a preservative and a fragrance allergen. No CPE ingredients detected. Niacinamide at 10% may cause transient flushing in a small subset of sensitive individuals due to prostaglandin-mediated vasodilation (well-documented and reversible; not a safety concern at this concentration). All other ingredients have low concern profiles.",
+        score: 35, max: 40,
+        note: "All ingredients are EU Regulation 1223/2009 and India CDSCO compliant. No CPE ingredients detected. Rosa Damascena (Rose) Flower Water at position 11 contains geraniol, citronellol, farnesol, and linalool, designated EU fragrance allergens under Regulation 2023/1545. Hydrolyzed Sesame Protein PG-Propyl Methylsilanediol at position 17: sesame is a major food allergen and cross-sensitisation to topical sesame protein hydrolysates has been reported; individuals with sesame allergy should exercise caution. Benzyl Alcohol has a dual role as preservative and fragrance allergen, not typically communicated to consumers. Niacinamide at 10% may cause transient flushing in a small subset due to prostaglandin-mediated vasodilation, reversible and not a safety concern at this concentration.",
       },
       {
-        name: "Formulation Quality",
-        score: 18, max: 20,
-        note: "Niacinamide at position 2 confirms 10% concentration; this is the optimal documented range for melanin transfer inhibition and sebum regulation. Rice Ferment Filtrate (Sake) has evidence for skin brightening, barrier support, and photoprotection via fermented antioxidants. Licorice Root Extract (glabridin) provides complementary tyrosinase inhibition to Niacinamide's melanosome transfer inhibition - dual brightening mechanism. Caffeine at position 12 adds anti-inflammatory benefit (PDE inhibitor) and mild vasoconstriction for pore tightening effect. Squalane (sebum mimic) and Isodecyl Neopentanoate (lightweight emollient) provide non-comedogenic skin feel. Cyclodextrin supports stabilisation and even delivery of actives. Excellent formulation logic overall.",
+        name: "Formulation Quality & Efficacy",
+        score: 24, max: 25,
+        note: "Niacinamide at position 2 confirms 10% concentration; this is the optimal documented range for melanin transfer inhibition and sebum regulation. Rice Ferment Filtrate (Sake) has evidence for skin brightening, barrier support, and photoprotection via fermented antioxidants. Licorice Root Extract (glabridin) provides complementary tyrosinase inhibition to Niacinamide's melanosome transfer inhibition - dual brightening mechanism. Caffeine at position 12 adds anti-inflammatory benefit (PDE inhibitor) and mild vasoconstriction for pore tightening effect. Squalane (sebum mimic) and Isodecyl Neopentanoate (lightweight emollient) provide non-comedogenic skin feel. Cyclodextrin supports stabilisation and even delivery of actives. Tocopheryl Acetate (Vitamin E) at a late INCI position is likely present at trace concentration rather than as a primary active.",
       },
       {
-        name: "Claims & Transparency",
-        score: 12, max: 20,
-        note: "10% Niacinamide concentration is brand-stated - good disclosure. Full INCI on product page. Rosa Damascena (Rose) Flower Water's fragrance allergen content is not communicated to consumers in the product description. Sesame protein hydrolysate allergen potential not flagged. No clinical study data published for this specific formula. Tocopheryl Acetate (Vitamin E) is listed at late position (position 26) - likely a trace antioxidant rather than a primary active.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 18, max: 25,
+        note: "10% Niacinamide concentration is brand-stated. Full INCI on product page (Plum publishes INCI on PDPs). No published clinical study data for this specific formula. Rosa Damascena (Rose) Flower Water fragrance allergen content not communicated to consumers in the product description. Sesame protein hydrolysate allergen potential not flagged on product page. Overall disclosure is strong relative to Indian market norms.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "100% vegan and PETA cruelty-free certified. Rosa Damascena Rose cultivation is water-intensive; sourcing region not specified. Rice by-products (rice water, ferment filtrate) are sustainable - using agricultural by-products from rice milling. Hydrogenated Polyisobutene is a synthetic petrochemical polymer. Ethylhexyl Olivate from olive origin is a natural-derived ester.",
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan). Rosa Damascena Rose cultivation is water-intensive; sourcing region not specified. Rice by-products (rice water, ferment filtrate) are sustainable - using agricultural by-products from rice milling. Hydrogenated Polyisobutene is a synthetic petrochemical polymer. Ethylhexyl Olivate from olive origin is a natural-derived ester.",
       },
     ],
     keyActives: [
@@ -164,7 +171,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Rose Water (Fragrance Allergens)", "Sesame Protein Allergen Risk"],
     info_badges: ["Licorice + Niacinamide Dual Brightening", "Rice Ferment Filtrate (Sake)"],
     indiaContext: "Niacinamide at 10% is the most evidence-backed concentration for reducing post-inflammatory hyperpigmentation (PIH) in Fitzpatrick III-VI skin types common across India. The Rice Ferment + Licorice combination adds multi-mechanism support - particularly relevant for the Indian market where brightening is the primary skincare goal across all demographics. Suitable year-round given the non-sensitising, non-photosensitising actives (except the Rose Water). The sesame protein hydrolysate is a noteworthy allergen flag for individuals with sesame hypersensitivity, which has higher prevalence in South Asian populations.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -179,30 +186,30 @@ const products: ProductScorecard[] = [
     priceRange: "Rs. 671 - Rs. 790",
     productType: "treatment",
     concern: "Anti-aging, fine lines, textural refinement, cell turnover",
-    summary: "Two formulation concerns materially affect this product's scoring despite an otherwise clean ingredient list. First, the INCI lists Retinyl Palmitate at position 7 - not retinol. Retinyl Palmitate is a retinol ester that requires three enzymatic conversion steps to reach retinoic acid (ester → retinol → retinaldehyde → retinoic acid), making it significantly weaker per equivalent concentration than retinol. Marketing this as '1% Retinol' when the INCI confirms Retinyl Palmitate is a misleading claims statement. Second, Psoralea Corylifolia (Bakuchi) Oil at position 14 is the whole seed oil of the Bakuchi plant, which contains psoralens - phototoxic furanocoumarins associated with UV-triggered photocontact dermatitis. The SCCS expressed concern about Psoralea corylifolia extracts in leave-on products (SCCS/1529/14). Isolated Bakuchiol (the retinol-alternative compound) is safe; Bakuchi Oil (the whole oil) is not equivalent.",
-    score: 65,
+    summary: "Two formulation concerns materially affect this product's scoring despite an otherwise clean ingredient list. First, the INCI lists Retinyl Palmitate at position 7 - not retinol. Retinyl Palmitate is a retinol ester that requires three enzymatic conversion steps to reach retinoic acid (ester to retinol to retinaldehyde to retinoic acid), making it significantly weaker per equivalent concentration than retinol. Marketing this as '1% Retinol' when the INCI confirms Retinyl Palmitate is a misleading claims statement. Second, Psoralea Corylifolia (Bakuchi) Oil at position 14 is the whole seed oil of the Bakuchi plant, which contains psoralens - phototoxic furanocoumarins associated with UV-triggered photocontact dermatitis. The SCCS expressed concern about Psoralea corylifolia extracts in leave-on products (SCCS/1529/14). Isolated Bakuchiol (the retinol-alternative compound) is safe; Bakuchi Oil (the whole oil) is not equivalent.",
+    score: 64,
     scoreLabel: "Fair",
     image: "https://plumgoodness.com/cdn/shop/files/011_60360bbc-c8e2-409b-a694-1520e2c64408.jpg?v=1776772927",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 32, max: 50,
-        note: "Psoralea Corylifolia (Bakuchi) Oil: the whole seed oil contains psoralens (psoralen, isopsoralen, bergapten) - phototoxic furanocoumarins. SCCS Opinion SCCS/1529/14 expressed concern about furocoumarin content in Psoralea corylifolia-derived cosmetic ingredients, particularly in leave-on products applied before UV exposure. Phototoxic reactions (PLD - phototoxic contact dermatitis) can cause severe burns and hyperpigmentation under sun exposure. While the oil is at position 14 (lower concentration), the franocoumarin content of Bakuchi oil is significant enough to warrant avoidance for daytime leave-on use and a clear night-use-only communication. Benzyl Alcohol is a preservative and fragrance allergen. Retinyl Palmitate: there are historical concerns about retinyl palmitate + UV exposure potentially forming reactive oxidative species (FDA/NTP study 2012); however, subsequent analysis at cosmetic concentrations does not support meaningful concern. Remaining ingredients comply with EU/India regulations.",
+        score: 29, max: 40,
+        note: "Psoralea Corylifolia (Bakuchi) Oil: the whole seed oil contains psoralens (psoralen, isopsoralen, bergapten), which are phototoxic furanocoumarins. SCCS Opinion SCCS/1529/14 expressed concern about furocoumarin content in Psoralea corylifolia-derived cosmetic ingredients in leave-on products applied before UV exposure. Phototoxic reactions (phototoxic contact dermatitis) can cause severe burns and hyperpigmentation. The furanocoumarin content of Bakuchi oil warrants complete avoidance for daytime leave-on use. Benzyl Alcohol is a preservative and EU fragrance allergen in a leave-on treatment product. Retinyl Palmitate has a recognised UV-associated reactive oxygen species concern from the FDA/NTP 2012 study; subsequent analysis at cosmetic concentrations does not support significant risk but warrants noting for daytime leave-on use. Remaining ingredients comply with EU/India regulations.",
       },
       {
-        name: "Formulation Quality",
-        score: 15, max: 20,
-        note: "Retinyl Palmitate is a weaker retinoid than retinol. At the same stated percentage, retinyl palmitate delivers significantly lower effective retinoid activity because each conversion step (hydrolysis of ester, then oxidation) is rate-limited by enzyme availability in skin. The formulation does not include niacinamide as an anti-irritation buffer, which is a missed opportunity given the retinoid context. Squalane and Isodecyl Neopentanoate provide good emollient support. Hydrolyzed Rice + Pea Protein and free amino acids (Glycine, Proline) are good barrier repair and skin-conditioning choices. Hydrolyzed Sodium Hyaluronate is low-MW HA for deeper penetration. Aloe Barbadensis Leaf Juice at position 2 provides soothing base. Cyclodextrin adds stability. Apple stem cell extract (Malus Domestica) has limited clinical evidence for topical efficacy.",
+        name: "Formulation Quality & Efficacy",
+        score: 16, max: 25,
+        note: "The brand markets this as '1% Retinol' but the INCI lists Retinyl Palmitate, which requires three enzymatic conversion steps to reach retinoic acid vs. two for retinol; at the same stated percentage, Retinyl Palmitate delivers significantly lower effective retinoid activity because each conversion step is rate-limited by enzyme availability in skin. No Niacinamide is present as an anti-irritation buffer in this retinoid treatment. Apple stem cell extract (Malus Domestica) has limited clinical evidence for topical efficacy. Squalane and Isodecyl Neopentanoate provide good emollient support. Hydrolyzed Rice + Pea Protein and free amino acids (Glycine, Proline) are sound barrier repair choices. Hydrolyzed Sodium Hyaluronate is low-MW HA for deeper epidermal hydration. Aloe Barbadensis Leaf Juice provides a soothing base. Cyclodextrin adds stability.",
       },
       {
-        name: "Claims & Transparency",
-        score: 11, max: 20,
-        note: "Brand markets this as '1% Retinol' but the INCI lists Retinyl Palmitate. These are distinct ingredients with different potency profiles. The Retinyl Palmitate identity is discernible from the INCI, but most consumers interpret 'Retinol' in the product name as pure retinol (retinol USP). This is a material misleading claim under EU claims Regulation EC 655/2013 criteria. Bakuchi Oil (Psoralea Corylifolia) phototoxic risk is not communicated. Night-use guidance not prominent. No clinical data published.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 11, max: 25,
+        note: "Brand markets this as '1% Retinol' but the INCI lists Retinyl Palmitate. These are distinct ingredients with materially different potency profiles. Most consumers interpret 'Retinol' in the product name as pure retinol (retinol USP), which constitutes a material misleading claim under EU claims Regulation EC 655/2013 criteria. Bakuchi Oil (Psoralea Corylifolia) phototoxic risk is not communicated to consumers. Night-use guidance is not prominently displayed despite the phototoxic ingredient present. No clinical study data published for this formula. INCI list is available on the product page.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan, PETA certified cruelty-free. Bakuchi (Psoralea corylifolia) is a plant with significant traditional uses in Ayurveda; sustainable sourcing not confirmed. Squalane - plant-derived per Plum's vegan claim. No parabens, no synthetic fragrance.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan above baseline of 5). Bakuchi (Psoralea corylifolia) is a plant with significant traditional Ayurvedic uses; sustainable sourcing not confirmed. Squalane is plant-derived per Plum's vegan claim. No parabens, no synthetic fragrance. No petrochemical-heavy ingredients noted beyond Isohexadecane.",
       },
     ],
     keyActives: [
@@ -227,7 +234,7 @@ const products: ProductScorecard[] = [
       { name: "Proline",                               note: "Amino acid; collagen precursor, skin-conditioning",                                                                     flag: "ok"   },
       { name: "Hydrolyzed Sodium Hyaluronate",         note: "Low-MW HA; penetrates upper dermis for deeper hydration",                                                              flag: "ok"   },
       { name: "Psoralea Corylifolia (Bakuchi) Oil",    note: "Bakuchi whole seed oil - contains Bakuchiol (retinol alternative) BUT also phototoxic psoralens (furanocoumarins). SCCS SCCS/1529/14 raised concern for leave-on products. Not equivalent to isolated Bakuchiol. Use at night only", flag: "warn" },
-      { name: "Benzyl Alcohol",                        note: "Preservative and EU fragrance allergen",                                                                               flag: "warn" },
+      { name: "Benzyl Alcohol",                        note: "Preservative and EU fragrance allergen in a leave-on treatment",                                                        flag: "warn" },
       { name: "Hydroxyacetophenone",                   note: "Antioxidant and preservative booster",                                                                                 flag: "ok"   },
       { name: "Caprylyl Glycol",                       note: "Mild preservative booster",                                                                                            flag: "ok"   },
       { name: "Xanthan Gum",                           note: "Ferment-derived biopolymer thickener",                                                                                 flag: "ok"   },
@@ -244,10 +251,10 @@ const products: ProductScorecard[] = [
       { name: "Ammonium Acryloyldimethyltaurate/VP Copolymer", note: "Polymer thickener/stabiliser for aqueous phase",                                                               flag: "ok"   },
     ],
     pass_badges: ["INCI Verified", "Vegan (Certified)", "Cruelty-Free (PETA)", "Paraben-Free", "Night Use Only"],
-    warn_badges: ["Retinyl Palmitate (Not Retinol)", "Bakuchi Oil (Phototoxic Psoralens)", "Benzyl Alcohol (Allergen)"],
+    warn_badges: ["Misleading Retinol Claim (Retinyl Palmitate)", "Bakuchi Oil (Phototoxic Psoralens)", "Benzyl Alcohol (Allergen)"],
     info_badges: ["Apple Stem Cell Extract", "Hydrolyzed Proteins"],
     indiaContext: "Retinoids require particular caution in India's high-UV environment. The phototoxic psoralens in Bakuchi Oil make strict night-only use essential - any morning application followed by the Indian sun (UV Index 8-11+) could cause severe photocontact dermatitis and paradoxically worsen the hyperpigmentation this product aims to treat. Retinyl Palmitate's lower potency means results will be slower than with retinol or retinaldehyde products; this may suit those with highly sensitive skin but should be communicated accurately. For Indian skin tones (Fitzpatrick III-VI) beginning retinoid use for the first time, starting 2 nights per week is advisable.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -263,29 +270,29 @@ const products: ProductScorecard[] = [
     productType: "sunscreen",
     concern: "Daily UV protection, oily/acne-prone skin, matte finish",
     summary: "A three-filter chemical sunscreen (Octinoxate + Avobenzone + Benzophenone-3) with Titanium Dioxide as supplementary physical filter. Two of the three organic filters carry active regulatory concerns: Benzophenone-3 (Oxybenzone) was formally classified by ECHA as a Category 1 Endocrine Disruptor (2025), meaning evidence is sufficient to classify it as an ED substance. Octinoxate is under active EU and FDA review for endocrine disruption. The Avobenzone + Octinoxate combination without Octocrylene is a photostability concern - Octinoxate accelerates Avobenzone photodegradation rather than stabilising it. An additional flag: Chitosan at position 10 is typically derived from crustacean shells; Plum's 100% vegan claim requires verification that fungal-derived chitosan is used. Green Tea and Zinc PCA are effective sebum-control and anti-inflammatory additions.",
-    score: 62,
+    score: 65,
     scoreLabel: "Fair",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_GT_SPF_1001x1001_px.webp?v=1776770983",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 28, max: 50,
-        note: "Benzophenone-3 (Oxybenzone) - ECHA formally classified as Category 1 Endocrine Disruptor in 2025. This is the highest ED classification level, indicating sufficient evidence of hormonal disruption at relevant exposure levels. It is banned from sunscreens in Hawaii, Palau, and other marine-protected jurisdictions due to coral reef toxicity. Under EU Cosmetics Regulation, the Scientific Committee for Consumer Safety (SCCS) is in the process of reassessing its permitted concentrations (current EU limit 6% body, 0.5% face leave-on). In India, it remains legal under IS:4011 but the regulatory trajectory globally is toward restriction. Ethylhexyl Methoxycinnamate (Octinoxate) - FDA Category III (insufficient safety data, 2021 proposed rule); EU under endocrine disruption review. Avobenzone without Octocrylene: Octinoxate does not photostabilise Avobenzone - it catalyses its degradation via triplet energy transfer. Titanium Dioxide provides partial photostabilisation but may be insufficient for the full Avobenzone load. Chitosan: if crustacean-derived, represents a potential allergen for shellfish-allergic individuals and contradicts Plum's vegan certification.",
+        score: 24, max: 40,
+        note: "Benzophenone-3 (Oxybenzone): ECHA formally classified as Category 1 Endocrine Disruptor in 2025, the highest ED classification level, indicating sufficient evidence of hormonal disruption at relevant exposure levels. Banned from sunscreens in Hawaii, Palau, and other marine-protected jurisdictions due to coral reef toxicity. Under EU Cosmetics Regulation, SCCS is reassessing permitted concentrations (current EU limit 6% body, 0.5% face leave-on). Legal in India under IS:4011 but the global regulatory trajectory is toward restriction. Ethylhexyl Methoxycinnamate (Octinoxate): FDA Category III (insufficient safety data, 2021 proposed rule); EU under endocrine disruption review. Chitosan: if crustacean-derived, represents a potential allergen for shellfish-allergic individuals and contradicts Plum's vegan certification unless a fungal-derived source is confirmed. Phenoxyethanol within 1% limit; Titanium Dioxide coating reduces photocatalytic activity.",
       },
       {
-        name: "Formulation Quality",
-        score: 15, max: 20,
-        note: "Avobenzone (Butyl Methoxydibenzoylmethane) provides UVA coverage; Octinoxate covers UVB; Benzophenone-3 is a broad-spectrum secondary filter. Titanium Dioxide (with Aluminum Dioxide coating for reduced reactivity) provides physical broad-spectrum supplementation. The Avobenzone photostability gap is genuine: without a photostabiliser (Octocrylene, Tinosorb S, or Tinosorb M), Avobenzone degrades 50-90% in 1 hour under direct sunlight, progressively reducing UVA protection through the day. Zinc PCA is a well-evidenced sebum-control active and mild antimicrobial. Camellia Sinensis (Green Tea) Extract provides catechin antioxidants for post-UV support. Chitosan as film-former improves matte texture. Phospholipids support skin-compatible emulsion structure.",
+        name: "Formulation Quality & Efficacy",
+        score: 19, max: 25,
+        note: "Avobenzone (Butyl Methoxydibenzoylmethane) provides UVA coverage; Octinoxate covers UVB; Benzophenone-3 is a broad-spectrum secondary filter. Without a photostabiliser (Octocrylene, Tinosorb S, or Tinosorb M), Avobenzone degrades 50-90% in 1 hour under direct sunlight. Octinoxate actually catalyses Avobenzone's degradation via triplet energy transfer rather than stabilising it, progressively reducing UVA protection through the day. Titanium Dioxide (with Aluminum Dioxide coating) provides supplementary physical broad-spectrum support and partial Avobenzone photostabilisation, but is unlikely to be sufficient for the full Avobenzone load. Zinc PCA is a well-evidenced sebum-control active. Camellia Sinensis (Green Tea) Extract provides EGCG catechin antioxidants for post-UV support. Chitosan as film-former improves matte texture. Phospholipids support skin-compatible emulsion structure.",
       },
       {
-        name: "Claims & Transparency",
-        score: 12, max: 20,
-        note: "SPF 50 and PA++++ are testable claims; no test reports published. Benzophenone-3's endocrine disruption classification (ECHA 2025) is not disclosed to consumers - a material transparency gap. Chitosan's vegan status not verified or disclosed. Avobenzone photostability limitation not communicated. INCI list is available and complete on product page. Plum positions this as a 'clean' sunscreen but BP-3 conflicts with that positioning.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 16, max: 25,
+        note: "SPF 50 and PA++++ claimed but no published SPF test report. Benzophenone-3 ECHA Category 1 ED classification (2025) is not disclosed to consumers, a material transparency gap. Avobenzone photostability limitation not communicated to consumers. INCI list is available and complete on product page. Chitosan vegan status not verified or disclosed. Plum positions this as a 'clean' sunscreen but Benzophenone-3 directly conflicts with that brand positioning.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "Plum is 100% vegan certified - Chitosan vegan status requires verification (fungal vs. crustacean source). Oxybenzone is toxic to coral reefs and is banned in marine-protected zones. Octinoxate has documented aquatic toxicity. This is Plum's most environmentally concerning product. Green Tea extract and natural botanicals are positive. Overall sustainability impact is undermined by the reef-toxic UV filter choices.",
+        score: 6, max: 10,
+        note: "Plum is 100% vegan certified and PETA cruelty-free. However, Oxybenzone is toxic to coral reefs and banned in marine-protected zones (Hawaii, Palau). Octinoxate has documented aquatic toxicity. These environmental concerns are significant given the brand's sustainability positioning. Green Tea extract and natural botanicals are positive additions.",
       },
     ],
     keyActives: [
@@ -337,10 +344,10 @@ const products: ProductScorecard[] = [
       { name: "Sodium Gluconate",                      note: "Chelating agent",                                                                                                       flag: "ok"   },
     ],
     pass_badges: ["INCI Verified", "Vegan (Certified*)", "Cruelty-Free (PETA)", "SPF 50 PA++++"],
-    warn_badges: ["Oxybenzone (ECHA Cat.1 ED)", "Octinoxate (ED Review)", "Avobenzone (No Photostabiliser)", "Chitosan Vegan Status Unverified"],
+    warn_badges: ["Oxybenzone (ECHA Cat.1 Endocrine Disruptor)", "Octinoxate (ED Review)", "Avobenzone (No Photostabiliser)", "Chitosan Vegan Status Unverified"],
     info_badges: ["Zinc PCA Sebum Control", "Green Tea Antioxidant", "Matte Finish"],
     indiaContext: "Despite strong matte-finish performance for India's oily-prone skin types and Zinc PCA's oil-control benefits, this sunscreen carries the most significant safety concern in Plum's scored range. Benzophenone-3 (Oxybenzone) now carries a formal ECHA Category 1 Endocrine Disruptor classification - the same level as established carcinogens/EDs. Daily face application over years in a high-UV country constitutes meaningful chronic exposure. The Avobenzone photodegradation issue means UVA protection diminishes through the day under India's strong sun - reapplication becomes critical. Indian consumers wanting a matte sunscreen would be better served by a photostable filter system (Tinosorb M, Tinosorb A2B, or Uvinul A+) without oxybenzone.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -356,29 +363,29 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Active acne, oiliness, clogged pores, blackheads, cell turnover",
     summary: "An acne-targeted serum featuring encapsulated Salicylic Acid at 2%, delivered via a Dextrin/Polydextrose/Amylopectin starch matrix for timed and controlled release. Encapsulation serves two purposes: (1) it moderates SA release rate, improving tolerability; (2) it allows stable formulation at a range of pH values. Niacinamide at position 7 provides anti-inflammatory support and PIH prevention. Blueberry Extract and Prickly Pear Extract are soothing botanicals. Two formulation flags: Ethoxydiglycol (Transcutol/CPE) appears at position 16, which would enhance the percutaneous penetration of SA and other actives. Rosa Damascena (Rose) Flower Water at position 14 introduces EU fragrance allergens into a leave-on product.",
-    score: 72,
+    score: 83,
     scoreLabel: "Good",
     image: "https://plumgoodness.com/cdn/shop/files/SA-Serum-30ml-01.jpg?v=1775713159",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 37, max: 50,
-        note: "Salicylic Acid at 2%: EU Regulation 1223/2009 permits 0.5% SA in leave-on face products (Annex III entry 1). At 2%, this product exceeds the EU leave-on face limit. India follows BIS IS:4011 which references different limits; the 2% SA leave-on is common in the Indian market. This is a compliance flag for EU-targeted sales but not for Indian domestic use. Ethoxydiglycol (CPE) at position 16 amplifies SA and co-active systemic penetration. Rosa Damascena (Rose) Flower Water at position 14 introduces leave-on fragrance allergens (geraniol, citronellol, farnesol, linalool). Sodium Copper Chlorophyllin is a copper chelate of chlorophyllin - safe cosmetic colorant with anti-inflammatory properties. Encapsulation technology is safe and improves tolerability.",
+        score: 34, max: 40,
+        note: "Salicylic Acid at 2%: EU Regulation 1223/2009 permits 0.5% SA in leave-on face products (Annex III entry 1). At 2%, this product exceeds the EU leave-on face limit; the 2% SA leave-on is standard in the Indian market and is compliant under BIS IS:4011. Ethoxydiglycol (CPE) at position 16 is a confirmed chemical penetration enhancer: it amplifies SA and co-active systemic penetration, intentional for BHA delivery but increases systemic exposure of all actives. Rosa Damascena (Rose) Flower Water at position 14 introduces leave-on fragrance allergens (geraniol, citronellol, farnesol, linalool) into an acne serum - somewhat counterproductive in an inflammation-targeting formula. Sodium Copper Chlorophyllin is a copper chelate of chlorophyllin, a safe cosmetic colorant with anti-inflammatory properties. Encapsulation technology is safe and improves tolerability.",
       },
       {
-        name: "Formulation Quality",
-        score: 16, max: 20,
-        note: "Encapsulated SA is a genuine formulation innovation for BHA serums. The starch matrix (Dextrin + Polydextrose + Amylopectin) releases SA gradually, reducing the peak irritation associated with free acid application. Niacinamide at position 7 is a smart anti-inflammatory co-active that also prevents PIH post-acne. pH must be acidic (pH 3-4) for free SA exfoliation; Sodium Hydroxide is present for adjustment. Blueberry Extract (Vaccinium Myrtillus) provides anthocyanin antioxidants and anti-inflammatory flavonoids. Opuntia Ficus (Prickly Pear) Extract has soothing and anti-inflammatory properties. Pentylene Glycol and Glycerin provide humectant support.",
+        name: "Formulation Quality & Efficacy",
+        score: 23, max: 25,
+        note: "Encapsulated SA is a genuine formulation innovation for BHA serums. The starch matrix (Dextrin + Polydextrose + Amylopectin) releases SA gradually, reducing the peak irritation associated with free acid application. Niacinamide at position 7 is a smart anti-inflammatory co-active that also prevents PIH post-acne. pH must be acidic (pH 3-4) for free SA exfoliation; Sodium Hydroxide is present for pH adjustment. Blueberry Extract (Vaccinium Myrtillus) provides anthocyanin antioxidants and anti-inflammatory flavonoids. Opuntia Ficus (Prickly Pear) Extract has soothing and anti-inflammatory properties. Pentylene Glycol and Glycerin provide humectant support. The encapsulation matrix release profile is not disclosed; efficacy assumptions are based on starch system literature.",
       },
       {
-        name: "Claims & Transparency",
-        score: 12, max: 20,
-        note: "2% SA concentration disclosed - good. Encapsulation technology claim not detailed (which matrix, what release profile). Rosa Damascena fragrance allergens not communicated. Ethoxydiglycol CPE role not explained. EU regulatory limit exceedance (0.5% leave-on face) not relevant for Indian domestic use but affects export/cross-border sales. Sodium Copper Chlorophyllin gives the product a distinctive green appearance - unusual for a serum, not explained to consumers.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 18, max: 25,
+        note: "2% SA concentration is disclosed. Full INCI list available on product page. No published clinical study data for this formula. Rosa Damascena fragrance allergens (geraniol, citronellol, farnesol, linalool) are not communicated despite leave-on acne serum context. Ethoxydiglycol's role as a chemical penetration enhancer is not explained to consumers. The EU leave-on face limit of 0.5% SA is not relevant for India but material for any export context. Sodium Copper Chlorophyllin gives the product a distinctive green appearance that is unexplained on the product page.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan, PETA cruelty-free. Rose water is water-intensive to produce. Starch encapsulants (Dextrin, Polydextrose) are bio-derived - positive. Ethoxydiglycol is synthetic petrochemical. Disodium EDTA is synthetic chelating agent.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan above baseline of 5). Rose water is water-intensive to produce. Starch encapsulants (Dextrin, Polydextrose) are bio-derived - positive sustainability choice. Ethoxydiglycol is synthetic petrochemical. Disodium EDTA is a synthetic chelating agent with limited biodegradability.",
       },
     ],
     keyActives: [
@@ -414,7 +421,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Ethoxydiglycol (CPE)", "Rose Water (Fragrance Allergens)"],
     info_badges: ["2% SA (India Compliant)", "Starch Encapsulation", "Niacinamide Anti-PIH"],
     indiaContext: "The 2% encapsulated SA formulation is well-suited to acne management in India's humid climate where excess sebum and clogged follicles are year-round concerns for Fitzpatrick III-V skin types. Encapsulation improves tolerability significantly over free-acid SA - important given that acne management typically requires consistent long-term use (6-12 weeks minimum for meaningful results). Niacinamide's inclusion is particularly thoughtful for Indian skin types prone to PIH. Note that Rose Water fragrance allergens are somewhat contradictory in an inflammation-targeting acne formula; individuals with reactive skin should patch-test first.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -430,29 +437,29 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Dehydration, dryness, plumping, barrier support",
     summary: "A short-ingredient hydration serum using a dual-molecular-weight HA system (65% low-MW : 35% high-MW as disclosed by brand). The higher proportion of low-MW HA enables deeper epidermal penetration, though low-MW HA in isolation can trigger inflammatory signalling - the ratio balance here is designed to mitigate this. Rosa Damascena (Rose) Flower Extract at position 5 is the key aesthetic signature ingredient but also the primary safety concern: Rose extract contains EU-listed fragrance allergens (geraniol, citronellol, farnesol, linalool) at concentrations that are meaningful given its early position in the INCI. Gluconolactone + Calcium Gluconate provides a gentle PHA exfoliation layer compatible with sensitive skin. Sodium Benzoate preservative function requires pH below 4.2 - the Gluconolactone system may provide this acidification.",
-    score: 74,
-    scoreLabel: "Good",
+    score: 89,
+    scoreLabel: "Excellent",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_HA_Serum_1001x1001_px_5dceb604-4ce4-4130-9aa8-b313abaf1846.webp?v=1776934475",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 39, max: 50,
-        note: "Rosa Damascena (Rose) Flower Extract at position 5 (early in list, meaningful concentration) contains geraniol, citronellol, farnesol, and linalool - all EU Regulation 2023/1545 fragrance allergens. In a leave-on hydration serum, the allergen threshold is 0.01% (EU, 2026 transition). Given Rose Extract is at position 5 in the INCI, it is well above trace concentration. This is a significant allergen concern for sensitised individuals. Benzyl Alcohol at position 12 is also an EU fragrance allergen and preservative. Gluconolactone (PHA) is very mild and well-tolerated even by sensitive/rosacea skin. Sodium Benzoate is effective at pH <4.2; pairing with the Gluconolactone system that acidifies the formula makes the preservative system logical. No CPE ingredients detected.",
+        score: 37, max: 40,
+        note: "No CPE ingredients detected. No parabens, no DMDM Hydantoin, no MIT, no synthetic fragrance (Parfum). Rosa Damascena (Rose) Flower Extract at position 5 indicates meaningful concentration and contains geraniol, citronellol, farnesol, and linalool - all EU Regulation 2023/1545 fragrance allergens with a leave-on disclosure threshold of 0.01% (EU, 2026 transition). Benzyl Alcohol at position 12 is both an EU fragrance allergen and a preservative; this dual role is not communicated on the product page. Gluconolactone (PHA) is very mild and well-tolerated even by sensitive/rosacea skin. Sodium Benzoate is effective at pH below 4.2; pairing with the Gluconolactone system that acidifies the formula makes the preservative system logical.",
       },
       {
-        name: "Formulation Quality",
-        score: 16, max: 20,
-        note: "Dual-MW HA at 65:35 LMW:HMW ratio - unusual reversal of typical commercial HA blends which favour high-MW. Lower-MW HA penetrates deeper but pure low-MW HA can trigger transient pro-inflammatory CD44 receptor signalling; the 35% high-MW component mitigates this while maintaining surface film. Gluconolactone (PHA) adds gentle enzymatic exfoliation without the sensitising potential of glycolic or lactic acid - particularly valuable for reactive or post-treatment skin. Calcium Gluconate is the NeoStrata PHA system partner, working synergistically with gluconolactone for mild keratin softening. Rosa Damascena at position 5 provides anti-inflammatory polyphenols alongside its fragrance allergen risk. Cyclodextrin for stability. Sorbitol and Propanediol add humectant support.",
+        name: "Formulation Quality & Efficacy",
+        score: 24, max: 25,
+        note: "Dual-MW HA at 65:35 LMW:HMW ratio - brand-disclosed, which is unusually transparent. Lower-MW HA penetrates deeper but pure low-MW HA can trigger transient pro-inflammatory CD44 receptor signalling; the 35% high-MW component mitigates this while maintaining surface film. Gluconolactone (PHA) adds gentle enzymatic exfoliation without the sensitising potential of glycolic or lactic acid - particularly valuable for reactive or post-treatment skin. Calcium Gluconate is the NeoStrata PHA system partner, working synergistically with Gluconolactone for mild keratin softening. Rosa Damascena at position 5 provides anti-inflammatory polyphenols alongside its fragrance allergen risk. Cyclodextrin for stability. Sorbitol and Propanediol add humectant support. Very short formula (18 ingredients) - lower processing footprint. There are no secondary actives beyond HA and PHA for a serum at this price point.",
       },
       {
-        name: "Claims & Transparency",
-        score: 12, max: 20,
-        note: "2% HA with the 65:35 LMW:HMW ratio disclosure is genuinely transparent - most HA products don't specify MW. Rosa Damascena fragrance allergen status not communicated despite early-list position. Sodium Benzoate's pH dependency (ineffective above pH 4.2) not disclosed. No clinical study data. 'Bulgarian Rose' provenance claim adds marketing specificity but sustainability practices of Bulgarian rose cultivation not disclosed.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 20, max: 25,
+        note: "2% HA with the 65:35 LMW:HMW ratio disclosure is genuinely transparent - most HA products don't specify molecular weight. Full INCI list on product page. No published clinical study data for this formula. Rosa Damascena fragrance allergen status (geraniol, citronellol, farnesol, linalool) is not communicated despite the extract's early-list position and meaningful concentration. Sodium Benzoate's pH dependency (ineffective above pH 4.2) is not disclosed. 'Bulgarian Rose' provenance adds marketing specificity but sustainability practices of Bulgarian rose cultivation are not confirmed.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan, PETA cruelty-free. Bulgarian Rose (Rosa Damascena) cultivation is water and labour-intensive; true-origin certification not confirmed. Rose oil extraction is one of the most resource-intensive botanical processes. Formula is very short (18 ingredients) - lower environmental processing footprint. No synthetic fragrance added beyond the natural rose allergens.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan above baseline of 5). Bulgarian Rose (Rosa Damascena) cultivation is water and labour-intensive; true-origin certification not confirmed. Rose oil extraction is one of the most resource-intensive botanical processes. Formula is very short (18 ingredients) - lower environmental processing footprint. No synthetic fragrance added beyond the natural rose allergens. No palm derivatives identified.",
       },
     ],
     keyActives: [
@@ -485,7 +492,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Rose Extract (Fragrance Allergens)", "Benzyl Alcohol (Allergen)"],
     info_badges: ["Dual-MW HA (65:35 LMW:HMW)", "Gluconolactone PHA", "Bulgarian Rose"],
     indiaContext: "Hyaluronic acid serums are highly relevant for India's variable climate - the dual-MW system ensures hydration at both surface and epidermal levels, important during dry Delhi winters and air-conditioned environments. The Gluconolactone PHA addition is thoughtful for Indian skin types that may not tolerate glycolic or lactic acid - PHA is the gentlest AHA option. The rose fragrance allergen concern is particularly relevant as rose fragrance sensitisation can worsen existing skin conditions including the perioral dermatitis and facial eczema seen in Indian urban populations. Individuals with any history of fragrance sensitivity should patch-test before using.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -501,29 +508,29 @@ const products: ProductScorecard[] = [
     productType: "toner",
     concern: "Dullness, enlarged pores, brightening, antioxidant protection",
     summary: "A clean, short-formula vitamin C toner using 3-O-Ethyl Ascorbic Acid (stable ethylated vitamin C derivative) at 1.5%. Witch Hazel (Hamamelis Virginiana) provides astringency for the pore-tightening claim. Mandarin Peel Extract and Kakadu Plum add botanical brightening. Cyclodextrin stabilises the vitamin C derivative. No CPE detected, no parabens, no synthetic fragrance. The main flags are: (1) Mandarin Peel Extract may contain furanocoumarins (phototoxic) depending on extraction; (2) Witch Hazel can be mildly drying for dry or sensitive skin types; (3) Benzyl Alcohol is both a preservative and a fragrance allergen. At 1.5%, the vitamin C concentration is brightening-supportive rather than clinically potent - appropriate for a daily toner step.",
-    score: 77,
-    scoreLabel: "Good",
+    score: 91,
+    scoreLabel: "Excellent",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_1.5_100ml_Toner_1001x1001_px.webp?v=1776937410",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 40, max: 50,
-        note: "3-O-Ethyl Ascorbic Acid is stable and well-tolerated. Mandarin Peel Extract at position 5: citrus peel extracts can contain furanocoumarins (bergapten, bergamottin) depending on the extraction method. Cold-pressed peel extracts retain more furanocoumarins than steam-distilled or hexane-extracted forms. Phototoxic risk is relevant if the toner is applied in the morning without adequate SPF. Hamamelis Virginiana (Witch Hazel) Extract contains tannins and limited gallic acid; at cosmetic concentrations, mildly astringent but not harmful. The isopropanol content of some witch hazel preparations may be irritating but is generally excluded from cosmetic witch hazel extracts. Benzyl Alcohol is a fragrance allergen and preservative. No CPE identified.",
+        score: 38, max: 40,
+        note: "No CPE ingredients detected. No parabens, no synthetic Parfum/Fragrance, no DMDM Hydantoin, no MIT. 3-O-Ethyl Ascorbic Acid is stable and well-tolerated. Mandarin Peel Extract at position 5: citrus peel extracts can contain furanocoumarins (bergapten, bergamottin) depending on the extraction method - cold-pressed peel extracts retain more furanocoumarins than distilled forms. Phototoxic risk is relevant if the toner is applied in the morning without adequate SPF. Benzyl Alcohol is both a fragrance allergen and a preservative. Hamamelis Virginiana (Witch Hazel) Extract at cosmetic concentrations is mildly astringent but not harmful; gallic acid content is low and the isopropanol found in some witch hazel preparations is typically excluded from cosmetic extracts.",
       },
       {
-        name: "Formulation Quality",
-        score: 17, max: 20,
-        note: "Clean, minimal toner formula with clear purpose. 3-O-Ethyl Ascorbic Acid is the optimal stable vitamin C derivative for a water-based toner (L-ascorbic acid degrades rapidly in aqueous solution). Cyclodextrin encapsulates and stabilises the vitamin C derivative during storage. Methyl Gluceth-20 is a silky humectant/emollient that improves toner skin feel without heaviness. Witch Hazel provides temporary pore-appearance reduction via astringency (tannin-mediated keratin contraction) - a valid mechanism for the pore-tightening claim. Citric Acid + Sodium Citrate buffer system maintains pH appropriate for vitamin C stability and astringent effect.",
+        name: "Formulation Quality & Efficacy",
+        score: 24, max: 25,
+        note: "Clean, minimal toner formula with clear purpose. 3-O-Ethyl Ascorbic Acid is the optimal stable vitamin C derivative for a water-based toner (L-ascorbic acid degrades rapidly in aqueous solution). Cyclodextrin encapsulates and stabilises the vitamin C derivative during storage. Methyl Gluceth-20 is a silky humectant/emollient that improves toner skin feel without heaviness. Witch Hazel provides temporary pore-appearance reduction via astringency (tannin-mediated keratin contraction) - a valid mechanism for the pore-tightening claim. Citric Acid + Sodium Citrate buffer system maintains pH appropriate for vitamin C stability and astringent effect. 1.5% is a supportive brightening dose rather than a clinically potent vitamin C concentration.",
       },
       {
-        name: "Claims & Transparency",
-        score: 13, max: 20,
-        note: "1.5% vitamin C concentration disclosed - good. Mandarin phototoxicity potential not communicated for AM use. Benzyl Alcohol dual role not communicated. Formula is clean enough that the INCI list is self-explanatory for label-savvy consumers. No clinical data published. 'Pore Tightening' is a valid but temporary astringency-based effect, not structural pore reduction - brand could be clearer about mechanism.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 21, max: 25,
+        note: "1.5% vitamin C concentration is disclosed. Full INCI available on product page. Formula is short and self-explanatory. No published clinical study data for this formula. Mandarin Peel Extract's phototoxic furanocoumarin potential is not communicated for AM use. 'Pore Tightening' is a valid but temporary astringency-based effect, not structural pore reduction - the mechanism is not explained to consumers.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan, PETA cruelty-free. Very short ingredient list minimises processing footprint. Mandarin peel is a citrus by-product - sustainable sourcing advantage. Sorbitol and Sucrose are plant-derived. No palm derivatives identified. Benzyl Alcohol from synthetic origin.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan above baseline of 5). Very short ingredient list minimises processing footprint. Mandarin peel is a citrus by-product - sustainable sourcing advantage. Sorbitol and Sucrose are plant-derived. No palm derivatives identified. Benzyl Alcohol from synthetic origin (minor).",
       },
     ],
     keyActives: [
@@ -554,7 +561,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Benzyl Alcohol (Allergen)", "Mandarin Peel (Phototoxic Risk)"],
     info_badges: ["1.5% Ethyl Ascorbic Acid", "Witch Hazel Astringency", "Cyclodextrin Stabilised"],
     indiaContext: "A stable vitamin C toner is a practical daily brightening step in a routine where a full-strength vitamin C serum might feel too heavy for India's humid climate. At 1.5%, this provides consistent antioxidant protection and melanin-synthesis inhibition without the potential sensitivity of higher-concentration actives. The Witch Hazel pore-tightening benefit is useful for oily Indian skin types but may strip barrier if overused or applied to dry/sensitive areas. Apply after cleansing, before serums, and always follow with SPF in the morning given the Mandarin Peel extract's phototoxic potential.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
   /* -------------------------------------------------
@@ -570,29 +577,29 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Dark circles, puffiness, fine lines, under-eye dryness",
     summary: "A multi-active under-eye cream using Undecane and Tridecane (synthetic alkane emollients) as the primary emollient phase - a sophisticated, lightweight choice for the delicate periorbital area. Caffeine at position 6 (brand-stated 3%) provides vasoconstriction for puffiness and dark circle reduction via increased microcirculation. Acetyl Hexapeptide-8 (Argireline) at position 8 is the leading topical peptide for expression-line reduction, working via competitive SNARE complex inhibition. Two phototoxic botanicals are flagged: Citrus Reticulata (Mandarin) Peel Extract at position 13 and Daucus Carota Sativa (Carrot) Seed Oil at position 16. Carrot Seed Oil contains psoralen and other furanocoumarins at levels that raise phototoxic concern near the periorbital skin - which is thinner, more vascular, and has higher penetration than regular facial skin.",
-    score: 68,
-    scoreLabel: "Fair",
+    score: 83,
+    scoreLabel: "Good",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_Under_Eye_Cream_1001x1001_px.webp?v=1776938914",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 35, max: 50,
-        note: "Daucus Carota Sativa (Carrot) Seed Oil at position 16: carrot seed oil is known to contain psoralen and other phototoxic furanocoumarins. SCCS has noted phototoxicity risk for cosmetic products containing furocoumarins from carrot seed oil, particularly in leave-on products applied before UV exposure. The periorbital skin is 40% thinner than facial skin and significantly more vascular - this increases percutaneous absorption and systemic exposure relative to the same product on cheek or forehead. Citrus Reticulata (Mandarin) Peel Extract at position 13 also carries phototoxic furanocoumarin risk in morning use. Benzyl Alcohol is a preservative and EU fragrance allergen. Acetyl Hexapeptide-8 and Caffeine are well-characterised and safe. Undecane and Tridecane are high-purity synthetic alkanes with established safety profiles. Sucralose in a cosmetic is unusual but not a safety concern.",
+        score: 35, max: 40,
+        note: "Daucus Carota Sativa (Carrot) Seed Oil at position 16: carrot seed oil contains psoralen and other phototoxic furanocoumarins. SCCS has noted phototoxicity risk for cosmetic products containing furocoumarins, particularly in leave-on products applied before UV exposure. The periorbital skin is 40% thinner than facial skin and significantly more vascular, increasing percutaneous absorption and systemic exposure relative to other facial areas. Citrus Reticulata (Mandarin) Peel Extract at position 13 also carries phototoxic furanocoumarin risk for morning use near thin periorbital skin. Benzyl Alcohol is both a preservative and an EU fragrance allergen in a leave-on product. Acetyl Hexapeptide-8 and Caffeine are well-characterised and safe. Undecane and Tridecane are high-purity synthetic alkanes with established safety profiles.",
       },
       {
-        name: "Formulation Quality",
-        score: 15, max: 20,
-        note: "Undecane + Tridecane is a clever choice for eye area emolliency: these linear alkanes are lightweight, spread easily, and provide excellent surface emolliency without the weight of fatty acid esters that can cause milia under the eye. Caffeine at 3% is well-evidenced for reducing periorbital oedema via adenosine receptor antagonism and PDE inhibition (reducing histamine-driven capillary permeability). Acetyl Hexapeptide-8 (Argireline) at 3% is at the low end of the 3-10% range shown to reduce expression line depth in clinical studies by inhibiting SNARE complex formation at the dermo-epidermal junction. Carrot Seed Oil adds a problematic phototoxic risk. Triolein (glyceryl trioleate from olive) provides emollient support. Glyceryl Stearate Citrate for emulsification.",
+        name: "Formulation Quality & Efficacy",
+        score: 22, max: 25,
+        note: "Undecane + Tridecane is a clever choice for eye area emolliency: these linear alkanes are lightweight, spread easily, and provide excellent surface emolliency without the weight of fatty acid esters that can cause milia under the eye. Caffeine at 3% is well-evidenced for reducing periorbital oedema via adenosine receptor antagonism and PDE inhibition (reducing histamine-driven capillary permeability). Acetyl Hexapeptide-8 (Argireline) at 3% is at the lower end of the 3-10% range shown to reduce expression line depth in clinical studies by inhibiting SNARE complex formation at the dermo-epidermal junction. Carrot Seed Oil's phototoxic furanocoumarin content is a concern for daytime use near the periorbital area. Dilauryl Thiodipropionate is an older-generation antioxidant stabiliser; modern formulas typically use Pentaerythrityl Tetra-di-t-butyl Hydroxyhydrocinnamate (Tinogard TT).",
       },
       {
-        name: "Claims & Transparency",
-        score: 11, max: 20,
-        note: "3% concentrations for Vitamin C, Peptide, and Caffeine are all disclosed - good transparency. Phototoxic risk of both Mandarin Peel Extract and Carrot Seed Oil is not communicated. The eye area's higher penetration due to thinner skin is not discussed. Acetyl Hexapeptide-8 is marketed at its INCI name but not as 'Argireline' (the trade name consumers would recognise). Sucralose in skincare is unexplained to consumers. Dilauryl Thiodipropionate (antioxidant stabiliser) is an unusual choice - modern formulas typically use Pentaerythrityl Tetra-di-t-butyl Hydroxyhydrocinnamate.",
+        name: "Ingredient Disclosure & Transparency",
+        score: 18, max: 25,
+        note: "3% concentrations for Vitamin C, Peptide, and Caffeine are all brand-disclosed. Full INCI list available on product page. No published clinical study data for this formula. The phototoxic furanocoumarin risk of Mandarin Peel Extract and Carrot Seed Oil is not communicated to consumers. The periorbital skin's higher penetration relative to facial skin is not discussed, which is relevant given the phototoxic botanical inclusions. Acetyl Hexapeptide-8 is not identified as 'Argireline' (the trade name consumers would recognise) anywhere on the product page.",
       },
       {
         name: "Ethics & Sustainability",
-        score: 7, max: 10,
-        note: "100% vegan, PETA cruelty-free. Synthetic alkane emollients (Undecane, Tridecane) are petrochemical-derived. Carrot Seed Oil sourcing not specified for purity (phototoxic furanocoumarin content varies by source and extraction). Rose and Mandarin extracts are botanical by-products. Sucralose is synthetic.",
+        score: 8, max: 10,
+        note: "100% vegan and PETA cruelty-free certified (+2 PETA, +1 vegan above baseline of 5). Synthetic alkane emollients (Undecane, Tridecane) are petrochemical-derived. Carrot Seed Oil sourcing not specified for purity (phototoxic furanocoumarin content varies by source and extraction). Rose and Mandarin extracts are botanical by-products. Sucralose is synthetic.",
       },
     ],
     keyActives: [
@@ -640,7 +647,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Carrot Seed Oil (Phototoxic)", "Mandarin Peel (Phototoxic)", "Benzyl Alcohol (Allergen)"],
     info_badges: ["Acetyl Hexapeptide-8 (Argireline)", "3% Caffeine", "Undecane/Tridecane Base"],
     indiaContext: "The Caffeine + Argireline combination targets two separate under-eye concerns prevalent among Indian consumers: dark circles driven by subdermal melanin and vascular pooling (Caffeine addresses both), and expression lines from squinting in high-sunlight environments (Argireline addresses). The Carrot Seed Oil phototoxic concern is particularly significant in India's UV-intense climate - the combination of thin periorbital skin, year-round UV exposure, and a leave-on phototoxic botanical is a meaningful risk. Strictly evening use is advisable, or pair with SPF-50+ eye-area protection. The unique alkane emollient base (Undecane/Tridecane) is a smart formulation choice for India's humid climate as it won't feel heavy under the eye the way fatty acid esters can.",
-    analyzedAt: "2026-05-19",
+    analyzedAt: "2026-05-20",
   },
 
 ];
@@ -650,13 +657,13 @@ export const plumBrand: Brand = {
   slug: "plum",
   logo: "https://plumgoodness.com/cdn/shop/files/Plum_large_logo_5baa6978-8dd4-49e1-8102-c7d5f6a16585.png?v=1668486625",
   tagline: "100% vegan skincare built for real Indian skin concerns.",
-  description: "Plum Goodness is one of India's pioneering certified vegan and cruelty-free skincare brands, founded in 2013 in Thane, Maharashtra. Built on the principle that effective skincare doesn't require animal-derived ingredients, Plum has become one of the most trusted mid-market brands in India. Their formulations address core Indian skin concerns - hyperpigmentation, oiliness, and sun damage - at accessible price points. PETA-certified cruelty-free. Products contain no parabens and no synthetic fragrance in most lines, though natural fragrance allergens from botanical extracts (Rosa Damascena, Mandarin Peel) appear in several formulas.",
+  description: "Plum Goodness is one of India's pioneering certified vegan and cruelty-free skincare brands, founded in 2013 in Thane, Maharashtra. Built on the principle that effective skincare doesn't require animal-derived ingredients, Plum has become one of the most trusted mid-market brands in India. Their formulations address core Indian skin concerns - hyperpigmentation, oiliness, and sun damage - at accessible price points. PETA-certified cruelty-free. Products contain no parabens and no synthetic fragrance in most lines, though natural fragrance allergens from botanical extracts (Rosa Damascena, Mandarin Peel) appear in several formulas. Two products carry significant formulation concerns: the sunscreen contains Benzophenone-3 (ECHA Category 1 Endocrine Disruptor, 2025) and the retinol serum markets Retinyl Palmitate as '1% Retinol' - a misleading claim.",
   founded: "2013",
   headquarters: "Thane, Maharashtra, India",
   website: "https://plumgoodness.com",
   instagramHandle: "@plumgoodness",
   nykaaUrl: "https://www.nykaa.com/brands/plum/c/17558",
-  avgScore: 72,
+  avgScore: 80,
   verdict: "Good",
   products,
 };
