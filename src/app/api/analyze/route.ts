@@ -109,10 +109,10 @@ function isNavNoise(hint: string): boolean {
 
 // Try to extract a usable product name + brand from scraped content
 // so Gemini can search for the INCI on external sources.
-// Jina AI always emits a "Title: ..." line first — use that as the primary signal.
+// Jina AI always emits a "Title: ..." line first; use that as the primary signal.
 function extractProductHint(content: string): string {
   if (isBlockedPage(content)) return "";
-  // Prefer Jina's "Title:" line — it's always the exact page title, cleanest signal
+  // Prefer Jina's "Title:" line; it's always the exact page title, cleanest signal
   const titleMatch = content.match(/^Title:\s*(.+)$/m);
   if (titleMatch) return titleMatch[1].trim().slice(0, 300);
   // Fallback: first 5 non-empty lines
@@ -269,7 +269,7 @@ export async function POST(req: Request) {
       const isEcom = isEcomPlatform(q);
       const brandHint = brandHintFromURL(q);
 
-      // Build a clean InciDecoder search term using brand hint + URL slug — more specific
+      // Build a clean InciDecoder search term using brand hint + URL slug; more specific
       // than using scraped hint which may contain Jina header noise.
       const inciSearchTerm = [brandHint, slugFromURL].filter(Boolean).join(" ").trim() || slugFromURL;
       const inciDecoderSearch = `https://incidecoder.com/search?query=${encodeURIComponent(inciSearchTerm)}`;
@@ -335,25 +335,25 @@ export async function POST(req: Request) {
 
       prompt = `The user submitted a product page URL: ${urlInput}
 
-This is a beauty/personal care product page URL. You MUST produce a full scorecard — never return {"type":"out_of_scope"} for a product URL. If INCI data cannot be found after all searches, score Ingredient Disclosure & Transparency at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
+This is a beauty/personal care product page URL. You MUST produce a full scorecard. Never return {"type":"out_of_scope"} for a product URL. If INCI data cannot be found after all searches, score Ingredient Disclosure & Transparency at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
 
 MANDATORY RESEARCH — execute ALL of these searches before scoring:
 1. Identify product name and brand from scraped content below.
-2. Search InciDecoder: "[brand] [product name] site:incidecoder.com" — get the full INCI list. InciDecoder search results are also included below if available.
+2. Search InciDecoder: "[brand] [product name] site:incidecoder.com" to get the full INCI list. InciDecoder search results are also included below if available.
 3. Search brand's own website for ingredients: "[product name] ingredients site:${brandDomain}"
-4. Search Nykaa: "[brand] [product name] site:nykaa.com" — get price, rating, review count, and any INCI shown.
-5. Search Amazon India: "[brand] [product name] site:amazon.in" — get price, rating, review count, and ingredients if listed.
-6. Search Flipkart: "[brand] [product name] site:flipkart.com" — additional price/review data.
-7. Search for lab tests and certifications: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested" — also try "[brand] lab test certificate India".
+4. Search Nykaa: "[brand] [product name] site:nykaa.com" to get price, rating, review count, and any INCI shown.
+5. Search Amazon India: "[brand] [product name] site:amazon.in" to get price, rating, review count, and ingredients if listed.
+6. Search Flipkart: "[brand] [product name] site:flipkart.com" for additional price/review data.
+7. Search for lab tests and certifications: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested". Also try "[brand] lab test certificate India".
 8. Search for controversies: "[brand] [product name] India controversy banned recall CDSCO"
 
-Use ALL sources found. Combine INCI data across sources — if brand PDP shows partial INCI and InciDecoder shows full INCI, use the fuller list and note the source difference in inciSource.
+Use ALL sources found. Combine INCI data across sources: if brand PDP shows partial INCI and InciDecoder shows full INCI, use the fuller list and note the source difference in inciSource.
 
 If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests — do NOT flag as unsubstantiated merely because JavaScript-rendered PDFs are missing from the scrape.
 Only assign the "Unsubstantiated Claims" warn badge if the product uses "chemical-free" or "toxin-free" language WITHOUT any certification.
 
---- Scraped content from brand product page (partial — JS-rendered sections missing) ---
-${scrapedContext || "(scrape returned no content — rely on web search)"}
+--- Scraped content from brand product page (partial; JS-rendered sections missing) ---
+${scrapedContext || "(scrape returned no content; rely on web search)"}
 
 --- InciDecoder search results for this product ---
 ${inciDecoderContext || "(no InciDecoder results pre-fetched — search manually)"}`;
@@ -367,15 +367,15 @@ ${inciDecoderContext || "(no InciDecoder results pre-fetched — search manually
 Product: ${q}
 
 MANDATORY RESEARCH — execute ALL of these before scoring:
-1. Search Google for the product: "[product name]" — find the brand's official product page and open it.
-2. Search InciDecoder: "[product name] site:incidecoder.com" — get the full INCI ingredient list.
-3. Search Nykaa: "[product name] site:nykaa.com" — get price, rating, review count, and INCI if available.
-4. Search Amazon India: "[product name] site:amazon.in" — get price, rating, and reviews.
+1. Search Google for the product: "[product name]" to find the brand's official product page and open it.
+2. Search InciDecoder: "[product name] site:incidecoder.com" to get the full INCI ingredient list.
+3. Search Nykaa: "[product name] site:nykaa.com" to get price, rating, review count, and INCI if available.
+4. Search Amazon India: "[product name] site:amazon.in" to get price, rating, and reviews.
 5. Search Flipkart and Purplle for additional price/review data.
 6. Search for lab tests: "[brand] lab test certificate" and "[brand] clinical study".
 7. Search for controversies: "[product name] India banned recalled CDSCO controversy".
 
-Use ALL sources. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product — produce a complete scorecard JSON. Never return out_of_scope.`;
+Use ALL sources. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product; produce a complete scorecard JSON. Never return out_of_scope.`;
     }
 
     const result = await model.generateContent(prompt);
