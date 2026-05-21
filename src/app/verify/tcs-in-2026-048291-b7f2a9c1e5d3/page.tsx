@@ -55,13 +55,15 @@ function ClaimRow({ claim, status, detail }: { claim: string; status: ClaimStatu
     "not-verified": { icon: <XCircle size={16} className="text-ink-300 flex-shrink-0 mt-0.5" />, pill: "bg-ink-50 text-ink-500 border-ink-200", label: "Not verified" },
   }[status];
   return (
-    <div className="flex items-start gap-4 py-4 border-b border-teal-50/60 last:border-0">
-      {cfg.icon}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-ink-900 mb-1">{claim}</p>
-        <p className="text-xs text-ink-500 leading-relaxed">{detail}</p>
+    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 py-4 border-b border-teal-50/60 last:border-0">
+      <div className="flex items-start gap-3 flex-1 min-w-0">
+        {cfg.icon}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-ink-900 mb-1">{claim}</p>
+          <p className="text-xs text-ink-500 leading-relaxed">{detail}</p>
+        </div>
       </div>
-      <span className={`flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full border font-medium whitespace-nowrap ${cfg.pill}`}>{cfg.label}</span>
+      <span className={`text-[11px] px-2.5 py-1 rounded-full border font-medium self-start sm:flex-shrink-0 ${cfg.pill}`}>{cfg.label}</span>
     </div>
   );
 }
@@ -97,9 +99,11 @@ function Row({ label, value, pass }: { label: string; value: string; pass?: bool
     : <div className="w-3 h-3 rounded-full bg-teal-100 flex-shrink-0" />;
   return (
     <div className="flex items-start gap-3 py-3 border-b border-teal-50 last:border-0">
-      <div className="mt-0.5">{icon}</div>
-      <span className="text-xs text-ink-500 w-40 flex-shrink-0">{label}</span>
-      <span className="text-xs text-ink-800 flex-1">{value}</span>
+      <div className="mt-0.5 flex-shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] text-ink-400 leading-none mb-0.5">{label}</p>
+        <p className="text-xs text-ink-800">{value}</p>
+      </div>
     </div>
   );
 }
@@ -120,7 +124,7 @@ export default function CertificationProofPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-amber-400 text-xs font-medium">Sample Data — Verification Not Complete</span>
+            <span className="text-amber-400 text-xs font-medium">Sample Data</span>
           </div>
         </div>
       </div>
@@ -129,11 +133,11 @@ export default function CertificationProofPage() {
       <div className="bg-teal-950 pb-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-12">
 
-          {/* Sample notice */}
-          <div className="mb-6 flex items-start gap-3 bg-amber-900/30 border border-amber-700/40 rounded-2xl px-4 py-3">
-            <AlertCircle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-300/90 leading-relaxed">
-              <span className="font-semibold">Sample certification page.</span> All data on this page is illustrative and does not represent actual product data. This page demonstrates what a certified proof page would look like under The Clean Sheet standard.
+          {/* Sample notice - thin strip */}
+          <div className="mb-6 flex items-center gap-2 border-b border-amber-800/30 pb-3">
+            <AlertCircle size={12} className="text-amber-400 flex-shrink-0" />
+            <p className="text-[11px] text-amber-400/80">
+              Sample page: all data is illustrative. Not a real certification record.
             </p>
           </div>
 
@@ -141,8 +145,8 @@ export default function CertificationProofPage() {
           <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-start">
 
             {/* Product thumbnail card */}
-            <div className="flex-shrink-0 w-full sm:w-auto flex sm:flex-col items-center gap-4">
-              <div className="relative w-28 h-36 sm:w-36 sm:h-44 rounded-2xl bg-teal-900/40 border border-teal-800/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="flex-shrink-0 flex sm:flex-col items-center gap-4">
+              <div className="relative w-24 h-28 sm:w-36 sm:h-44 rounded-2xl bg-teal-900/40 border border-teal-800/40 flex items-center justify-center overflow-hidden flex-shrink-0">
                 <Image
                   src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
                   alt="CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++"
@@ -158,7 +162,7 @@ export default function CertificationProofPage() {
               </div>
               {/* Brand label */}
               <div className="sm:w-36 flex items-center gap-2 bg-white/8 border border-teal-800/40 rounded-xl px-3 py-2">
-                <div className="w-5 h-5 rounded bg-teal-700 text-white text-[8px] font-bold flex items-center justify-center flex-shrink-0">CS</div>
+                <div className="w-5 h-5 rounded bg-teal-700 text-white text-[8px] font-medium flex items-center justify-center flex-shrink-0">CS</div>
                 <div>
                   <p className="text-teal-200 text-[11px] font-medium leading-none">CodeSkin India</p>
                   <p className="text-teal-600 text-[10px]">Verified Brand</p>
@@ -188,7 +192,7 @@ export default function CertificationProofPage() {
 
               {/* Score + tier */}
               <div className="flex items-center gap-5 mb-5">
-                <ScoreRing score={86} size={88} />
+                <ScoreRing score={86} size={72} />
                 <div>
                   <p className="text-3xl font-medium text-white leading-none">86<span className="text-teal-600 text-base">/100</span></p>
                   <p className="text-teal-300 text-sm mt-1 font-medium">TCS Silver Certified</p>
@@ -229,40 +233,30 @@ export default function CertificationProofPage() {
         </div>
       </div>
 
-      {/* ── 3. Pillar score strip ─────────────────────────────── */}
-      <div className="bg-teal-900 border-y border-teal-800">
+      {/* ── 3. Pillar score tiles ─────────────────────────────── */}
+      <div className="bg-ink-50 border-y border-ink-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { name: "Ingredient Safety", score: 44, max: 50, icon: <FlaskConical size={14} /> },
-              { name: "Manufacturing", score: 16, max: 20, icon: <Building2 size={14} /> },
-              { name: "Claims", score: 18, max: 20, icon: <Shield size={14} /> },
-              { name: "Ethics", score: 8, max: 10, icon: <Leaf size={14} /> },
+              { name: "Ingredient Safety", score: 44, max: 50, icon: <FlaskConical size={14} className="text-teal-600" /> },
+              { name: "Manufacturing", score: 16, max: 20, icon: <Building2 size={14} className="text-teal-600" /> },
+              { name: "Claims", score: 18, max: 20, icon: <Shield size={14} className="text-teal-600" /> },
+              { name: "Ethics", score: 8, max: 10, icon: <Leaf size={14} className="text-teal-600" /> },
             ].map(({ name, score, max, icon }) => {
               const pct = Math.round((score / max) * 100);
               return (
-                <div key={name} className="text-center">
-                  <div className="flex items-center justify-center gap-1.5 text-teal-400 mb-2">
+                <div key={name} className="bg-white border border-ink-100 rounded-2xl p-4">
+                  <div className="flex items-center gap-1.5 mb-2">
                     {icon}
-                    <span className="text-[10px] uppercase tracking-wider">{name}</span>
+                    <span className="text-[10px] text-ink-500 uppercase tracking-wider">{name}</span>
                   </div>
-                  <div className="relative w-20 h-20 mx-auto mb-2">
-                    <svg viewBox="0 0 80 80" width="80" height="80" className="absolute inset-0">
-                      <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-                      <circle
-                        cx="40" cy="40" r="32"
-                        fill="none" stroke="#2dd4bf" strokeWidth="6"
-                        strokeDasharray={`${(pct / 100) * 2 * Math.PI * 32} ${2 * Math.PI * 32}`}
-                        strokeLinecap="round"
-                        transform="rotate(-90 40 40)"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-white text-lg font-medium leading-none">{score}</span>
-                      <span className="text-teal-500 text-[10px]">/{max}</span>
-                    </div>
+                  <p className="text-ink-900 text-lg font-medium leading-none mb-0.5">
+                    {score}<span className="text-ink-400 text-xs font-normal">/{max}</span>
+                  </p>
+                  <div className="h-1 bg-ink-100 rounded-full mt-2">
+                    <div className="h-full bg-teal-500 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="text-teal-400 text-[10px]">{pct}%</div>
+                  <p className="text-ink-400 text-[10px] mt-1.5">{pct}%</p>
                 </div>
               );
             })}
@@ -274,16 +268,14 @@ export default function CertificationProofPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-6">
 
         {/* ─ Legal Gate ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Shield size={15} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-ink-900">Requirement 1: Legal Compliance</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <Shield size={16} className="text-teal-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-ink-900">Requirement 1: Legal Compliance</h2>
               <p className="text-xs text-ink-400">Gate check - mandatory pass to proceed</p>
             </div>
-            <div className="ml-auto flex items-center gap-2 bg-teal-100 border border-teal-300 text-teal-800 text-xs font-semibold px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-2 bg-teal-100 border border-teal-300 text-teal-800 text-xs font-medium px-3 py-1.5 rounded-full flex-shrink-0">
               <CheckCircle2 size={12} /> PASSED
             </div>
           </div>
@@ -349,10 +341,10 @@ export default function CertificationProofPage() {
                       <tr key={filter} className="border-b border-teal-50 last:border-0">
                         <td className="px-4 py-3 font-medium text-ink-800 max-w-[200px]">{filter}</td>
                         <td className="px-3 py-3 text-center">
-                          <CheckCircle2 size={14} className="text-teal-500 mx-auto" />
+                          {india && <CheckCircle2 size={14} className="text-teal-500 mx-auto" />}
                         </td>
                         <td className="px-3 py-3 text-center">
-                          <CheckCircle2 size={14} className="text-teal-500 mx-auto" />
+                          {eu && <CheckCircle2 size={14} className="text-teal-500 mx-auto" />}
                         </td>
                         <td className="px-4 py-3 text-ink-500 text-[11px]">{note}</td>
                       </tr>
@@ -365,13 +357,11 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Ingredient Safety ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <FlaskConical size={15} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-ink-900">Requirement 2: Ingredient Safety</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <FlaskConical size={16} className="text-teal-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-ink-900">Requirement 2: Ingredient Safety</h2>
               <p className="text-xs text-ink-400">44/50 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
@@ -453,13 +443,11 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Manufacturing ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Building2 size={15} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-ink-900">Requirement 3: Manufacturing Quality</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <Building2 size={16} className="text-teal-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-ink-900">Requirement 3: Manufacturing Quality</h2>
               <p className="text-xs text-ink-400">16/20 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
@@ -498,13 +486,11 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Claims ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Shield size={15} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-ink-900">Requirement 4: Claims and Transparency</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <Shield size={16} className="text-teal-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-ink-900">Requirement 4: Claims and Transparency</h2>
               <p className="text-xs text-ink-400">18/20 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
@@ -598,13 +584,13 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ PRISM Sun Verified deep-dive ─ */}
-        <div className="bg-teal-950 rounded-3xl overflow-hidden">
+        <div className="bg-teal-950 rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-teal-800 flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-teal-400/20 border border-teal-400/30 flex items-center justify-center">
               <Sun size={15} className="text-teal-300" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-white">PRISM Sun Verified</h2>
+              <h2 className="text-sm font-medium text-white">PRISM Sun Verified</h2>
               <p className="text-teal-500 text-xs">Specialist sunscreen certification module</p>
             </div>
           </div>
@@ -650,13 +636,11 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Ethics ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Leaf size={15} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold text-ink-900">Requirement 5: Ethics and Sustainability</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <Leaf size={16} className="text-teal-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-sm font-medium text-ink-900">Requirement 5: Ethics and Sustainability</h2>
               <p className="text-xs text-ink-400">8/10 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
@@ -686,12 +670,10 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ What was reviewed + INCI ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <FlaskConical size={15} className="text-white" />
-            </div>
-            <h2 className="text-sm font-semibold text-ink-900">Ingredient Transparency</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <FlaskConical size={16} className="text-teal-600 flex-shrink-0" />
+            <h2 className="text-sm font-medium text-ink-900">Ingredient Transparency</h2>
           </div>
           <div className="p-6">
             <div className="grid sm:grid-cols-2 gap-6 mb-6">
@@ -745,17 +727,15 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Consumer suitability ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <Sun size={15} className="text-white" />
-            </div>
-            <h2 className="text-sm font-semibold text-ink-900">Consumer Suitability Guidance</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <Sun size={16} className="text-teal-600 flex-shrink-0" />
+            <h2 className="text-sm font-medium text-ink-900">Consumer Suitability Guidance</h2>
           </div>
           <div className="p-6">
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-teal-50 rounded-2xl p-5 border border-teal-100">
-                <p className="text-[10px] text-teal-600 uppercase tracking-widest font-semibold mb-3">May be suitable for</p>
+                <p className="text-[10px] text-teal-600 uppercase tracking-widest font-medium mb-3">May be suitable for</p>
                 <ul className="space-y-2.5">
                   {[
                     "Adults seeking daily UV protection (India and EU markets)",
@@ -772,7 +752,7 @@ export default function CertificationProofPage() {
                 </ul>
               </div>
               <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100">
-                <p className="text-[10px] text-amber-700 uppercase tracking-widest font-semibold mb-3">Use with caution if</p>
+                <p className="text-[10px] text-amber-700 uppercase tracking-widest font-medium mb-3">Use with caution if</p>
                 <ul className="space-y-2.5">
                   {[
                     "You have a known sensitivity to benzyl alcohol - check your reaction history",
@@ -795,12 +775,10 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Testing evidence ─ */}
-        <div className="bg-white rounded-3xl border border-teal-100 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-r from-teal-50 to-white border-b border-teal-100 px-6 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
-              <FlaskConical size={15} className="text-white" />
-            </div>
-            <h2 className="text-sm font-semibold text-ink-900">Testing Evidence on File</h2>
+        <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
+          <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
+            <FlaskConical size={16} className="text-teal-600 flex-shrink-0" />
+            <h2 className="text-sm font-medium text-ink-900">Testing Evidence on File</h2>
           </div>
           <div className="p-6">
             <div className="rounded-2xl border border-teal-100 overflow-x-auto">
@@ -841,9 +819,9 @@ export default function CertificationProofPage() {
         </div>
 
         {/* ─ Certification record ─ */}
-        <div className="bg-teal-950 rounded-3xl overflow-hidden">
+        <div className="bg-teal-950 rounded-2xl overflow-hidden">
           <div className="px-6 py-5 border-b border-teal-800">
-            <h2 className="text-sm font-semibold text-white">Official Certification Record</h2>
+            <h2 className="text-sm font-medium text-white">Official Certification Record</h2>
             <p className="text-teal-500 text-xs mt-0.5">All fields marked [SAMPLE] are illustrative</p>
           </div>
           <div className="p-6">
@@ -883,7 +861,7 @@ export default function CertificationProofPage() {
         <div className="text-center pt-6 border-t border-teal-100">
           <div className="flex items-center justify-center gap-2.5 mb-3">
             <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={32} height={32} className="object-contain" />
-            <span className="text-sm font-semibold text-ink-800">The Clean Sheet</span>
+            <span className="text-sm font-medium text-ink-800">The Clean Sheet</span>
           </div>
           <p className="text-xs text-ink-400 max-w-md mx-auto leading-relaxed mb-5">
             This certification was issued by The Clean Sheet. The Clean Sheet is an independent voluntary trust seal.

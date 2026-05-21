@@ -18,10 +18,12 @@ export default function ConsumerCertPage() {
       {/* Status bar */}
       <div style={{ background: "#081918", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="max-w-5xl mx-auto px-5 py-1.5 flex items-center justify-between">
-          <span className="text-teal-600 text-[9px] tracking-[0.18em] uppercase">The Clean Sheet — Independent Certification</span>
+          <span className="text-teal-600 text-[9px] tracking-[0.18em] uppercase">
+            The Clean Sheet<span className="hidden sm:inline"> · Independent Certification</span>
+          </span>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-amber-500/70 text-[9px]">Sample data</span>
+            <span className="hidden sm:inline text-amber-500/70 text-[9px]">Sample data</span>
           </div>
         </div>
       </div>
@@ -38,27 +40,47 @@ export default function ConsumerCertPage() {
             </span>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-14">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-14">
 
             <div className="flex-1 min-w-0">
               <p className="text-teal-600 text-[9px] tracking-widest uppercase mb-2 animate-fade-up">CodeSkin India</p>
 
-              <h1 className="font-medium text-white leading-none tracking-tight mb-2 animate-fade-up delay-100"
-                style={{ fontSize: "clamp(1.6rem, 4vw, 2.5rem)" }}>
-                UltraLite Fluid Sunscreen
-              </h1>
+              {/* Product name + inline image on mobile */}
+              <div className="flex flex-row items-start justify-between gap-4 lg:block">
+                <div className="flex-1 min-w-0">
+                  <h1 className="font-medium text-white leading-none tracking-tight mb-2 animate-fade-up delay-100"
+                    style={{ fontSize: "clamp(1.6rem, 4vw, 2.5rem)" }}>
+                    UltraLite Fluid Sunscreen
+                  </h1>
 
-              <p className="text-xl font-medium animate-fade-up delay-200" style={{ color: "#D6FF3E" }}>
-                SPF 50+ PA++++
-              </p>
+                  <p className="text-xl font-medium animate-fade-up delay-200" style={{ color: "#D6FF3E" }}>
+                    SPF 50+ PA++++
+                  </p>
 
-              <div className="flex flex-wrap gap-1.5 mt-4 animate-fade-up delay-300">
-                <span className="flex items-center gap-1 text-[9px] text-teal-400 border border-teal-800 px-2 py-0.5 rounded-full">
-                  <Shield size={7} /> PRISM Core
-                </span>
-                <span className="flex items-center gap-1 text-[9px] text-teal-400 border border-teal-800 px-2 py-0.5 rounded-full">
-                  <Sun size={7} /> PRISM Sun Verified
-                </span>
+                  <div className="flex flex-wrap gap-1.5 mt-4 animate-fade-up delay-300">
+                    <span className="flex items-center gap-1 text-[9px] text-teal-400 border border-teal-800 px-2 py-0.5 rounded-full">
+                      <Shield size={7} /> PRISM Core
+                    </span>
+                    <span className="flex items-center gap-1 text-[9px] text-teal-400 border border-teal-800 px-2 py-0.5 rounded-full">
+                      <Sun size={7} /> PRISM Sun Verified
+                    </span>
+                  </div>
+                </div>
+
+                {/* Product image - visible inline on mobile, hidden on lg (shown separately below) */}
+                <div className="flex-shrink-0 lg:hidden animate-fade-up delay-200">
+                  <div className="relative w-20 h-24 sm:w-28 sm:h-36 rounded-xl overflow-hidden"
+                    style={{
+                      background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
+                      boxShadow: "0 24px 48px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)"
+                    }}>
+                    <Image
+                      src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
+                      alt="CodeSkin UltraLite Fluid Sunscreen"
+                      fill className="object-contain p-2" unoptimized
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-px rounded-lg overflow-hidden animate-fade-up delay-400"
@@ -78,7 +100,8 @@ export default function ConsumerCertPage() {
               </div>
             </div>
 
-            <div className="flex-shrink-0 animate-fade-up delay-200">
+            {/* Product image - visible only on lg+ */}
+            <div className="hidden lg:block flex-shrink-0 animate-fade-up delay-200">
               <div className="animate-float relative">
                 <div className="relative w-32 h-40 rounded-xl overflow-hidden"
                   style={{
@@ -110,7 +133,7 @@ export default function ConsumerCertPage() {
               What the evidence shows
             </h2>
           </div>
-          <p className="text-ink-400 text-xs max-w-xs leading-relaxed">
+          <p className="text-ink-400 text-xs max-w-xs leading-relaxed mt-1 sm:mt-0">
             Every item below is backed by a submitted lab report, clinical study, or verified ingredient list. Nothing else appears here.
           </p>
         </div>
@@ -290,15 +313,15 @@ export default function ConsumerCertPage() {
       <footer className="bg-teal-950 py-7 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
                 <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={12} height={12} className="object-contain" />
                 <span className="text-white text-xs font-medium">The Clean Sheet</span>
               </div>
-              <p className="text-teal-800 text-[10px]">TCS-IN-2026-048291 [SAMPLE] · Valid 15 May 2026 to 14 May 2027 [SAMPLE]</p>
+              <p className="text-teal-800 text-[10px] truncate">TCS-IN-2026-048291 [SAMPLE] · Valid 15 May 2026 to 14 May 2027 [SAMPLE]</p>
             </div>
             <Link href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-              className="inline-flex items-center gap-1.5 text-teal-500 hover:text-white text-[11px] border border-teal-900 hover:border-teal-700 px-3.5 py-1.5 rounded-lg transition-colors">
+              className="inline-flex items-center gap-1.5 text-teal-500 hover:text-white text-[11px] border border-teal-900 hover:border-teal-700 px-3.5 py-1.5 rounded-lg transition-colors flex-shrink-0">
               View full technical certification <ArrowUpRight size={10} />
             </Link>
           </div>
