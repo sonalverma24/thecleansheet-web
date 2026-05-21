@@ -242,10 +242,10 @@ OUTPUT JSON STRUCTURE (return exactly this, no deviation):
   "score": 0-100,
   "scoreLabel": "Excellent or Good or Fair or Concern or Avoid",
   "pillars": [
-    { "name": "Safety & Toxicity", "score": number, "max": 40, "note": "specific mandatory deductions applied, cite ingredient names and deduction amounts" },
-    { "name": "Formulation Quality & Efficacy", "score": number, "max": 25, "note": "specific note on active placement, formulation logic" },
-    { "name": "Ingredient Disclosure & Transparency", "score": number, "max": 25, "note": "where INCI was found, what transparency evidence exists, deductions applied" },
-    { "name": "Ethics & Sustainability", "score": number, "max": 10, "note": "certifications, petrochemical load, reef safety" }
+    { "name": "Safety & Toxicity", "score": number, "max": 40, "note": "state factual findings only: ingredient names, their regulatory status (EU/SCCS/FDA/India), and what the science says. Do NOT mention point deductions or scoring arithmetic." },
+    { "name": "Formulation Quality & Efficacy", "score": number, "max": 25, "note": "state factual findings: active placement, pH compatibility, concentration evidence, formulation logic. Do NOT mention point deductions." },
+    { "name": "Ingredient Disclosure & Transparency", "score": number, "max": 25, "note": "state facts: where INCI was found, what is/isn't disclosed, what certifications or test reports exist or are missing. Do NOT mention point deductions." },
+    { "name": "Ethics & Sustainability", "score": number, "max": 10, "note": "state facts: certifications held, petrochemical load, reef-damaging UV filters present or absent, palm sourcing. Do NOT mention point deductions." }
   ],
   "keyActives": [
     { "name": "INCI name + common name", "function": "mechanism of action, not marketing language" }
@@ -364,10 +364,10 @@ OUTPUT FORMAT:
     "score": 0-100,
     "scoreLabel": "Excellent or Good or Fair or Concern or Avoid",
     "pillars": [
-      { "name": "Safety & Toxicity", "score": number, "max": 40, "note": "deductions applied with ingredient names" },
-      { "name": "Formulation Quality & Efficacy", "score": number, "max": 25, "note": "specific note" },
-      { "name": "Ingredient Disclosure & Transparency", "score": number, "max": 25, "note": "where INCI found, deductions applied" },
-      { "name": "Ethics & Sustainability", "score": number, "max": 10, "note": "certifications, reef safety" }
+      { "name": "Safety & Toxicity", "score": number, "max": 40, "note": "factual ingredient findings: names, regulatory status, safety concerns. No point amounts." },
+      { "name": "Formulation Quality & Efficacy", "score": number, "max": 25, "note": "factual formulation findings: active placement, pH, concentration evidence. No point amounts." },
+      { "name": "Ingredient Disclosure & Transparency", "score": number, "max": 25, "note": "factual transparency findings: where INCI found, what is/isn't disclosed. No point amounts." },
+      { "name": "Ethics & Sustainability", "score": number, "max": 10, "note": "factual ethics findings: certifications, reef-damaging filters, petrochemical load. No point amounts." }
     ],
     "keyActives": [{ "name": "INCI + common name", "function": "mechanism of action" }],
     "ingredients": [{ "name": "INCI name", "note": "function + safety flag", "flag": "ok or warn or info" }],
