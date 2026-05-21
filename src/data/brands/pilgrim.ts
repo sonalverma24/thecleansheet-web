@@ -38,22 +38,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 40, max: 40,
-        note: "All ingredients compliant under India CDSCO, EU Regulation 1223/2009, and US FDA 21 CFR. No restricted or prohibited substances detected. No Parfum, no parabens, no UV filters of concern. Sodium Hydroxide at final INCI position is a pH adjuster only. Phenoxyethanol at position 14 is within EU/India 1% limit. Carbomer is a synthetic polymer with low concern at cosmetic use concentrations. Clean safety profile.",
+        note: "Every ingredient in this serum is compliant under India (CDSCO), EU Regulation 1223/2009, and US FDA 21 CFR. There is no synthetic fragrance, no parabens, and no UV filters with active regulatory concerns. Sodium Hydroxide appears at the very end of the INCI list, which means it is present only in trace amounts as a pH adjuster. Phenoxyethanol is a standard preservative permitted up to 1% under both EU and Indian regulations. Carbomer is a widely used polymer gel-former with a well-established safety record at cosmetic concentrations.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 23, max: 25,
-        note: "Multi-weight HA strategy is well-evidenced: high-MW HA (Sodium Hyaluronate) forms a surface film for immediate plumping; low-MW (Hydrolyzed Hyaluronic Acid) penetrates to upper dermis; Sodium Acetylated Hyaluronate (third-generation HA) is lipophilically modified for superior skin affinity and prolonged retention. Glycerin at position 4 is a meaningful humectant concentration. Panthenol for barrier repair. Centella Asiatica Extract adds soothing actives at functional positions. Individual HA fractions and molecular weights are not independently published beyond the stated 2% total.",
+        note: "Using three forms of hyaluronic acid together is a well-thought-out hydration strategy. High-molecular-weight Sodium Hyaluronate sits at the surface and forms a film that locks in moisture immediately. Low-molecular-weight Hydrolyzed Hyaluronic Acid is small enough to reach the upper dermis, providing deeper hydration. Sodium Acetylated Hyaluronate is a third-generation HA with a lipid modification that gives it superior affinity for skin and helps it stay there longer. Glycerin appears early in the INCI list, meaning it is present at a meaningful hydrating concentration. Panthenol (pro-vitamin B5) helps repair the skin barrier. Centella Asiatica Extract contributes soothing compounds that benefit barrier-compromised skin. The brand does not publish the individual proportions of each HA fraction beyond the total 2% figure.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "INCI disclosed on brand PDP (discoverpilgrim.com). Brand states 2% Hyaluronic Acid, which is above effective hydration thresholds. Individual HA fractions and molecular weights not disclosed separately. No active concentration ranges for supporting ingredients (Centella, Panthenol, Allantoin) disclosed. No clinical study PDFs published for this formula. No 'dermatologist tested' or 'clinically proven' claims identified on PDP at time of analysis.",
+        note: "The full ingredient list is published on the brand's product page. Pilgrim confirms 2% Hyaluronic Acid, which is a meaningful and well-dosed concentration for hydration. The individual molecular weight fractions of the three HA types are not broken out separately, and the concentrations of supporting ingredients such as Centella Asiatica, Panthenol, and Allantoin are not disclosed. No clinical study data has been published for this specific formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 8, max: 10,
-        note: "PETA-certified cruelty-free (+2). Vegan formulation (+1). Not sold in China or other mandatory animal-testing markets. Indian brand. No synthetic fragrance, no azo dyes. Minor deduction: Carbomer and Hydroxyethylcellulose are synthetic-derived polymers with non-zero COSMOS concern. RSPO palm derivative sourcing not independently verified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free and the formula is vegan. The brand does not sell into markets that require mandatory animal testing. There is no synthetic fragrance and no azo dyes. Carbomer and Hydroxyethylcellulose are synthetic-origin polymers, which means they cannot qualify for natural certifications such as COSMOS. Palm derivative sourcing is not independently verified against standards such as RSPO.",
       },
     ],
     keyActives: [
@@ -108,22 +108,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 38, max: 40,
-        note: "All ingredients compliant under India, EU, and US regulations. Kojic Acid is EU-permitted in face care at up to 1% (SCCS 2021). Alpha Arbutin is the glycosylated form of hydroquinone but does not share hydroquinone's regulatory restrictions at cosmetic concentrations. Sodium Ascorbyl Phosphate is a well-tolerated stable vitamin C derivative. Kojic Acid can cause irritation on compromised or reactive barriers at undisclosed concentrations; EU SCCS opinion notes irritation potential that brand does not explicitly flag for sensitive skin users.",
+        note: "All ingredients are compliant under Indian, EU, and US regulations. Kojic Acid is a tyrosinase inhibitor permitted in face care products in the EU at up to 1% (SCCS 2021 opinion). Alpha Arbutin is the glycosylated form of hydroquinone, but unlike hydroquinone it does not carry the same regulatory restrictions at cosmetic use concentrations. Sodium Ascorbyl Phosphate is a stable vitamin C precursor with a well-established tolerability record. Kojic Acid can cause irritation on reactive or compromised skin, particularly at undisclosed concentrations. The EU SCCS has noted its irritation potential, but Pilgrim does not explicitly advise sensitive-skin users to patch test.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Four-mechanism brightening formula is well-evidenced. Niacinamide at position 2 (brand-confirmed 10%) inhibits melanosome transfer. Kojic Acid inhibits tyrosinase. Alpha Arbutin provides additional tyrosinase inhibition via a different binding pathway. Sodium Ascorbyl Phosphate reduces already-formed melanin. Ferulic Acid at mid-INCI position provides antioxidant stabilisation. Multi-mechanism approach reduces risk of tolerance to any single brightener. Kojic Acid and Tranexamic Acid concentrations are not published; if sub-functional, the multi-mechanism claim weakens.",
+        note: "This formula attacks hyperpigmentation from four different directions, which is a sound approach because it reduces the likelihood that skin will adapt to any single ingredient. Niacinamide (brand-confirmed at 10%) blocks the transfer of melanin from pigment-producing cells into skin cells. Kojic Acid suppresses melanin production at the enzyme level by inhibiting tyrosinase. Alpha Arbutin also inhibits tyrosinase but via a different binding mechanism, providing complementary coverage. Sodium Ascorbyl Phosphate helps reduce melanin that has already formed. Ferulic Acid provides antioxidant support. The concentrations of Kojic Acid and Tranexamic Acid are not published; if either is at a sub-functional level, the multi-mechanism claim would be weaker in practice than it appears on paper.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "INCI disclosed on brand PDP. Brand confirms Niacinamide at 10%. Kojic Acid concentration not published despite its regulatory sensitivity (EU max 1%). Alpha Arbutin, Ferulic Acid, and Tranexamic Acid concentrations undisclosed. No third-party clinical study PDFs published for this formula. No 'dermatologist tested' or 'clinically proven' claims identified on PDP.",
+        note: "The full INCI list is published on the product page, and Niacinamide is confirmed at 10%. Kojic Acid concentration is not disclosed - this matters because the EU caps Kojic Acid in leave-on face products at 1% (SCCS 2021), and knowing the concentration helps consumers gauge both safety and efficacy. Alpha Arbutin, Ferulic Acid, and Tranexamic Acid concentrations are also not disclosed. No third-party clinical study data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 8, max: 10,
-        note: "PETA-certified cruelty-free (+2). Vegan formulation (+1). Indian brand, not sold in mandatory-testing markets. No fragrance or synthetic dyes. Kojic Acid is a fermentation byproduct (Aspergillus flavus), naturally derived origin. Synthetic polymer (Carbomer) present. RSPO sourcing unverified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free and the formula is vegan. The brand does not sell into markets that require mandatory animal testing. There is no synthetic fragrance and no azo dyes. Kojic Acid is produced through fermentation by Aspergillus flavus, giving it a naturally derived origin. Carbomer is a synthetic polymer. Palm derivative sourcing has not been independently verified against RSPO or equivalent standards.",
       },
     ],
     keyActives: [
@@ -179,22 +179,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 34, max: 40,
-        note: "No Parfum, no banned UV filters, no parabens. Salicylic Acid at 2% is at the EU maximum for leave-on cosmetics (Annex III limit), requiring careful pH calibration to avoid over-exfoliation. Tea Tree Leaf Oil (Melaleuca Alternifolia) in a leave-on format: SCCS 2015 opinion flagged sensitisation potential from terpene oxidation products; EU industry guidance recommends rinse-off preference or concentration limits for leave-on use; no concentration disclosed by brand.",
+        note: "There is no synthetic fragrance, no banned UV filters, and no parabens. Salicylic Acid at 2% is the EU maximum permitted for leave-on cosmetics (Annex III), requiring the formula to be carefully pH-calibrated to avoid over-exfoliation. Tea Tree Leaf Oil (Melaleuca Alternifolia) is the ingredient requiring most attention here: a 2015 SCCS opinion identified a sensitisation risk from oxidised terpene byproducts that form when the oil is exposed to air. EU guidance recommends either rinse-off use or strict concentration limits for leave-on formats. Pilgrim does not disclose the Tea Tree Oil concentration, which makes it impossible to assess this risk independently.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 21, max: 25,
-        note: "Salicylic Acid at 2% is the globally validated concentration for comedolytic activity. Niacinamide provides anti-inflammatory benefit and mild sebum regulation. Zinc PCA is an evidence-backed antimicrobial and sebum-regulating zinc complex. Tea Tree Oil adds an antimicrobial dimension but INCI position analysis cannot confirm a safe and effective concentration. Centella Asiatica Extract aids barrier integrity post-exfoliation. Niacinamide at 3% is below the 5-10% range with the strongest sebum-regulation evidence.",
+        note: "Salicylic Acid at 2% is the globally validated concentration for dissolving comedones and exfoliating inside pore walls, making it the right dose for an oil-control serum. Niacinamide at 3% adds anti-inflammatory benefit and mild sebum regulation, though the strongest evidence for sebum control sits in the 5-10% range. Zinc PCA is a well-evidenced antimicrobial and sebum-regulating zinc compound. Tea Tree Oil brings an antimicrobial dimension, but without a disclosed concentration it is not possible to confirm whether it sits within a safe and effective range for leave-on use. Centella Asiatica Extract supports barrier integrity in the aftermath of BHA exfoliation.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 18, max: 25,
-        note: "INCI disclosed on brand PDP. Salicylic Acid confirmed at 2%, Niacinamide at 3% by brand. Tea Tree Oil concentration not disclosed, a material gap given sensitisation concerns for leave-on use where risk is concentration-dependent. No clinical study data published. Zinc PCA and Centella concentrations undisclosed. No 'dermatologist tested' or 'clinically proven' claims identified on PDP.",
+        note: "The full INCI list is published on the product page. Salicylic Acid is confirmed at 2% and Niacinamide at 3%. Tea Tree Oil concentration is not disclosed - this is a meaningful gap because the sensitisation risk from oxidised terpenes in a leave-on format is concentration-dependent; consumers with reactive skin cannot assess their personal risk without this information. Zinc PCA and Centella Asiatica concentrations are also not disclosed. No clinical study data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "PETA-certified cruelty-free (+2). Vegan formulation (+1). Indian brand, not sold in mandatory-testing markets. No synthetic fragrance, no azo dyes. Tea Tree Oil is a natural-origin ingredient but can oxidise over time if packaging is not airtight. RSPO sourcing unverified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free and the formula is vegan. The brand does not sell into markets that require mandatory animal testing. There is no synthetic fragrance and no azo dyes. Tea Tree Oil is naturally derived but oxidises over time if packaging is not airtight, forming the terpene compounds responsible for sensitisation. Palm derivative sourcing has not been independently verified against RSPO or equivalent standards.",
       },
     ],
     keyActives: [
@@ -249,22 +249,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 28, max: 40,
-        note: "Primary concern: Citrus Aurantium Bergamia Fruit Oil (Bergamot) contains bergapten, a furanocoumarin phototoxin. EU Annex III restricts bergapten to 0.0015% in leave-on sun-exposed products. Bergamot oil without documented bergapten removal (FCF) is a phototoxicity and sensitisation risk in a leave-on brightening serum marketed for skin illumination. Citrus Limon Peel Oil carries similar phototoxic furanocoumarin content, compounding the risk. Brand does not disclose whether FCF (bergapten-free) variants are used, nor flag any sun-avoidance requirement on PDP at time of analysis.",
+        note: "The primary safety concern with this serum is the inclusion of Citrus Aurantium Bergamia Fruit Oil (Bergamot) and Citrus Limon Peel Oil. Bergamot oil contains bergapten, a furanocoumarin that is phototoxic when skin is subsequently exposed to UV light - it can cause burns, blistering, and lasting hyperpigmentation. The EU limits bergapten to 0.0015% in leave-on products used on sun-exposed skin (Annex III). A bergapten-free (FCF) version of Bergamot oil exists, but Pilgrim does not state whether they use it. Lemon Peel Oil carries similar furanocoumarin content, compounding the risk. Neither the sun-avoidance guidance nor the FCF status is communicated on the product page.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 21, max: 25,
-        note: "EAA at 15% is a well-designed stable vitamin C format that does not require anhydrous or low-pH packaging. Ferulic Acid enhances antioxidant activity and stabilises EAA. Tocopherol (vitamin E) adds additional free-radical quenching. Sodium Hyaluronate and Panthenol provide hydration support. Niacinamide adds brightening synergy. The citrus oils are inconsistent with the brightening philosophy: furanocoumarins can induce pigmentation under UV exposure, counteracting the formula's primary goal.",
+        note: "Ethyl Ascorbic Acid (EAA) at 15% is a good choice for a stable vitamin C serum. Unlike L-Ascorbic Acid, it does not require low-pH or anhydrous packaging to remain active - it converts to ascorbic acid after skin absorption. Ferulic Acid enhances antioxidant activity and helps stabilise EAA. Tocopherol (vitamin E) adds further free-radical protection. Sodium Hyaluronate and Panthenol provide hydration support. Niacinamide contributes additional brightening. The formulation concern is the citrus oils: furanocoumarins in Bergamot and Lemon Peel Oil can trigger pigmentation under UV exposure, which directly works against the serum's brightening purpose.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "INCI disclosed on brand PDP. EAA confirmed at 15% by brand. Brand does not disclose whether Bergamot Oil is bergapten-free (FCF), a material transparency gap for a leave-on product containing a known photosensitiser. No clinical study data published. Ferulic Acid and Tocopherol concentrations undisclosed. No 'dermatologist tested' or 'clinically proven' claims identified.",
+        note: "The full INCI list is published on the product page. Ethyl Ascorbic Acid is confirmed at 15%. The brand does not state whether Bergamot Oil is in its bergapten-free (FCF) form - this is a meaningful gap, because without that confirmation consumers cannot know whether the oil has been processed to remove the phototoxic furanocoumarin. No clinical study data has been published for this formula. Ferulic Acid and Tocopherol concentrations are not disclosed.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "PETA-certified cruelty-free (+2). Vegan formulation (+1). Indian brand, not sold in mandatory-testing markets. Citrus essential oils are natural-origin but introduce a safety concern and are not COSMOS-certified quality. No synthetic fragrance compounds beyond citrus essential oils. RSPO sourcing unverified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free and the formula is vegan. The brand does not sell into markets that require mandatory animal testing. The citrus essential oils are natural-origin but they introduce the phototoxicity concern described above - natural origin does not equal safe in every context. No synthetic fragrance compounds are added beyond the citrus oils themselves. Palm derivative sourcing has not been independently verified against RSPO or equivalent standards.",
       },
     ],
     keyActives: [
@@ -318,22 +318,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 36, max: 40,
-        note: "This serum contains no Parfum. CI 16035 (Allura Red, azo dye) is EU-approved for cosmetic use but is a known contact allergen in sensitised individuals. In a leave-on product with no functional role for the dye, inclusion increases sensitisation risk without benefit. Retinyl Palmitate is a mild retinoid ester; significantly less potent than retinol or retinoic acid, with correspondingly low irritation risk. Phenoxyethanol within 1% limit. Retinyl Palmitate photodegradation on UV-exposed skin is a recognised concern not flagged by brand.",
+        note: "There is no synthetic fragrance in this serum. CI 16035 (Allura Red AC / Red 40) is an azo dye approved for cosmetic use in the EU, but it is a known contact allergen for some individuals. In a leave-on anti-ageing serum it serves only as a colourant with no skin benefit - its inclusion increases sensitisation risk without adding anything useful. Retinyl Palmitate is a mild retinoid ester that carries a much lower irritation risk than retinol, but it is also considerably less effective because it must undergo two enzymatic conversions before reaching its active retinoic acid form. There is also a recognised concern about Retinyl Palmitate generating reactive oxygen species when skin is exposed to UV light, which Pilgrim does not address in product communications.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 19, max: 25,
-        note: "Resveratrol is a polyphenol with in-vitro evidence for antioxidant and anti-ageing signalling (SIRT1 pathway activation). Vitis Vinifera Seed Extract provides proanthocyanidin antioxidant support. Niacinamide at a supporting position adds barrier and anti-inflammatory benefit. Retinyl Palmitate must undergo two esterase conversions in skin before reaching active retinoic acid form, making it substantially less effective than retinol at equivalent position, a meaningful efficacy gap for an 'anti-ageing' product. CI 16035 has no formulation function.",
+        note: "Resveratrol is a polyphenol with in-vitro evidence for antioxidant activity and anti-ageing signalling via the SIRT1 pathway. Vitis Vinifera Seed Extract provides proanthocyanidin antioxidant support from grape seeds. Niacinamide contributes barrier repair and anti-inflammatory benefit at a supporting concentration. Retinyl Palmitate is the weakest form of vitamin A used in skincare - it must be converted by enzymes in the skin through two intermediate steps before reaching the active retinoic acid form, which makes it substantially less effective than retinol at an equivalent position in the formula. For a product marketed as an anti-ageing serum, this is a meaningful efficacy gap. CI 16035 adds colour and nothing else.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "INCI disclosed on brand PDP. Active concentrations for Resveratrol, Grape Seed Extract, Niacinamide, and Retinyl Palmitate not disclosed. Brand does not identify CI 16035 as a cosmetic colourant serving no functional role. No distinction made between Retinyl Palmitate (ester) and Retinol in marketing, though these are not equivalent in efficacy. No clinical study data published. No 'dermatologist tested' or 'clinically proven' claims identified.",
+        note: "The full INCI list is published on the product page. Active concentrations for Resveratrol, Grape Seed Extract, Niacinamide, and Retinyl Palmitate are not disclosed. CI 16035 is not identified on the product page as a cosmetic dye serving no skin function. The marketing does not distinguish between Retinyl Palmitate (a retinoid ester) and Retinol - these are not the same ingredient and do not deliver the same results, but a consumer reading the product description would not know that. No clinical study data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "PETA-certified cruelty-free (+2). Vegan formulation (+1). Indian brand, not sold in mandatory-testing markets. No synthetic Parfum. CI 16035 is a synthetic azo dye with no natural-origin path (-1). Grape-derived ingredients from Vitis Vinifera offer a high natural origin index contribution. RSPO sourcing unverified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free and the formula is vegan. The brand does not sell into markets that require mandatory animal testing. There is no synthetic fragrance. CI 16035 is a synthetic azo dye with no natural origin. Grape-derived ingredients (Vitis Vinifera Seed Extract, Resveratrol) raise the natural origin proportion of the formula meaningfully. Palm derivative sourcing has not been independently verified against RSPO or equivalent standards.",
       },
     ],
     keyActives: [
@@ -388,22 +388,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 22, max: 40,
-        note: "Parfum (synthetic fragrance) is present in a leave-on retinol night product with 8+ hours of skin contact. Undisclosed fragrance allergens amplify sensitisation and irritation risk, particularly compounded with retinol's effect on skin permeability. EU Annex III requires individual fragrance allergens above 0.001% to be named in leave-on products; 'Parfum' as a single entry is non-compliant with that disclosure requirement. CI 16035 (Allura Red azo dye) and CI 45380 (fluorescein derivative dye) are leave-on contact allergens with no functional benefit in a skin-treatment night product. Retinol concentration not disclosed; sub-functional retinol (<0.025%) would make the retinoid labelling misleading. Dimethicone and Cetearyl Alcohol are safe. Phenoxyethanol within 1% limit.",
+        note: "Parfum (synthetic fragrance blend) is present in a leave-on retinol product that sits on skin for 8 or more hours overnight. Retinol increases skin permeability, which means fragrance allergens penetrate more deeply and remain in contact with skin longer than in a rinse-off or fragrance-free product. Parfum is a single entry that can contain hundreds of individual compounds; EU Regulation 1223/2009 Annex III requires that individual fragrance allergens present above 0.001% in leave-on products be named separately. Listing only 'Parfum' does not meet that disclosure standard. CI 16035 (Allura Red azo dye) and CI 45380 (a fluorescein derivative dye) are both contact allergens with no therapeutic function in a retinol night treatment. The retinol concentration is not disclosed; below about 0.025%, retinol is generally considered sub-functional, which would make the retinoid claim difficult to substantiate. Dimethicone and Cetearyl Alcohol are well-tolerated emollients with no safety concerns.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 13, max: 25,
-        note: "Retinol is the most evidence-backed retinoid for collagen stimulation, wrinkle reduction, and epidermal turnover. The gel-creme vehicle with Cetearyl Alcohol and Cetearyl Glucoside provides appropriate emollient support for overnight use. Dimethicone adds occlusion. The undisclosed retinol concentration is a material quality gap: sub-functional retinol renders the retinoid labelling meaningless. Parfum introduces an inflammatory risk that counteracts retinol's benefit over overnight contact. Dual cosmetic dyes add no formulation function.",
+        note: "Retinol is the most robustly evidenced retinoid for stimulating collagen, reducing fine lines, and accelerating cell turnover. The gel-creme base with Cetearyl Alcohol, Cetearyl Glucoside, and Dimethicone provides suitable emollient and occlusive support for overnight use. The undisclosed retinol concentration is a significant gap: without knowing the dose, there is no way to assess whether the retinoid is present at a level that can deliver the anti-ageing results the product claims. Parfum introduces an inflammatory risk that compounds over the full overnight contact period, working against the skin renewal retinol is intended to support. The two azo dyes add no formulation benefit.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 9, max: 25,
-        note: "INCI disclosed on brand PDP. Retinol concentration not disclosed, which is a critical gap as consumers cannot assess the dose of the central active. Parfum listed without breakdown of component allergens as required by EU Regulation 1223/2009 Annex III for leave-on products. Two azo dyes present with no functional explanation in product marketing. Brand does not flag pregnancy contraindication for a retinoid-containing product. No clinical study data published.",
+        note: "The full INCI list is published on the product page. Retinol concentration is not disclosed - this is the most important number in this product, and without it consumers cannot judge whether the retinoid is present at a dose that does anything meaningful. Parfum is listed as a single entry without a breakdown of individual allergen components, which does not meet the EU Regulation 1223/2009 Annex III requirement for named allergen disclosure in leave-on products. The two azo dyes are present with no explanation of their role in product marketing. The product does not carry a pregnancy warning, despite containing a retinoid ingredient - retinoids are universally contraindicated during pregnancy. No clinical study data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 5, max: 10,
-        note: "PETA-certified cruelty-free. Indian brand, not sold in mandatory-testing markets. Parfum and two synthetic dyes reduce natural origin index significantly; all three are on the COSMOS prohibited ingredients list. Dimethicone (silicone) is COSMOS-prohibited for natural certifications. Not vegan-verified due to ingredient complexity.",
+        note: "Pilgrim is PETA-certified cruelty-free. The brand does not sell into markets that require mandatory animal testing. Parfum and two synthetic azo dyes all appear on the COSMOS prohibited ingredients list, meaning this product would not qualify for any natural cosmetics certification. Dimethicone (silicone) is similarly COSMOS-prohibited. The formula has not been verified as vegan due to ingredient complexity.",
       },
     ],
     keyActives: [
@@ -457,22 +457,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 33, max: 40,
-        note: "No Parfum, no endocrine-disrupting UV filters, no restricted preservatives. This product is a rinse-off treatment. Glycolic Acid at 25% is a high cosmetic concentration; EU Annex III permits up to 10% AHA in leave-on and up to 30% in professional-grade rinse-off products with appropriate pH and contact time instructions. Brand does not disclose pH, which is the critical safety parameter at this AHA concentration. Salicylic Acid at 2% is compliant for rinse-off treatment use. Gluconolactone at 5% is well-tolerated. Phenoxyethanol within 1% limit. Niacinamide and Panthenol help offset peel-related inflammation. Without disclosed pH and contact time, this product could approach clinical peel territory.",
+        note: "There is no synthetic fragrance, no endocrine-disrupting UV filters, and no restricted preservatives. This product is a rinse-off treatment, not a leave-on. Glycolic Acid at 25% is a high concentration: the EU permits up to 10% AHA in leave-on cosmetics and up to 30% in professional-grade rinse-off products with appropriate safety controls. The critical number that determines whether this product behaves as a cosmetic exfoliant or approaches a clinical peel is the pH - and Pilgrim does not publish it. At 25% AHA, a very low pH (below 3.0) can cause significant barrier disruption. Salicylic Acid at 2% is compliant for rinse-off treatment use. Gluconolactone at 5% is gentle and well-tolerated. Niacinamide and Panthenol help moderate post-peel inflammation. Without a disclosed pH and recommended contact time, users have limited information to calibrate safe use.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 20, max: 25,
-        note: "Multi-acid strategy is well-designed: Glycolic Acid provides deep AHA exfoliation and collagen stimulation; Lactic Acid adds hydrating AHA benefit with slightly larger molecular weight; Salicylic Acid penetrates sebaceous follicles for pore-level exfoliation; Gluconolactone acts at the surface with soothing properties. Niacinamide at a supporting position reduces post-peel redness. Aloe Barbadensis Leaf Juice and Panthenol support barrier recovery. pH is undisclosed, a formulation quality gap at 25% AHA. Individual AHA components and their proportions are not quantified.",
+        note: "The combination of three acid types is well-designed. Glycolic Acid has the smallest molecule of all AHAs and penetrates deepest, stimulating collagen and renewing the surface. Lactic Acid is larger and gentler, with the added benefit of drawing moisture into the skin alongside exfoliation. Salicylic Acid is oil-soluble, so it works inside the pore rather than just at the surface. Gluconolactone is the mildest of the group - a polyhydroxy acid that exfoliates at the surface while also providing soothing and humectant properties. Niacinamide reduces post-peel redness. Aloe and Panthenol support barrier recovery. The formula pH is not disclosed, which is a meaningful gap at this AHA concentration - pH is what determines how aggressively the acids behave on skin. The individual proportions of Glycolic and Lactic Acid within the 25% AHA total are also not specified.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 15, max: 25,
-        note: "INCI disclosed on brand PDP. AHA (25%), BHA (2%), and PHA (5%) percentages confirmed by brand. Formula pH not disclosed, a critical safety parameter for any product with AHA above 10% and the most material disclosure gap in this product. Individual AHA components (Glycolic vs Lactic split and respective percentages) not specified. Maximum contact time not stated on brand PDP at time of analysis. No clinical study data published.",
+        note: "The full INCI list is published on the product page. AHA (25%), BHA (2%), and PHA (5%) percentages are confirmed by the brand. However, the formula pH is not disclosed - this is the single most important safety parameter for any product with AHA above 10%, and its absence makes independent risk assessment impossible for consumers. The individual split between Glycolic and Lactic Acid within the 25% AHA total is not specified. A recommended maximum contact time is not stated on the product page. No clinical study data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 6, max: 10,
-        note: "PETA-certified cruelty-free (+2). Indian brand, not sold in mandatory-testing markets. No fragrance or synthetic dyes - appropriate for a high-acid treatment. Dipropylene Glycol is a synthetic solvent. RSPO sourcing unverified (-1). Packaging sustainability not disclosed (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free. The brand does not sell into markets that require mandatory animal testing. There is no fragrance and no synthetic dyes, which is the right choice for a high-acid treatment targeting compromised skin. Dipropylene Glycol is a synthetic solvent. Palm derivative sourcing has not been independently verified, and packaging sustainability is not disclosed.",
       },
     ],
     keyActives: [
@@ -524,22 +524,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 31, max: 40,
-        note: "Ethylhexyl Methoxycinnamate (Octinoxate) in leave-on sunscreen: FDA 2019 proposed rule found insufficient GRASE evidence due to measurable systemic absorption and estrogenic activity in in-vitro and in-vivo studies. EU SCCS re-confirmed safety at current limits, but the FDA divergence is a legitimate scientific signal. Octocrylene in leave-on: well-characterised safety profile but minor benzophenone degradation product concern under prolonged UV and aquatic toxicity concern. Avobenzone is photostabilised by Octocrylene. Titanium Dioxide mineral component is safe. Cyclopentasiloxane (volatile silicone) is under EU environmental review. Phenoxyethanol within 1% limit.",
+        note: "Ethylhexyl Methoxycinnamate (Octinoxate) is the dominant UV filter in this sunscreen. In 2019, the FDA proposed that Octinoxate be classified as Category III (insufficient safety data) following studies showing measurable systemic absorption and estrogenic activity in in-vitro and in-vivo models. The EU SCCS re-confirmed its safety at current permitted concentrations, but the FDA's ongoing safety review is a legitimate scientific signal that many consumers may wish to take into account. Octinoxate is also banned in Hawaii and several marine-protected zones due to coral reef toxicity. Octocrylene is a well-characterised UV filter and photostabiliser for Avobenzone; it has a minor concern from benzophenone degradation products under prolonged UV exposure, and is also flagged for aquatic toxicity. Titanium Dioxide is the safest and most environmentally neutral filter in this formula. Cyclopentasiloxane, a volatile silicone, is under EU environmental review for aquatic persistence.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Hybrid chemical-mineral UV filter system provides broad-spectrum coverage. Octocrylene photostabilises Avobenzone, preventing UVA filter degradation over sun exposure time. Titanium Dioxide adds a physical scatter component. Niacinamide at 2% provides anti-inflammatory and mild brightening support in a daily SPF context, though 2% is below the 5-10% range with the strongest brightening evidence. Sodium Hyaluronate and Tocopheryl Acetate provide hydration and antioxidant support. Dimethicone and Cyclopentasiloxane provide the lightweight, non-greasy texture appropriate for Indian daily SPF use. SPF 50+ PA+++ indicates adequate UVA protection testing performed.",
+        note: "The hybrid chemical-mineral filter system provides broad-spectrum coverage. Octocrylene photostabilises Avobenzone, preventing the UVA filter from degrading in sunlight over the course of the day - this is an important formulation feature. Titanium Dioxide adds a physical scatter component. Niacinamide at 2% provides anti-inflammatory and mild brightening support in a daily SPF context; the 5-10% range has stronger evidence for significant brightening, so 2% is a supportive rather than transformative dose. Sodium Hyaluronate and Tocopheryl Acetate add hydration and antioxidant support. The silicone base (Dimethicone and Cyclopentasiloxane) gives the texture its lightweight, non-greasy feel - a practical advantage for daily wear. SPF 50+ PA+++ indicates adequate UVA protection testing has been performed.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 18, max: 25,
-        note: "INCI disclosed on brand PDP. Niacinamide at 2% disclosed by brand. SPF 50+ PA+++ claimed but no published test report or ISO 24444/24443 data available on brand website. Octinoxate concentration not disclosed despite being the primary UV filter. FDA endocrine safety concern for Octinoxate not acknowledged in product communications. No 'dermatologist tested' or 'clinically proven' claims identified on PDP.",
+        note: "The full INCI list is published on the product page. Niacinamide at 2% is disclosed. SPF 50+ PA+++ is claimed, but no published test report or ISO 24444/24443 testing data is accessible on the brand website - without a publicly available SPF test, consumers cannot independently verify the stated sun protection level. Octinoxate concentration is not disclosed despite being the primary UV filter in the formula. The FDA's ongoing endocrine safety review for Octinoxate is not mentioned in any product communications.",
       },
       {
         name: "Ethics & Sustainability",
         score: 6, max: 10,
-        note: "PETA-certified cruelty-free (+2). Indian brand, not sold in mandatory-testing markets. No synthetic Parfum or azo dyes. Cyclopentasiloxane is a volatile silicone under EU environmental review for aquatic persistence. Octinoxate is a documented marine ecosystem disruptor (Hawaii, Palau ban) - not reef-safe, no reef-safe ethics bonus. Titanium Dioxide is the most environmentally neutral UV filter. RSPO sourcing unverified (-1).",
+        note: "Pilgrim is PETA-certified cruelty-free. The brand does not sell into markets that require mandatory animal testing. There is no synthetic fragrance and no azo dyes. Cyclopentasiloxane is a volatile silicone currently under EU environmental review for aquatic persistence. Octinoxate is a documented marine ecosystem toxin - it has been banned from sunscreens in Hawaii, Palau, and other marine-protected jurisdictions specifically for its role in coral reef damage. This product cannot be described as reef-safe. Titanium Dioxide is the most environmentally neutral filter in the formula. Palm derivative sourcing has not been independently verified.",
       },
     ],
     keyActives: [

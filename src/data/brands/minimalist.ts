@@ -34,22 +34,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 36, max: 40,
-        note: "All ingredients compliant under India, EU, and US regulations. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers. Dimethyl Isosorbide at position 3 is an approved penetration enhancer that increases transdermal delivery of all co-formulated actives - minor systemic absorption amplification concern. PEG/PPG-17/6 Copolymer is a single PEG compound. No allergens or restricted substances detected. Niacinamide at 10% can cause transient niacin flush in rare hypersensitive individuals.",
+        note: "All ingredients comply with India, EU, and US cosmetics regulations. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no restricted substances. Dimethyl Isosorbide appears early in the list as a penetration enhancer: it improves how deeply niacinamide and co-formulated actives travel into skin, which is largely responsible for this formula's efficacy edge over basic niacinamide serums. A minor consequence is that it also increases absorption of everything else in the formula — worth knowing if you are stacking multiple active serums. No fragrance allergens detected. At 10%, niacinamide can cause a brief, harmless flushing sensation in a small number of people on first use — this is a niacin response, not an allergy, and usually resolves within minutes.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Niacinamide at INCI position 2 (brand-confirmed 10%) is well above effective thresholds for pore minimising, sebum regulation, and PIH reduction. Dual-zinc system (Zinc PCA + Zinc Glycinate) provides meaningful sebum-regulating and antimicrobial support. Dimethyl Isosorbide improves efficacy at the cost of slightly increased systemic exposure. Actives-first formula design is validated by INCI position analysis; supporting actives beyond niacinamide are concentration-unconfirmed.",
+        note: "Niacinamide appears immediately after water in the ingredient list, consistent with the brand's stated 10% concentration. At this level it is well above the threshold needed to reduce sebum production, minimise pore appearance, and fade post-inflammatory hyperpigmentation. A dual-zinc system — Zinc PCA and Zinc Glycinate — adds antimicrobial and anti-inflammatory support relevant for acne-prone skin. The penetration enhancer Dimethyl Isosorbide helps these actives reach deeper skin layers more effectively. This is a treatment serum first: glycerin appears much later in the list, indicating hydration is secondary to actives delivery, which is the right design choice for its purpose.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 20, max: 25,
-        note: "Complete INCI publicly disclosed on beminimalist.co. Niacinamide 10% brand-confirmed. Dual-zinc concentrations not disclosed (industry standard). No 'dermatologist tested' or 'clinically proven' unsubstantiated claims. No third-party clinical PDFs published for this specific formula.",
+        note: "The full ingredient list is publicly available on beminimalist.co and the 10% niacinamide concentration is confirmed by the brand. The two zinc compounds are present but their individual concentrations are not disclosed, which is standard practice across the industry for supporting actives. No unsubstantiated claims such as 'dermatologist tested' or 'clinically proven' are made. No third-party clinical trial reports have been published for this specific formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes, no synthetic sensitisers. Indian brand, not in mandatory-testing markets. Biodegradable chelators (no EDTA). Minimalist packaging approach. RSPO palm derivative sourcing not independently verified (-1 baseline). No silicone dominance, no petrochemical-heavy base.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance, no synthetic dyes, no sensitising additives. Indian brand with no presence in markets that require mandatory animal testing. Uses biodegradable chelating agents rather than EDTA. Minimalist, no-frills packaging means less material waste. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -111,22 +111,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 37, max: 40,
-        note: "3-O-Ethyl Ascorbic Acid is extensively studied with a strong safety record. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no restricted UV filters. Centella Asiatica base is inherently anti-inflammatory, actively buffers active-heavy formulations. Gluconolactone (PHA) at position 8 is the gentlest exfoliant class, suitable even for rosacea-prone skin. Dimethyl Isosorbide at position 3 increases delivery of EAA into the dermis - minor systemic absorption note. Citric Acid at position 9 is at pH-adjuster trace levels, not a functional exfoliant.",
+        note: "3-O-Ethyl Ascorbic Acid has an extensive safety record and is stable across pH ranges unlike pure L-ascorbic acid. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no restricted UV filters. The base solvent here is Centella Asiatica leaf extract rather than plain water — Centella is inherently anti-inflammatory, making it a smart choice in an actives-forward formula. Gluconolactone, a polyhydroxy acid (PHA), provides the gentlest exfoliation class available and is considered appropriate even for rosacea-prone skin. Dimethyl Isosorbide, appearing early in the list, increases how deeply the vitamin C and other actives penetrate the skin — a useful design choice, with the minor trade-off of slightly greater systemic absorption of everything in the formula. Citric Acid appears near the end of the list and is acting as a pH adjuster here, not as a functional exfoliant.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 23, max: 25,
-        note: "EAA at position 2 (10% confirmed) in a Centella Asiatica base is an excellent design: stable across pH ranges, anti-inflammatory buffer included, PHA exfoliant synergy at position 8. Two forms of HA (standard at position 11, hydrolyzed lower-MW at position 14) address different skin depths. Acetyl Glucosamine (1%, confirmed) adds brightening synergy. Dimethyl Isosorbide at position 3 enhances EAA delivery. pH of formula not disclosed, which is relevant for EAA optimal pH range.",
+        note: "The vitamin C form used here — 3-O-Ethyl Ascorbic Acid at a confirmed 10% — is stable across a wider pH range than pure L-ascorbic acid, which matters for shelf life in Indian heat. It appears second in the ingredient list after the Centella Asiatica base, confirming high concentration. Gluconolactone at position 8 adds gentle exfoliation that helps vitamin C work more effectively at the skin surface. Two forms of hyaluronic acid (standard and hydrolysed lower molecular weight) are included, addressing different depths of the skin. Acetyl Glucosamine at 1% (brand-confirmed) adds an extra brightening mechanism by inhibiting melanin synthesis. The formula pH has not been disclosed by the brand, which is worth noting since EAA has an optimal activity range.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 20, max: 25,
-        note: "Complete INCI publicly available on beminimalist.co. EAA 10% and Acetyl Glucosamine 1% brand-confirmed. Brand notes '86% pure vitamin C equivalent' - useful but slightly marketing-adjacent framing. No 'dermatologist tested' or 'clinically proven' claims. No third-party clinical PDFs published. pH of formula not disclosed.",
+        note: "The full ingredient list is available on beminimalist.co. Both the 10% 3-O-Ethyl Ascorbic Acid and 1% Acetyl Glucosamine concentrations are confirmed by the brand. The '86% pure vitamin C equivalent' framing on marketing materials is technically meaningful but leans towards promotional language. No claims such as 'dermatologist tested' or 'clinically proven' are made for this formula. No third-party clinical reports have been published. The formula pH is not publicly disclosed.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes, no synthetic sensitisers. Trisodium Ethylenediamine Disuccinate (biodegradable chelator) used instead of EDTA. Indian brand, not in mandatory-testing markets. Minimalist packaging. RSPO unverified (-1 baseline). No petrochemical-heavy base.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or dyes. Uses Trisodium Ethylenediamine Disuccinate — a biodegradable chelating agent — instead of EDTA. Indian brand with no presence in mandatory animal-testing markets. Minimalist packaging. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -187,22 +187,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 35, max: 40,
-        note: "Salicylic Acid at 2% is the EU and India OTC maximum. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers. Glycolic Acid appears at INCI position 5 (before Salicylic Acid at position 7), indicating a meaningful co-acid concentration that the brand does not explicitly disclose, making this a dual-acid formula at undisclosed combined acid load. Propylene Glycol at position 3 is present at a significant concentration. No fragrance allergens. The dual-acid combination can cause meaningful dryness and barrier disruption in sensitive, eczema-prone, or already-compromised skin.",
+        note: "Salicylic Acid at 2% is the maximum concentration permitted for leave-on cosmetic use in both the EU and India. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no fragrance allergens. Glycolic Acid, an AHA, appears at position 5 in the ingredient list — before Salicylic Acid at position 7. This positioning indicates the formula contains a meaningful concentration of glycolic acid that the brand does not explicitly state, making this a dual-acid product rather than a single-BHA serum. This is important: combined acid load increases the risk of dryness, skin barrier disruption, and irritation, particularly for sensitive, eczema-prone, or already-compromised skin. This serum is not suitable for beginners without a gradual introduction.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 21, max: 25,
-        note: "Salicylic Acid (2% confirmed) is oil-soluble and pore-penetrating, correctly positioned for blackhead and comedone clearance. Glycolic Acid at position 5 adds surface keratolytic action, improving texture and SA penetration synergy. Polylysine (position 12) is an evidence-backed natural antimicrobial peptide targeting C. acnes. EGCG (position 14) provides antioxidant protection. Glycolic Acid percentage and formula pH are both undisclosed.",
+        note: "Salicylic Acid is oil-soluble, which allows it to penetrate into sebum-blocked pores — the mechanism that makes BHAs effective for blackheads and comedones. Glycolic Acid at position 5 adds a surface keratolytic effect, improving skin texture and helping salicylic acid penetrate more effectively. Polylysine, a natural fermentation-derived antimicrobial peptide, targets Cutibacterium acnes bacteria. EGCG (Epigallocatechin Gallatyl Glucoside) from green tea provides antioxidant and anti-inflammatory support. The glycolic acid concentration and formula pH are both undisclosed — the pH is particularly relevant because both acids perform best within a specific low-pH window.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "Full INCI available on beminimalist.co. SA 2% confirmed. Glycolic Acid concentration not disclosed, a meaningful omission given its functional INCI position. No pH disclosure, which is critical information for a dual-acid formula. No 'dermatologist tested' or 'clinically proven' unsubstantiated claims. No clinical PDFs published.",
+        note: "The full ingredient list is available on beminimalist.co and Salicylic Acid at 2% is brand-confirmed. However, Glycolic Acid appears at a functionally meaningful position in the list without any concentration disclosed — a significant gap given this makes the formula a dual-acid product. The formula pH is also not disclosed, which is material information for any acid-based product. No unsubstantiated marketing claims are made. No third-party clinical data has been published.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes. Indian brand. Biodegradable chelators. Minimalist packaging. RSPO unverified (-1 baseline). No petrochemical-heavy base.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or dyes. Indian brand with no presence in mandatory animal-testing markets. Uses biodegradable chelating agents. Minimalist packaging. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -266,22 +266,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 37, max: 40,
-        note: "Alpha Arbutin (2%) has a strong safety record. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers. 4-Butylresorcinol at position 9 is a potent tyrosinase inhibitor permitted in EU and India at cosmetic use concentrations; some in-vitro cytotoxicity data exists at higher concentrations, but at trace position 9 the risk is low. Dimethyl Isosorbide at position 2 (dominant carrier) significantly enhances transdermal penetration of all actives - minor systemic absorption amplification note. No fragrance, no AHAs, no alcohols, no dyes. Very clean irritation profile. PEG-40 Hydrogenated Castor Oil and PEG/PPG-17/6 Copolymer are 2 PEG compounds in total.",
+        note: "Alpha Arbutin at 2% has a well-established safety record. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no AHAs, no synthetic alcohols, no dyes — one of the cleaner irritation profiles in this product range. 4-Butylresorcinol, appearing later in the list, is a potent tyrosinase inhibitor permitted in both the EU and India at cosmetic use concentrations. Some laboratory studies have noted cytotoxicity at high concentrations, but the trace amount present here is well within the safe range. Dimethyl Isosorbide appears near the top of the ingredient list, indicating it is a dominant component: it acts as a penetration enhancer, driving actives deeper into the skin and amplifying their effectiveness. This also slightly increases systemic absorption of everything in the formula — worth knowing when stacking multiple actives.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Dual tyrosinase inhibition - Alpha Arbutin (2%) + 4-Butylresorcinol - is evidence-backed and more potent than single-active brightening. DMI at position 2 maximises active delivery. Ferulic Acid (position 7) stabilises Alpha Arbutin. Two HA forms (standard + hydrolyzed lower-MW) address multiple skin depths. PEG-40 Hydrogenated Castor Oil (position 6) is necessary to solubilise oil-soluble actives in this water-based formula. Ferulic acid and 4-butylresorcinol percentages are not disclosed.",
+        note: "Using two tyrosinase inhibitors simultaneously — Alpha Arbutin (2%, confirmed) and 4-Butylresorcinol — is more effective than either alone, because they work through complementary mechanisms to block melanin production. Dimethyl Isosorbide appears very high in the list, acting as the dominant delivery vehicle and maximising how effectively these actives reach the melanocytes where they need to act. Ferulic Acid helps stabilise Alpha Arbutin in the formula. Two forms of hyaluronic acid (standard molecular weight and hydrolysed lower molecular weight) address hydration at different skin depths. The concentrations of Ferulic Acid and 4-Butylresorcinol are not disclosed by the brand.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 20, max: 25,
-        note: "Complete INCI available on beminimalist.co. Alpha Arbutin 2% confirmed. 4-Butylresorcinol presence acknowledged on brand page but concentration not stated (industry standard for this ingredient). Ferulic Acid percentage not disclosed. Brand names the dual-active approach on the website, a commendable transparency step. No 'dermatologist tested' or 'clinically proven' unsubstantiated claims. No clinical PDFs published.",
+        note: "The full ingredient list is on beminimalist.co and Alpha Arbutin at 2% is brand-confirmed. The brand acknowledges 4-Butylresorcinol on the product page, which is a commendable transparency step — most brands do not call out supporting actives by name. The concentrations of Ferulic Acid and 4-Butylresorcinol are not disclosed, which is typical industry practice for secondary actives. No unsubstantiated marketing claims are made. No third-party clinical data has been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 7, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes, no silicones in this product. No mica. Biodegradable chelators. Indian brand. Minimalist packaging. RSPO unverified (-1 baseline). No petrochemical-heavy base.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance, no dyes, no silicones. Uses biodegradable chelating agents rather than EDTA. Indian brand with no presence in mandatory animal-testing markets. Minimalist packaging. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -339,22 +339,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 34, max: 40,
-        note: "Retinol at 0.3% aligns with EU Commission Recommendation 2022/2149 guideline limit for face leave-on products. Retinol causes retinoid-associated irritation (retinisation: dryness, peeling, redness) in the first weeks, particularly for retinol-naive skin. Not safe for use during pregnancy due to teratogenicity risk. Bakuchiol at position 7 provides some anti-inflammatory buffering. Anhydrous format eliminates need for aqueous preservatives; no phenoxyethanol is present. BHT at trace final position is within EU and India permitted limits as antioxidant stabiliser. No synthetic fragrance, no parabens, no SLES, no restricted UV filters.",
+        note: "Retinol at 0.3% aligns with the EU Commission Recommendation 2022/2149 guideline for face leave-on products. All Vitamin A derivatives — including retinol — carry a pregnancy contraindication due to teratogenicity risk: do not use during pregnancy or if trying to conceive. Retinol also causes a predictable adjustment period in new users, typically involving some dryness, peeling, or redness in the first few weeks. This is normal and resolves as the skin adapts, but starting slowly is strongly advised. Bakuchiol at position 7 provides some anti-inflammatory buffering that may ease the transition. The water-free (anhydrous) formula means no aqueous preservatives like phenoxyethanol are needed. BHT at the very end of the list is present as an antioxidant stabiliser to protect retinol from degrading in the bottle — it is within permitted limits under both EU and Indian regulations. No synthetic fragrance, no parabens, no SLES.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Completely anhydrous formula maximises retinol stability - retinol degrades rapidly in the presence of water and light. No phenoxyethanol present in this anhydrous formula. Lipid vehicle (Caprylic/Capric Triglyceride, Squalane, Coco-Caprylate/Caprate) is optimal for retinol bioavailability. Bakuchiol (1%, confirmed) has published clinical evidence for anti-wrinkle synergy (Dhaliwal et al., British Journal of Dermatology, 2019). Ubiquinone (CoQ10) adds antioxidant anti-ageing support. UV-protective amber packaging is essential and present. No published photostability testing data for this formula.",
+        note: "The entirely water-free formula is one of the most important choices here: retinol breaks down rapidly when exposed to water or light. Formulating in a pure lipid base — Caprylic/Capric Triglyceride, Squalane, and Coco-Caprylate/Caprate — keeps retinol stable and also improves how well it is absorbed. Bakuchiol at 1% (confirmed) has published clinical evidence as a retinol synergist: a 2019 study by Dhaliwal et al. in the British Journal of Dermatology found it comparable to retinol for reducing fine lines with fewer side effects. Ubiquinone (Coenzyme Q10) adds antioxidant anti-ageing support. The UV-protective amber packaging is not decorative — retinol degrades quickly in clear bottles. No photostability testing data has been published for this specific formula.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 20, max: 25,
-        note: "Full INCI (11 ingredients) available on beminimalist.co. Retinol 0.3% and Bakuchiol 1% disclosed. UV-protective packaging highlighted by brand. Pregnancy contraindication communicated on packaging. No clinical trial PDFs for this specific formula published. No 'dermatologist tested' or 'clinically proven' unsubstantiated claims. BHT use not specifically called out in consumer-facing materials.",
+        note: "The full 11-ingredient list is available on beminimalist.co. Both Retinol at 0.3% and Bakuchiol at 1% are confirmed by the brand. The pregnancy contraindication is communicated on packaging. No unsubstantiated marketing claims are made. BHT's role as a retinol stabiliser is not specifically explained in consumer-facing materials. No third-party clinical trial reports have been published for this formula.",
       },
       {
         name: "Ethics & Sustainability",
         score: 8, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes. Minimal 11-ingredient formula - lower environmental processing footprint. Amber packaging is functional (not decorative). Indian brand. RSPO unverified (-1 baseline). Bakuchiol is plant-derived (Psoralea corylifolia), renewable sourcing (+1 positive offset for a natural alternative to synthetic retinol synergists). No petrochemical-heavy base; squalane and triglycerides are plant-derived.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or dyes. Only 11 ingredients, which means less processing and a smaller environmental footprint than complex formulas. Amber packaging serves a functional purpose and is not decorative waste. Bakuchiol is plant-derived from Psoralea corylifolia — a renewable alternative to synthetic retinol synergists. Squalane and triglycerides are plant-derived. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -405,22 +405,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 31, max: 40,
-        note: "32% total acid load at pH 3.4-3.8. At this pH range, AHAs exist predominantly in their free-acid (undissociated) form, which gives maximum exfoliation activity but also maximum irritation and barrier disruption potential. No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers. Glycolic Acid at position 2 confirms it as the dominant ingredient at high concentration. EU guidance (SCCS/1816/17) recommends professional supervision for AHA leave-on products above 10% at pH below 3.5; at pH 3.4 (lower end of range), this product approaches that guidance boundary. Significant post-peel photosensitivity at this acid concentration is a relevant safety variable for Indian skin. Weekly use only.",
+        note: "This peel contains 32% total acid load at a disclosed pH of 3.4-3.8. At this pH range, AHAs are predominantly in their free acid (undissociated) form, which delivers maximum exfoliation but also maximum potential for irritation and barrier disruption. Glycolic Acid appears second in the ingredient list, confirming it is the dominant ingredient at high concentration. EU scientific guidance (SCCS/1816/17) recommends professional supervision for AHA leave-on products above 10% at pH below 3.5 — at pH 3.4, the lower end of this product's stated range, it sits at the edge of that guidance boundary. This peel is intended for weekly use only. Post-application photosensitivity is significant at this acid load — applying SPF the morning after use is not optional. Not suitable for sensitive, eczema-prone, or barrier-compromised skin.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Multi-acid synergy is evidence-backed: Glycolic Acid (smallest AHA, deepest penetration) + Mandelic Acid (larger molecule, gentler surface exfoliation) + Gluconolactone (PHA, antioxidant exfoliant) + Salicylic Acid (BHA, pore-clearing). Turmeric root extract (position 17) provides curcumin-based anti-inflammatory post-peel support. pH disclosed (3.4-3.8), which is rare and valuable for a high-potency formula. Sodium Hyaluronate offsets drying during acid action. Breakdown of AHA subtypes within the 25% total is not disclosed.",
+        note: "The multi-acid approach here covers different exfoliation mechanisms: Glycolic Acid has the smallest molecule of the AHAs and penetrates deepest; Mandelic Acid (a larger AHA molecule) works more gently at the surface; Gluconolactone (PHA) provides the gentlest exfoliation class along with antioxidant benefit; Salicylic Acid (BHA) is oil-soluble and pore-clearing. Turmeric root extract later in the list provides curcumin-based anti-inflammatory support during the post-peel phase. The fact that the brand has disclosed both the acid percentages and the formula pH range is unusually transparent for an OTC product of this potency. Sodium Hyaluronate in the formula helps offset the drying effects of the acid blend. The individual proportions of glycolic, lactic, and mandelic acid within the 25% AHA total are not broken down.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 22, max: 25,
-        note: "All acid percentages disclosed (AHA 25%, PHA 5%, BHA 2%) and pH range disclosed (3.4-3.8), which is exemplary transparency for an OTC high-potency formula. Full INCI available on beminimalist.co. Clear usage frequency warnings on packaging. Breakdown of AHA subtypes (Glycolic vs Lactic vs Mandelic proportions within the 25% AHA total) not disclosed.",
+        note: "The brand discloses all three acid percentages (AHA 25%, PHA 5%, BHA 2%) as well as the formula pH range (3.4-3.8) — this level of transparency is genuinely rare for an OTC high-potency product and is commendable. The full ingredient list is available on beminimalist.co. Clear warnings about usage frequency appear on packaging. The one gap is that the proportions of glycolic, lactic, and mandelic acid within the 25% AHA total are not individually specified.",
       },
       {
         name: "Ethics & Sustainability",
         score: 8, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. No fragrance, no dyes. Indian brand. Minimalist packaging. Biodegradable chelators. RSPO unverified (-1 baseline). No petrochemical-heavy base.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or dyes. Indian brand with no presence in mandatory animal-testing markets. Minimalist packaging. Uses biodegradable chelating agents. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
@@ -481,22 +481,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 35, max: 40,
-        note: "Octocrylene in leave-on sunscreen: documented aquatic toxicity; 2020 Manova et al. study identifies benzophenone generation on skin from Octocrylene at prolonged daily application. No Benzophenone-3/Oxybenzone present. No Ethylhexyl Methoxycinnamate/Octinoxate present. No Homosalate present. Avobenzone is well-established and safe; photostabilised by Titanium Dioxide and Ethylhexyl Triazone in this formula. No synthetic fragrance. Retinol at position 16 in a daytime product: UV filters within formula provide protection, but some dermatologists prefer night-only retinol use. PA++++ tested formulation confirms robust UVA protection.",
+        note: "Octocrylene, the primary UV filter in this formula, has documented aquatic toxicity and a 2020 study by Manova et al. identified that it can generate benzophenone on skin during prolonged daily use — benzophenone is a potential endocrine disruptor. This is not a reason to avoid sunscreen, but it is worth being aware of for daily full-body or prolonged application contexts. Importantly, this formula contains no Oxybenzone (Benzophenone-3), no Octinoxate, and no Homosalate. Avobenzone (Butyl Methoxydibenzoylmethane) provides UVA coverage and is photostabilised by Titanium Dioxide and Ethylhexyl Triazone in this formula. Retinol appears at position 16: some dermatologists prefer keeping retinol to night-only use, though the UV filters in this formula do provide a degree of protection for the retinol itself. The PA++++ rating has been tested and confirms strong UVA protection.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 21, max: 25,
-        note: "Three UV filter mechanism approach - UVB (Octocrylene), UVA (Avobenzone + Ethylhexyl Triazone), Physical (TiO2) - provides good broad-spectrum coverage with photostability. Avobenzone is photostabilised by Titanium Dioxide and Ethylhexyl Triazone. Niacinamide at position 5 indicates meaningful anti-inflammatory benefit. Hydroxyethyl Acrylate polymer at position 26 provides water resistance. Retinol and Panthenol at positions 16-17 are at concentrations likely insufficient for full anti-ageing clinical effect in a sunscreen context, but contribute antioxidant benefit.",
+        note: "This formula uses three UV filter mechanisms together: Octocrylene for UVB absorption, Avobenzone plus Ethylhexyl Triazone for UVA coverage, and Titanium Dioxide as a physical broad-spectrum filter that also photostabilises Avobenzone. Together they provide good broad-spectrum protection with reduced photodegradation risk. Niacinamide appears early in the list, indicating a meaningful concentration — its anti-inflammatory action helps reduce post-UV skin darkening. The water-resistant polymer (Hydroxyethyl Acrylate copolymer) helps the formula hold up with perspiration. Retinol and Panthenol later in the list contribute antioxidant and barrier-supportive benefit, though at concentrations in a sunscreen vehicle they are unlikely to deliver the same efficacy as a dedicated night serum.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 19, max: 25,
-        note: "SPF 50 claimed but no published SPF test report identified. Full INCI available on beminimalist.co. SPF 50 and PA++++ disclosed. All UV filter identities listed. Vitamin active concentrations (niacinamide, retinol, panthenol) not disclosed. No 'clinically proven' unsubstantiated claim. Retinol-in-daytime use noted on packaging, though more detailed consumer guidance would be beneficial.",
+        note: "The full ingredient list is available on beminimalist.co and all UV filter identities are disclosed. SPF 50 and PA++++ are stated but no published test reports are accessible on the brand website. The concentrations of niacinamide, retinol, and panthenol are not disclosed. The presence of retinol in a daytime product is noted on packaging, but more detailed guidance on how to use the retinol-daytime combination responsibly would be helpful for consumers.",
       },
       {
         name: "Ethics & Sustainability",
         score: 9, max: 10,
-        note: "Cruelty-free (PETA certified) +2. Vegan formulation +1. Reef-safe UV filters: no Oxybenzone and no Ethylhexyl Methoxycinnamate/Octinoxate present +1 (Octocrylene has separate environmental concerns but does not trigger the oxybenzone/octinoxate reef-safe deduction). No fragrance, no synthetic dyes. Indian brand, not in mandatory-testing markets. Biodegradable chelators. No mica. RSPO unverified (-0 within band). Plastic packaging (-0 within band).",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or synthetic dyes. No Oxybenzone, no Octinoxate — both are banned in marine-protected zones due to coral reef toxicity. Octocrylene has its own aquatic toxicity profile but differs from the oxybenzone and octinoxate marine harm pathway. Indian brand with no presence in mandatory animal-testing markets. Uses biodegradable chelating agents. No mica.",
       },
     ],
     keyActives: [
@@ -568,22 +568,22 @@ const products: ProductScorecard[] = [
       {
         name: "Safety & Toxicity",
         score: 37, max: 40,
-        note: "No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no restricted UV filters. Cyclopentasiloxane (D5 silicone) at INCI position 2 is the second major component. EU restricts D5 to <0.1% in wash-off products (EU Regulation 2018/1513) due to persistence in aquatic environments; the leave-on restriction is not yet in force and human health risk is low per SCCS opinion. Panthenol at 10% has an excellent safety record with near-zero sensitisation potential. Copper Gluconate (position 10) is safe at cosmetic trace concentrations. PEG/PPG-18/18 Dimethicone is a single PEG-silicone emulsifier. No fragrance, no acids, no retinoids.",
+        note: "No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no acids, no retinoids. Panthenol at 10% is one of the most well-tolerated cosmetic ingredients available — sensitisation risk is near zero at any concentration. The second major ingredient in this formula is Cyclopentasiloxane (D5), a volatile cyclic silicone. The EU has restricted D5 to below 0.1% in wash-off products due to its persistence in aquatic environments (EU Regulation 2018/1513), but the equivalent restriction for leave-on products is not yet in force. Human health risk at cosmetic concentrations is considered low by the SCCS (Scientific Committee on Consumer Safety). Copper Gluconate, present later in the list as a trace antioxidant, is well within safe cosmetic concentrations. PEG/PPG-18/18 Dimethicone is a silicone-based emulsifier present as a single compound.",
       },
       {
         name: "Formulation Quality & Efficacy",
         score: 22, max: 25,
-        note: "Panthenol at 10% (position 3, brand-confirmed from BASF Germany D-Panthenol USP) is a proven wound-healing and barrier-repair agent at a therapeutically significant concentration. Aquaxyl complex (Seppic-patented prebiotic moisture reinforcement) at positions 12-14 is a clinically studied ingredient. Mineral antioxidant trio (Copper Gluconate, Zinc Gluconate, Magnesium Aspartate) provides free-radical scavenging support. Silicone vehicle creates a non-occlusive protective film appropriate for use over active serums. Concentration of Aquaxyl and mineral actives not disclosed.",
+        note: "Panthenol at 10% is a genuinely therapeutic concentration — clinical studies support its use for wound healing, barrier repair, and moisture retention. The brand confirms the source as D-Panthenol USP grade from BASF Germany, which is a meaningful supply chain transparency note. The Aquaxyl complex (Xylitylglucoside, Anhydroxylitol, and Xylitol — a Seppic-patented prebiotic moisture system) has published clinical evidence for moisture reinforcement. A mineral antioxidant trio of Copper Gluconate, Zinc Gluconate, and Magnesium Aspartate provides free-radical scavenging support. The silicone base creates a protective film over the skin that is appropriate for layering over active serums. Concentrations of the Aquaxyl complex and mineral actives are not disclosed.",
       },
       {
         name: "Ingredient Disclosure & Transparency",
         score: 21, max: 25,
-        note: "Complete INCI available on beminimalist.co. Panthenol 10% brand-confirmed and BASF sourcing disclosed, which is notable supply chain transparency. Aquaxyl complex ingredients INCI-named individually rather than as a proprietary blend. Cyclopentasiloxane (D5) content at position 2 not specifically called out or explained in consumer-facing materials. No 'dermatologist tested' or 'clinically proven' unsubstantiated claims. No clinical PDFs published.",
+        note: "The full ingredient list is on beminimalist.co. Panthenol at 10% is brand-confirmed and the BASF Germany sourcing is explicitly stated — this level of supply chain disclosure is unusual and positive. The Aquaxyl complex components are listed individually by their INCI names rather than under a proprietary blend name. Cyclopentasiloxane (D5) appears as the second major ingredient in the formula but is not specifically explained in consumer-facing materials. No unsubstantiated claims are made. No third-party clinical data has been published.",
       },
       {
         name: "Ethics & Sustainability",
         score: 3, max: 10,
-        note: "Cruelty-free (PETA certified). Vegan formulation. Cyclopentasiloxane (D5) at position 2 is the dominant second ingredient and is a persistent aquatic pollutant with EU environmental restrictions. No fragrance, no dyes. Indian brand. Biodegradable chelators. Minimalist packaging. RSPO palm derivative sourcing not independently verified.",
+        note: "PETA-certified cruelty-free. Vegan. No synthetic fragrance or dyes. Indian brand with no presence in mandatory animal-testing markets. Uses biodegradable chelating agents. Cyclopentasiloxane (D5) is the second-largest ingredient in this formula by proportion, and it is a persistent environmental pollutant with documented aquatic accumulation — this is the primary environmental concern with this product. Independent verification of sustainable sourcing for palm-derived ingredients has not been confirmed.",
       },
     ],
     keyActives: [
