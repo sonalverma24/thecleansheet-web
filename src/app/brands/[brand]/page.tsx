@@ -58,7 +58,7 @@ function ScoreRing({ score, size = 72 }: { score: number; size?: number }) {
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`} />
         <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
           {score}
         </text>
       </svg>
@@ -89,7 +89,7 @@ function ProductScoreRing({ score, size = 56 }: { score: number; size?: number }
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`} />
         <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
           {score}
         </text>
       </svg>
@@ -227,7 +227,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
         <div className="mt-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-medium text-ink-950">Scored Products</h2>
-            <span className="text-xs text-ink-400 font-mono">{brand.products.length} products</span>
+            <span className="text-xs text-ink-400 font-sans">{brand.products.length} products</span>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
@@ -252,8 +252,8 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
                           <ProductScoreRing score={product.score} size={40} />
                         </div>
                         {/* Verdict badge */}
-                        <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5">
-                          <span className={`text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full border ${pc.bg} ${pc.text} ${pc.border}`}>
+                        <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 max-w-[45%]">
+                          <span className={`block truncate text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full border ${pc.bg} ${pc.text} ${pc.border}`}>
                             {product.scoreLabel}
                           </span>
                         </div>
@@ -269,18 +269,18 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
                         {/* Badges */}
                         <div className="mb-2 sm:mb-3 flex-1">
                           {product.pass_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <span key={b} className="inline-block mr-1 mb-1 font-sans text-[8px] sm:text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1 sm:px-1.5 py-0.5 rounded max-w-full truncate">
                               {b}
                             </span>
                           ))}
                           {product.warn_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <span key={b} className="inline-block mr-1 mb-1 font-sans text-[8px] sm:text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded max-w-full truncate">
                               {b}
                             </span>
                           ))}
                           {/* Show second pass badge only on larger screens */}
                           {product.pass_badges.slice(1, 2).map((b) => (
-                            <span key={b} className="hidden sm:inline-block mr-1 mb-1 font-mono text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded whitespace-nowrap">
+                            <span key={b} className="hidden sm:inline-block mr-1 mb-1 font-sans text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded max-w-full truncate">
                               {b}
                             </span>
                           ))}

@@ -38,7 +38,7 @@ function CleanMeter({ score }: { score: number }) {
   return (
     <div className="w-full mt-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] text-ink-400 uppercase tracking-wider font-mono">Clean Meter</span>
+        <span className="text-[10px] text-ink-400 uppercase tracking-wider font-sans">Clean Meter</span>
         <span className={`text-xs font-medium ${c.text}`}>{score}/100</span>
       </div>
       {/* Track */}
@@ -55,11 +55,11 @@ function CleanMeter({ score }: { score: number }) {
       </div>
       {/* Scale labels */}
       <div className="flex justify-between mt-1.5">
-        <span className="text-[9px] text-ink-300 font-mono">0</span>
-        <span className="text-[9px] text-ink-300 font-mono" style={{ marginLeft: "calc(50% - 8px)" }}>50</span>
-        <span className="text-[9px] text-ink-300 font-mono" style={{ marginLeft: "calc(20% - 6px)" }}>70</span>
-        <span className="text-[9px] text-ink-300 font-mono" style={{ marginLeft: "calc(20% - 6px)" }}>90</span>
-        <span className="text-[9px] text-ink-300 font-mono">100</span>
+        <span className="text-[9px] text-ink-300 font-sans">0</span>
+        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(50% - 8px)" }}>50</span>
+        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(20% - 6px)" }}>70</span>
+        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(20% - 6px)" }}>90</span>
+        <span className="text-[9px] text-ink-300 font-sans">100</span>
       </div>
     </div>
   );
@@ -91,7 +91,7 @@ function HeroRing({ score, size }: { score: number; size: number }) {
           style={{ animation: "drawArc 1.4s cubic-bezier(0.4,0,0.2,1) forwards" }}
         />
         <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 1.0} fontWeight={700} fill="#fff" fontFamily="monospace">
+        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 1.0} fontWeight={700} fill="#fff" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
           {score}
         </text>
       </svg>
@@ -183,7 +183,7 @@ export default function BrandsPage() {
                   <div key={label} className="flex items-center gap-1.5 bg-white/8 border border-white/10 rounded-full px-3 py-1.5">
                     <span className={`w-2 h-2 rounded-full ${color}`} />
                     <span className="text-white/70 text-xs">{label}</span>
-                    <span className="text-white/35 text-xs font-mono">{range}</span>
+                    <span className="text-white/35 text-xs font-sans">{range}</span>
                   </div>
                 ))}
               </div>
@@ -200,12 +200,12 @@ export default function BrandsPage() {
                 <div className="absolute -top-3 -left-8 bg-white/10 border border-white/15 backdrop-blur-sm rounded-2xl px-3 py-2 text-center"
                   style={{ animation: "fadeUp 0.7s 0.6s ease-out both" }}>
                   <div className="text-teal-300 text-[10px] uppercase tracking-wider mb-0.5">Products</div>
-                  <div className="text-white text-lg font-medium font-mono">{totalProducts}</div>
+                  <div className="text-white text-lg font-medium font-sans">{totalProducts}</div>
                 </div>
                 <div className="absolute -bottom-2 -right-6 bg-white/10 border border-white/15 backdrop-blur-sm rounded-2xl px-3 py-2 text-center"
                   style={{ animation: "fadeUp 0.7s 0.8s ease-out both" }}>
                   <div className="text-teal-300 text-[10px] uppercase tracking-wider mb-0.5">Brands</div>
-                  <div className="text-white text-lg font-medium font-mono">{brands.length}</div>
+                  <div className="text-white text-lg font-medium font-sans">{brands.length}</div>
                 </div>
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function BrandsPage() {
             <h2 className="text-xl font-medium text-ink-950">Scored Brands</h2>
             <p className="text-xs text-ink-400 mt-0.5">Ranked by average Clean Sheet Score</p>
           </div>
-          <div className="text-xs text-ink-400 border border-ink-200 rounded-full px-3 py-1 font-mono">Updated May 2026</div>
+          <div className="text-xs text-ink-400 border border-ink-200 rounded-full px-3 py-1 font-sans">Updated May 2026</div>
         </div>
 
         {/* Brand grid */}
@@ -262,7 +262,7 @@ export default function BrandsPage() {
                       </div>
                       <div className="flex-1 min-w-0 pt-0.5">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-[9px] text-ink-400 bg-ink-100 px-1.5 py-0.5 rounded">#{i + 1}</span>
+                          <span className="font-sans text-[9px] text-ink-400 bg-ink-100 px-1.5 py-0.5 rounded">#{i + 1}</span>
                           <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${c.bg} ${c.text} ${c.border}`}>
                             {brand.verdict}
                           </span>
