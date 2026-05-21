@@ -284,8 +284,8 @@ export default function PillarDrilldown() {
   }
 
   return (
-    <section className="bg-white px-5 pt-4 pb-8">
-      <div className="max-w-5xl mx-auto space-y-2">
+    <section className="bg-white px-5 pt-3 pb-10">
+      <div className="max-w-5xl mx-auto space-y-1.5">
         {pillars.map((pillar) => {
           const isOpen = openPillars.has(pillar.id);
           return (
@@ -309,20 +309,38 @@ export default function PillarDrilldown() {
               >
                 <TickFilled size={20} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-medium text-ink-900 tracking-tight">
+                  <p
+                    className="text-base font-medium tracking-tight transition-colors duration-200"
+                    style={{ color: isOpen ? "#262525" : "#343232" }}
+                  >
                     {pillar.name}
                   </p>
-                  <p className="text-xs text-ink-400 mt-0.5">
+                  <p
+                    className="text-xs mt-0.5 transition-colors duration-200"
+                    style={{ color: isOpen ? "#8E8B8B" : "#A7A5A5" }}
+                  >
                     {pillar.sublabel}
                   </p>
                 </div>
-                <span className="text-xs text-ink-300 hidden sm:block mr-3 flex-shrink-0">
-                  {pillar.checks.length} checks
+
+                {/* Check count pill */}
+                <span
+                  className="hidden sm:inline-flex items-center justify-center rounded-full text-[10px] px-2 py-0.5 mr-2 flex-shrink-0 transition-all duration-300"
+                  style={{
+                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgba(0,0,0,0.04)",
+                    color: isOpen ? "#248179" : "#A7A5A5",
+                  }}
+                >
+                  {pillar.checks.length}
                 </span>
+
                 <ChevronDown
-                  size={15}
-                  className="text-ink-300 flex-shrink-0 transition-transform duration-200"
-                  style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                  size={14}
+                  className="flex-shrink-0 transition-all duration-300"
+                  style={{
+                    color: isOpen ? "#248179" : "#C2C0C0",
+                    transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
                 />
               </button>
 
@@ -387,7 +405,7 @@ export default function PillarDrilldown() {
                                     backgroundClip: "padding-box, border-box",
                                   }}
                                 >
-                                  <p className="text-sm text-ink-500 leading-relaxed">
+                                  <p className="text-sm text-ink-600 leading-relaxed">
                                     {check.detail}
                                   </p>
                                 </div>
@@ -404,10 +422,20 @@ export default function PillarDrilldown() {
           );
         })}
 
-        <p className="text-ink-400 text-xs text-center pt-6 leading-relaxed max-w-lg mx-auto">
-          Reviewed by an independent panel of cosmetic scientists, toxicologists, regulatory specialists, and dermatologists.
-          Every item above was assessed against submitted laboratory evidence.
-        </p>
+        <div className="mt-8 pt-5 border-t border-ink-100">
+          <div className="flex items-start gap-3 max-w-xl mx-auto">
+            <div className="flex gap-1 pt-1 flex-shrink-0">
+              {["#2E9E96","#45B8B0","#A8E4DF"].map((c) => (
+                <span key={c} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
+              ))}
+            </div>
+            <p className="text-ink-400 text-xs leading-relaxed">
+              Reviewed by an independent panel of cosmetic scientists, toxicologists,
+              regulatory specialists, and dermatologists.
+              Every check above was assessed against submitted laboratory evidence.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

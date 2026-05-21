@@ -16,15 +16,33 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
         {/* Toggle header */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-between py-3.5 border-b border-ink-100 group"
+          className="w-full flex items-center justify-between py-3 border-b group transition-colors duration-200"
+          style={{ borderColor: open ? "#c2e8e4" : "#EEEDED" }}
         >
-          <span className="text-[9px] tracking-[0.2em] uppercase text-ink-400 group-hover:text-ink-600 transition-colors">
-            {open ? "Collapse record" : "View full record"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-[9px] tracking-[0.2em] uppercase transition-colors duration-200"
+              style={{ color: open ? "#248179" : "#A7A5A5" }}
+            >
+              {open ? "Collapse record" : "View full record"}
+            </span>
+            <span
+              className="text-[9px] px-1.5 py-0.5 rounded-full transition-all duration-200"
+              style={{
+                background: open ? "rgba(36,129,121,0.08)" : "rgba(0,0,0,0.04)",
+                color: open ? "#248179" : "#C2C0C0",
+              }}
+            >
+              {certFields.length + 1} fields
+            </span>
+          </div>
           <ChevronDown
-            size={13}
-            className="text-ink-300 group-hover:text-ink-500 transition-all duration-200"
-            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+            size={12}
+            className="transition-all duration-300"
+            style={{
+              color: open ? "#248179" : "#C2C0C0",
+              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            }}
           />
         </button>
 
@@ -65,7 +83,7 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
                     Status
                   </p>
                   <p className="flex-1 text-sm text-ink-900 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0 animate-pulse" />
                     Active
                   </p>
                 </div>

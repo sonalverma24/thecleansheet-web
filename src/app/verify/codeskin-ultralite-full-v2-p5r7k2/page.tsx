@@ -53,7 +53,7 @@ export default function VerifiedPage() {
     <div className="bg-white min-h-screen">
 
       {/* ─── Hero ─────────────────────────────────────────────── */}
-      <section className="px-5 pt-5 pb-5 border-b border-ink-100">
+      <section className="px-5 pt-5 pb-5">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-row items-stretch gap-6 lg:gap-10">
 
@@ -116,23 +116,24 @@ export default function VerifiedPage() {
               {/* BOTTOM GROUP — anchored to image bottom */}
               <div className="animate-fade-up delay-500 pt-4 border-t border-ink-100">
                 {/* Cert heading */}
-                <p className="text-[9px] tracking-[0.2em] uppercase mb-1.5" style={{ color: "#248179" }}>
+                <p className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase mb-1.5" style={{ color: "#248179" }}>
+                  <span className="w-1 h-1 rounded-sm bg-teal-500 inline-block flex-shrink-0" />
                   Official record
                 </p>
                 <h2
-                  className="font-medium text-ink-950 tracking-tight leading-none mb-3"
+                  className="font-medium text-ink-950 tracking-tight leading-none mb-4"
                   style={{ fontSize: "clamp(1.2rem, 2.2vw, 1.7rem)" }}
                 >
                   Certification record
                 </h2>
 
                 {/* Validity items — 2×2 compact grid */}
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   {validityItems.map(({ label, value, dot }) => (
-                    <div key={label}>
-                      <p className="text-[9px] text-ink-300 uppercase tracking-[0.12em] mb-0.5">{label}</p>
-                      <p className="text-xs text-ink-800 font-medium flex items-center gap-1.5">
-                        {dot && <span className="w-1 h-1 rounded-full bg-teal-500 inline-block" />}
+                    <div key={label} className="flex flex-col gap-0.5">
+                      <p className="text-[8px] text-ink-300 uppercase tracking-[0.16em]">{label}</p>
+                      <p className="text-[11px] text-ink-800 font-medium flex items-center gap-1.5 tabular-nums">
+                        {dot && <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />}
                         {value}
                       </p>
                     </div>
@@ -196,11 +197,14 @@ export default function VerifiedPage() {
         </div>
       </section>
 
+      {/* Gradient rule under hero */}
+      <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, #EEEDED 15%, #EEEDED 85%, transparent)" }} />
+
       {/* ─── Scrolling credential strip ───────────────────────── */}
       <div className="border-b border-ink-100 overflow-hidden">
         <div
           className="flex items-center whitespace-nowrap py-2.5"
-          style={{ animation: "marquee 48s linear infinite" }}
+          style={{ animation: "marquee 64s linear infinite" }}
         >
           {[...credentialTicker, ...credentialTicker].map((item, i) => (
             <span key={i} className="flex items-center gap-3 mx-5 flex-shrink-0">
@@ -246,7 +250,18 @@ export default function VerifiedPage() {
           </p>
           <Link
             href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-            className="inline-flex items-center gap-1.5 text-teal-600 hover:text-teal-500 text-xs border border-ink-200 hover:border-teal-300 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            className="inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg flex-shrink-0 transition-all duration-200 hover:gap-2"
+            style={{
+              color: "#248179",
+              border: "1px solid #c2e8e4",
+              background: "rgba(36,129,121,0.04)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(36,129,121,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(36,129,121,0.04)";
+            }}
           >
             Full technical record <ArrowUpRight size={11} />
           </Link>
