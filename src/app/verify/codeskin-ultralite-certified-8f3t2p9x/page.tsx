@@ -109,8 +109,9 @@ export default function ConsumerCertPage() {
               </div>
 
               <p className="text-teal-300 text-sm leading-relaxed max-w-md mx-auto sm:mx-0">
-                Every claim on this page was reviewed by an independent panel of cosmetic scientists
-                against submitted laboratory evidence. No exceptions.
+                Every claim on this page was reviewed by an independent panel of cosmetic scientists,
+                toxicologists, regulatory specialists, and dermatologists — evaluated against
+                submitted laboratory evidence. No exceptions.
               </p>
             </div>
           </div>
@@ -344,8 +345,9 @@ export default function ConsumerCertPage() {
               <h2 className="text-2xl font-medium text-ink-950 mb-3">What certification means</h2>
               <p className="text-ink-500 text-sm leading-relaxed mb-4">
                 The Clean Sheet is an independent certification body. We have no commercial relationship
-                with CodeSkin. We reviewed their formula, their lab reports, their clinical studies,
-                and their label - and certified only what the evidence supports.
+                with CodeSkin. A panel of cosmetic scientists, toxicologists, regulatory specialists,
+                a microbiologist, a claims evaluator, and a dermatologist reviewed the formula,
+                lab reports, clinical studies, and label — and certified only what the evidence supports.
               </p>
               <p className="text-ink-500 text-sm leading-relaxed">
                 Our methodology is built on EU cosmetic safety science, India&apos;s Cosmetics Rules 2020,
