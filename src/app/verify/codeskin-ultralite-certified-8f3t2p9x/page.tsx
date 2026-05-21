@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { CheckCircle2, Shield, Sun, ArrowUpRight } from "lucide-react";
+import CertBento from "./CertBento";
 
 export const metadata: Metadata = {
   title: "CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++ | Independently Certified | The Clean Sheet",
@@ -119,121 +120,7 @@ export default function ConsumerCertPage() {
         </div>
       </section>
 
-      {/* Bento grid */}
-      <section className="px-5 py-5">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-
-            {/* SPF hero tile */}
-            <div className="lg:col-span-2 rounded-2xl p-7 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #1D5550 0%, #248179 65%, #2E9E96 100%)" }}>
-              <CheckCircle2 size={13} className="absolute top-5 right-5 text-white/25" />
-              <p className="text-teal-200 text-[9px] tracking-[0.2em] uppercase mb-5">SPF Performance</p>
-              <p className="font-medium text-white tracking-tight leading-none"
-                style={{ fontSize: "clamp(3.5rem, 8vw, 5rem)" }}>
-                59<span className="text-teal-300/70">.92</span>
-              </p>
-              <p className="text-teal-200 text-xs mt-1.5 mb-3">Tested SPF — label claims 50+</p>
-              <p className="text-white/50 text-xs leading-relaxed max-w-xs">
-                Independent lab test. The product delivers more protection than labelled.
-              </p>
-            </div>
-
-            {/* PA++++ hero tile */}
-            <div className="lg:col-span-2 rounded-2xl p-7 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #B83028 0%, #E84940 65%, #FD6158 100%)" }}>
-              <CheckCircle2 size={13} className="absolute top-5 right-5 text-white/25" />
-              <p className="text-red-200 text-[9px] tracking-[0.2em] uppercase mb-5">UVA Protection</p>
-              <p className="text-5xl font-medium text-white tracking-tight leading-none mb-1.5">PA++++</p>
-              <p className="text-red-200 text-xs mb-3">UVAPF tested at 22.07</p>
-              <p className="text-white/50 text-xs leading-relaxed">
-                Highest UVA protection tier. UVAPF 16+ required. Tested at 22.07.
-              </p>
-            </div>
-
-            {/* Water resistance */}
-            <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: "#081918" }}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-teal-700 text-[9px] tracking-[0.2em] uppercase mb-2">Water Resistance</p>
-                  <h3 className="text-sm font-medium text-white tracking-tight">80-Minute Water Resistant</h3>
-                </div>
-                <div className="text-right flex-shrink-0 ml-4">
-                  <p className="text-2xl font-medium leading-none" style={{ color: "#D6FF3E" }}>94%</p>
-                  <p className="text-teal-700 text-[9px] mt-0.5">SPF retained</p>
-                </div>
-              </div>
-              <p className="text-teal-600 text-xs leading-relaxed mt-3">
-                After 80 minutes of water immersion. Tested to ISO 16217.
-              </p>
-            </div>
-
-            {/* Non-comedogenic */}
-            <div className="lg:col-span-1 rounded-2xl p-5 bg-ink-50 border border-ink-100">
-              <p className="text-ink-400 text-[9px] tracking-[0.2em] uppercase mb-2.5">Skin safety</p>
-              <h3 className="text-sm font-medium text-ink-950 tracking-tight mb-2">Non-Comedogenic</h3>
-              <p className="text-ink-500 text-xs leading-relaxed">28-day study. 33 adults. Zero new comedones. 61.5% reduction in acne lesions.</p>
-            </div>
-
-            {/* Dermatologist + Ophthalmologist */}
-            <div className="lg:col-span-1 rounded-2xl p-5 bg-ink-50 border border-ink-100">
-              <p className="text-ink-400 text-[9px] tracking-[0.2em] uppercase mb-3">Clinical testing</p>
-              <div className="space-y-3">
-                {[
-                  { title: "Dermatologist-Tested", body: "Patch test. Zero irritation across all participants." },
-                  { title: "Ophthalmologist-Tested", body: "3-day ocular safety study. No eye irritation." },
-                ].map(({ title, body }) => (
-                  <div key={title} className="flex items-start gap-2">
-                    <CheckCircle2 size={11} className="text-teal-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-medium text-ink-900 tracking-tight">{title}</p>
-                      <p className="text-ink-500 text-[11px] leading-relaxed">{body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Hydration */}
-            <div className="lg:col-span-2 rounded-2xl p-5 bg-teal-50 border border-teal-100">
-              <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-3">Hydration</p>
-              <h3 className="text-sm font-medium text-ink-950 tracking-tight mb-4">Clinically Measured Hydration Increase</h3>
-              <div className="flex gap-8">
-                <div>
-                  <p className="text-2xl font-medium text-teal-600 tracking-tight leading-none">65%</p>
-                  <p className="text-ink-400 text-[10px] mt-1">at 8 hours</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-medium text-teal-600 tracking-tight leading-none">38%</p>
-                  <p className="text-ink-400 text-[10px] mt-1">at 24 hours</p>
-                </div>
-              </div>
-              <p className="text-ink-400 text-[10px] mt-3">Measured on dry skin panel.</p>
-            </div>
-
-            {/* Formula verification - full width dark */}
-            <div className="lg:col-span-4 rounded-2xl p-6" style={{ background: "#0F2C2A" }}>
-              <p className="text-teal-700 text-[9px] tracking-[0.2em] uppercase mb-4">Formula verification</p>
-              <div className="grid sm:grid-cols-3 gap-6">
-                {[
-                  { title: "Reef-Safe", body: "No oxybenzone, octinoxate, or octisalate. UV filters banned under Hawaii and Palau reef protection laws." },
-                  { title: "Vegan and Cruelty-Free", body: "Full ingredient list reviewed. No animal-derived ingredients. No animal testing." },
-                  { title: "Fragrance-Free", body: "No fragrance, parfum, or masking fragrance. No EU fragrance allergens above threshold." },
-                ].map(({ title, body }) => (
-                  <div key={title} className="flex items-start gap-3">
-                    <CheckCircle2 size={12} className="text-teal-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-white tracking-tight mb-1">{title}</p>
-                      <p className="text-teal-600 text-xs leading-relaxed">{body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
+      <CertBento />
 
       {/* UV filters — deep dive */}
       <section className="grain-overlay bg-teal-950 py-16 px-5 overflow-hidden">
