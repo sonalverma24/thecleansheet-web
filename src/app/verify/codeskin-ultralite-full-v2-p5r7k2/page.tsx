@@ -196,7 +196,7 @@ export default function VerifiedPage() {
                   }}
                 >
                   <Image
-                    src="/images/tcs-certified-stamp.png"
+                    src="/images/tcs-certified-stamp-v2.png"
                     alt="The Clean Sheet Certified"
                     fill
                     className="object-contain"
