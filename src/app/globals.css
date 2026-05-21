@@ -225,6 +225,8 @@ body {
 .animate-cert-scan      { animation: cert-scan       5s   ease-in-out infinite; }
 .animate-badge-entrance { animation: badge-entrance  0.85s var(--ease-spring) 0.45s both; }
 .animate-slide-right    { animation: slide-from-right 0.7s var(--ease-smooth)  0.15s both; }
+.tcs-footer-link { color: #248179; border: 1px solid #c2e8e4; background: rgba(36,129,121,0.04); }
+.tcs-footer-link:hover { background: rgba(36,129,121,0.08); }
 
 /* Scroll reveal */
 .reveal-hidden {

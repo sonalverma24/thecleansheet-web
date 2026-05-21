@@ -264,18 +264,7 @@ export default function VerifiedPage() {
           </p>
           <Link
             href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-            className="inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg flex-shrink-0 transition-all duration-200 hover:gap-2"
-            style={{
-              color: "#248179",
-              border: "1px solid #c2e8e4",
-              background: "rgba(36,129,121,0.04)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(36,129,121,0.08)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(36,129,121,0.04)";
-            }}
+            className="inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg flex-shrink-0 transition-all duration-200 hover:gap-2 tcs-footer-link"
           >
             Full technical record <ArrowUpRight size={11} />
           </Link>
