@@ -104,29 +104,29 @@ export default function CertBento() {
     setOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   return (
-    <section className="px-5 py-5">
+    <section className="px-5 py-4">
       <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
 
           {/* SPF */}
           <div
-            className="lg:col-span-2 rounded-2xl p-7 relative overflow-hidden"
+            className="lg:col-span-2 rounded-xl p-5 relative overflow-hidden"
             style={{
               background:
                 "linear-gradient(135deg, #1D5550 0%, #248179 65%, #2E9E96 100%)",
             }}
           >
             <ExpandBtn open={!!open.spf} onClick={() => toggle("spf")} light />
-            <p className="text-teal-200 text-[9px] tracking-[0.2em] uppercase mb-5">
+            <p className="text-teal-200 text-[9px] tracking-[0.2em] uppercase mb-3">
               SPF Performance
             </p>
             <p
               className="font-medium text-white tracking-tight leading-none"
-              style={{ fontSize: "clamp(3.5rem, 8vw, 5rem)" }}
+              style={{ fontSize: "clamp(2.4rem, 5vw, 3.5rem)" }}
             >
               59<span className="text-teal-300/50">.92</span>
             </p>
-            <p className="text-teal-200 text-xs mt-1.5 mb-3">
+            <p className="text-teal-200 text-xs mt-1 mb-2">
               Tested SPF — label claims 50+
             </p>
             <p className="text-white/40 text-xs leading-relaxed max-w-xs">
@@ -143,20 +143,20 @@ export default function CertBento() {
 
           {/* PA++++ */}
           <div
-            className="lg:col-span-2 rounded-2xl p-7 relative overflow-hidden"
+            className="lg:col-span-2 rounded-xl p-5 relative overflow-hidden"
             style={{
               background:
                 "linear-gradient(135deg, #B83028 0%, #E84940 65%, #FD6158 100%)",
             }}
           >
             <ExpandBtn open={!!open.pa} onClick={() => toggle("pa")} light />
-            <p className="text-red-200 text-[9px] tracking-[0.2em] uppercase mb-5">
+            <p className="text-red-200 text-[9px] tracking-[0.2em] uppercase mb-3">
               UVA Protection
             </p>
-            <p className="text-5xl font-medium text-white tracking-tight leading-none mb-1.5">
+            <p className="text-4xl font-medium text-white tracking-tight leading-none mb-1">
               PA++++
             </p>
-            <p className="text-red-200 text-xs mb-3">UVAPF tested at 22.07</p>
+            <p className="text-red-200 text-xs mb-2">UVAPF tested at 22.07</p>
             <p className="text-white/40 text-xs leading-relaxed">
               Highest UVA protection tier. UVAPF 16+ required. Tested at 22.07.
             </p>
@@ -170,7 +170,7 @@ export default function CertBento() {
 
           {/* Water resistance */}
           <div
-            className="lg:col-span-2 rounded-2xl p-5 relative"
+            className="lg:col-span-2 rounded-xl p-4 relative"
             style={{ background: "#081918" }}
           >
             <ExpandBtn
@@ -208,7 +208,7 @@ export default function CertBento() {
           </div>
 
           {/* Non-comedogenic */}
-          <div className="lg:col-span-1 rounded-2xl p-5 bg-ink-50 border border-ink-100 relative">
+          <div className="lg:col-span-1 rounded-xl p-4 bg-ink-50 border border-ink-100 relative">
             <ExpandBtn open={!!open.nc} onClick={() => toggle("nc")} />
             <p className="text-ink-400 text-[9px] tracking-[0.2em] uppercase mb-2.5 pr-8">
               Skin safety
@@ -228,7 +228,7 @@ export default function CertBento() {
           </div>
 
           {/* Clinical testing */}
-          <div className="lg:col-span-1 rounded-2xl p-5 bg-ink-50 border border-ink-100 relative">
+          <div className="lg:col-span-1 rounded-xl p-4 bg-ink-50 border border-ink-100 relative">
             <ExpandBtn
               open={!!open.clinical}
               onClick={() => toggle("clinical")}
@@ -272,7 +272,7 @@ export default function CertBento() {
           </div>
 
           {/* Hydration */}
-          <div className="lg:col-span-2 rounded-2xl p-5 bg-teal-50 border border-teal-100 relative">
+          <div className="lg:col-span-2 rounded-xl p-4 bg-teal-50 border border-teal-100 relative">
             <ExpandBtn
               open={!!open.hydration}
               onClick={() => toggle("hydration")}
@@ -310,7 +310,7 @@ export default function CertBento() {
 
           {/* Formula verification — no expand, content is self-evident */}
           <div
-            className="lg:col-span-4 rounded-2xl p-6"
+            className="lg:col-span-4 rounded-xl p-5"
             style={{ background: "#0F2C2A" }}
           >
             <p className="text-teal-700 text-[9px] tracking-[0.2em] uppercase mb-4">
