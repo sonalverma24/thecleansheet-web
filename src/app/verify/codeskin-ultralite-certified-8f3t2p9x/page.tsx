@@ -43,8 +43,8 @@ export default function ConsumerCertPage() {
               </div>
             </div>
             <p className="text-teal-500 text-xs leading-relaxed max-w-xs">
-              No commercial relationship with CodeSkin. We reviewed their formula,
-              lab reports, and label. This page shows only what the evidence supports.
+              CodeSkin commissioned this certification. Our methodology and findings
+              are independent. This page shows only what the evidence supports.
             </p>
           </div>
 
@@ -388,8 +388,9 @@ export default function ConsumerCertPage() {
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl font-bold text-ink-950 tracking-tight mb-3">What certification means</h2>
               <p className="text-ink-500 text-sm leading-relaxed mb-2">
-                The Clean Sheet is an independent certification body with no commercial relationship with CodeSkin.
-                A panel of cosmetic scientists, toxicologists, regulatory specialists, a microbiologist, a claims evaluator,
+                The Clean Sheet is an independent certification body. CodeSkin commissioned this
+                certification — our panel assessments are editorially independent. A panel of cosmetic
+                scientists, toxicologists, regulatory specialists, a microbiologist, a claims evaluator,
                 and a dermatologist reviewed the formula, lab reports, clinical studies, and label.
                 Certified only what the evidence supports.
               </p>
