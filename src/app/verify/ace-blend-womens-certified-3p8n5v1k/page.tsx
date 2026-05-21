@@ -1,441 +1,469 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  CheckCircle2, Shield, Leaf, Sparkles, Star,
-  FlaskConical, Pill, AlertCircle,
-} from "lucide-react";
+import { CheckCircle2, Shield, Leaf, FlaskConical, AlertCircle, ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Ace Blend Women's Methylated Multivitamin | Independently Certified | The Clean Sheet",
   description:
-    "Ace Blend Women's Methylated Multivitamin is independently certified by The Clean Sheet. Label accuracy, heavy metals, and active ingredient forms verified against submitted laboratory evidence.",
+    "Ace Blend Women's Methylated Multivitamin independently certified by The Clean Sheet. Label accuracy, heavy metals, and active methylated forms verified against submitted laboratory evidence.",
   robots: { index: false, follow: false },
 };
-
-/* ── Verified claim card ─────────────────────────────────────── */
-function ClaimCard({
-  icon, title, detail, accent = "teal",
-}: {
-  icon: React.ReactNode;
-  title: string;
-  detail: string;
-  accent?: "teal" | "coral" | "gold" | "sky" | "violet";
-}) {
-  const styles = {
-    teal:   { bg: "bg-teal-50",   border: "border-teal-200",   icon: "bg-teal-600 text-white" },
-    coral:  { bg: "bg-coral-50",  border: "border-coral-200",  icon: "bg-coral-500 text-white" },
-    gold:   { bg: "bg-gold-50",   border: "border-gold-100",   icon: "bg-gold-500 text-white" },
-    sky:    { bg: "bg-sky-50",    border: "border-sky-200",    icon: "bg-sky-500 text-white" },
-    violet: { bg: "bg-violet-50", border: "border-violet-200", icon: "bg-violet-500 text-white" },
-  }[accent];
-  return (
-    <div className={`flex items-start gap-4 p-5 rounded-xl border ${styles.bg} ${styles.border}`}>
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${styles.icon}`}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1.5">
-          <p className="text-sm font-semibold text-ink-900 tracking-tight">{title}</p>
-          <CheckCircle2 size={13} className="text-teal-600 flex-shrink-0" />
-        </div>
-        <p className="text-xs text-ink-500 leading-relaxed">{detail}</p>
-      </div>
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════════ */
 export default function AceBlendCertPage() {
   return (
-    <div className="bg-white min-h-screen font-sans">
+    <div className="bg-white min-h-screen">
 
-      {/* ── 1. Top bar ───────────────────────────────────────── */}
-      <div className="bg-teal-600 border-b border-teal-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={18} height={18} className="object-contain" />
-            <span className="text-white text-xs font-semibold tracking-widest uppercase">The Clean Sheet</span>
-            <span className="text-teal-300 text-xs hidden sm:block">Independent Certification</span>
+      {/* ── Status bar ───────────────────────────────────────── */}
+      <div className="bg-teal-950 border-b border-teal-800">
+        <div className="max-w-5xl mx-auto px-5 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={16} height={16} className="object-contain opacity-90" />
+            <span className="text-teal-200 text-[11px] font-semibold tracking-[0.15em] uppercase">The Clean Sheet</span>
+            <span className="text-teal-700 text-[11px] hidden sm:block">Independent Certification</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-300" />
-            <span className="text-amber-200 text-xs font-medium">Sample Data: Verification Not Complete</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            <span className="text-amber-300 text-[11px] font-medium">Sample Data — Verification Not Complete</span>
           </div>
         </div>
       </div>
 
-      {/* ── 2. Hero ──────────────────────────────────────────── */}
-      <div className="bg-white border-b border-ink-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 pb-14">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-10">
+      {/* ── HERO — dark, full bleed ───────────────────────────── */}
+      <section className="grain-overlay bg-teal-950 overflow-hidden">
+        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-16 pb-20">
 
-            {/* Product visual */}
-            <div className="flex-shrink-0 relative">
-              <div className="relative w-44 h-56 sm:w-48 sm:h-60 rounded-2xl overflow-hidden ring-1 ring-teal-200 flex flex-col items-center justify-center gap-3"
-                style={{ background: "linear-gradient(145deg, #EDF8F7 0%, #D4F2EF 100%)" }}>
-                <div className="w-16 h-16 rounded-2xl bg-teal-600 flex items-center justify-center">
-                  <Pill size={30} className="text-white" />
-                </div>
-                <div className="text-center px-3">
-                  <p className="text-teal-700 text-xs font-bold tracking-tight leading-tight">Ace Blend</p>
-                  <p className="text-teal-600 text-[10px] font-medium leading-snug mt-0.5">Women&apos;s Methylated<br />Multivitamin</p>
-                </div>
-              </div>
-              {/* TCS badge */}
-              <div className="absolute -bottom-3 -right-3 w-14 h-14 drop-shadow-lg">
-                <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet Certified" width={56} height={56} className="object-contain" />
-              </div>
-            </div>
+          {/* Top label */}
+          <div className="animate-fade-in mb-10">
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.2em] uppercase text-teal-400 border border-teal-700 px-4 py-2 rounded-full">
+              <span className="w-1 h-1 rounded-full bg-teal-400" />
+              Independently Certified · The Clean Sheet
+            </span>
+          </div>
 
-            {/* Text block */}
-            <div className="flex-1 text-center sm:text-left">
-              <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5 tracking-wide">
-                <Sparkles size={11} />
-                Independently Certified by The Clean Sheet
-              </div>
+          <div className="flex flex-col lg:flex-row items-start lg:items-end gap-12 lg:gap-16">
 
-              <h1 className="text-4xl sm:text-5xl font-bold text-ink-950 leading-none tracking-tight mb-2">
-                Women&apos;s Methylated<br />Multivitamin
+            {/* Heading block */}
+            <div className="flex-1">
+              <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold text-white leading-none tracking-tight mb-6 animate-fade-up">
+                Women&apos;s<br />
+                <span style={{ color: "#D6FF3E" }}>Methylated</span><br />
+                Multivitamin
               </h1>
-              <p className="text-teal-600 text-lg font-semibold tracking-tight mb-1">Active Bioavailable Forms</p>
-              <p className="text-ink-400 text-sm mb-7">Ace Blend</p>
 
-              {/* PRISM badges */}
-              <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-7">
-                {[
-                  { label: "PRISM Core Certified", icon: <Shield size={10} />, cls: "bg-teal-600 text-white border-teal-700" },
-                  { label: "PRISM Purity Verified", icon: <Leaf size={10} />, cls: "bg-violet-500 text-white border-violet-600" },
-                ].map(({ label, icon, cls }) => (
-                  <div key={label} className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-full border tracking-wide ${cls}`}>
-                    {icon} {label}
-                  </div>
-                ))}
+              <p className="text-teal-400 text-sm font-medium tracking-wide mb-2 animate-fade-up delay-100">Ace Blend</p>
+
+              {/* PRISM modules */}
+              <div className="flex flex-wrap gap-2 mt-6 animate-fade-up delay-200">
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide bg-teal-600 text-white px-3 py-1.5 rounded-full">
+                  <Shield size={9} /> PRISM Core Certified
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide bg-violet-600 text-white px-3 py-1.5 rounded-full">
+                  <Leaf size={9} /> PRISM Purity Verified
+                </span>
               </div>
 
-              <p className="text-ink-500 text-sm leading-relaxed max-w-md mx-auto sm:mx-0">
-                Every claim on this page was reviewed by an independent panel against submitted
-                laboratory evidence. Independent testing was conducted on randomised samples
-                without brand involvement. Only what the evidence supports appears here.
+              <p className="text-teal-500 text-sm leading-relaxed max-w-sm mt-8 animate-fade-up delay-300">
+                Every claim below was reviewed by an independent panel against submitted laboratory evidence.
+                Randomised sample selection. No brand involvement.
               </p>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── 3. Verification strip ────────────────────────────── */}
-      <div className="bg-teal-600 border-b border-teal-700">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-teal-500">
+            {/* Product visual */}
+            <div className="flex-shrink-0 animate-fade-up delay-200">
+              <div className="animate-float relative">
+                {/* Outer glow ring */}
+                <div className="absolute -inset-4 rounded-3xl opacity-20"
+                  style={{ background: "radial-gradient(circle, #248179, transparent)" }} />
+                {/* Card */}
+                <div className="relative w-52 h-64 rounded-3xl overflow-hidden flex flex-col items-center justify-center gap-4"
+                  style={{ background: "linear-gradient(145deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)" }}>
+                  <div className="absolute inset-0 border border-teal-700/50 rounded-3xl" />
+                  {/* Decorative circle */}
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, #248179, #45B8B0)" }}>
+                    <span className="font-bold text-4xl text-white" style={{ fontFamily: "var(--font-display)" }}>A</span>
+                  </div>
+                  <div className="text-center px-4">
+                    <p className="text-white text-xs font-bold tracking-wider uppercase">Ace Blend</p>
+                    <p className="text-teal-300 text-[10px] font-medium leading-snug mt-1">Women&apos;s Methylated<br />Multivitamin</p>
+                  </div>
+                  {/* Neon accent line */}
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5"
+                    style={{ background: "linear-gradient(90deg, transparent, #D6FF3E, transparent)" }} />
+                </div>
+                {/* TCS badge */}
+                <div className="absolute -bottom-3 -right-3 drop-shadow-2xl">
+                  <Image src="/images/tcs-certified-badge.png" alt="TCS Certified" width={52} height={52} className="object-contain" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero stat row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px mt-16 border border-teal-800 rounded-2xl overflow-hidden animate-fade-up delay-400">
             {[
-              { value: "2", label: "Methylated forms", sub: "Methylcobalamin + L-5-MTHF" },
-              { value: "4", label: "Heavy metals cleared", sub: "Lead, Arsenic, Mercury, Cadmium" },
-              { value: "2", label: "Pathogens screened", sub: "Salmonella + Listeria" },
-              { value: "0", label: "Artificial additives", sub: "No colors, no flavors" },
-            ].map(({ value, label, sub }) => (
-              <div key={label} className="text-center py-7 px-4">
-                <p className="text-3xl sm:text-4xl font-bold text-white mb-1 tracking-tight leading-none">{value}</p>
-                <p className="text-teal-200 text-[10px] font-semibold uppercase tracking-widest mb-0.5 mt-2">{label}</p>
-                <p className="text-teal-300 text-[11px]">{sub}</p>
+              { n: "2", label: "Methylated forms", sub: "Methylcobalamin + L-5-MTHF" },
+              { n: "4", label: "Heavy metals cleared", sub: "Lead · Arsenic · Mercury · Cadmium" },
+              { n: "2", label: "Pathogens screened", sub: "Salmonella + Listeria" },
+              { n: "0", label: "Artificial additives", sub: "No colors. No flavors." },
+            ].map(({ n, label, sub }) => (
+              <div key={label} className="bg-teal-900/60 px-5 py-5 text-center">
+                <p className="font-bold leading-none mb-2" style={{ fontSize: "2.5rem", color: "#D6FF3E" }}>{n}</p>
+                <p className="text-teal-200 text-[10px] font-bold uppercase tracking-widest mb-0.5">{label}</p>
+                <p className="text-teal-500 text-[10px]">{sub}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── 4. Section headline ──────────────────────────────── */}
-      <div className="bg-white py-16 px-4 text-center border-b border-ink-100">
-        <div className="max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 bg-coral-50 border border-coral-200 text-coral-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-5 tracking-wide">
-            <Star size={10} />
-            What was independently verified
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-ink-950 leading-none tracking-tight mb-5">
-            Pure formula.<br />Active ingredients.
-          </h2>
-          <p className="text-ink-500 text-base leading-relaxed">
-            The Clean Sheet reviewed the lab testing, the ingredient forms, and the label.
-            What you see below is only what passed.
-          </p>
+      {/* ── MARQUEE TICKER ────────────────────────────────────── */}
+      <div className="bg-teal-600 py-3 overflow-hidden">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {[0, 1].map((i) => (
+            <div key={i} className="flex items-center gap-0 flex-shrink-0">
+              {[
+                "Label Accuracy Verified",
+                "Heavy Metals Cleared",
+                "Active Methylated Forms Confirmed",
+                "Microbiologically Safe",
+                "No Artificial Additives",
+                "Randomised Independent Testing",
+              ].map((item) => (
+                <span key={item} className="flex items-center">
+                  <span className="text-white text-xs font-semibold tracking-widest uppercase px-6">{item}</span>
+                  <span className="text-yellow-300 text-xs">·</span>
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* ── 5. Methylated forms — the lead story ─────────────── */}
-      <div className="px-4 py-10">
-        <div className="max-w-4xl mx-auto">
+      {/* ── SECTION HEADLINE ─────────────────────────────────── */}
+      <section className="bg-white pt-20 pb-4 px-5">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-teal-600 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">What was independently verified</p>
+          <h2 className="text-5xl sm:text-6xl font-bold text-ink-950 tracking-tight leading-none">
+            Pure formula.<br />
+            <span className="text-ink-400">Active ingredients.</span>
+          </h2>
+        </div>
+      </section>
 
-          {/* B12 + Folate top cards */}
-          <div className="grid sm:grid-cols-2 gap-3 mb-3">
-            {/* B12 card */}
-            <div className="relative overflow-hidden rounded-2xl p-7"
-              style={{ background: "linear-gradient(135deg, #248179 0%, #2E9E96 60%, #45B8B0 100%)" }}>
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-7 h-7 rounded-md bg-white/20 flex items-center justify-center">
-                  <Pill size={14} className="text-white" />
-                </div>
-                <span className="text-teal-100 text-[10px] font-bold uppercase tracking-widest">Vitamin B12</span>
-                <CheckCircle2 size={14} className="text-white/60 ml-auto" />
-              </div>
-              <p className="text-4xl font-bold text-white mb-1 leading-none tracking-tight">Methylcobalamin</p>
-              <p className="text-teal-200 text-xs font-semibold mb-4 tracking-wide uppercase">Active form — confirmed present</p>
-              <p className="text-white/70 text-xs leading-relaxed">
-                Methylcobalamin is the active, bioavailable form of B12 — the form your body uses
-                directly, without conversion. Standard multivitamins commonly use cyanocobalamin,
-                which requires conversion steps the body may not complete efficiently.
-              </p>
-            </div>
+      {/* ── BENTO CLAIMS GRID ─────────────────────────────────── */}
+      <section className="px-5 py-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
-            {/* Folate card */}
-            <div className="relative overflow-hidden rounded-2xl p-7"
-              style={{ background: "linear-gradient(135deg, #6D28D9 0%, #7C3AED 60%, #8B5CF6 100%)" }}>
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-7 h-7 rounded-md bg-white/20 flex items-center justify-center">
-                  <FlaskConical size={14} className="text-white" />
+            {/* Methylcobalamin — large teal card, col-span-2 */}
+            <div className="lg:col-span-2 rounded-2xl p-8 overflow-hidden relative"
+              style={{ background: "linear-gradient(135deg, #248179 0%, #2E9E96 70%, #45B8B0 100%)" }}>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-teal-100 text-[10px] font-bold tracking-[0.2em] uppercase">Vitamin B12</span>
+                  <CheckCircle2 size={16} className="text-white/50" />
                 </div>
-                <span className="text-violet-200 text-[10px] font-bold uppercase tracking-widest">Folate</span>
-                <CheckCircle2 size={14} className="text-white/60 ml-auto" />
-              </div>
-              <p className="text-4xl font-bold text-white mb-1 leading-none tracking-tight">L-5-MTHF</p>
-              <p className="text-violet-200 text-xs font-semibold mb-4 tracking-wide uppercase">Active form — confirmed present</p>
-              <p className="text-white/70 text-xs leading-relaxed">
-                L-5-MTHF is the active form of folate. Unlike folic acid, it does not require
-                conversion by the MTHFR enzyme. People with MTHFR gene variants cannot efficiently
-                convert standard folic acid — this form bypasses that barrier entirely.
-              </p>
-            </div>
-          </div>
-
-          {/* MTHFR explanation banner */}
-          <div className="rounded-2xl p-6 mb-3 border border-violet-200"
-            style={{ background: "linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)" }}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-violet-600">
-                <AlertCircle size={20} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="text-sm font-bold text-ink-900 tracking-tight">Why the form matters</h3>
-                </div>
-                <p className="text-xs text-ink-500 leading-relaxed max-w-xl">
-                  An estimated 10-15% of people carry MTHFR gene variants that reduce their ability
-                  to convert standard synthetic vitamins into forms the body can use. Methylated forms
-                  are already in their active state. This formula uses both — and both were independently confirmed present.
+                <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-none mb-3">
+                  Methylco&shy;balamin
+                </h3>
+                <p className="text-teal-100 text-[10px] font-bold tracking-widest uppercase mb-4">Active form — confirmed present</p>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  The form your body uses directly. No enzyme conversion required.
+                  Standard multivitamins use cyanocobalamin, which must be converted
+                  — a step some people cannot complete efficiently.
                 </p>
               </div>
-              <div className="flex-shrink-0 text-center bg-white rounded-xl px-5 py-3 border border-violet-200">
-                <p className="text-2xl font-bold text-violet-600 tracking-tight leading-none">Active</p>
-                <p className="text-ink-400 text-[10px] mt-1 font-medium uppercase tracking-wide">Both forms</p>
+            </div>
+
+            {/* L-5-MTHF — large violet card, col-span-2 */}
+            <div className="lg:col-span-2 rounded-2xl p-8 overflow-hidden relative"
+              style={{ background: "linear-gradient(135deg, #5B21B6 0%, #7C3AED 60%, #8B5CF6 100%)" }}>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-violet-200 text-[10px] font-bold tracking-[0.2em] uppercase">Folate</span>
+                  <CheckCircle2 size={16} className="text-white/50" />
+                </div>
+                <h3 className="text-3xl sm:text-4xl font-bold text-white tracking-tight leading-none mb-3">
+                  L-5-MTHF
+                </h3>
+                <p className="text-violet-200 text-[10px] font-bold tracking-widest uppercase mb-4">Active form — confirmed present</p>
+                <p className="text-white/70 text-xs leading-relaxed">
+                  Bypasses the MTHFR enzyme step entirely. Folic acid (the standard form)
+                  requires MTHFR conversion — people with MTHFR gene variants cannot
+                  do this efficiently. This form works for everyone.
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Purity claims grid */}
-          <div className="grid sm:grid-cols-2 gap-2 mb-2">
-            <ClaimCard
-              accent="teal"
-              icon={<Shield size={15} />}
-              title="Label Accuracy Verified"
-              detail="Nutritional composition tested against declared label values. Vitamin profile and mineral content both align with what is stated on the label."
-            />
-            <ClaimCard
-              accent="coral"
-              icon={<AlertCircle size={15} />}
-              title="Heavy Metals Safe"
-              detail="Lead, Arsenic, Mercury, and Cadmium all tested within safe limits by an independent third-party laboratory."
-            />
-            <ClaimCard
-              accent="sky"
-              icon={<FlaskConical size={15} />}
-              title="Microbiologically Safe"
-              detail="No Salmonella and no Listeria monocytogenes detected. Microbial screening conducted on randomised samples without brand involvement."
-            />
-            <ClaimCard
-              accent="gold"
-              icon={<CheckCircle2 size={15} />}
-              title="Mineral Content Verified"
-              detail="Mineral composition, including Calcium, tested and confirmed to match declared label values within acceptable deviations."
-            />
-          </div>
+            {/* Heavy metals — wide dark card, col-span-3 */}
+            <div className="lg:col-span-3 rounded-2xl p-7 bg-teal-950 relative overflow-hidden">
+              <div className="flex items-start justify-between mb-5">
+                <div>
+                  <span className="text-teal-500 text-[10px] font-bold tracking-[0.2em] uppercase block mb-2">Purity Testing</span>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">Heavy Metals Cleared</h3>
+                </div>
+                <CheckCircle2 size={18} className="text-teal-600 mt-1" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {["Lead", "Arsenic", "Mercury", "Cadmium"].map((metal) => (
+                  <div key={metal} className="bg-teal-900/60 border border-teal-800 rounded-xl px-4 py-3 text-center">
+                    <CheckCircle2 size={12} className="text-teal-400 mx-auto mb-1.5" />
+                    <p className="text-white text-xs font-semibold tracking-tight">{metal}</p>
+                    <p className="text-teal-500 text-[10px] mt-0.5">Within limits</p>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute bottom-0 right-0 w-32 h-32 opacity-5 pointer-events-none"
+                style={{ background: "radial-gradient(circle, #D6FF3E, transparent)" }} />
+            </div>
 
-          {/* Clean formula banner */}
-          <div className="flex items-center gap-4 bg-teal-600 rounded-xl px-6 py-4">
-            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
-              <Leaf size={15} className="text-white" />
+            {/* Microbial — narrow card, col-span-1 */}
+            <div className="lg:col-span-1 rounded-2xl p-6 bg-ink-50 border border-ink-100 flex flex-col justify-between">
+              <div>
+                <span className="text-ink-400 text-[10px] font-bold tracking-[0.2em] uppercase block mb-2">Microbial</span>
+                <h3 className="text-xl font-bold text-ink-950 tracking-tight leading-snug mb-3">Micro&shy;bio&shy;logically Safe</h3>
+                <p className="text-ink-500 text-xs leading-relaxed">No Salmonella. No Listeria monocytogenes. Tested on randomised samples.</p>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <span className="text-[10px] font-semibold bg-teal-100 text-teal-700 px-2.5 py-1 rounded-md">No Salmonella</span>
+                <span className="text-[10px] font-semibold bg-teal-100 text-teal-700 px-2.5 py-1 rounded-md">No Listeria</span>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white tracking-tight">No Artificial Colors or Flavors: Independently Confirmed</p>
-              <p className="text-teal-200 text-xs mt-0.5">Ingredient list reviewed. No artificial colors, no artificial flavors present in the formula.</p>
+
+            {/* Label accuracy — col-span-2 */}
+            <div className="lg:col-span-2 rounded-2xl p-6 bg-ink-50 border border-ink-100">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-ink-400 text-[10px] font-bold tracking-[0.2em] uppercase">Label Accuracy</span>
+                <CheckCircle2 size={14} className="text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-ink-950 tracking-tight mb-3">What it says is what&apos;s in it.</h3>
+              <p className="text-ink-500 text-xs leading-relaxed">
+                Nutritional composition tested against declared label values.
+                Vitamin profile and mineral content — including Calcium — both verified
+                within acceptable deviations by an independent laboratory.
+              </p>
             </div>
+
+            {/* Mineral content — col-span-2 */}
+            <div className="lg:col-span-2 rounded-2xl p-6 bg-teal-50 border border-teal-100">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-teal-600 text-[10px] font-bold tracking-[0.2em] uppercase">Minerals</span>
+                <CheckCircle2 size={14} className="text-teal-600" />
+              </div>
+              <h3 className="text-xl font-bold text-ink-950 tracking-tight mb-3">Mineral content verified.</h3>
+              <p className="text-ink-500 text-xs leading-relaxed">
+                Mineral composition, including Calcium, tested against label declarations.
+                Confirmed to match stated values within accepted industry deviations.
+              </p>
+            </div>
+
+            {/* Clean formula — full width banner */}
+            <div className="lg:col-span-4 rounded-2xl overflow-hidden" style={{ background: "#0F2C2A" }}>
+              <div className="flex flex-col sm:flex-row items-center justify-between px-8 py-6 gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(214, 255, 62, 0.1)", border: "1px solid rgba(214, 255, 62, 0.2)" }}>
+                    <Leaf size={16} style={{ color: "#D6FF3E" }} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white tracking-tight">No Artificial Colors. No Artificial Flavors.</h3>
+                    <p className="text-teal-400 text-xs mt-0.5">Ingredient list independently reviewed and confirmed.</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <span className="text-[11px] font-semibold px-3 py-1.5 rounded-md" style={{ background: "rgba(214, 255, 62, 0.1)", color: "#D6FF3E", border: "1px solid rgba(214, 255, 62, 0.2)" }}>
+                    No artificial colors
+                  </span>
+                  <span className="text-[11px] font-semibold px-3 py-1.5 rounded-md" style={{ background: "rgba(214, 255, 62, 0.1)", color: "#D6FF3E", border: "1px solid rgba(214, 255, 62, 0.2)" }}>
+                    No artificial flavors
+                  </span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── 6. Standard vs methylated comparison ─────────────── */}
-      <div className="py-16 px-4 bg-ink-50 border-y border-ink-100">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-teal-600 text-[10px] font-bold uppercase tracking-widest text-center mb-2">Why methylated forms are different</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-ink-950 tracking-tight text-center mb-10">Most multivitamins use the cheap form.</h2>
+      {/* ── METHYLATION EXPLAINER — dark editorial ────────────── */}
+      <section className="grain-overlay bg-teal-950 py-20 px-5 overflow-hidden">
+        <div className="relative z-10 max-w-5xl mx-auto">
+          <p className="text-teal-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-6">Why the form matters</p>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-none mb-4">
+            Most multivitamins<br />use the cheap form.
+          </h2>
+          <p className="text-teal-400 text-base leading-relaxed max-w-lg mb-14">
+            An estimated 10-15% of people carry MTHFR gene variants that reduce their ability
+            to convert synthetic vitamin forms. Methylated forms are already active.
+            They work for everyone.
+          </p>
 
           <div className="grid sm:grid-cols-2 gap-3">
             {[
               {
+                nutrient: "Vitamin B12",
                 standard: "Cyanocobalamin",
                 methylated: "Methylcobalamin",
-                nutrient: "Vitamin B12",
-                why: "Methylcobalamin is the active form your cells use. Cyanocobalamin must be converted, a step some people cannot complete efficiently.",
-                borderColor: "border-l-teal-600",
+                why: "Cyanocobalamin must be converted to methylcobalamin before the body can use it. If conversion is inefficient, the vitamin passes through unused.",
+                color: "#248179",
               },
               {
+                nutrient: "Folate",
                 standard: "Folic Acid",
                 methylated: "L-5-MTHF",
-                nutrient: "Folate",
-                why: "L-5-MTHF bypasses the MTHFR enzyme conversion step. People with MTHFR variants may accumulate unconverted folic acid instead of absorbing folate.",
-                borderColor: "border-l-violet-500",
+                why: "Folic acid requires the MTHFR enzyme to convert to the active form. People with MTHFR variants accumulate unconverted folic acid instead of absorbing folate.",
+                color: "#7C3AED",
               },
-            ].map(({ standard, methylated, nutrient, why, borderColor }) => (
-              <div key={nutrient} className={`bg-white rounded-xl p-5 border border-ink-200 border-l-4 ${borderColor}`}>
-                <p className="text-[10px] font-bold text-ink-400 uppercase tracking-widest mb-3">{nutrient}</p>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex-1 text-center bg-ink-50 border border-ink-200 rounded-lg px-3 py-2">
-                    <p className="text-[10px] font-semibold text-ink-400 uppercase tracking-wide mb-0.5">Standard form</p>
-                    <p className="text-sm font-semibold text-ink-500 line-through">{standard}</p>
-                  </div>
-                  <div className="text-ink-300 text-xs font-bold">vs</div>
-                  <div className="flex-1 text-center bg-teal-50 border border-teal-200 rounded-lg px-3 py-2">
-                    <p className="text-[10px] font-bold text-teal-600 uppercase tracking-wide mb-0.5">This formula</p>
-                    <p className="text-sm font-bold text-teal-700">{methylated}</p>
-                  </div>
+            ].map(({ nutrient, standard, methylated, why, color }) => (
+              <div key={nutrient} className="rounded-2xl overflow-hidden border border-teal-800">
+                <div className="px-6 py-4 border-b border-teal-800" style={{ background: "rgba(255,255,255,0.03)" }}>
+                  <p className="text-teal-500 text-[10px] font-bold tracking-widest uppercase">{nutrient}</p>
                 </div>
-                <p className="text-xs text-ink-500 leading-relaxed">{why}</p>
+                <div className="p-6">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex-1 rounded-xl border border-teal-800 px-4 py-3 text-center bg-teal-900/30">
+                      <p className="text-teal-600 text-[9px] font-bold tracking-widest uppercase mb-1">Standard</p>
+                      <p className="text-teal-400 text-sm font-semibold line-through opacity-60">{standard}</p>
+                    </div>
+                    <span className="text-teal-700 font-bold text-xs">vs</span>
+                    <div className="flex-1 rounded-xl px-4 py-3 text-center" style={{ background: `${color}22`, border: `1px solid ${color}40` }}>
+                      <p className="text-[9px] font-bold tracking-widest uppercase mb-1" style={{ color: `${color}` }}>This formula</p>
+                      <p className="text-white text-sm font-bold">{methylated}</p>
+                    </div>
+                  </div>
+                  <p className="text-teal-500 text-xs leading-relaxed">{why}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── 7. Testing methodology ────────────────────────────── */}
-      <div className="py-16 px-4 bg-teal-600 border-b border-teal-700">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-teal-300 text-[10px] font-bold uppercase tracking-widest text-center mb-2">How verification was conducted</p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight text-center mb-3">Independent. Randomised. Without brand involvement.</h2>
-          <p className="text-teal-200 text-sm text-center mb-10 max-w-lg mx-auto">
-            Testing was conducted by an independent third-party laboratory.
-            Samples were selected randomly — without any input from Ace Blend.
-          </p>
-
-          <div className="grid sm:grid-cols-3 gap-3 mb-6">
-            {[
-              {
-                name: "Nutritional Accuracy",
-                note: "Composition tested against declared label values. Both vitamin profile and mineral content verified within acceptable deviations.",
-              },
-              {
-                name: "Heavy Metal Screening",
-                note: "Lead, Arsenic, Mercury, and Cadmium all tested. All four within established safe limits.",
-              },
-              {
-                name: "Microbial Safety",
-                note: "Screened for Salmonella and Listeria monocytogenes. Neither detected.",
-              },
-            ].map(({ name, note }) => (
-              <div key={name} className="rounded-xl p-5 bg-white/10 border border-white/20">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
-                    <CheckCircle2 size={11} className="text-white" />
-                  </div>
-                  <p className="text-sm font-bold text-white tracking-tight">{name}</p>
-                </div>
-                <p className="text-teal-200 text-xs leading-relaxed">{note}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* What's not in it */}
-          <div className="bg-white/10 border border-white/20 rounded-xl p-5">
-            <p className="text-teal-200 text-[10px] font-bold uppercase tracking-widest mb-3">What&apos;s not in this formula</p>
-            <div className="flex flex-wrap gap-2">
+      {/* ── HOW TESTING WORKS ────────────────────────────────── */}
+      <section className="bg-ink-50 border-y border-ink-100 py-20 px-5">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
+            <div className="lg:w-1/3">
+              <p className="text-teal-600 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">How verification was conducted</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-ink-950 tracking-tight leading-tight">
+                Independent.<br />Randomised.<br />No brand involvement.
+              </h2>
+            </div>
+            <div className="lg:w-2/3 grid sm:grid-cols-3 gap-3">
               {[
-                "No artificial colors",
-                "No artificial flavors",
-                "No excess heavy metals",
-                "No Salmonella",
-                "No Listeria",
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-1.5 bg-white/10 border border-white/20 text-white text-[11px] font-medium px-3 py-1.5 rounded-md">
-                  <CheckCircle2 size={10} className="text-teal-300" />
-                  {item}
+                {
+                  num: "01",
+                  name: "Nutritional Accuracy",
+                  note: "Composition tested against declared label values. Vitamin profile and mineral content both verified.",
+                  icon: <FlaskConical size={15} className="text-teal-600" />,
+                },
+                {
+                  num: "02",
+                  name: "Heavy Metal Screening",
+                  note: "Lead, Arsenic, Mercury, and Cadmium all tested by an independent third-party lab. All four cleared.",
+                  icon: <Shield size={15} className="text-teal-600" />,
+                },
+                {
+                  num: "03",
+                  name: "Microbial Safety",
+                  note: "Screened for Salmonella and Listeria monocytogenes on randomised samples. Neither detected.",
+                  icon: <AlertCircle size={15} className="text-teal-600" />,
+                },
+              ].map(({ num, name, note, icon }) => (
+                <div key={num} className="bg-white rounded-2xl p-6 border border-ink-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-ink-300 text-xs font-bold">{num}</span>
+                    <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center">
+                      {icon}
+                    </div>
+                  </div>
+                  <h3 className="text-sm font-bold text-ink-950 tracking-tight mb-2">{name}</h3>
+                  <p className="text-ink-500 text-xs leading-relaxed">{note}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── 8. What certification means ──────────────────────── */}
-      <div className="py-16 px-4 bg-white border-b border-ink-100">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center gap-10 mb-12">
-            <div className="flex-shrink-0 text-center">
-              <div className="relative w-24 h-24 mx-auto mb-3">
-                <div className="absolute inset-0 rounded-full ring-2 ring-teal-200 ring-offset-2" />
-                <div className="absolute inset-0 rounded-full bg-teal-50 flex items-center justify-center">
-                  <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet Certified" width={72} height={72} className="object-contain" />
+      {/* ── WHAT CERTIFICATION MEANS ─────────────────────────── */}
+      <section className="bg-white py-20 px-5 border-b border-ink-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col lg:flex-row items-start gap-14">
+
+            <div className="flex-shrink-0 text-center lg:text-left">
+              <div className="relative w-20 h-20 mx-auto lg:mx-0 mb-4">
+                <div className="absolute inset-0 rounded-full ring-1 ring-teal-200 ring-offset-4" />
+                <div className="w-20 h-20 rounded-full bg-teal-50 flex items-center justify-center">
+                  <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={60} height={60} className="object-contain" />
                 </div>
               </div>
-              <p className="text-xs text-ink-900 font-bold tracking-tight">The Clean Sheet</p>
-              <p className="text-[10px] text-ink-400 font-medium">Independent Certification</p>
+              <p className="text-xs font-bold text-ink-900 tracking-tight">The Clean Sheet</p>
+              <p className="text-[10px] text-ink-400">Independent Certification</p>
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-ink-950 tracking-tight mb-4">What certification means</h2>
-              <p className="text-ink-500 text-sm leading-relaxed mb-3">
+
+            <div className="flex-1">
+              <h2 className="text-3xl sm:text-4xl font-bold text-ink-950 tracking-tight mb-5">What certification means</h2>
+              <p className="text-ink-500 text-sm leading-relaxed mb-4">
                 The Clean Sheet is an independent certification body. We have no commercial relationship
                 with Ace Blend. Our panel reviewed the lab reports, the ingredient forms, and the label.
-                Certified only what the evidence supports.
+                We certified only what the evidence supports. Nothing else appears on this page.
               </p>
-              <p className="text-ink-500 text-sm leading-relaxed">
-                Our evaluation covers label accuracy, ingredient form verification, purity testing, and
-                formula composition review. We set the trust ceiling above what regulations require.
+              <p className="text-ink-500 text-sm leading-relaxed mb-10">
+                Our evaluation covers label accuracy, ingredient form verification, purity testing,
+                and formula composition review. We set the trust ceiling above what regulations require.
               </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { value: "4", label: "Evaluation layers", color: "text-teal-600", bg: "bg-teal-50 border-teal-100" },
+                  { value: "10", label: "Claims assessed", color: "text-coral-500", bg: "bg-coral-50 border-coral-100" },
+                  { value: "5", label: "Tests on file", color: "text-violet-600", bg: "bg-violet-50 border-violet-100" },
+                  { value: "1 yr", label: "Certification validity", color: "text-teal-600", bg: "bg-teal-50 border-teal-100" },
+                ].map(({ value, label, color, bg }) => (
+                  <div key={label} className={`text-center rounded-xl p-5 border ${bg}`}>
+                    <p className={`text-3xl font-bold tracking-tight leading-none mb-2 ${color}`}>{value}</p>
+                    <p className="text-xs text-ink-500">{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { value: "4", label: "Evaluation layers", accent: "border-teal-200 bg-teal-50", val: "text-teal-600" },
-              { value: "10", label: "Claims assessed", accent: "border-coral-200 bg-coral-50", val: "text-coral-500" },
-              { value: "5", label: "Tests on file", accent: "border-gold-200 bg-gold-50", val: "text-gold-500" },
-              { value: "1 yr", label: "Certification validity", accent: "border-teal-200 bg-teal-50", val: "text-teal-600" },
-            ].map(({ value, label, accent, val }) => (
-              <div key={label} className={`text-center rounded-xl p-5 border ${accent}`}>
-                <p className={`text-3xl font-bold tracking-tight leading-none mb-1 ${val}`}>{value}</p>
-                <p className="text-xs text-ink-500 mt-2">{label}</p>
+      {/* ── FOOTER ────────────────────────────────────────────── */}
+      <footer className="bg-teal-950 py-14 px-5">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={20} height={20} className="object-contain" />
+                <span className="text-white text-sm font-bold tracking-tight">The Clean Sheet</span>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+              <p className="text-teal-600 text-[11px]">TCS-IN-2026-071834 [SAMPLE] · Valid 15 May 2026 to 14 May 2027 [SAMPLE]</p>
+            </div>
 
-      {/* ── 9. Footer ─────────────────────────────────────────── */}
-      <div className="bg-teal-600 py-12 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={24} height={24} className="object-contain" />
-            <span className="text-white text-sm font-bold tracking-tight">The Clean Sheet</span>
+            <Link
+              href="/verify/tcs-in-2026-071834-d9a3f6c2b8e1"
+              className="inline-flex items-center gap-2 text-teal-300 hover:text-white text-xs font-semibold border border-teal-700 hover:border-teal-500 px-5 py-2.5 rounded-lg transition-colors"
+            >
+              View full technical certification
+              <ArrowUpRight size={12} />
+            </Link>
           </div>
-          <p className="text-teal-200 text-xs mb-1">Certificate ID: TCS-IN-2026-071834 [SAMPLE]</p>
-          <p className="text-teal-300 text-xs mb-6">Valid: 15 May 2026 to 14 May 2027 [SAMPLE]</p>
-          <Link
-            href="/verify/tcs-in-2026-071834-d9a3f6c2b8e1"
-            className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white text-xs font-medium px-5 py-2.5 rounded-lg transition-colors"
-          >
-            View full technical certification
-          </Link>
-          <p className="text-teal-300 text-[11px] mt-8">
-            Global regulations set the legal floor. The Clean Sheet sets the trust ceiling.
-          </p>
-          <p className="text-teal-400 text-[10px] mt-1">© The Clean Sheet 2026</p>
+
+          <div className="mt-10 pt-8 border-t border-teal-900 text-center">
+            <p className="text-teal-700 text-[11px]">
+              Global regulations set the legal floor. The Clean Sheet sets the trust ceiling.
+            </p>
+            <p className="text-teal-800 text-[10px] mt-1">© The Clean Sheet 2026</p>
+          </div>
         </div>
-      </div>
+      </footer>
 
     </div>
   );
