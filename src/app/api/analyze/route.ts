@@ -108,12 +108,15 @@ function isNavNoise(hint: string): boolean {
 }
 
 // Try to extract a usable product name + brand from scraped content
-// so Gemini can search for the INCI on external sources
+// so Gemini can search for the INCI on external sources.
+// Jina AI always emits a "Title: ..." line first — use that as the primary signal.
 function extractProductHint(content: string): string {
   if (isBlockedPage(content)) return "";
-  // Grab the first non-empty lines, usually title + brand on product pages
+  // Prefer Jina's "Title:" line — it's always the exact page title, cleanest signal
+  const titleMatch = content.match(/^Title:\s*(.+)$/m);
+  if (titleMatch) return titleMatch[1].trim().slice(0, 300);
+  // Fallback: first 5 non-empty lines
   const lines = content.split("\n").map((l) => l.trim()).filter(Boolean);
-  // Take up to first 5 meaningful lines (skip very short ones)
   const hint = lines.filter((l) => l.length > 5).slice(0, 5).join(" | ");
   return hint.slice(0, 300);
 }
@@ -264,8 +267,19 @@ export async function POST(req: Request) {
       // Prefer it over scraped content (which is often nav noise on JS-heavy apps).
       const slugFromURL = productNameFromURL(q);
       const isEcom = isEcomPlatform(q);
+      const brandHint = brandHintFromURL(q);
 
-      const pageContent = await scrapeURL(q);
+      // Build a clean InciDecoder search term using brand hint + URL slug — more specific
+      // than using scraped hint which may contain Jina header noise.
+      const inciSearchTerm = [brandHint, slugFromURL].filter(Boolean).join(" ").trim() || slugFromURL;
+      const inciDecoderSearch = `https://incidecoder.com/search?query=${encodeURIComponent(inciSearchTerm)}`;
+
+      // Scrape page and InciDecoder IN PARALLEL to halve latency
+      const [pageContent, inciContent] = await Promise.all([
+        scrapeURL(q),
+        scrapeURL(inciDecoderSearch),
+      ]);
+
       if (pageContent) {
         scrapedContext = pageContent;
         const hint = extractProductHint(pageContent);
@@ -282,15 +296,8 @@ export async function POST(req: Request) {
         if (!q) return outOfScope();
       }
 
-      // Proactively scrape InciDecoder for this product name in parallel with everything else.
-      // This guarantees INCI data even when the brand page is JS-rendered or bot-protected.
-      const productSearchName = (q || slugFromURL).slice(0, 100);
-      if (productSearchName) {
-        const inciDecoderSearch = `https://incidecoder.com/search?query=${encodeURIComponent(productSearchName)}`;
-        const inciContent = await scrapeURL(inciDecoderSearch);
-        if (inciContent && !isBlockedPage(inciContent)) {
-          inciDecoderContext = inciContent.slice(0, 3000);
-        }
+      if (inciContent && !isBlockedPage(inciContent)) {
+        inciDecoderContext = inciContent.slice(0, 3000);
       }
     }
 
