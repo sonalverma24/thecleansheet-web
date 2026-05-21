@@ -127,7 +127,7 @@ export default function CertBento() {
               59<span className="text-teal-300/50">.92</span>
             </p>
             <p className="text-teal-200 text-xs mt-1 mb-2">
-              Tested SPF — label claims 50+
+              Tested SPF · label claims 50+
             </p>
             <p className="text-white/40 text-xs leading-relaxed max-w-xs">
               Independent lab test. The product delivers more protection than labelled.

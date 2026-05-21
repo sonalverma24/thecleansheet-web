@@ -839,7 +839,7 @@ export default function CertificationProofPage() {
                 { label: "Evaluator", value: "Dr. Priya Sharma, PhD Toxicology [SAMPLE]" },
               ].map(({ label, value }) => (
                 <div key={label} className="py-3 border-b border-teal-900 flex items-start gap-4">
-                  <span className="text-teal-600 text-xs w-36 flex-shrink-0">{label}</span>
+                  <span className="text-teal-600 text-xs w-28 flex-shrink-0">{label}</span>
                   <span className="text-teal-200 text-xs">{value}</span>
                 </div>
               ))}
@@ -847,7 +847,7 @@ export default function CertificationProofPage() {
 
             <div className="mt-6 pt-6 border-t border-teal-900">
               <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-3">Change history</p>
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="text-teal-600">15 May 2026</span>
                 <span className="bg-teal-900 border border-teal-700 text-teal-300 text-[10px] px-2.5 py-1 rounded-full">Certification issued</span>
                 <span className="text-teal-400">Initial certification granted [SAMPLE]</span>
