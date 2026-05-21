@@ -1,30 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Scale, FlaskConical, Building2, ShieldCheck, Leaf } from "lucide-react";
+import type { ReactNode } from "react";
 
-/* ── Graphic tick SVGs ──────────────────────────────────── */
-
-function TickFilled({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className="flex-shrink-0">
-      <defs>
-        <linearGradient id="tg1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2E9E96" />
-          <stop offset="100%" stopColor="#1D6B65" />
-        </linearGradient>
-      </defs>
-      <circle cx="10" cy="10" r="9.5" fill="url(#tg1)" />
-      <path
-        d="M6 10.4l2.8 2.8L14.2 7.6"
-        stroke="white"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+/* ── Graphic tick SVG ───────────────────────────────────── */
 
 function TickOutline({ size = 14 }: { size?: number }) {
   return (
@@ -57,6 +37,7 @@ type Pillar = {
   id: string;
   name: string;
   sublabel: string;
+  icon: ReactNode;
   checks: Check[];
 };
 
@@ -65,6 +46,7 @@ const pillars: Pillar[] = [
     id: "legal",
     name: "Legal Compliance",
     sublabel: "Permitted in every assessed market",
+    icon: <Scale size={15} />,
     checks: [
       {
         id: "india",
@@ -107,6 +89,7 @@ const pillars: Pillar[] = [
     id: "safety",
     name: "Ingredient Safety",
     sublabel: "Every ingredient reviewed for known hazards",
+    icon: <FlaskConical size={15} />,
     checks: [
       {
         id: "hazard",
@@ -144,6 +127,7 @@ const pillars: Pillar[] = [
     id: "manufacturing",
     name: "Manufacturing Quality",
     sublabel: "Facility, process, and batch documentation reviewed",
+    icon: <Building2 size={15} />,
     checks: [
       {
         id: "gmp",
@@ -176,6 +160,7 @@ const pillars: Pillar[] = [
     id: "claims",
     name: "Claims Verified",
     sublabel: "Every claim reviewed against submitted test evidence",
+    icon: <ShieldCheck size={15} />,
     checks: [
       {
         id: "spf",
@@ -233,6 +218,7 @@ const pillars: Pillar[] = [
     id: "ethics",
     name: "Ethics and Sourcing",
     sublabel: "Formula and ingredient origins reviewed",
+    icon: <Leaf size={15} />,
     checks: [
       {
         id: "no-animal",
@@ -307,7 +293,15 @@ export default function PillarDrilldown() {
                     : "#ffffff",
                 }}
               >
-                <TickFilled size={20} />
+                <div
+                  className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center transition-all duration-300"
+                  style={{
+                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgba(0,0,0,0.04)",
+                    color: isOpen ? "#248179" : "#A7A5A5",
+                  }}
+                >
+                  {pillar.icon}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p
                     className="text-base font-medium tracking-tight transition-colors duration-200"

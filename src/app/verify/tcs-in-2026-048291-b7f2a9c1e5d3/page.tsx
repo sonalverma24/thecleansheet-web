@@ -10,42 +10,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/* ── Score Ring (SVG) ─────────────────────────────────────────── */
-function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
-  const sw = 10;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const logoSize = Math.round((r - sw / 2) * 2) - 4;
-  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
-  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
-  const br = Math.round(size * 0.135);
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={sw} />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-        <div className="rounded-full overflow-hidden bg-white/10 flex items-center justify-center" style={{ width: logoSize, height: logoSize }}>
-          <Image src="/images/tcs-certified-badge.png" alt="TCS" width={logoSize} height={logoSize} className="object-contain p-1" />
-        </div>
-      </div>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
-        <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="#2dd4bf" strokeWidth={sw}
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-        <circle cx={bx} cy={by} r={br} fill="#2dd4bf" />
-        <text x={bx} y={by + br * 0.4} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#0f172a" fontFamily="monospace">
-          {score}
-        </text>
-      </svg>
-    </div>
-  );
-}
-
 /* ── Claim row ────────────────────────────────────────────────── */
 type ClaimStatus = "verified" | "verified-qualified" | "not-verified";
 function ClaimRow({ claim, status, detail }: { claim: string; status: ClaimStatus; detail: string }) {
@@ -64,28 +28,6 @@ function ClaimRow({ claim, status, detail }: { claim: string; status: ClaimStatu
         </div>
       </div>
       <span className={`text-[11px] px-2.5 py-1 rounded-full border font-medium self-start sm:flex-shrink-0 ${cfg.pill}`}>{cfg.label}</span>
-    </div>
-  );
-}
-
-/* ── Pillar bar ───────────────────────────────────────────────── */
-function PillarBar({ name, score, max, note }: { name: string; score: number; max: number; note: string }) {
-  const pct = Math.round((score / max) * 100);
-  const color = pct >= 85 ? "bg-teal-500" : pct >= 70 ? "bg-blue-500" : "bg-amber-500";
-  const textColor = pct >= 85 ? "text-teal-600" : pct >= 70 ? "text-blue-600" : "text-amber-600";
-  return (
-    <div className="py-4 border-b border-teal-50 last:border-0">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-medium text-ink-800">{name}</span>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-mono font-medium ${textColor}`}>{score}/{max}</span>
-          <span className="text-amber-400 text-[10px] italic">[SAMPLE]</span>
-        </div>
-      </div>
-      <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden mb-2">
-        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
-      </div>
-      <p className="text-xs text-ink-500 leading-relaxed">{note}</p>
     </div>
   );
 }
@@ -190,17 +132,6 @@ export default function CertificationProofPage() {
               <p className="text-teal-400 text-base mb-0.5">SPF 50+ PA++++</p>
               <p className="text-teal-600 text-sm mb-5">CodeSkin India</p>
 
-              {/* Score + tier */}
-              <div className="flex items-center gap-5 mb-5">
-                <ScoreRing score={86} size={72} />
-                <div>
-                  <p className="text-3xl font-medium text-white leading-none">86<span className="text-teal-600 text-base">/100</span></p>
-                  <p className="text-teal-300 text-sm mt-1 font-medium">TCS Silver Certified</p>
-                  <p className="text-teal-600 text-xs mt-0.5">Score range: 75-89</p>
-                  <p className="text-amber-500 text-[10px] italic mt-1">[SAMPLE score]</p>
-                </div>
-              </div>
-
               {/* Key stats grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                 {[
@@ -233,38 +164,7 @@ export default function CertificationProofPage() {
         </div>
       </div>
 
-      {/* ── 3. Pillar score tiles ─────────────────────────────── */}
-      <div className="bg-ink-50 border-y border-ink-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { name: "Ingredient Safety", score: 44, max: 50, icon: <FlaskConical size={14} className="text-teal-600" /> },
-              { name: "Manufacturing", score: 16, max: 20, icon: <Building2 size={14} className="text-teal-600" /> },
-              { name: "Claims", score: 18, max: 20, icon: <Shield size={14} className="text-teal-600" /> },
-              { name: "Ethics", score: 8, max: 10, icon: <Leaf size={14} className="text-teal-600" /> },
-            ].map(({ name, score, max, icon }) => {
-              const pct = Math.round((score / max) * 100);
-              return (
-                <div key={name} className="bg-white border border-ink-100 rounded-2xl p-4">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    {icon}
-                    <span className="text-[10px] text-ink-500 uppercase tracking-wider">{name}</span>
-                  </div>
-                  <p className="text-ink-900 text-lg font-medium leading-none mb-0.5">
-                    {score}<span className="text-ink-400 text-xs font-normal">/{max}</span>
-                  </p>
-                  <div className="h-1 bg-ink-100 rounded-full mt-2">
-                    <div className="h-full bg-teal-500 rounded-full" style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="text-ink-400 text-[10px] mt-1.5">{pct}%</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ── 4. Main content ──────────────────────────────────────── */}
+      {/* ── 3. Main content ──────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-6">
 
         {/* ─ Legal Gate ─ */}
@@ -362,34 +262,10 @@ export default function CertificationProofPage() {
             <FlaskConical size={16} className="text-teal-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-medium text-ink-900">Requirement 2: Ingredient Safety</h2>
-              <p className="text-xs text-ink-400">44/50 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid sm:grid-cols-3 gap-4 mb-6">
-              {[
-                { label: "Hazard Profile", score: 22, max: 25, note: "Minor deductions for nano UV filter data gaps and Propylene Glycol Dibenzoate limited long-term data." },
-                { label: "Exposure Assessment", score: 13, max: 15, note: "Leave-on product with high skin contact. MoS calculations adequate. Minor gap on systemic absorption data for newer UV filters." },
-                { label: "Sensitisation", score: 9, max: 10, note: "Benzyl Alcohol present at preservative levels - mild sensitizer potential at low concentrations. No significant allergens above threshold." },
-              ].map(({ label, score, max, note }) => {
-                const pct = Math.round((score / max) * 100);
-                return (
-                  <div key={label} className="bg-teal-50/60 rounded-2xl p-4">
-                    <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-1">{label}</p>
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-2xl font-medium text-teal-700">{score}</span>
-                      <span className="text-xs text-ink-400">/{max}</span>
-                    </div>
-                    <div className="h-1 bg-teal-100 rounded-full mb-3">
-                      <div className="h-full bg-teal-500 rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                    <p className="text-[11px] text-ink-500 leading-relaxed">{note}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-3">Ingredients with noted concerns</p>
+              <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-3">Ingredients with noted concerns</p>
             <div className="space-y-3">
               {[
                 {
@@ -448,30 +324,9 @@ export default function CertificationProofPage() {
             <Building2 size={16} className="text-teal-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-medium text-ink-900">Requirement 3: Manufacturing Quality</h2>
-              <p className="text-xs text-ink-400">16/20 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid sm:grid-cols-3 gap-4 mb-6">
-              {[
-                { label: "Facility / QMS", score: 7, max: 8 },
-                { label: "Batch Testing", score: 6, max: 7 },
-                { label: "Supplier / Ingredients", score: 3, max: 5 },
-              ].map(({ label, score, max }) => {
-                const pct = Math.round((score / max) * 100);
-                return (
-                  <div key={label} className="bg-teal-50/60 rounded-2xl p-4 text-center">
-                    <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-2">{label}</p>
-                    <span className="text-2xl font-medium text-teal-700">{score}</span>
-                    <span className="text-sm text-ink-400">/{max}</span>
-                    <div className="h-1 bg-teal-100 rounded-full mt-2">
-                      <div className="h-full bg-teal-500 rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
             <div className="divide-y divide-teal-50">
               <Row label="Manufacturer" value="Effeza Science Pvt Ltd" />
               <Row label="GMP certification" value="GMP-certified + FDA India-approved manufacturing facility" pass={true} />
@@ -491,30 +346,9 @@ export default function CertificationProofPage() {
             <Shield size={16} className="text-teal-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-medium text-ink-900">Requirement 4: Claims and Transparency</h2>
-              <p className="text-xs text-ink-400">18/20 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid sm:grid-cols-3 gap-4 mb-6">
-              {[
-                { label: "Claim Substantiation", score: 9, max: 10 },
-                { label: "Label / Marketing", score: 5, max: 6 },
-                { label: "INCI Disclosure", score: 4, max: 4 },
-              ].map(({ label, score, max }) => {
-                const pct = Math.round((score / max) * 100);
-                return (
-                  <div key={label} className="bg-teal-50/60 rounded-2xl p-4 text-center">
-                    <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-2">{label}</p>
-                    <span className="text-2xl font-medium text-teal-700">{score}</span>
-                    <span className="text-sm text-ink-400">/{max}</span>
-                    <div className="h-1 bg-teal-100 rounded-full mt-2">
-                      <div className="h-full bg-teal-500 rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
             <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-1">What was verified and what was not</p>
             <p className="text-xs text-ink-400 italic mb-4">Not verified does not mean a claim is false - it means sufficient evidence was not submitted for The Clean Sheet to confirm it against the standard.</p>
 
@@ -641,24 +475,9 @@ export default function CertificationProofPage() {
             <Leaf size={16} className="text-teal-600 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-medium text-ink-900">Requirement 5: Ethics and Sustainability</h2>
-              <p className="text-xs text-ink-400">8/10 <span className="text-amber-500 italic">[SAMPLE]</span></p>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-              {[
-                { label: "Animal Welfare", score: 3, max: 3 },
-                { label: "Natural Origin", score: 2, max: 3 },
-                { label: "Ethical Sourcing", score: 2, max: 2 },
-                { label: "Packaging", score: 1, max: 2 },
-              ].map(({ label, score, max }) => (
-                <div key={label} className="bg-teal-50/60 rounded-2xl p-3 text-center">
-                  <p className="text-[10px] text-ink-400 mb-1">{label}</p>
-                  <span className="text-xl font-medium text-teal-700">{score}</span>
-                  <span className="text-xs text-ink-400">/{max}</span>
-                </div>
-              ))}
-            </div>
             <div className="divide-y divide-teal-50">
               <Row label="Vegan ingredients" value="Confirmed - no animal-derived INCI identified" pass={true} />
               <Row label="Cruelty-free" value="Brand declaration reviewed [SAMPLE - third-party audit not submitted]" pass={true} />

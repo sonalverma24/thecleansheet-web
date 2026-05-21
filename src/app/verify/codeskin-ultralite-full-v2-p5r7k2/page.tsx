@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Shield, Sun, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { Shield, Sun, ArrowUpRight, CheckCircle2, QrCode } from "lucide-react";
 import PillarDrilldown from "../codeskin-ultralite-proof-q3w5e7r2/PillarDrilldown";
 import ScrollReveal from "./ScrollReveal";
 import CollapsibleCert from "./CollapsibleCert";
@@ -113,6 +113,18 @@ export default function VerifiedPage() {
                 </p>
               </div>
 
+              {/* MIDDLE: Registry verify CTA */}
+              <div className="animate-fade-up delay-500 hidden sm:block">
+                <Link
+                  href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
+                  className="inline-flex items-center gap-1.5 text-[10px] rounded-lg px-3 py-1.5 transition-all duration-200 hover:gap-2"
+                  style={{ color: "#248179", border: "1px solid #c2e8e4", background: "rgba(36,129,121,0.04)" }}
+                >
+                  <QrCode size={10} />
+                  Verify on registry
+                </Link>
+              </div>
+
               {/* BOTTOM GROUP — anchored to image bottom */}
               <div className="animate-fade-up delay-500 pt-4 border-t border-ink-100">
                 {/* Cert heading */}
@@ -200,18 +212,20 @@ export default function VerifiedPage() {
       {/* Gradient rule under hero */}
       <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, #EEEDED 15%, #EEEDED 85%, transparent)" }} />
 
-      {/* ─── Scrolling credential strip ───────────────────────── */}
-      <div className="border-b border-ink-100 overflow-hidden">
-        <div
-          className="flex items-center whitespace-nowrap py-2.5"
-          style={{ animation: "marquee 64s linear infinite" }}
-        >
-          {[...credentialTicker, ...credentialTicker].map((item, i) => (
-            <span key={i} className="flex items-center gap-3 mx-5 flex-shrink-0">
-              <CheckCircle2 size={9} className="text-teal-500 flex-shrink-0" />
-              <span className="text-[10px] tracking-[0.18em] uppercase text-ink-400">{item}</span>
-            </span>
-          ))}
+      {/* ─── Credential chips ───────────────────────────────── */}
+      <div className="border-b border-ink-100 px-5 py-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-wrap gap-2">
+            {credentialTicker.map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] text-ink-600 border border-ink-100 bg-ink-50 hover:border-teal-200 hover:bg-teal-50 transition-colors cursor-default"
+              >
+                <CheckCircle2 size={10} className="text-teal-500 flex-shrink-0" />
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -220,23 +234,23 @@ export default function VerifiedPage() {
 
       {/* ─── Independent Review ───────────────────────────────── */}
       <section className="px-5 pt-12 pb-2">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="max-w-5xl mx-auto">
           <ScrollReveal>
             <div>
               <p className="text-[9px] tracking-[0.22em] uppercase mb-2" style={{ color: "#248179" }}>
                 5 pillars · every check passed
               </p>
               <h2
-                className="font-medium text-ink-950 tracking-tight leading-none"
+                className="font-medium text-ink-950 tracking-tight leading-none mb-2"
                 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)" }}
               >
                 Independent review
               </h2>
+              <p className="text-ink-400 text-xs leading-relaxed">
+                Open any pillar to see every check. Open a check to read the evidence.
+              </p>
             </div>
           </ScrollReveal>
-          <p className="text-ink-400 text-sm max-w-xs leading-relaxed hidden sm:block">
-            Click any pillar to see every check. Click a check to see the evidence.
-          </p>
         </div>
       </section>
 
