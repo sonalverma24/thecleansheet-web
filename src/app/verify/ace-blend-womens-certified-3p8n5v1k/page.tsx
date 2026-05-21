@@ -33,11 +33,19 @@ export default function AceBlendCertPage() {
       <section className="grain-overlay bg-teal-950 overflow-hidden">
         <div className="relative z-10 max-w-5xl mx-auto px-5 pt-10 pb-12">
 
-          <div className="animate-fade-in mb-5">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-teal-400 border border-teal-700 px-3 py-1.5 rounded-full">
-              <span className="w-1 h-1 rounded-full bg-teal-400" />
-              Independently Certified · The Clean Sheet
-            </span>
+          {/* TCS identity — who is certifying this */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 mb-6 border-b border-teal-800 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={32} height={32} className="object-contain" />
+              <div>
+                <p className="text-white text-sm font-bold tracking-tight">The Clean Sheet</p>
+                <p className="text-teal-400 text-xs">Independent third-party certification body</p>
+              </div>
+            </div>
+            <p className="text-teal-500 text-xs leading-relaxed max-w-xs">
+              No commercial relationship with Ace Blend. We reviewed their lab reports,
+              ingredient forms, and label. This page shows only what the evidence supports.
+            </p>
           </div>
 
           <div className="flex flex-col lg:flex-row items-start lg:items-end gap-8 lg:gap-12">
