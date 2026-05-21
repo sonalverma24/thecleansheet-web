@@ -133,9 +133,7 @@ export default function CertificationProofPage() {
           <div className="mb-6 flex items-start gap-3 bg-amber-900/30 border border-amber-700/40 rounded-2xl px-4 py-3">
             <AlertCircle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-300/90 leading-relaxed">
-              <span className="font-semibold">Sample certification.</span> Data marked{" "}
-              <span className="font-semibold italic text-amber-300">[SAMPLE]</span> is illustrative.
-              Ingredient, test result, and claims data is drawn from publicly available sources at codeskin.in.
+              <span className="font-semibold">Sample certification page.</span> All data on this page is illustrative and does not represent actual product data. This page demonstrates what a certified proof page would look like under The Clean Sheet standard.
             </p>
           </div>
 
