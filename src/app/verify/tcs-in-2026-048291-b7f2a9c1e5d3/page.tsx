@@ -119,8 +119,8 @@ export default function CertificationProofPage() {
             <span className="hidden sm:block text-teal-400 text-xs font-mono">TCS-IN-2026-048291</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-            <span className="text-teal-300 text-xs font-medium">ACTIVE</span>
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-amber-400 text-xs font-medium">Sample Data — Verification Not Complete</span>
           </div>
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function CertificationProofPage() {
                 </div>
                 <div>
                   <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-0.5">Valid Until</p>
-                  <p className="text-teal-200 text-xs">14 May 2028 <span className="text-amber-500 italic">[SAMPLE]</span></p>
+                  <p className="text-teal-200 text-xs">14 May 2027 <span className="text-amber-500 italic">[SAMPLE]</span></p>
                 </div>
               </div>
             </div>
@@ -856,7 +856,7 @@ export default function CertificationProofPage() {
                 { label: "Formula version", value: "FV-2026-01 [SAMPLE]" },
                 { label: "Certificate version", value: "1.0 [SAMPLE]" },
                 { label: "Certification date", value: "15 May 2026 [SAMPLE]" },
-                { label: "Expiry date", value: "14 May 2028 [SAMPLE]" },
+                { label: "Expiry date", value: "14 May 2027 [SAMPLE]" },
                 { label: "Status", value: "Active" },
                 { label: "Evaluator", value: "Dr. Priya Sharma, PhD Toxicology [SAMPLE]" },
               ].map(({ label, value }) => (

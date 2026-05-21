@@ -53,8 +53,8 @@ export default function ConsumerCertPage() {
             <span className="text-teal-700 text-xs hidden sm:block">Independent Certification</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-            <span className="text-teal-300 text-xs font-medium">Verified Active</span>
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-amber-400 text-xs font-medium">Sample Data — Verification Not Complete</span>
           </div>
         </div>
       </div>
@@ -360,7 +360,7 @@ export default function ConsumerCertPage() {
               { value: "5", label: "Evaluation layers" },
               { value: "12", label: "Claims assessed" },
               { value: "9", label: "Tests on file" },
-              { value: "2 yr", label: "Certification validity" },
+              { value: "1 yr", label: "Certification validity" },
             ].map(({ value, label }) => (
               <div key={label} className="text-center bg-teal-50 rounded-2xl p-4 border border-teal-100">
                 <p className="text-2xl font-medium text-teal-700 mb-1">{value}</p>
@@ -379,7 +379,7 @@ export default function ConsumerCertPage() {
             <span className="text-teal-200 text-sm font-medium">The Clean Sheet</span>
           </div>
           <p className="text-teal-500 text-xs mb-2">Certificate ID: TCS-IN-2026-048291 [SAMPLE]</p>
-          <p className="text-teal-600 text-xs mb-6">Valid: 15 May 2026 to 14 May 2028 [SAMPLE]</p>
+          <p className="text-teal-600 text-xs mb-6">Valid: 15 May 2026 to 14 May 2027 [SAMPLE]</p>
           <Link
             href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
             className="inline-flex items-center gap-2 border border-teal-700 text-teal-300 hover:text-white hover:border-teal-500 text-xs px-5 py-2.5 rounded-full transition-colors"
