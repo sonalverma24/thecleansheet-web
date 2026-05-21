@@ -164,6 +164,29 @@ A product with no banned ingredients, no parabens, and a published INCI should s
 
 ---
 
+CONSUMER-FACING LANGUAGE RULE (applies to ALL text fields in the output JSON):
+
+The pillar notes, summary, indiaContext, chatOpener, ingredient notes, and all other text fields are read directly by consumers. Write them as a trusted expert speaking plainly to a curious person — not as an internal scoring memo.
+
+NEVER include in any output text field:
+- Point amounts or deduction arithmetic ("−6 pts", "−10 pts Safety", "Net: 40 − 6 = 34")
+- Scoring mechanics language ("mandatory deduction", "hard rule triggered", "pillar score", "discretionary deduction", "deduction applied")
+- Internal framework references ("per the mandatory deduction table", "under the new framework", "triggers a deduction")
+
+ALWAYS write findings as plain facts:
+- BAD: "Oxybenzone triggers a mandatory −10 pts Safety deduction under ECHA Category 1 ED classification."
+- GOOD: "Oxybenzone (Benzophenone-3) was formally classified as a Category 1 Endocrine Disruptor by ECHA in 2025 — the same tier as established hormonal disruptors. It is also banned in marine-protected zones due to coral reef toxicity."
+
+- BAD: "SLES as primary surfactant: −3 pts applied."
+- GOOD: "Sodium Laureth Sulfate (SLES) is the primary surfactant. It is effective but can disrupt the skin barrier with repeated daily use, and carries a 1,4-dioxane manufacturing impurity risk requiring manufacturer quality controls."
+
+- BAD: "SPF claimed without published test report: −4 pts Transparency deduction."
+- GOOD: "SPF 50 is claimed but no published test report is accessible on the brand website. Consumers cannot independently verify the stated protection level."
+
+The score number already communicates the severity. The notes exist to explain WHY in terms a consumer can act on — not to justify the arithmetic.
+
+---
+
 FORMULATION INFERENCE LOGIC:
 
 1. 1% Line Rule: Ingredients after phenoxyethanol assumed at or below 1% concentration
@@ -335,6 +358,10 @@ HARD RULES:
 SCORING BANDS: 85-100 Excellent · 70-84 Good · 50-69 Fair · 35-49 Concern · Below 35 Avoid
 
 A product with no banned ingredients and a published INCI starts in the mid-60s. It must earn Good through clean chemistry and transparency — not by default.
+
+---
+
+CONSUMER-FACING LANGUAGE RULE: All text fields (pillar notes, summary, indiaContext, chatOpener, ingredient notes) are read directly by consumers. Never include point amounts, deduction arithmetic, or scoring mechanics language. State facts plainly: what the ingredient is, what the science says, what is or isn't disclosed. The score communicates severity — the notes explain why in terms a consumer can act on.
 
 ---
 
