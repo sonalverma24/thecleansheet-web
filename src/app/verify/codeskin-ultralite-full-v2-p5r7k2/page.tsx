@@ -126,10 +126,9 @@ export default function VerifiedPage() {
               </div>
 
               {/* BOTTOM GROUP — anchored to image bottom */}
-              <div className="animate-fade-up delay-500 pt-4 border-t border-ink-100">
+              <div className="animate-fade-up delay-500 rounded-xl border border-teal-100 bg-teal-50/20 p-4">
                 {/* Cert heading */}
-                <p className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase mb-1.5" style={{ color: "#248179" }}>
-                  <span className="w-1 h-1 rounded-sm bg-teal-500 inline-block flex-shrink-0" />
+                <p className="text-[9px] tracking-[0.2em] uppercase mb-1.5 text-ink-400">
                   Official record
                 </p>
                 <h2
@@ -185,6 +184,10 @@ export default function VerifiedPage() {
                       className="object-contain p-4 sm:p-8"
                       unoptimized
                     />
+                    {/* Product detail strip */}
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+                      <span className="text-[8px] text-teal-700/50 tracking-[0.18em] uppercase">30 ml · India · FV-2026-01</span>
+                    </div>
                   </div>
 
                   {/* TCS stamp */}
@@ -223,9 +226,9 @@ export default function VerifiedPage() {
             {credentialTicker.map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] text-ink-600 border border-ink-100 bg-ink-50 hover:border-teal-200 hover:bg-teal-50 transition-colors cursor-default"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium text-ink-700 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 transition-colors cursor-default"
               >
-                <CheckCircle2 size={10} className="text-teal-500 flex-shrink-0" />
+                <CheckCircle2 size={10} className="text-teal-600 flex-shrink-0" />
                 {item}
               </span>
             ))}

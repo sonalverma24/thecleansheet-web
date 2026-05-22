@@ -325,7 +325,7 @@ export default function PillarDrilldown() {
                     color: isOpen ? "#248179" : "#A7A5A5",
                   }}
                 >
-                  {pillar.checks.length}
+                  {pillar.checks.length} checks
                 </span>
 
                 <ChevronDown
