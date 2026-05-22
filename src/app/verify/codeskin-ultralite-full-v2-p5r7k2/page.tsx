@@ -55,7 +55,7 @@ export default function VerifiedPage() {
       {/* ─── Hero ─────────────────────────────────────────────── */}
       <section className="px-5 pt-5 pb-5">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-row items-stretch gap-6 lg:gap-10">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
 
             {/* Left — stretches to match image height, content pushed to top + bottom */}
             <div className="flex-1 min-w-0 flex flex-col justify-between py-3">
@@ -155,52 +155,56 @@ export default function VerifiedPage() {
             </div>
 
             {/* Right: product image + stamp */}
-            <div
-              className="hidden sm:block flex-shrink-0 animate-slide-right pt-3"
-              style={{ width: "clamp(180px, 28vw, 320px)" }}
+            <div className="flex-shrink-0 animate-slide-right mx-auto sm:mx-0 sm:pt-3"
+              style={{ width: "min(160px, 44vw)", flex: "0 0 auto" }}
             >
-              <div className="relative animate-float">
-                {/* Image frame */}
-                <div
-                  className="relative rounded-2xl overflow-hidden"
-                  style={{
-                    height: "clamp(240px, 38vw, 420px)",
-                    background: "radial-gradient(ellipse at 50% 80%, #cee8e5 0%, #edf8f7 45%, #f8fafb 100%)",
-                    boxShadow: "0 12px 48px -8px rgba(36,129,121,0.2), 0 2px 10px rgba(0,0,0,0.05)",
-                  }}
-                >
+              <div
+                className="sm:w-auto"
+                style={{ width: "clamp(160px, 28vw, 320px)" }}
+              >
+                <div className="relative animate-float">
+                  {/* Image frame */}
                   <div
-                    className="absolute left-0 right-0 h-[2px] animate-cert-scan pointer-events-none z-20"
+                    className="relative rounded-2xl overflow-hidden"
                     style={{
-                      background: "linear-gradient(90deg, transparent, rgba(36,129,121,0.5), rgba(45,200,190,0.9), rgba(36,129,121,0.5), transparent)",
+                      height: "clamp(200px, 38vw, 420px)",
+                      background: "radial-gradient(ellipse at 50% 80%, #cee8e5 0%, #edf8f7 45%, #f8fafb 100%)",
+                      boxShadow: "0 12px 48px -8px rgba(36,129,121,0.2), 0 2px 10px rgba(0,0,0,0.05)",
                     }}
-                  />
-                  <Image
-                    src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
-                    alt="CodeSkin UltraLite Fluid Sunscreen"
-                    fill
-                    className="object-contain p-5 sm:p-8"
-                    unoptimized
-                  />
-                </div>
+                  >
+                    <div
+                      className="absolute left-0 right-0 h-[2px] animate-cert-scan pointer-events-none z-20"
+                      style={{
+                        background: "linear-gradient(90deg, transparent, rgba(36,129,121,0.5), rgba(45,200,190,0.9), rgba(36,129,121,0.5), transparent)",
+                      }}
+                    />
+                    <Image
+                      src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
+                      alt="CodeSkin UltraLite Fluid Sunscreen"
+                      fill
+                      className="object-contain p-4 sm:p-8"
+                      unoptimized
+                    />
+                  </div>
 
-                {/* TCS stamp */}
-                <div
-                  className="absolute animate-badge-entrance z-30"
-                  style={{
-                    width: "clamp(80px, 14vw, 140px)",
-                    height: "clamp(80px, 14vw, 140px)",
-                    top: "-18px",
-                    right: "-16px",
-                    filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.16))",
-                  }}
-                >
-                  <Image
-                    src="/images/tcs-certified-stamp-v2.png"
-                    alt="The Clean Sheet Certified"
-                    fill
-                    className="object-contain"
-                  />
+                  {/* TCS stamp */}
+                  <div
+                    className="absolute animate-badge-entrance z-30"
+                    style={{
+                      width: "clamp(64px, 14vw, 140px)",
+                      height: "clamp(64px, 14vw, 140px)",
+                      top: "-14px",
+                      right: "-12px",
+                      filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.16))",
+                    }}
+                  >
+                    <Image
+                      src="/images/tcs-certified-stamp-v2.png"
+                      alt="The Clean Sheet Certified"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
