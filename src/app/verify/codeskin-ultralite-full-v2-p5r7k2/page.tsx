@@ -53,7 +53,7 @@ export default function VerifiedPage() {
     <div className="bg-white min-h-screen">
 
       {/* ─── Hero ─────────────────────────────────────────────── */}
-      <section className="px-5 pt-5 pb-5">
+      <section className="px-5 pt-5 pb-5" style={{ background: "rgb(248,252,251)" }}>
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col-reverse sm:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
 
@@ -98,16 +98,16 @@ export default function VerifiedPage() {
 
                 {/* PRISM pills */}
                 <div className="flex flex-wrap gap-1.5 mb-4 animate-fade-up delay-300">
-                  <span className="flex items-center gap-1 text-[10px] text-teal-600 border border-teal-200 bg-teal-50 px-2.5 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1 rounded-full">
                     <Shield size={8} /> PRISM Core
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-teal-600 border border-teal-200 bg-teal-50 px-2.5 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1 rounded-full">
                     <Sun size={8} /> PRISM Sun Verified
                   </span>
                 </div>
 
                 {/* Description */}
-                <p className="text-ink-400 text-xs leading-relaxed animate-fade-up delay-400 hidden sm:block" style={{ maxWidth: "26rem" }}>
+                <p className="animate-fade-up delay-400 hidden sm:block" style={{ maxWidth: "26rem", color: "rgb(95,93,93)", fontSize: "13px", lineHeight: 1.6 }}>
                   Independently reviewed across formula safety, UV performance,
                   manufacturing quality, claims evidence, and legal compliance.
                 </p>
@@ -117,10 +117,10 @@ export default function VerifiedPage() {
               <div className="animate-fade-up delay-500 hidden sm:block">
                 <Link
                   href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-                  className="inline-flex items-center gap-1.5 text-[10px] rounded-lg px-3 py-1.5 transition-all duration-200 hover:gap-2"
-                  style={{ color: "#248179", border: "1px solid #c2e8e4", background: "rgba(36,129,121,0.04)" }}
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition-all duration-200 hover:gap-2"
+                  style={{ color: "rgb(36,129,121)", border: "1.5px solid rgb(36,129,121)", background: "rgb(255,255,255)", fontSize: "12px" }}
                 >
-                  <QrCode size={10} />
+                  <QrCode size={11} />
                   Verify on registry
                 </Link>
               </div>
@@ -226,9 +226,10 @@ export default function VerifiedPage() {
             {credentialTicker.map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-medium text-ink-700 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 transition-colors cursor-default"
+                style={{ background: "rgb(237,248,247)", border: "1px solid rgba(36,129,121,0.3)", color: "rgb(36,129,121)", fontSize: "11px", fontWeight: 500 }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-default transition-colors hover:bg-teal-100/80"
               >
-                <CheckCircle2 size={10} className="text-teal-600 flex-shrink-0" />
+                <CheckCircle2 size={10} style={{ color: "rgb(36,129,121)" }} className="flex-shrink-0" />
                 {item}
               </span>
             ))}

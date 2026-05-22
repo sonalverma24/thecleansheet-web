@@ -79,7 +79,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center">
               <button
                 onClick={() => window.dispatchEvent(new Event("openCertifyForm"))}
-                className="flex items-center gap-1.5 bg-coral-500 hover:bg-coral-600 text-white text-sm font-normal px-5 py-2 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-coral-500/30 active:scale-95"
+                className="flex items-center gap-1.5 bg-coral-500 hover:bg-coral-600 text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-coral-500/30 active:scale-95"
               >
                 Get Certified
               </button>

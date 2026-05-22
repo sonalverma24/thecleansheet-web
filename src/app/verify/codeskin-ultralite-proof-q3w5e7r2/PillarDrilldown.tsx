@@ -296,8 +296,8 @@ export default function PillarDrilldown() {
                 <div
                   className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center transition-all duration-300"
                   style={{
-                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgba(0,0,0,0.04)",
-                    color: isOpen ? "#248179" : "#A7A5A5",
+                    background: isOpen ? "rgba(36,129,121,0.12)" : "rgb(237,248,247)",
+                    color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.6)",
                   }}
                 >
                   {pillar.icon}
@@ -321,8 +321,9 @@ export default function PillarDrilldown() {
                 <span
                   className="hidden sm:inline-flex items-center justify-center rounded-full text-[10px] px-2 py-0.5 mr-2 flex-shrink-0 transition-all duration-300"
                   style={{
-                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgba(0,0,0,0.04)",
-                    color: isOpen ? "#248179" : "#A7A5A5",
+                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgb(237,248,247)",
+                    color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.7)",
+                    border: "1px solid rgba(36,129,121,0.2)",
                   }}
                 >
                   {pillar.checks.length} checks
