@@ -64,15 +64,8 @@ export default function VerifiedPage() {
               <div>
                 {/* Brand */}
                 <div className="flex items-center gap-2 mb-4 animate-fade-in">
-                  <Image
-                    src="https://codeskin.in/cdn/shop/files/TransparentBackground.svg?v=1766131037"
-                    alt="CodeSkin"
-                    width={80}
-                    height={18}
-                    className="object-contain"
-                    unoptimized
-                  />
-                  <span className="text-[9px] tracking-[0.28em] uppercase text-ink-300">India</span>
+                  <span className="text-base leading-none">🍎</span>
+                  <span className="text-sm font-semibold text-ink-900 tracking-tight">Apple</span>
                   <span className="text-ink-200 text-[9px] mx-1">·</span>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -85,7 +78,7 @@ export default function VerifiedPage() {
                   className="font-medium text-ink-950 mb-2 animate-fade-up delay-100"
                   style={{ fontSize: "clamp(1.7rem, 3.2vw, 2.6rem)", lineHeight: 1.0, letterSpacing: "-0.025em" }}
                 >
-                  UltraLite Fluid Sunscreen
+                  Ultra Lite Sunscreen
                 </h1>
 
                 {/* SPF */}
@@ -107,22 +100,22 @@ export default function VerifiedPage() {
                 </div>
 
                 {/* Description */}
-                <p className="animate-fade-up delay-400 hidden sm:block" style={{ maxWidth: "26rem", color: "rgb(95,93,93)", fontSize: "13px", lineHeight: 1.6 }}>
+                <p className="animate-fade-up delay-400 mb-4" style={{ maxWidth: "26rem", color: "rgb(95,93,93)", fontSize: "13px", lineHeight: 1.6 }}>
                   Independently reviewed across formula safety, UV performance,
                   manufacturing quality, claims evidence, and legal compliance.
                 </p>
-              </div>
 
-              {/* MIDDLE: Registry verify CTA */}
-              <div className="animate-fade-up delay-500 hidden sm:block">
-                <Link
-                  href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-                  className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition-all duration-200 hover:gap-2"
-                  style={{ color: "rgb(36,129,121)", border: "1.5px solid rgb(36,129,121)", background: "rgb(255,255,255)", fontSize: "12px" }}
-                >
-                  <QrCode size={11} />
-                  Verify on registry
-                </Link>
+                {/* Verify CTA — sits naturally after description */}
+                <div className="animate-fade-up delay-500">
+                  <Link
+                    href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition-all duration-200 hover:gap-2"
+                    style={{ color: "rgb(36,129,121)", border: "1.5px solid rgb(36,129,121)", background: "rgb(255,255,255)", fontSize: "12px" }}
+                  >
+                    <QrCode size={11} />
+                    Verify on registry
+                  </Link>
+                </div>
               </div>
 
               {/* BOTTOM GROUP — anchored to image bottom */}
@@ -178,15 +171,14 @@ export default function VerifiedPage() {
                       }}
                     />
                     <Image
-                      src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
-                      alt="CodeSkin UltraLite Fluid Sunscreen"
+                      src="https://images.unsplash.com/photo-1594327964562-32ed6eb11709?w=600&q=80&fit=crop"
+                      alt="Apple Ultra Lite Sunscreen SPF 50+"
                       fill
                       className="object-contain p-4 sm:p-8"
-                      unoptimized
                     />
                     {/* Product detail strip */}
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
-                      <span className="text-[8px] text-teal-700/50 tracking-[0.18em] uppercase">30 ml · India · FV-2026-01</span>
+                      <span className="text-[8px] text-teal-700/50 tracking-[0.18em] uppercase">50 ml · Sample · FV-2026-01</span>
                     </div>
                   </div>
 
