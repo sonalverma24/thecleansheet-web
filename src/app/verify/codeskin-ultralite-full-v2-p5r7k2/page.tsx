@@ -48,6 +48,71 @@ const validityItems = [
   { label: "Status",        value: "Active", dot: true },
 ];
 
+function SampleBottle() {
+  return (
+    <svg
+      viewBox="0 0 120 260"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="absolute inset-0 w-full h-full"
+      style={{ padding: "18px 22px 26px" }}
+    >
+      <defs>
+        <linearGradient id="bottleGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#f4faf9" />
+          <stop offset="45%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#eef7f6" />
+        </linearGradient>
+        <linearGradient id="labelGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#edf8f7" />
+          <stop offset="100%" stopColor="#dff2f0" />
+        </linearGradient>
+      </defs>
+
+      {/* Pump neck */}
+      <rect x="52" y="40" width="16" height="24" rx="4" fill="#edf8f7" stroke="#c2e8e4" strokeWidth="1.2" />
+
+      {/* Pump head */}
+      <rect x="36" y="26" width="48" height="16" rx="8" fill="#248179" />
+
+      {/* Nozzle arm */}
+      <rect x="84" y="29" width="22" height="10" rx="5" fill="#1d6b65" />
+      <circle cx="107" cy="34" r="3.5" fill="#1d6b65" />
+      <circle cx="107" cy="34" r="1.8" fill="#248179" />
+
+      {/* Bottle body */}
+      <rect x="10" y="60" width="100" height="182" rx="22" fill="url(#bottleGrad)" stroke="#daeee9" strokeWidth="1.5" />
+
+      {/* Glass highlight sheen */}
+      <rect x="16" y="70" width="18" height="162" rx="9" fill="rgba(255,255,255,0.55)" />
+
+      {/* Label background */}
+      <rect x="20" y="100" width="80" height="106" rx="9" fill="url(#labelGrad)" opacity="0.8" />
+
+      {/* Top label rule */}
+      <line x1="32" y1="113" x2="88" y2="113" stroke="#b8deda" strokeWidth="0.8" />
+
+      {/* SPF 50+ */}
+      <text x="60" y="137" textAnchor="middle" fontFamily="Georgia, serif" fontSize="17" fontWeight="bold" fill="#248179">SPF 50+</text>
+
+      {/* PA++++ */}
+      <text x="60" y="152" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="#5f8e8a" letterSpacing="2.5">PA++++</text>
+
+      {/* Bottom label rule */}
+      <line x1="32" y1="162" x2="88" y2="162" stroke="#b8deda" strokeWidth="0.8" />
+
+      {/* Product name */}
+      <text x="60" y="177" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="6" fill="#7eaaa6" letterSpacing="2.8">ULTRA LITE FLUID</text>
+
+      {/* Bottom cap */}
+      <rect x="10" y="230" width="100" height="7" rx="3.5" fill="#e0f0ee" />
+
+      {/* Volume */}
+      <text x="60" y="253" textAnchor="middle" fontFamily="monospace" fontSize="5.5" fill="#c0d8d5" letterSpacing="1.5">50 mL</text>
+    </svg>
+  );
+}
+
 export default function VerifiedPage() {
   return (
     <div className="bg-white min-h-screen">
@@ -63,9 +128,16 @@ export default function VerifiedPage() {
               {/* TOP GROUP */}
               <div>
                 {/* Brand */}
-                <div className="flex items-center gap-2 mb-4 animate-fade-in">
-                  <span className="text-base leading-none">🍎</span>
-                  <span className="text-sm font-semibold text-ink-900 tracking-tight">Apple</span>
+                <div className="flex items-center gap-2.5 mb-4 animate-fade-in">
+                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                    <div style={{ filter: "blur(4px)", display: "flex", alignItems: "center", gap: 6, pointerEvents: "none", userSelect: "none" }}>
+                      <span className="text-base leading-none">🍎</span>
+                      <span className="text-sm font-semibold text-ink-900 tracking-tight">Apple</span>
+                    </div>
+                    <div style={{ position: "absolute", inset: "-4px -10px", background: "rgba(248,252,251,0.93)", border: "1px dashed #c2e8e4", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "#5f8e8a", textTransform: "uppercase", letterSpacing: "0.1em" }}>🔒 Brand</span>
+                    </div>
+                  </div>
                   <span className="text-ink-200 text-[9px] mx-1">·</span>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -170,12 +242,7 @@ export default function VerifiedPage() {
                         background: "linear-gradient(90deg, transparent, rgba(36,129,121,0.5), rgba(45,200,190,0.9), rgba(36,129,121,0.5), transparent)",
                       }}
                     />
-                    <Image
-                      src="https://images.unsplash.com/photo-1594327964562-32ed6eb11709?w=600&q=80&fit=crop"
-                      alt="Apple Ultra Lite Sunscreen SPF 50+"
-                      fill
-                      className="object-contain p-4 sm:p-8"
-                    />
+                    <SampleBottle />
                     {/* Product detail strip */}
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
                       <span className="text-[8px] text-teal-700/50 tracking-[0.18em] uppercase">50 ml · Sample · FV-2026-01</span>
