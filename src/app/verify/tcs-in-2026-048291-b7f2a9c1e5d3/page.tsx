@@ -27,7 +27,7 @@ function ClaimRow({ claim, status, detail }: { claim: string; status: ClaimStatu
           <p className="text-xs text-ink-500 leading-relaxed">{detail}</p>
         </div>
       </div>
-      <span className={`text-[11px] px-2.5 py-1 rounded-full border font-medium self-start sm:flex-shrink-0 ${cfg.pill}`}>{cfg.label}</span>
+      <span className={`text-[11px] px-2.5 py-1 rounded-full border font-medium self-start sm:flex-shrink-0 min-w-[120px] text-center ${cfg.pill}`}>{cfg.label}</span>
     </div>
   );
 }
@@ -107,7 +107,7 @@ export default function CertificationProofPage() {
                 <div className="w-5 h-5 rounded bg-teal-700 text-white text-[8px] font-medium flex items-center justify-center flex-shrink-0">CS</div>
                 <div>
                   <p className="text-teal-200 text-[11px] font-medium leading-none">CodeSkin India</p>
-                  <p className="text-teal-600 text-[10px]">Verified Brand</p>
+                  <p className="text-teal-300 text-[10px]">Verified Brand</p>
                 </div>
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function CertificationProofPage() {
                 UltraLite Fluid Sunscreen
               </h1>
               <p className="text-teal-400 text-base mb-0.5">SPF 50+ PA++++</p>
-              <p className="text-teal-600 text-sm mb-5">CodeSkin India</p>
+              <p className="text-teal-300 text-sm mb-5">CodeSkin India</p>
 
               {/* Key stats grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
@@ -151,11 +151,11 @@ export default function CertificationProofPage() {
               {/* Dates */}
               <div className="border-t border-teal-800 pt-3 flex gap-6">
                 <div>
-                  <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-0.5">Certified</p>
+                  <p className="text-teal-300 text-[10px] uppercase tracking-widest mb-0.5">Certified</p>
                   <p className="text-teal-200 text-xs">15 May 2026 <span className="text-amber-500 italic">[SAMPLE]</span></p>
                 </div>
                 <div>
-                  <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-0.5">Valid Until</p>
+                  <p className="text-teal-300 text-[10px] uppercase tracking-widest mb-0.5">Valid Until</p>
                   <p className="text-teal-200 text-xs">14 May 2027 <span className="text-amber-500 italic">[SAMPLE]</span></p>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export default function CertificationProofPage() {
                 { label: "Water Resistance", value: "94%", context: "After 80 min immersion", color: "text-teal-300" },
               ].map(({ label, value, context, color }) => (
                 <div key={label} className="bg-teal-900/60 rounded-2xl p-4 border border-teal-800/50">
-                  <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-1">{label}</p>
+                  <p className="text-teal-300 text-[10px] uppercase tracking-widest mb-1">{label}</p>
                   <p className={`text-2xl font-medium ${color}`}>{value}</p>
                   <p className="text-teal-500 text-[11px] mt-1">{context}</p>
                 </div>
@@ -537,7 +537,7 @@ export default function CertificationProofPage() {
 
             <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-2">Full INCI list (as disclosed on label)</p>
             <div className="bg-ink-50 rounded-2xl p-4 border border-ink-100">
-              <p className="font-mono text-xs text-ink-600 leading-loose">
+              <p className="font-mono text-xs text-ink-600 leading-7 tracking-wide">
                 Aqua, Methylene Bis-Benzotriazolyl Tetramethylbutylphenol, C15-19 Alkane, Diethylamino Hydroxybenzoyl Hexyl Benzoate, Ethylhexyl Triazone, Niacinamide, Caprylyl Caprylate/Caprate, Aloe Barbadensis Leaf Juice, Saccharomyces Ferment Lysate Filtrate, Chondrus Crispus (Red Algae) Extract, Isododecane, Hexylene Glycol, Starch, Dioctyl Carbonate, Isoamyl Laurate, Erythritol, Polyglutamic Acid, Ectoin, Xylitol, Sodium Hyaluronate, Adenosine, Propylene Glycol Dibenzoate, Dipotassium Glycyrrhizate, Tocopheryl Acetate, Tocotrienols, Steareth-21, Pentaerythrityl Distearate, Sodium Polyacrylate, Sodium Stearoyl Glutamate, Sodium Levulinate, Silica, Polyacrylate Crosspolymer-6, Glyceryl Caprylate, Trisodium Dicarboxymethyl Alaninate, Allantoin, Phytosteryl/Octyldodecyl Lauroyl Glutamate, Benzyl Alcohol, Diethylhexyl Syringylidenemalonate, Caprylic/Capric Triglyceride, Olea Europaea (Olive) Leaf Extract, Panthenol, Potassium Sorbate, Citric Acid, Sodium Benzoate, 1,2-Hexanediol
               </p>
             </div>
@@ -658,20 +658,20 @@ export default function CertificationProofPage() {
                 { label: "Evaluator", value: "Dr. Priya Sharma, PhD Toxicology [SAMPLE]" },
               ].map(({ label, value }) => (
                 <div key={label} className="py-3 border-b border-teal-900 flex items-start gap-4">
-                  <span className="text-teal-600 text-xs w-28 flex-shrink-0">{label}</span>
+                  <span className="text-teal-300 text-xs w-28 flex-shrink-0">{label}</span>
                   <span className="text-teal-200 text-xs">{value}</span>
                 </div>
               ))}
             </div>
 
             <div className="mt-6 pt-6 border-t border-teal-900">
-              <p className="text-teal-600 text-[10px] uppercase tracking-widest mb-3">Change history</p>
+              <p className="text-teal-300 text-[10px] uppercase tracking-widest mb-3">Change history</p>
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-teal-600">15 May 2026</span>
+                <span className="text-teal-300">15 May 2026</span>
                 <span className="bg-teal-900 border border-teal-700 text-teal-300 text-[10px] px-2.5 py-1 rounded-full">Certification issued</span>
                 <span className="text-teal-400">Initial certification granted [SAMPLE]</span>
               </div>
-              <p className="text-teal-700 text-[11px] mt-3 italic">No changes reported since initial certification [SAMPLE]</p>
+              <p className="text-teal-400 text-[12px] mt-3">No changes reported since initial certification [SAMPLE]</p>
             </div>
           </div>
         </div>

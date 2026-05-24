@@ -21,16 +21,16 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
         >
           <div className="flex items-center gap-2">
             <span
-              className="text-[9px] tracking-[0.2em] uppercase transition-colors duration-200"
-              style={{ color: open ? "#248179" : "#A7A5A5" }}
+              className="text-[11px] tracking-[0.15em] uppercase font-medium transition-colors duration-200"
+              style={{ color: open ? "#248179" : "#6b7280" }}
             >
               {open ? "Collapse record" : "View full record"}
             </span>
             <span
-              className="text-[9px] px-1.5 py-0.5 rounded-full transition-all duration-200"
+              className="text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200"
               style={{
-                background: open ? "rgba(36,129,121,0.08)" : "rgba(0,0,0,0.04)",
-                color: open ? "#248179" : "#C2C0C0",
+                background: open ? "rgba(36,129,121,0.08)" : "rgb(243,244,246)",
+                color: open ? "#248179" : "#6b7280",
               }}
             >
               {certFields.length + 1} fields
@@ -38,9 +38,9 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
           </div>
           <ChevronDown
             size={12}
-            className="transition-all duration-300"
+            className="transition-all duration-300 group-hover:text-ink-600"
             style={{
-              color: open ? "#248179" : "#C2C0C0",
+              color: open ? "#248179" : "#9ca3af",
               transform: open ? "rotate(180deg)" : "rotate(0deg)",
             }}
           />
@@ -108,7 +108,7 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
                 </div>
                 <div className="flex items-start gap-6 mt-2.5">
                   <span className="text-[10px] text-ink-200 flex-shrink-0 w-24" />
-                  <span className="text-[10px] text-ink-300">No changes recorded since initial certification [SAMPLE]</span>
+                  <span className="text-[12px] text-ink-400">No changes recorded since initial certification [SAMPLE]</span>
                 </div>
               </ScrollReveal>
             </div>

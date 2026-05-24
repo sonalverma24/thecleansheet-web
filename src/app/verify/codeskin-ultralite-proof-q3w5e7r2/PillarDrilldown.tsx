@@ -319,7 +319,7 @@ export default function PillarDrilldown() {
 
                 {/* Check count pill */}
                 <span
-                  className="hidden sm:inline-flex items-center justify-center rounded-full text-[10px] px-2 py-0.5 mr-2 flex-shrink-0 transition-all duration-300"
+                  className="hidden sm:inline-flex items-center justify-center rounded-full text-[11px] font-medium px-2.5 py-0.5 mr-2 flex-shrink-0 transition-all duration-300"
                   style={{
                     background: isOpen ? "rgba(36,129,121,0.1)" : "rgb(237,248,247)",
                     color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.7)",
@@ -392,7 +392,7 @@ export default function PillarDrilldown() {
                               <div className="pb-4" style={{ paddingLeft: "2.85rem", paddingRight: "1.25rem" }}>
                                 {/* Gradient left border via pseudo-wrapper */}
                                 <div
-                                  className="pl-4 py-1"
+                                  className="pl-4 py-1 max-w-prose"
                                   style={{
                                     borderLeft: "2px solid transparent",
                                     backgroundImage: "linear-gradient(white, white), linear-gradient(to bottom, #2E9E96, #A8E4DF)",
@@ -400,7 +400,7 @@ export default function PillarDrilldown() {
                                     backgroundClip: "padding-box, border-box",
                                   }}
                                 >
-                                  <p className="text-sm text-ink-600 leading-relaxed">
+                                  <p className="text-sm text-ink-700 leading-relaxed">
                                     {check.detail}
                                   </p>
                                 </div>

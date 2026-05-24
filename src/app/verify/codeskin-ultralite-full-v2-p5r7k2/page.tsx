@@ -115,10 +115,10 @@ function SampleBottle() {
 
 export default function VerifiedPage() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen overflow-x-hidden">
 
       {/* ─── Hero ─────────────────────────────────────────────── */}
-      <section className="px-5 pt-5 pb-5" style={{ background: "rgb(248,252,251)" }}>
+      <section className="px-5 pt-10 pb-5" style={{ background: "rgb(248,252,251)" }}>
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col-reverse sm:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
 
@@ -138,10 +138,10 @@ export default function VerifiedPage() {
                       <span style={{ fontSize: 8, fontWeight: 700, color: "#5f8e8a", textTransform: "uppercase", letterSpacing: "0.1em" }}>🔒 Brand</span>
                     </div>
                   </div>
-                  <span className="text-ink-200 text-[9px] mx-1">·</span>
+                  <span className="text-ink-200 text-[11px] mx-1">·</span>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    <span className="text-amber-500/70 text-[9px]">Sample</span>
+                    <span className="text-amber-500/70 text-[11px]">Sample</span>
                   </div>
                 </div>
 
@@ -191,7 +191,7 @@ export default function VerifiedPage() {
               </div>
 
               {/* BOTTOM GROUP — anchored to image bottom */}
-              <div className="animate-fade-up delay-500 rounded-xl border border-teal-100 bg-teal-50/20 p-4">
+              <div className="animate-fade-up delay-500 rounded-xl border border-teal-100 bg-teal-50/20 p-4 mt-3">
                 {/* Cert heading */}
                 <p className="text-[9px] tracking-[0.2em] uppercase mb-1.5 text-ink-400">
                   Official record
@@ -207,8 +207,8 @@ export default function VerifiedPage() {
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   {validityItems.map(({ label, value, dot }) => (
                     <div key={label} className="flex flex-col gap-0.5">
-                      <p className="text-[8px] text-ink-300 uppercase tracking-[0.16em]">{label}</p>
-                      <p className="text-[11px] text-ink-800 font-medium flex items-center gap-1.5 tabular-nums">
+                      <p className="text-[9px] text-ink-400 uppercase tracking-[0.16em]">{label}</p>
+                      <p className="text-[12px] text-ink-900 font-semibold flex items-center gap-1.5 tabular-nums">
                         {dot && <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />}
                         {value}
                       </p>
@@ -219,13 +219,10 @@ export default function VerifiedPage() {
             </div>
 
             {/* Right: product image + stamp */}
-            <div className="flex-shrink-0 animate-slide-right mx-auto sm:mx-0 sm:pt-3"
-              style={{ width: "min(160px, 44vw)", flex: "0 0 auto" }}
+            <div className="flex-shrink-0 animate-slide-right mx-auto sm:mx-0 sm:pt-3 overflow-hidden max-w-[260px] sm:max-w-[300px]"
+              style={{ flex: "0 0 auto", width: "min(200px, 52vw)" }}
             >
-              <div
-                className="sm:w-auto"
-                style={{ width: "clamp(160px, 28vw, 320px)" }}
-              >
+              <div className="w-full">
                 <div className="relative animate-float">
                   {/* Image frame */}
                   <div
@@ -281,7 +278,7 @@ export default function VerifiedPage() {
       {/* ─── Credential chips ───────────────────────────────── */}
       <div className="border-b border-ink-100 px-5 py-4">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-7 gap-2 justify-items-start">
             {credentialTicker.map((item) => (
               <span
                 key={item}
@@ -300,7 +297,7 @@ export default function VerifiedPage() {
       <CollapsibleCert certFields={certFields} />
 
       {/* ─── Independent Review ───────────────────────────────── */}
-      <section className="px-5 pt-12 pb-2">
+      <section className="px-5 pt-8 pb-2">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>
             <div>
