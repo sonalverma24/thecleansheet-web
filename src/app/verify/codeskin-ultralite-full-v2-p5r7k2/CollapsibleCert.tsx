@@ -10,16 +10,19 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="px-5 pb-10 border-b border-ink-100">
+    <section className="px-5 pb-10">
       <div className="max-w-5xl mx-auto">
 
         {/* Toggle header */}
         <button
           onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-between py-3 border-b group transition-colors duration-200"
-          style={{ borderColor: open ? "#c2e8e4" : "#EEEDED" }}
+          className="w-full flex items-center justify-between px-4 sm:px-5 py-4 rounded-xl group transition-all duration-200"
+          style={{
+            background: open ? "rgba(36,129,121,0.04)" : "rgb(248,252,251)",
+            border: open ? "1px solid #c2e8e4" : "1px solid #EEEDED",
+          }}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span
               className="text-[11px] tracking-[0.15em] uppercase font-medium transition-colors duration-200"
               style={{ color: open ? "#248179" : "#6b7280" }}
@@ -27,7 +30,7 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
               {open ? "Collapse record" : "View full record"}
             </span>
             <span
-              className="text-[10px] font-medium px-2 py-0.5 rounded-full transition-all duration-200"
+              className="text-[10px] font-medium px-2.5 py-1 rounded-full transition-all duration-200"
               style={{
                 background: open ? "rgba(36,129,121,0.08)" : "rgb(243,244,246)",
                 color: open ? "#248179" : "#6b7280",
@@ -37,7 +40,7 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
             </span>
           </div>
           <ChevronDown
-            size={12}
+            size={13}
             className="transition-all duration-300 group-hover:text-ink-600"
             style={{
               color: open ? "#248179" : "#9ca3af",
@@ -55,10 +58,10 @@ export default function CollapsibleCert({ certFields }: { certFields: CertField[
           }}
         >
           <div className="overflow-hidden">
-            <div>
+            <div className="mt-3">
               {certFields.map(({ label, value, mono }, i) => (
                 <ScrollReveal key={label} delay={i * 40} className="border-b border-ink-100 group">
-                  <div className="flex items-baseline gap-6 sm:gap-16 py-3 transition-colors group-hover:bg-teal-50/30">
+                  <div className="flex items-baseline gap-6 sm:gap-16 py-3.5 transition-colors group-hover:bg-teal-50/30 px-1">
                     <p className="text-[9px] tracking-[0.18em] uppercase text-ink-400 w-32 sm:w-44 flex-shrink-0">
                       {label}
                     </p>

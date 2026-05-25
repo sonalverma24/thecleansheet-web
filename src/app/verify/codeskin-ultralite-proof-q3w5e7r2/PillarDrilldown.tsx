@@ -46,7 +46,7 @@ const pillars: Pillar[] = [
     id: "legal",
     name: "Legal Compliance",
     sublabel: "Permitted in every assessed market",
-    icon: <Scale size={15} />,
+    icon: <Scale size={17} />,
     checks: [
       {
         id: "india",
@@ -89,7 +89,7 @@ const pillars: Pillar[] = [
     id: "safety",
     name: "Ingredient Safety",
     sublabel: "Every ingredient reviewed for known hazards",
-    icon: <FlaskConical size={15} />,
+    icon: <FlaskConical size={17} />,
     checks: [
       {
         id: "hazard",
@@ -127,7 +127,7 @@ const pillars: Pillar[] = [
     id: "manufacturing",
     name: "Manufacturing Quality",
     sublabel: "Facility, process, and batch documentation reviewed",
-    icon: <Building2 size={15} />,
+    icon: <Building2 size={17} />,
     checks: [
       {
         id: "gmp",
@@ -160,7 +160,7 @@ const pillars: Pillar[] = [
     id: "claims",
     name: "Claims Verified",
     sublabel: "Every claim reviewed against submitted test evidence",
-    icon: <ShieldCheck size={15} />,
+    icon: <ShieldCheck size={17} />,
     checks: [
       {
         id: "spf",
@@ -218,7 +218,7 @@ const pillars: Pillar[] = [
     id: "ethics",
     name: "Ethics and Sourcing",
     sublabel: "Formula and ingredient origins reviewed",
-    icon: <Leaf size={15} />,
+    icon: <Leaf size={17} />,
     checks: [
       {
         id: "no-animal",
@@ -270,8 +270,8 @@ export default function PillarDrilldown() {
   }
 
   return (
-    <section className="bg-white px-5 pt-3 pb-10">
-      <div className="max-w-5xl mx-auto space-y-1.5">
+    <section className="bg-white px-5 pt-4 pb-14">
+      <div className="max-w-5xl mx-auto space-y-3">
         {pillars.map((pillar) => {
           const isOpen = openPillars.has(pillar.id);
           return (
@@ -286,7 +286,7 @@ export default function PillarDrilldown() {
               {/* Pillar header */}
               <button
                 onClick={() => togglePillar(pillar.id)}
-                className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-300"
+                className="w-full flex items-center gap-4 px-5 sm:px-6 py-5 text-left transition-all duration-300"
                 style={{
                   background: isOpen
                     ? "linear-gradient(135deg, #edf8f7 0%, #f5fafa 60%, #f8fafa 100%)"
@@ -294,7 +294,7 @@ export default function PillarDrilldown() {
                 }}
               >
                 <div
-                  className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center transition-all duration-300"
+                  className="w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-300"
                   style={{
                     background: isOpen ? "rgba(36,129,121,0.12)" : "rgb(237,248,247)",
                     color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.6)",
@@ -417,18 +417,27 @@ export default function PillarDrilldown() {
           );
         })}
 
-        <div className="mt-8 pt-5 border-t border-ink-100">
-          <div className="flex items-start gap-3 max-w-xl mx-auto">
-            <div className="flex gap-1 pt-1 flex-shrink-0">
-              {["#2E9E96","#45B8B0","#A8E4DF"].map((c) => (
-                <span key={c} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
-              ))}
+        <div className="mt-10 sm:mt-12">
+          <div
+            className="max-w-2xl mx-auto rounded-2xl border border-teal-100 bg-teal-50/30 px-6 sm:px-8 py-6 sm:py-7"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex gap-1 pt-1.5 flex-shrink-0">
+                {["#2E9E96","#45B8B0","#A8E4DF"].map((c) => (
+                  <span key={c} className="w-2 h-2 rounded-full" style={{ background: c }} />
+                ))}
+              </div>
+              <div>
+                <p className="text-[9px] tracking-[0.2em] uppercase text-ink-400 mb-2">
+                  Review methodology
+                </p>
+                <p className="text-ink-600 text-sm leading-relaxed">
+                  Reviewed by an independent panel of cosmetic scientists, toxicologists,
+                  regulatory specialists, and dermatologists.
+                  Every check above was assessed against submitted laboratory evidence.
+                </p>
+              </div>
             </div>
-            <p className="text-ink-400 text-xs leading-relaxed">
-              Reviewed by an independent panel of cosmetic scientists, toxicologists,
-              regulatory specialists, and dermatologists.
-              Every check above was assessed against submitted laboratory evidence.
-            </p>
           </div>
         </div>
       </div>

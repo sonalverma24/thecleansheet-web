@@ -118,119 +118,114 @@ export default function VerifiedPage() {
     <div className="bg-white min-h-screen overflow-x-hidden">
 
       {/* ─── Hero ─────────────────────────────────────────────── */}
-      <section className="px-5 pt-10 pb-5" style={{ background: "rgb(248,252,251)" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col-reverse sm:flex-row items-stretch gap-4 sm:gap-6 lg:gap-10">
+      <section className="bg-white">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8">
+          <div className="flex flex-col sm:flex-row items-start gap-8 sm:gap-0 pt-10 sm:pt-14">
 
-            {/* Left — stretches to match image height, content pushed to top + bottom */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between py-3">
+            {/* Left column — text content */}
+            <div className="flex-1 min-w-0 sm:pr-12 lg:pr-20 py-2 sm:py-6">
 
-              {/* TOP GROUP */}
-              <div>
-                {/* Brand */}
-                <div className="flex items-center gap-2.5 mb-4 animate-fade-in">
-                  <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                    <div style={{ filter: "blur(4px)", display: "flex", alignItems: "center", gap: 6, pointerEvents: "none", userSelect: "none" }}>
-                      <span className="text-base leading-none">🍎</span>
-                      <span className="text-sm font-semibold text-ink-900 tracking-tight">Apple</span>
-                    </div>
-                    <div style={{ position: "absolute", inset: "-4px -10px", background: "rgba(248,252,251,0.93)", border: "1px dashed #c2e8e4", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                      <span style={{ fontSize: 8, fontWeight: 700, color: "#5f8e8a", textTransform: "uppercase", letterSpacing: "0.1em" }}>🔒 Brand</span>
-                    </div>
+              {/* Brand — blurred sample */}
+              <div className="flex items-center gap-3 mb-8 animate-fade-in">
+                <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                  <div style={{ filter: "blur(4px)", display: "flex", alignItems: "center", gap: 6, pointerEvents: "none", userSelect: "none" }}>
+                    <span className="text-base leading-none">🍎</span>
+                    <span className="text-sm font-semibold text-ink-900 tracking-tight">Apple</span>
                   </div>
-                  <span className="text-ink-200 text-[11px] mx-1">·</span>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    <span className="text-amber-500/70 text-[11px]">Sample</span>
+                  <div style={{ position: "absolute", inset: "-4px -10px", background: "rgba(255,255,255,0.93)", border: "1px dashed #c2e8e4", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: "#5f8e8a", textTransform: "uppercase", letterSpacing: "0.1em" }}>&#128274; Brand</span>
                   </div>
                 </div>
-
-                {/* Product name */}
-                <h1
-                  className="font-medium text-ink-950 mb-2 animate-fade-up delay-100"
-                  style={{ fontSize: "clamp(1.7rem, 3.2vw, 2.6rem)", lineHeight: 1.0, letterSpacing: "-0.025em" }}
-                >
-                  Ultra Lite Sunscreen
-                </h1>
-
-                {/* SPF */}
-                <p
-                  className="font-medium mb-3 animate-fade-up delay-200"
-                  style={{ fontSize: "clamp(0.95rem, 1.6vw, 1.1rem)", color: "#248179" }}
-                >
-                  SPF 50+ PA++++
-                </p>
-
-                {/* PRISM pills */}
-                <div className="flex flex-wrap gap-1.5 mb-4 animate-fade-up delay-300">
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1 rounded-full">
-                    <Shield size={8} /> PRISM Core
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1 rounded-full">
-                    <Sun size={8} /> PRISM Sun Verified
-                  </span>
-                </div>
-
-                {/* Description */}
-                <p className="animate-fade-up delay-400 mb-4" style={{ maxWidth: "26rem", color: "rgb(95,93,93)", fontSize: "13px", lineHeight: 1.6 }}>
-                  Independently reviewed across formula safety, UV performance,
-                  manufacturing quality, claims evidence, and legal compliance.
-                </p>
-
-                {/* Verify CTA — sits naturally after description */}
-                <div className="animate-fade-up delay-500">
-                  <Link
-                    href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-                    className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-medium transition-all duration-200 hover:gap-2"
-                    style={{ color: "rgb(36,129,121)", border: "1.5px solid rgb(36,129,121)", background: "rgb(255,255,255)", fontSize: "12px" }}
-                  >
-                    <QrCode size={11} />
-                    Verify on registry
-                  </Link>
+                <span className="text-ink-200 text-[11px]">·</span>
+                <span className="text-[10px] tracking-[0.12em] uppercase text-ink-400">India</span>
+                <span className="text-ink-200 text-[11px]">·</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-amber-500/70 text-[11px]">Sample</span>
                 </div>
               </div>
 
-              {/* BOTTOM GROUP — anchored to image bottom */}
-              <div className="animate-fade-up delay-500 rounded-xl border border-teal-100 bg-teal-50/20 p-4 mt-3">
-                {/* Cert heading */}
-                <p className="text-[9px] tracking-[0.2em] uppercase mb-1.5 text-ink-400">
+              {/* Product name — editorial large */}
+              <h1
+                className="font-medium text-ink-950 animate-fade-up delay-100"
+                style={{ fontSize: "clamp(2.2rem, 4.5vw, 3.4rem)", lineHeight: 1.02, letterSpacing: "-0.035em", marginBottom: "0.6em" }}
+              >
+                UltraLite Fluid<br />Sunscreen
+              </h1>
+
+              {/* SPF + PRISM row */}
+              <div className="flex flex-wrap items-center gap-3 mb-8 animate-fade-up delay-200">
+                <p className="font-medium" style={{ fontSize: "clamp(1rem, 1.6vw, 1.15rem)", color: "#248179" }}>
+                  SPF 50+ PA++++
+                </p>
+                <span className="w-px h-4 bg-ink-200" />
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-full">
+                  <Shield size={10} /> PRISM Core
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-teal-600 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-full">
+                  <Sun size={10} /> PRISM Sun Verified
+                </span>
+              </div>
+
+              {/* Description */}
+              <p className="animate-fade-up delay-300 mb-8" style={{ maxWidth: "30rem", color: "rgb(95,93,93)", fontSize: "14px", lineHeight: 1.75 }}>
+                Independently reviewed across formula safety, UV performance,
+                manufacturing quality, claims evidence, and legal compliance.
+              </p>
+
+              {/* Official Record section */}
+              <div className="animate-fade-up delay-400 mb-6">
+                <p className="text-[9px] tracking-[0.22em] uppercase mb-2" style={{ color: "#248179" }}>
                   Official record
                 </p>
                 <h2
                   className="font-medium text-ink-950 tracking-tight leading-none mb-4"
-                  style={{ fontSize: "clamp(1.2rem, 2.2vw, 1.7rem)" }}
+                  style={{ fontSize: "clamp(1.5rem, 2.8vw, 2rem)" }}
                 >
                   Certification record
                 </h2>
 
-                {/* Validity items — 2×2 compact grid */}
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  {validityItems.map(({ label, value, dot }) => (
-                    <div key={label} className="flex flex-col gap-0.5">
-                      <p className="text-[9px] text-ink-400 uppercase tracking-[0.16em]">{label}</p>
-                      <p className="text-[12px] text-ink-900 font-semibold flex items-center gap-1.5 tabular-nums">
-                        {dot && <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />}
-                        {value}
-                      </p>
-                    </div>
-                  ))}
+                {/* Status + Cert ID inline */}
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                  <span className="text-sm text-ink-900 font-medium">Active</span>
+                  <span className="text-ink-300 text-sm">·</span>
+                  <span className="text-sm text-ink-500 font-mono tracking-wide">TCS-IN-2026-048291</span>
+                </div>
+              </div>
+
+              {/* Dates — horizontal row with top border */}
+              <div className="animate-fade-up delay-500 border-t border-ink-100 pt-5 flex flex-wrap gap-x-10 gap-y-3">
+                {validityItems.filter(v => !v.dot).map(({ label, value }) => (
+                  <div key={label} className="flex items-baseline gap-2">
+                    <span className="text-[10px] text-ink-400 uppercase tracking-[0.12em]">{label}:</span>
+                    <span className="text-sm text-ink-800 font-medium tabular-nums">{value}</span>
+                  </div>
+                ))}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] text-ink-400 uppercase tracking-[0.12em]">Status:</span>
+                  <span className="text-sm text-ink-800 font-medium flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />
+                    Active
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Right: product image + stamp */}
-            <div className="flex-shrink-0 animate-slide-right mx-auto sm:mx-0 sm:pt-3 overflow-hidden max-w-[260px] sm:max-w-[300px]"
-              style={{ flex: "0 0 auto", width: "min(200px, 52vw)" }}
+            {/* Right column — product image, large and prominent */}
+            <div
+              className="flex-shrink-0 animate-slide-right mx-auto sm:mx-0 self-stretch flex items-center"
+              style={{ flex: "0 0 auto", width: "min(320px, 42vw)" }}
             >
-              <div className="w-full">
+              <div className="w-full relative" style={{ padding: "20px 20px 20px 0" }}>
                 <div className="relative animate-float">
-                  {/* Image frame */}
+                  {/* Image frame — taller, editorial */}
                   <div
-                    className="relative rounded-2xl overflow-hidden"
+                    className="relative rounded-3xl overflow-hidden"
                     style={{
-                      height: "clamp(200px, 38vw, 420px)",
-                      background: "radial-gradient(ellipse at 50% 80%, #cee8e5 0%, #edf8f7 45%, #f8fafb 100%)",
-                      boxShadow: "0 12px 48px -8px rgba(36,129,121,0.2), 0 2px 10px rgba(0,0,0,0.05)",
+                      height: "clamp(320px, 48vw, 520px)",
+                      background: "radial-gradient(ellipse at 50% 75%, #cee8e5 0%, #edf8f7 40%, #f6faf9 100%)",
+                      boxShadow: "0 20px 60px -12px rgba(36,129,121,0.18), 0 4px 16px rgba(0,0,0,0.04)",
                     }}
                   >
                     <div
@@ -241,20 +236,20 @@ export default function VerifiedPage() {
                     />
                     <SampleBottle />
                     {/* Product detail strip */}
-                    <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
-                      <span className="text-[8px] text-teal-700/50 tracking-[0.18em] uppercase">50 ml · Sample · FV-2026-01</span>
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+                      <span className="text-[8px] text-teal-700/40 tracking-[0.2em] uppercase">50 ml · Sample · FV-2026-01</span>
                     </div>
                   </div>
 
-                  {/* TCS stamp */}
+                  {/* TCS stamp — top right corner */}
                   <div
                     className="absolute animate-badge-entrance z-30"
                     style={{
-                      width: "clamp(64px, 14vw, 140px)",
-                      height: "clamp(64px, 14vw, 140px)",
-                      top: "-14px",
+                      width: "clamp(64px, 11vw, 100px)",
+                      height: "clamp(64px, 11vw, 100px)",
+                      top: "-12px",
                       right: "-12px",
-                      filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.16))",
+                      filter: "drop-shadow(0 4px 14px rgba(0,0,0,0.14))",
                     }}
                   >
                     <Image
@@ -272,18 +267,18 @@ export default function VerifiedPage() {
         </div>
       </section>
 
-      {/* Gradient rule under hero */}
-      <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, #EEEDED 15%, #EEEDED 85%, transparent)" }} />
-
       {/* ─── Credential chips ───────────────────────────────── */}
-      <div className="border-b border-ink-100 px-5 py-4">
+      <div className="border-b border-ink-100 px-5 py-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-7 gap-2 justify-items-start">
+          <p className="text-[9px] tracking-[0.22em] uppercase text-ink-400 mb-4 sm:mb-5">
+            Verified credentials
+          </p>
+          <div className="flex flex-wrap gap-2.5">
             {credentialTicker.map((item) => (
               <span
                 key={item}
-                style={{ background: "rgb(237,248,247)", border: "1px solid rgba(36,129,121,0.3)", color: "rgb(36,129,121)", fontSize: "11px", fontWeight: 500 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full cursor-default transition-colors hover:bg-teal-100/80"
+                style={{ background: "rgb(237,248,247)", border: "1px solid rgba(36,129,121,0.25)", color: "rgb(36,129,121)", fontSize: "11px", fontWeight: 500 }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full cursor-default transition-colors hover:bg-teal-100/80 whitespace-nowrap"
               >
                 <CheckCircle2 size={10} style={{ color: "rgb(36,129,121)" }} className="flex-shrink-0" />
                 {item}
@@ -296,21 +291,24 @@ export default function VerifiedPage() {
       {/* ─── Certification record (collapsible) ──────────────── */}
       <CollapsibleCert certFields={certFields} />
 
+      {/* ─── Section divider ─────────────────────────────────── */}
+      <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, #EEEDED 15%, #EEEDED 85%, transparent)" }} />
+
       {/* ─── Independent Review ───────────────────────────────── */}
-      <section className="px-5 pt-8 pb-2">
+      <section className="px-5 pt-14 sm:pt-16 pb-4">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>
             <div>
-              <p className="text-[9px] tracking-[0.22em] uppercase mb-2" style={{ color: "#248179" }}>
+              <p className="text-[9px] tracking-[0.22em] uppercase mb-3" style={{ color: "#248179" }}>
                 5 pillars · every check passed
               </p>
               <h2
-                className="font-medium text-ink-950 tracking-tight leading-none mb-2"
+                className="font-medium text-ink-950 tracking-tight leading-none mb-3"
                 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)" }}
               >
                 Independent review
               </h2>
-              <p className="text-ink-400 text-xs leading-relaxed">
+              <p className="text-ink-400 text-sm leading-relaxed" style={{ maxWidth: "32rem" }}>
                 Open any pillar to see every check. Open a check to read the evidence.
               </p>
             </div>
@@ -320,17 +318,19 @@ export default function VerifiedPage() {
 
       <PillarDrilldown />
 
-      {/* ─── Footer ───────────────────────────────────────────── */}
-      <footer className="border-t border-ink-100 px-5 py-5">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[10px] text-ink-300">
+      {/* ─── Footer CTA ──────────────────────────────────────── */}
+      <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, #EEEDED 15%, #EEEDED 85%, transparent)" }} />
+      <footer className="px-5 py-10 sm:py-14" style={{ background: "rgb(248,252,251)" }}>
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
+          <p className="text-sm text-ink-400 text-center sm:text-left" style={{ maxWidth: "28rem", lineHeight: 1.6 }}>
             Global regulations set the legal floor. The Clean Sheet sets the trust ceiling.
           </p>
           <Link
             href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"
-            className="inline-flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-lg flex-shrink-0 transition-all duration-200 hover:gap-2 tcs-footer-link"
+            className="inline-flex items-center gap-2 text-sm font-medium px-5 py-3 rounded-xl flex-shrink-0 transition-all duration-200 hover:gap-2.5"
+            style={{ color: "rgb(36,129,121)", border: "1.5px solid rgb(36,129,121)", background: "rgb(255,255,255)" }}
           >
-            Full technical record <ArrowUpRight size={11} />
+            Full technical record <ArrowUpRight size={13} />
           </Link>
         </div>
       </footer>

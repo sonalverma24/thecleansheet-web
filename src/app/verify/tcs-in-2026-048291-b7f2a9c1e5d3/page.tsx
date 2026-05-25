@@ -89,25 +89,40 @@ export default function CertificationProofPage() {
             {/* Product thumbnail card */}
             <div className="flex-shrink-0 flex sm:flex-col items-center gap-4">
               <div className="relative w-24 h-28 sm:w-36 sm:h-44 rounded-2xl bg-teal-900/40 border border-teal-800/40 flex items-center justify-center overflow-hidden flex-shrink-0">
-                <Image
-                  src="https://codeskin.in/cdn/shop/files/UltraLite_Fluid_Sunscreen_bottle_s.png?v=1768211190"
-                  alt="CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++"
-                  width={120}
-                  height={160}
-                  className="object-contain w-full h-full p-2"
-                  unoptimized
-                />
+                {/* Sample bottle SVG */}
+                <svg viewBox="0 0 120 260" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full p-3">
+                  <rect x="52" y="40" width="16" height="24" rx="4" fill="#1a4744" stroke="#2a5f5b" strokeWidth="1" />
+                  <rect x="36" y="26" width="48" height="16" rx="8" fill="#248179" />
+                  <rect x="84" y="29" width="22" height="10" rx="5" fill="#1d6b65" />
+                  <circle cx="107" cy="34" r="3.5" fill="#1d6b65" />
+                  <circle cx="107" cy="34" r="1.8" fill="#248179" />
+                  <rect x="10" y="60" width="100" height="182" rx="22" fill="#1a4744" stroke="#2a5f5b" strokeWidth="1" />
+                  <rect x="16" y="70" width="18" height="162" rx="9" fill="rgba(255,255,255,0.08)" />
+                  <rect x="20" y="100" width="80" height="106" rx="9" fill="rgba(255,255,255,0.06)" />
+                  <line x1="32" y1="113" x2="88" y2="113" stroke="#2a5f5b" strokeWidth="0.8" />
+                  <text x="60" y="137" textAnchor="middle" fontFamily="Georgia, serif" fontSize="17" fontWeight="bold" fill="#5aada5">SPF 50+</text>
+                  <text x="60" y="152" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="#3d8a83" letterSpacing="2.5">PA++++</text>
+                  <line x1="32" y1="162" x2="88" y2="162" stroke="#2a5f5b" strokeWidth="0.8" />
+                  <text x="60" y="177" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="6" fill="#3d8a83" letterSpacing="2.8">ULTRA LITE FLUID</text>
+                  <rect x="10" y="230" width="100" height="7" rx="3.5" fill="#1a4744" />
+                  <text x="60" y="253" textAnchor="middle" fontFamily="monospace" fontSize="5.5" fill="#2a5f5b" letterSpacing="1.5">50 mL</text>
+                </svg>
                 {/* TCS badge - corner */}
                 <div className="absolute top-2 right-2">
                   <Image src="/images/tcs-certified-badge.png" alt="Certified" width={28} height={28} className="object-contain drop-shadow-lg" />
                 </div>
               </div>
-              {/* Brand label */}
-              <div className="sm:w-36 flex items-center gap-2 bg-white/8 border border-teal-800/40 rounded-xl px-3 py-2">
-                <div className="w-5 h-5 rounded bg-teal-700 text-white text-[8px] font-medium flex items-center justify-center flex-shrink-0">CS</div>
-                <div>
-                  <p className="text-teal-200 text-[11px] font-medium leading-none">CodeSkin India</p>
-                  <p className="text-teal-300 text-[10px]">Verified Brand</p>
+              {/* Brand label - blurred sample */}
+              <div className="sm:w-36 relative">
+                <div style={{ filter: "blur(4px)", pointerEvents: "none", userSelect: "none" }} className="flex items-center gap-2 bg-white/8 border border-teal-800/40 rounded-xl px-3 py-2">
+                  <div className="w-5 h-5 rounded bg-teal-700 text-white text-[8px] font-medium flex items-center justify-center flex-shrink-0">AB</div>
+                  <div>
+                    <p className="text-teal-200 text-[11px] font-medium leading-none">Acme Brand</p>
+                    <p className="text-teal-300 text-[10px]">Verified Brand</p>
+                  </div>
+                </div>
+                <div className="absolute inset-0 border border-dashed border-teal-700/50 rounded-xl flex items-center justify-center bg-teal-900/60">
+                  <span className="text-[8px] font-bold text-teal-400 uppercase tracking-[0.1em]">&#128274; Brand</span>
                 </div>
               </div>
             </div>
@@ -130,7 +145,12 @@ export default function CertificationProofPage() {
                 UltraLite Fluid Sunscreen
               </h1>
               <p className="text-teal-400 text-base mb-0.5">SPF 50+ PA++++</p>
-              <p className="text-teal-300 text-sm mb-5">CodeSkin India</p>
+              <div className="mb-5 relative inline-block">
+                <p className="text-teal-300 text-sm" style={{ filter: "blur(4px)", pointerEvents: "none", userSelect: "none" }}>Acme Brand India</p>
+                <div className="absolute inset-0 flex items-center">
+                  <span className="text-[8px] font-bold text-teal-500 uppercase tracking-[0.1em]">&#128274; Brand</span>
+                </div>
+              </div>
 
               {/* Key stats grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
@@ -541,7 +561,7 @@ export default function CertificationProofPage() {
                 Aqua, Methylene Bis-Benzotriazolyl Tetramethylbutylphenol, C15-19 Alkane, Diethylamino Hydroxybenzoyl Hexyl Benzoate, Ethylhexyl Triazone, Niacinamide, Caprylyl Caprylate/Caprate, Aloe Barbadensis Leaf Juice, Saccharomyces Ferment Lysate Filtrate, Chondrus Crispus (Red Algae) Extract, Isododecane, Hexylene Glycol, Starch, Dioctyl Carbonate, Isoamyl Laurate, Erythritol, Polyglutamic Acid, Ectoin, Xylitol, Sodium Hyaluronate, Adenosine, Propylene Glycol Dibenzoate, Dipotassium Glycyrrhizate, Tocopheryl Acetate, Tocotrienols, Steareth-21, Pentaerythrityl Distearate, Sodium Polyacrylate, Sodium Stearoyl Glutamate, Sodium Levulinate, Silica, Polyacrylate Crosspolymer-6, Glyceryl Caprylate, Trisodium Dicarboxymethyl Alaninate, Allantoin, Phytosteryl/Octyldodecyl Lauroyl Glutamate, Benzyl Alcohol, Diethylhexyl Syringylidenemalonate, Caprylic/Capric Triglyceride, Olea Europaea (Olive) Leaf Extract, Panthenol, Potassium Sorbate, Citric Acid, Sodium Benzoate, 1,2-Hexanediol
               </p>
             </div>
-            <p className="text-[11px] text-ink-400 mt-2">Source: codeskin.in product page.</p>
+            <p className="text-[11px] text-ink-400 mt-2">Source: brand product page [SAMPLE].</p>
           </div>
         </div>
 
