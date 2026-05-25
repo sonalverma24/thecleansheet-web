@@ -189,7 +189,7 @@ export default function PitchPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               "No operational changes required",
-              "No additional testing — we review what you have",
+              "No additional testing: we review what you have",
               "No reformulation needed",
               "NDA protection for sensitive formulation data",
               "Works with your existing QA and lab ecosystem",
@@ -246,7 +246,7 @@ export default function PitchPage() {
           <div className="grid sm:grid-cols-2 gap-x-12">
             <div>
               <Deliverable icon={<Fingerprint size={16} />} title="Unique Certification ID" detail="Every certified product receives a permanent, non-transferable identifier." />
-              <Deliverable icon={<Globe size={16} />} title="Public Verification Page" detail="Source of truth accessible to anyone, anywhere — consumers, retailers, regulators." />
+              <Deliverable icon={<Globe size={16} />} title="Public Verification Page" detail="Source of truth accessible to anyone, anywhere: consumers, retailers, regulators." />
               <Deliverable icon={<QrCode size={16} />} title="QR Code" detail="Instant access to verification page from product packaging." />
             </div>
             <div>
@@ -271,7 +271,7 @@ export default function PitchPage() {
             What certification looks like
           </h2>
           <p className="text-sm text-ink-500 mb-10 mx-auto" style={{ maxWidth: "28rem" }}>
-            Explore a sample certification — the consumer-facing product page and the full technical registry record.
+            Explore a sample certification: the consumer-facing product page and the full technical registry record.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -298,7 +298,7 @@ export default function PitchPage() {
               </div>
               <p className="text-base font-medium text-ink-900 mb-1">Full Registry Proof</p>
               <p className="text-sm text-ink-500 leading-relaxed">
-                The complete certification proof — every check, every claim, every piece of evidence.
+                The complete certification proof: every check, every claim, every piece of evidence.
               </p>
             </Link>
           </div>

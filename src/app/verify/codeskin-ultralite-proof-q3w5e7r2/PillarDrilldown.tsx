@@ -418,7 +418,7 @@ export default function PillarDrilldown() {
           );
         })}
 
-        {/* Methodology note — compact */}
+        {/* Methodology note - compact */}
         <div
           className="rounded-lg px-5 py-4 mt-6"
           style={{

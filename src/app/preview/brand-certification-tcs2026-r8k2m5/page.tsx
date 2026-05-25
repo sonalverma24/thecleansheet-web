@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ChevronDown, ArrowUpRight, Eye, FileText, Shield, Beaker, Scale, FlaskConical, Leaf } from 'lucide-react';
 import Link from 'next/link';
 
-// SEO: prevent indexing — this is a private preview page
+// SEO: prevent indexing - this is a private preview page
 // metadata is handled in layout.tsx or via a robots meta tag in the head
 
 export default function BrandPreviewPage() {
@@ -45,7 +45,7 @@ export default function BrandPreviewPage() {
               This is what your customers<br className="hidden sm:block" /> will see when you certify.
             </h1>
             <p className="text-[13px] sm:text-[15px] leading-relaxed mb-6" style={{ color: "#6b6868", maxWidth: "32rem" }}>
-              Every brand that certifies with The Clean Sheet gets a live, public proof page for each product — a single link that shows consumers exactly what makes your product safe, effective, and trustworthy.
+              Every brand that certifies with The Clean Sheet gets a live, public proof page for each product: a single link that shows consumers exactly what makes your product safe, effective, and trustworthy.
             </p>
             <p className="text-[13px] sm:text-[15px] leading-relaxed" style={{ color: "#6b6868", maxWidth: "32rem" }}>
               Below are two live examples from our sample product, CodeSkin UltraLite SPF 50. This is exactly what your certification pages will look like.
@@ -70,7 +70,7 @@ export default function BrandPreviewPage() {
             </h2>
           </div>
           <p className="text-[12px] sm:text-[13px] leading-relaxed mb-4 sm:mb-5 ml-9" style={{ color: "#6b6868", maxWidth: "30rem" }}>
-            Tap either card to see the full live page. These are real, working pages — not mockups.
+            Tap either card to see the full live page. These are real, working pages, not mockups.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
@@ -140,7 +140,7 @@ export default function BrandPreviewPage() {
                   </span>
                 </div>
                 <p className="text-[12px] sm:text-[12.5px] leading-relaxed mb-3" style={{ color: "#6b6868" }}>
-                  Complete technical proof — ingredient-level assessment, regulatory compliance, test data references, and full scoring across all 5 pillars.
+                  Complete technical proof: ingredient-level assessment, regulatory compliance, test data references, and full scoring across all 5 pillars.
                 </p>
                 <div className="flex items-center gap-1.5 text-[11px] group-hover:gap-2 transition-all" style={{ color: "#fd6158" }}>
                   View live page <ArrowUpRight size={11} />
@@ -166,7 +166,7 @@ export default function BrandPreviewPage() {
           <div className="grid gap-2.5">
             {[
               { title: 'Live Consumer Proof Page', desc: 'A public, scannable page linked via QR code on your packaging. Customers see exactly what passed and why.', color: '#248179' },
-              { title: 'Detailed Technical Record', desc: 'Full ingredient-level assessment, regulatory compliance matrix, and scoring breakdown — for retail buyers, regulators, and your internal team.', color: '#248179' },
+              { title: 'Detailed Technical Record', desc: 'Full ingredient-level assessment, regulatory compliance matrix, and scoring breakdown: for retail buyers, regulators, and your internal team.', color: '#248179' },
               { title: 'Certification Badge & QR Code', desc: 'Print-ready badge files (3 formats) and a unique QR code that links directly to your product\'s proof page.', color: '#248179' },
               { title: 'Comprehensive Evaluation Report', desc: 'Whether you pass or not, you receive a detailed technical report with specific, actionable feedback on your formulation, testing, and documentation.', color: '#fd6158' },
             ].map((item) => (
@@ -233,7 +233,7 @@ export default function BrandPreviewPage() {
           style={{ background: "linear-gradient(135deg, #e8ff8a 0%, #d2ff34 100%)" }}
         >
           <p className="text-[13px] sm:text-[15px] leading-relaxed text-center" style={{ color: "#282828", maxWidth: "32rem", margin: "0 auto" }}>
-            &ldquo;We don&apos;t just look at an ingredient list. We evaluate the entire product — formulation, safety, manufacturing, claims, and ethics.&rdquo;
+            &ldquo;We don&apos;t just look at an ingredient list. We evaluate the entire product: formulation, safety, manufacturing, claims, and ethics.&rdquo;
           </p>
         </div>
 
@@ -357,7 +357,7 @@ export default function BrandPreviewPage() {
               { q: 'What if my product doesn\'t pass?', a: 'You still receive a comprehensive evaluation report with specific, actionable feedback. Most brands use this to improve their formulation, testing, or documentation and re-apply successfully.' },
               { q: 'What if I don\'t have all the required tests yet?', a: 'Our pre-assessment identifies exactly what testing is missing. You can then commission these tests from accredited labs before submitting for full evaluation.' },
               { q: 'How is this different from "dermatologist tested"?', a: 'Dermatologist-tested typically means one doctor reviewed the product. We run a comprehensive 5-pillar evaluation with independent cosmetic chemists, toxicologists, and claims specialists. Every claim is verified against real evidence.' },
-              { q: 'Is my data secure?', a: 'All data is submitted via an encrypted portal, held under strict NDA, and never shared with third parties. Your exact formula is never published — consumers only see the standardised INCI list.' },
+              { q: 'Is my data secure?', a: 'All data is submitted via an encrypted portal, held under strict NDA, and never shared with third parties. Your exact formula is never published; consumers only see the standardised INCI list.' },
             ].map((faq, i) => (
               <div
                 key={i}
@@ -401,7 +401,7 @@ export default function BrandPreviewPage() {
                 Ready to certify?
               </h2>
               <p className="text-[12px] sm:text-[13px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-                Start with a free pre-assessment call — no obligation.
+                Start with a free pre-assessment call, no obligation.
               </p>
             </div>
 
@@ -450,7 +450,7 @@ export default function BrandPreviewPage() {
         {/* ─── Trust / Confidentiality Note ───────────────────── */}
         <div className="px-4 sm:px-5 py-4 rounded-lg" style={{ background: "#ffffff", border: "1px solid #eee" }}>
           <p className="text-[11px] sm:text-[12px] leading-relaxed text-center" style={{ color: "#b0a8a4" }}>
-            This is a private preview page shared directly with you by The Clean Sheet. Your confidentiality is important to us — this link is not indexed by search engines and is not linked from our public website.
+            This is a private preview page shared directly with you by The Clean Sheet. Your confidentiality is important to us: this link is not indexed by search engines and is not linked from our public website.
           </p>
         </div>
 

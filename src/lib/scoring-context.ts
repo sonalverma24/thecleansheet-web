@@ -316,7 +316,7 @@ Step 4: Check for flags. Search for recalls, controversies, CDSCO notices.
 
 SCORING FRAMEWORK (100 points, 4 pillars; apply independently to each product):
 
-Pillar 1 — Safety & Toxicity: 40 pts
+Pillar 1  -  Safety & Toxicity: 40 pts
   Apply MANDATORY DEDUCTIONS (non-discretionary):
   - Benzophenone-3 (Oxybenzone): -10 pts
   - Butylparaben/Propylparaben in leave-on: -5 pts each

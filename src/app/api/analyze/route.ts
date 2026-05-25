@@ -337,7 +337,7 @@ export async function POST(req: Request) {
 
 This is a beauty/personal care product page URL. You MUST produce a full scorecard. Never return {"type":"out_of_scope"} for a product URL. If INCI data cannot be found after all searches, score Ingredient Disclosure & Transparency at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
 
-MANDATORY RESEARCH — execute ALL of these searches before scoring:
+MANDATORY RESEARCH  -  execute ALL of these searches before scoring:
 1. Identify product name and brand from scraped content below.
 2. Search InciDecoder: "[brand] [product name] site:incidecoder.com" to get the full INCI list. InciDecoder search results are also included below if available.
 3. Search brand's own website for ingredients: "[product name] ingredients site:${brandDomain}"
@@ -349,14 +349,14 @@ MANDATORY RESEARCH — execute ALL of these searches before scoring:
 
 Use ALL sources found. Combine INCI data across sources: if brand PDP shows partial INCI and InciDecoder shows full INCI, use the fuller list and note the source difference in inciSource.
 
-If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests — do NOT flag as unsubstantiated merely because JavaScript-rendered PDFs are missing from the scrape.
+If the scraped content mentions test reports, certifications, or lab results even partially, treat this as CONFIRMED evidence of published tests  -  do NOT flag as unsubstantiated merely because JavaScript-rendered PDFs are missing from the scrape.
 Only assign the "Unsubstantiated Claims" warn badge if the product uses "chemical-free" or "toxin-free" language WITHOUT any certification.
 
 --- Scraped content from brand product page (partial; JS-rendered sections missing) ---
 ${scrapedContext || "(scrape returned no content; rely on web search)"}
 
 --- InciDecoder search results for this product ---
-${inciDecoderContext || "(no InciDecoder results pre-fetched — search manually)"}`;
+${inciDecoderContext || "(no InciDecoder results pre-fetched  -  search manually)"}`;
     } else {
       prompt = isComparison
         ? `Compare these two products: ${q}`
@@ -366,7 +366,7 @@ ${inciDecoderContext || "(no InciDecoder results pre-fetched — search manually
 
 Product: ${q}
 
-MANDATORY RESEARCH — execute ALL of these before scoring:
+MANDATORY RESEARCH  -  execute ALL of these before scoring:
 1. Search Google for the product: "[product name]" to find the brand's official product page and open it.
 2. Search InciDecoder: "[product name] site:incidecoder.com" to get the full INCI ingredient list.
 3. Search Nykaa: "[product name] site:nykaa.com" to get price, rating, review count, and INCI if available.

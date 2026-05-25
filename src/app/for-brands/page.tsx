@@ -86,7 +86,7 @@ export default function ForBrandsPage() {
 
       <main className="max-w-5xl mx-auto px-5 space-y-10 pb-10">
 
-        {/* ─── See It Live — certification page previews ──────── */}
+        {/* ─── See It Live: certification page previews ──────── */}
         <section id="live-demo" className="pt-6">
           <div className="flex items-center gap-3 mb-5">
             <span
@@ -100,7 +100,7 @@ export default function ForBrandsPage() {
             </h2>
           </div>
           <p className="text-[13px] leading-relaxed mb-5 ml-9" style={{ color: "#6b6868", maxWidth: "32rem" }}>
-            Every certified product gets two live pages — one for consumers and one for technical reviewers. Here&apos;s what they look like.
+            Every certified product gets two live pages: one for consumers and one for technical reviewers. Here&apos;s what they look like.
           </p>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -168,7 +168,7 @@ export default function ForBrandsPage() {
                   </span>
                 </div>
                 <p className="text-[12.5px] leading-relaxed mb-4" style={{ color: "#6b6868" }}>
-                  Complete technical proof — ingredient-level assessment, regulatory compliance matrix, test data references, and full scoring breakdown across all 5 PRISM pillars.
+                  Complete technical proof: ingredient-level assessment, regulatory compliance matrix, test data references, and full scoring breakdown across all 5 PRISM pillars.
                 </p>
                 <div className="flex items-center gap-1.5 text-[11px] group-hover:gap-2 transition-all" style={{ color: "#fd6158" }}>
                   View live page <ArrowUpRight size={11} />
@@ -261,7 +261,7 @@ export default function ForBrandsPage() {
           style={{ background: "linear-gradient(135deg, #e8ff8a 0%, #d2ff34 100%)" }}
         >
           <p className="text-[15px] leading-relaxed text-center" style={{ color: "#282828", maxWidth: "36rem", margin: "0 auto" }}>
-            &ldquo;We don&apos;t just look at an ingredient list. We evaluate the entire product — formulation, safety, manufacturing, claims, and ethics.&rdquo;
+            &ldquo;We don&apos;t just look at an ingredient list. We evaluate the entire product: formulation, safety, manufacturing, claims, and ethics.&rdquo;
           </p>
         </div>
 
@@ -335,7 +335,7 @@ export default function ForBrandsPage() {
           <div className="space-y-2.5">
             {[
               { title: 'Pre-Assessment', badge: 'Optional', color: '#b0a8a4', desc: "Submit our Pre-Assessment Questionnaire. We'll review it and schedule a call to identify any early gaps in your formulation or testing before you pay for a full evaluation." },
-              { title: 'Application & Dossier Submission', color: '#248179', desc: 'You submit your full product dossier via our secure, encrypted portal — your complete formula (held under strict NDA), raw material documentation, safety and stability test data, and claims evidence.' },
+              { title: 'Application & Dossier Submission', color: '#248179', desc: 'You submit your full product dossier via our secure, encrypted portal: your complete formula (held under strict NDA), raw material documentation, safety and stability test data, and claims evidence.' },
               { title: 'Completeness Review', badge: 'Within 5 Days', color: '#248179', desc: 'We check if any documents are missing. If so, you have 20 days to provide them.' },
               { title: 'Technical Evaluation & Panel Review', badge: '6-10 Weeks', color: '#248179', desc: 'Our independent panel of cosmetic chemists, toxicologists, and claims specialists rigorously evaluates your product across all 5 pillars.' },
               { title: 'Certification & Live Proof Page', badge: 'Valid 1 Year', color: '#fd6158', desc: 'If you score 60 or above, you are certified. Your public proof page goes live, and you receive your certification badge and QR code.' },
@@ -459,13 +459,13 @@ export default function ForBrandsPage() {
           </div>
         </section>
 
-        {/* ─── CTA — Ready to Start ──────────────────────────── */}
+        {/* ─── CTA: Ready to Start ──────────────────────────── */}
         <section id="start">
           <div
             className="rounded-xl overflow-hidden"
             style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
           >
-            {/* Top — dark section */}
+            {/* Top: dark section */}
             <div className="px-6 py-8 text-center" style={{ background: "#282828" }}>
               <h2 className="text-xl tracking-tight mb-2" style={{ color: "#ffffff", fontWeight: 400 }}>
                 Ready to Start?

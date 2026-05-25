@@ -217,7 +217,7 @@ export default function RegistryClient() {
 
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
 
-            {/* Left: Product image — larger, lighter background */}
+            {/* Left: Product image - larger, lighter background */}
             <div className="flex-shrink-0 flex flex-col items-center gap-3">
               <div className="relative w-40 h-52 sm:w-48 sm:h-60 rounded-2xl bg-white/95 border border-white/20 flex items-center justify-center overflow-hidden shadow-lg shadow-black/20">
                 <Image
@@ -337,7 +337,7 @@ export default function RegistryClient() {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-teal-900">PRISM Score: 88/100 — Excellent</p>
+            <p className="text-sm font-medium text-teal-900">PRISM Score: 88/100, Excellent</p>
             <p className="text-xs text-teal-600 mt-0.5">5 of 5 pillars passed. Based on evidence submitted &amp; verified [SAMPLE]</p>
           </div>
         </div>
@@ -389,7 +389,7 @@ export default function RegistryClient() {
               id="legal"
               icon={<Shield size={16} />}
               title="Requirement 1: Legal Compliance"
-              subtitle="Gate check — mandatory pass to proceed"
+              subtitle="Gate check: mandatory pass to proceed"
               status="passed" statusLabel="PASSED"
               isOpen={openSections.has("legal")} onToggle={() => toggleSection("legal")}
             >

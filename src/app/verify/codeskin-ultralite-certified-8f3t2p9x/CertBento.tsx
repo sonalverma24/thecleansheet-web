@@ -37,7 +37,7 @@ function ExpandBtn({
   );
 }
 
-/* Grid rows expand — smooth CSS height animation without fixed values */
+/* Grid rows expand - smooth CSS height animation without fixed values */
 function DetailPanel({
   open,
   light,
@@ -308,7 +308,7 @@ export default function CertBento() {
             </DetailPanel>
           </div>
 
-          {/* Formula verification — no expand, content is self-evident */}
+          {/* Formula verification - no expand, content is self-evident */}
           <div
             className="lg:col-span-4 rounded-xl p-5"
             style={{ background: "#0F2C2A" }}

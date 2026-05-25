@@ -157,10 +157,10 @@ export default function VerifiedPage() {
         <div className="max-w-5xl mx-auto px-5 sm:px-8">
           <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-0 pt-8 sm:pt-10 pb-8 sm:pb-10">
 
-            {/* Left column — text */}
+            {/* Left column: text */}
             <div className="flex-1 min-w-0 sm:pr-10 lg:pr-16 py-2 sm:py-4">
 
-              {/* Brand — blurred sample */}
+              {/* Brand: blurred sample */}
               <div className="flex items-center gap-3 mb-6">
                 <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
                   <div style={{ filter: "blur(4px)", display: "flex", alignItems: "center", gap: 6, pointerEvents: "none", userSelect: "none" }}>
@@ -231,12 +231,12 @@ export default function VerifiedPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] uppercase tracking-wider" style={{ color: "#b0a8a4" }}>Valid:</span>
-                  <span className="text-xs" style={{ color: "#282828" }}>15 May 2026 — 14 May 2027</span>
+                  <span className="text-xs" style={{ color: "#282828" }}>15 May 2026 to 14 May 2027</span>
                 </div>
               </div>
             </div>
 
-            {/* Right column — product image */}
+            {/* Right column - product image */}
             <div
               className="flex-shrink-0 mx-auto sm:mx-0 self-stretch flex items-center"
               style={{ flex: "0 0 auto", width: "min(280px, 38vw)" }}
@@ -283,11 +283,11 @@ export default function VerifiedPage() {
         </div>
       </section>
 
-      {/* ─── Verified Credentials — card layout ──────────────── */}
+      {/* ─── Verified Credentials - card layout ──────────────── */}
       <section className="px-5 py-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
 
-          {/* Section header — numbered like the PDF */}
+          {/* Section header - numbered like the PDF */}
           <div className="flex items-center gap-3 mb-5">
             <span
               className="text-[10px] font-medium text-white w-6 h-6 rounded-full flex items-center justify-center"
@@ -300,7 +300,7 @@ export default function VerifiedPage() {
             </h2>
           </div>
 
-          {/* Credential cards — left-border style */}
+          {/* Credential cards - left-border style */}
           <div className="space-y-3">
             {credentialGroups.map((group) => (
               <div
@@ -402,7 +402,7 @@ export default function VerifiedPage() {
           className="max-w-5xl mx-auto rounded-xl overflow-hidden flex flex-col sm:flex-row"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
-          {/* Left — dark teal */}
+          {/* Left - dark teal */}
           <div className="flex-1 px-6 py-6" style={{ background: "#248179" }}>
             <p className="text-[10px] tracking-[0.18em] uppercase mb-2" style={{ color: "rgba(255,255,255,0.6)" }}>
               thecleansheet.in
@@ -411,7 +411,7 @@ export default function VerifiedPage() {
               Check your product&apos;s<br />safety now.
             </p>
           </div>
-          {/* Right — dark */}
+          {/* Right - dark */}
           <div className="flex-1 px-6 py-6 flex flex-col justify-center" style={{ background: "#282828" }}>
             <p className="text-white text-[14px] mb-2">
               View full technical record

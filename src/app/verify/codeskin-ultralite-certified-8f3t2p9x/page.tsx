@@ -28,7 +28,7 @@ export default function ConsumerCertPage() {
         </div>
       </div>
 
-      {/* HERO — compact */}
+      {/* HERO - compact */}
       <section className="grain-overlay bg-teal-950 overflow-hidden">
         <div className="relative z-10 max-w-5xl mx-auto px-5 pt-7 pb-8">
 
@@ -141,7 +141,7 @@ export default function ConsumerCertPage() {
 
       <CertBento />
 
-      {/* UV filters — light, authoritative */}
+      {/* UV filters - light, authoritative */}
       <section className="bg-white border-t border-b border-ink-100 py-12 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-10">
