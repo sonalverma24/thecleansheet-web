@@ -6,19 +6,13 @@ import type { ReactNode } from "react";
 
 /* ── Graphic tick SVG ───────────────────────────────────── */
 
-function TickOutline({ size = 14 }: { size?: number }) {
+function TickOutline({ size = 14, color = "#248179" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className="flex-shrink-0">
-      <defs>
-        <linearGradient id="tg2" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#2E9E96" />
-          <stop offset="100%" stopColor="#248179" />
-        </linearGradient>
-      </defs>
-      <circle cx="8" cy="8" r="7" fill="rgba(36,129,121,0.08)" stroke="url(#tg2)" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="7" fill={`${color}12`} stroke={color} strokeWidth="1.2" />
       <path
         d="M5 8.2l2.1 2.1L11 6"
-        stroke="#248179"
+        stroke={color}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -38,6 +32,8 @@ type Pillar = {
   name: string;
   sublabel: string;
   icon: ReactNode;
+  color: string;
+  badge: string;
   checks: Check[];
 };
 
@@ -46,7 +42,9 @@ const pillars: Pillar[] = [
     id: "legal",
     name: "Legal Compliance",
     sublabel: "Permitted in every assessed market",
-    icon: <Scale size={17} />,
+    icon: <Scale size={16} />,
+    color: "#fd6158",
+    badge: "VERIFIED",
     checks: [
       {
         id: "india",
@@ -89,7 +87,9 @@ const pillars: Pillar[] = [
     id: "safety",
     name: "Ingredient Safety",
     sublabel: "Every ingredient reviewed for known hazards",
-    icon: <FlaskConical size={17} />,
+    icon: <FlaskConical size={16} />,
+    color: "#e8963a",
+    badge: "VERIFIED",
     checks: [
       {
         id: "hazard",
@@ -127,7 +127,9 @@ const pillars: Pillar[] = [
     id: "manufacturing",
     name: "Manufacturing Quality",
     sublabel: "Facility, process, and batch documentation reviewed",
-    icon: <Building2 size={17} />,
+    icon: <Building2 size={16} />,
+    color: "#248179",
+    badge: "VERIFIED",
     checks: [
       {
         id: "gmp",
@@ -160,7 +162,9 @@ const pillars: Pillar[] = [
     id: "claims",
     name: "Claims Verified",
     sublabel: "Every claim reviewed against submitted test evidence",
-    icon: <ShieldCheck size={17} />,
+    icon: <ShieldCheck size={16} />,
+    color: "#fd6158",
+    badge: "VERIFIED",
     checks: [
       {
         id: "spf",
@@ -216,9 +220,11 @@ const pillars: Pillar[] = [
   },
   {
     id: "ethics",
-    name: "Ethics and Sourcing",
+    name: "Ethics & Sourcing",
     sublabel: "Formula and ingredient origins reviewed",
-    icon: <Leaf size={17} />,
+    icon: <Leaf size={16} />,
+    color: "#6b9e3a",
+    badge: "VERIFIED",
     checks: [
       {
         id: "no-animal",
@@ -270,70 +276,66 @@ export default function PillarDrilldown() {
   }
 
   return (
-    <section className="bg-white px-5 pt-4 pb-14">
+    <section className="px-5 pt-4 pb-10">
       <div className="max-w-5xl mx-auto space-y-3">
         {pillars.map((pillar) => {
           const isOpen = openPillars.has(pillar.id);
           return (
             <div
               key={pillar.id}
-              className="rounded-2xl overflow-hidden transition-shadow duration-300"
+              className="bg-white rounded-lg overflow-hidden transition-shadow duration-300"
               style={{
-                border: isOpen ? "1px solid #c2e8e4" : "1px solid #EEEDED",
-                boxShadow: isOpen ? "0 2px 16px -4px rgba(36,129,121,0.1)" : "none",
+                borderLeft: `4px solid ${pillar.color}`,
+                boxShadow: isOpen
+                  ? "0 4px 16px -4px rgba(0,0,0,0.08)"
+                  : "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               {/* Pillar header */}
               <button
                 onClick={() => togglePillar(pillar.id)}
-                className="w-full flex items-center gap-4 px-5 sm:px-6 py-5 text-left transition-all duration-300"
+                className="w-full flex items-center gap-3 px-5 py-4 text-left transition-all duration-200"
                 style={{
-                  background: isOpen
-                    ? "linear-gradient(135deg, #edf8f7 0%, #f5fafa 60%, #f8fafa 100%)"
-                    : "#ffffff",
+                  background: isOpen ? `${pillar.color}06` : "#ffffff",
                 }}
               >
                 <div
-                  className="w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center transition-all duration-300"
+                  className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center"
                   style={{
-                    background: isOpen ? "rgba(36,129,121,0.12)" : "rgb(237,248,247)",
-                    color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.6)",
+                    background: `${pillar.color}14`,
+                    color: pillar.color,
                   }}
                 >
                   {pillar.icon}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-base font-medium tracking-tight transition-colors duration-200"
-                    style={{ color: isOpen ? "#262525" : "#343232" }}
+                    className="text-[15px] font-medium tracking-tight"
+                    style={{ color: "#282828" }}
                   >
                     {pillar.name}
                   </p>
-                  <p
-                    className="text-xs mt-0.5 transition-colors duration-200"
-                    style={{ color: isOpen ? "#8E8B8B" : "#A7A5A5" }}
-                  >
+                  <p className="text-[12px] mt-0.5" style={{ color: "#b0a8a4" }}>
                     {pillar.sublabel}
                   </p>
                 </div>
 
-                {/* Check count pill */}
+                {/* Badge pill */}
                 <span
-                  className="hidden sm:inline-flex items-center justify-center rounded-full text-[11px] font-medium px-2.5 py-0.5 mr-2 flex-shrink-0 transition-all duration-300"
+                  className="text-[10px] font-medium tracking-wider uppercase px-2.5 py-1 rounded flex-shrink-0"
                   style={{
-                    background: isOpen ? "rgba(36,129,121,0.1)" : "rgb(237,248,247)",
-                    color: isOpen ? "rgb(36,129,121)" : "rgba(36,129,121,0.7)",
-                    border: "1px solid rgba(36,129,121,0.2)",
+                    background: "#248179",
+                    color: "#ffffff",
                   }}
                 >
-                  {pillar.checks.length} checks
+                  {pillar.badge}
                 </span>
 
                 <ChevronDown
-                  size={14}
-                  className="flex-shrink-0 transition-all duration-300"
+                  size={13}
+                  className="flex-shrink-0 transition-all duration-300 ml-1"
                   style={{
-                    color: isOpen ? "#248179" : "#C2C0C0",
+                    color: isOpen ? pillar.color : "#C2C0C0",
                     transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                   }}
                 />
@@ -348,39 +350,42 @@ export default function PillarDrilldown() {
                 }}
               >
                 <div className="overflow-hidden">
-                  <div style={{ borderTop: "1px solid #e8f5f3" }}>
+                  <div style={{ borderTop: `1px solid ${pillar.color}18` }}>
                     {pillar.checks.map((check, idx) => {
                       const isCheckOpen = openChecks.has(check.id);
                       return (
                         <div
                           key={check.id}
                           style={{
-                            borderBottom: idx < pillar.checks.length - 1 ? "1px solid #f0f9f8" : "none",
+                            borderBottom:
+                              idx < pillar.checks.length - 1
+                                ? "1px solid #f5f3f3"
+                                : "none",
                           }}
                         >
                           {/* Check row */}
                           <button
                             onClick={() => toggleCheck(check.id)}
-                            className="w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors"
+                            className="w-full flex items-center gap-3 px-5 py-3 text-left transition-colors"
                             style={{
-                              background: isCheckOpen ? "rgba(36,129,121,0.03)" : "transparent",
+                              background: isCheckOpen ? `${pillar.color}06` : "transparent",
                             }}
                           >
-                            <TickOutline size={14} />
-                            <span className="flex-1 text-sm text-ink-700 leading-snug">
+                            <TickOutline size={14} color={pillar.color} />
+                            <span className="flex-1 text-[13px] leading-snug" style={{ color: "#4a4747" }}>
                               {check.label}
                             </span>
                             <ChevronDown
                               size={11}
                               className="flex-shrink-0 transition-transform duration-200"
                               style={{
-                                color: isCheckOpen ? "#248179" : "#C2C0C0",
+                                color: isCheckOpen ? pillar.color : "#d4d2d2",
                                 transform: isCheckOpen ? "rotate(180deg)" : "rotate(0deg)",
                               }}
                             />
                           </button>
 
-                          {/* Animated detail reveal */}
+                          {/* Detail reveal */}
                           <div
                             className="grid"
                             style={{
@@ -389,18 +394,14 @@ export default function PillarDrilldown() {
                             }}
                           >
                             <div className="overflow-hidden">
-                              <div className="pb-4" style={{ paddingLeft: "2.85rem", paddingRight: "1.25rem" }}>
-                                {/* Gradient left border via pseudo-wrapper */}
+                              <div className="pb-3.5" style={{ paddingLeft: "2.75rem", paddingRight: "1.25rem" }}>
                                 <div
                                   className="pl-4 py-1 max-w-prose"
                                   style={{
-                                    borderLeft: "2px solid transparent",
-                                    backgroundImage: "linear-gradient(white, white), linear-gradient(to bottom, #2E9E96, #A8E4DF)",
-                                    backgroundOrigin: "border-box",
-                                    backgroundClip: "padding-box, border-box",
+                                    borderLeft: `2px solid ${pillar.color}40`,
                                   }}
                                 >
-                                  <p className="text-sm text-ink-700 leading-relaxed">
+                                  <p className="text-[13px] leading-relaxed" style={{ color: "#6b6868" }}>
                                     {check.detail}
                                   </p>
                                 </div>
@@ -417,26 +418,29 @@ export default function PillarDrilldown() {
           );
         })}
 
-        <div className="mt-10 sm:mt-12">
-          <div
-            className="max-w-2xl mx-auto rounded-2xl border border-teal-100 bg-teal-50/30 px-6 sm:px-8 py-6 sm:py-7"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex gap-1 pt-1.5 flex-shrink-0">
-                {["#2E9E96","#45B8B0","#A8E4DF"].map((c) => (
-                  <span key={c} className="w-2 h-2 rounded-full" style={{ background: c }} />
-                ))}
-              </div>
-              <div>
-                <p className="text-[9px] tracking-[0.2em] uppercase text-ink-400 mb-2">
-                  Review methodology
-                </p>
-                <p className="text-ink-600 text-sm leading-relaxed">
-                  Reviewed by an independent panel of cosmetic scientists, toxicologists,
-                  regulatory specialists, and dermatologists.
-                  Every check above was assessed against submitted laboratory evidence.
-                </p>
-              </div>
+        {/* Methodology note — compact */}
+        <div
+          className="rounded-lg px-5 py-4 mt-6"
+          style={{
+            background: "rgba(210,255,52,0.12)",
+            border: "1px solid rgba(210,255,52,0.3)",
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex gap-1 pt-1 flex-shrink-0">
+              {["#248179","#fd6158","#e8963a"].map((c) => (
+                <span key={c} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
+              ))}
+            </div>
+            <div>
+              <p className="text-[10px] tracking-[0.15em] uppercase mb-1" style={{ color: "#b0a8a4" }}>
+                Review methodology
+              </p>
+              <p className="text-[13px] leading-relaxed" style={{ color: "#6b6868" }}>
+                Reviewed by an independent panel of cosmetic scientists, toxicologists,
+                regulatory specialists, and dermatologists.
+                Every check above was assessed against submitted laboratory evidence.
+              </p>
             </div>
           </div>
         </div>
