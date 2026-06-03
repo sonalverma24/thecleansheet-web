@@ -36,6 +36,24 @@ export type ProductScorecard = {
   info_badges: string[];
   indiaContext: string;
   analyzedAt: string;
+  // Extended optional fields — populate gradually; start with Minimalist as reference
+  category?: string;
+  subCategory?: string;
+  price?: number;
+  sizeValue?: number;
+  sizeUnit?: string;
+  pricePerUnit?: number;
+  skinTypeTags?: string[];
+  concernTags?: string[];
+  suitabilityTags?: string[];
+  cautionTags?: string[];
+  fragranceStatus?: "free" | "synthetic" | "essential-oil" | "both" | "unknown";
+  alcoholStatus?: "free" | "contains-drying" | "contains-fatty-only" | "unknown";
+  certificationStatus?: "tcs-certified" | "under-review" | "not-certified";
+  claimsMade?: string[];
+  claimsVerified?: string[];
+  claimsNotVerified?: string[];
+  availabilitySources?: string[];
 };
 
 export type Brand = {
