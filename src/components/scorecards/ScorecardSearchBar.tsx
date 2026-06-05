@@ -51,7 +51,7 @@ export function ScorecardSearchBar({
           onChange={(e) => onChange(e.target.value)}
           onFocus={handleFocus}
           placeholder={getPlaceholder()}
-          className="flex-1 bg-transparent px-3 py-3.5 text-ink-950 placeholder:text-ink-400 text-sm outline-none font-sans"
+          className="flex-1 bg-transparent px-3 py-2.5 text-ink-950 placeholder:text-ink-400 text-sm outline-none font-sans"
           aria-label="Search scorecards"
         />
         {value && (

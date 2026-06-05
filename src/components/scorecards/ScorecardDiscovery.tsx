@@ -13,12 +13,14 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpDown,
   FlaskConical,
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
   Shield,
   CheckCircle2,
+  X,
 } from "lucide-react";
 
 import type { ProductScorecard } from "@/data/brands/types";
@@ -85,7 +87,7 @@ const EMPTY_FILTERS: ActiveFilters = {
   priceRanges: [],
 };
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 16;
 const DEBOUNCE_MS = 300;
 
 // ── Helper: price bucket ──────────────────────────────────────────────────────
@@ -272,6 +274,102 @@ function CleanMeter({ score }: { score: number }) {
   );
 }
 
+// ── Sort options (shared between desktop dropdown and mobile sheet) ───────────
+const SORT_OPTIONS_LIST: { value: SortOption; label: string; requiresPrice?: boolean }[] = [
+  { value: "score_desc",       label: "Highest score" },
+  { value: "score_asc",        label: "Lowest score" },
+  { value: "best_match",       label: "Best match" },
+  { value: "price_asc",        label: "Lowest price",        requiresPrice: true },
+  { value: "price_desc",       label: "Highest price",       requiresPrice: true },
+  { value: "value_desc",       label: "Best value (per ml)", requiresPrice: true },
+  { value: "fewest_cautions",  label: "Fewest caution flags" },
+  { value: "newest",           label: "Newest scorecard" },
+];
+
+// ── Mobile sort bottom sheet ──────────────────────────────────────────────────
+function MobileSortSheet({
+  open,
+  onClose,
+  value,
+  onChange,
+  hasQuery,
+  hasPriceData,
+}: {
+  open: boolean;
+  onClose: () => void;
+  value: SortOption;
+  onChange: (v: SortOption) => void;
+  hasQuery: boolean;
+  hasPriceData: boolean;
+}) {
+  useEffect(() => {
+    if (open) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  if (!open) return null;
+
+  const visible = SORT_OPTIONS_LIST.filter((o) => {
+    if (o.value === "best_match" && !hasQuery) return false;
+    if (o.requiresPrice && !hasPriceData) return false;
+    return true;
+  });
+
+  return (
+    <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
+      <div
+        className="relative rounded-t-3xl flex flex-col shadow-2xl"
+        style={{ background: "#faf7f2", maxHeight: "70vh" }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="rounded-full" style={{ width: 40, height: 4, background: "rgba(176,168,164,0.45)" }} />
+        </div>
+        {/* Header */}
+        <div
+          className="flex items-center justify-between flex-shrink-0"
+          style={{ height: 52, paddingLeft: 20, paddingRight: 12, borderBottom: "1px solid rgba(176,168,164,0.25)" }}
+        >
+          <span style={{ fontSize: 16, fontWeight: 600, color: "#282828" }}>Sort by</span>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center rounded-full"
+            style={{ width: 40, height: 40, background: "rgba(176,168,164,0.15)" }}
+            aria-label="Close sort"
+          >
+            <X size={16} style={{ color: "#282828" }} />
+          </button>
+        </div>
+        {/* Options */}
+        <div className="overflow-y-auto flex-1" style={{ padding: "4px 0 24px" }}>
+          {visible.map((opt) => {
+            const selected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); onClose(); }}
+                className="w-full flex items-center justify-between transition-colors active:bg-ink-50"
+                style={{ height: 52, paddingLeft: 20, paddingRight: 20 }}
+              >
+                <span style={{ fontSize: 15, color: selected ? "#248179" : "#282828", fontWeight: selected ? 500 : 400 }}>
+                  {opt.label}
+                </span>
+                {selected && (
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8L7 12L13 5" stroke="#248179" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Inner component (uses useSearchParams) ────────────────────────────────────
 interface InnerProps {
   brands: BrandSummary[];
@@ -299,6 +397,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [comparingIds, setComparingIds] = useState<string[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
 
   // Debounce search query
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -449,7 +548,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   return (
     <>
       {/* ── Stats strip ── */}
-      <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-6 mb-10 grid grid-cols-3 divide-x divide-ink-100">
+      <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-4 mb-5 grid grid-cols-3 divide-x divide-ink-100">
         {[
           { label: "Brands scored",       value: brands.length.toString() },
           { label: "Products analysed",   value: totalProducts.toString()  },
@@ -463,7 +562,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       </div>
 
       {/* ── Tab switcher ── */}
-      <div className="flex items-center gap-1 bg-ink-50 border border-ink-100 rounded-2xl p-1 w-fit mb-8">
+      <div className="flex items-center gap-1 bg-ink-50 border border-ink-100 rounded-2xl p-1 w-full sm:w-fit mb-5">
         {(["products", "brands"] as const).map((tab) => (
           <button
             key={tab}
@@ -471,7 +570,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
               setView(tab);
               setPage(1);
             }}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+            className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-medium transition-all text-center ${
               view === tab
                 ? "bg-white text-ink-900 shadow-sm border border-ink-100"
                 : "text-ink-500 hover:text-ink-700"
@@ -655,8 +754,8 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       {view === "products" && (
         <>
           {/* Sticky top bar: search + mobile filter/sort controls */}
-          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 mb-4 border-b border-ink-100">
-            <div className="pt-3 pb-3">
+          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 mb-3 border-b border-ink-100">
+            <div className="pt-2.5 pb-2.5">
               <ScorecardSearchBar
                 value={query}
                 onChange={handleQueryChange}
@@ -665,39 +764,34 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
               />
             </div>
             {/* Mobile only: filter + sort row */}
-            <div className="lg:hidden flex items-center gap-2 pb-3">
+            <div className="lg:hidden flex items-center gap-2 pb-2.5">
               <button
                 onClick={() => setMobileFilterOpen(true)}
                 className="inline-flex items-center gap-1.5 border border-ink-200 text-ink-700 text-sm font-medium px-3 rounded-xl transition-colors active:bg-ink-50"
-                style={{ minHeight: 40 }}
+                style={{ minHeight: 38 }}
               >
-                <SlidersHorizontal size={14} />
+                <SlidersHorizontal size={13} />
                 Filters
                 {hasActiveFilters && (
                   <span
                     className="text-white rounded-full flex items-center justify-center font-sans"
-                    style={{
-                      background: "#248179",
-                      fontSize: 10,
-                      width: 18,
-                      height: 18,
-                    }}
+                    style={{ background: "#248179", fontSize: 10, width: 18, height: 18 }}
                   >
                     {Object.values(filters).reduce((s, a) => s + a.length, 0)}
                   </span>
                 )}
               </button>
-              <span className="text-xs text-ink-400 font-sans ml-1">
+              <button
+                onClick={() => setMobileSortOpen(true)}
+                className="inline-flex items-center gap-1.5 border border-ink-200 text-ink-700 text-sm font-medium px-3 rounded-xl transition-colors active:bg-ink-50"
+                style={{ minHeight: 38 }}
+              >
+                <ArrowUpDown size={13} />
+                Sort
+              </button>
+              <span className="ml-auto text-xs text-ink-400 font-sans tabular-nums">
                 {results.length} product{results.length !== 1 ? "s" : ""}
               </span>
-              <div className="ml-auto">
-                <SortDropdown
-                  value={sortBy}
-                  onChange={handleSortChange}
-                  hasQuery={!!debouncedQuery}
-                  hasPriceData={hasPriceData}
-                />
-              </div>
             </div>
           </div>
 
@@ -747,7 +841,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
                 </div>
               ) : (
                 <>
-                  <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
                     {pageResults.map((product) => {
                       const id = `${product.brandSlug}/${product.slug}`;
                       return (
@@ -792,6 +886,16 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
           </div>
         </>
       )}
+
+      {/* ── Mobile sort sheet ── */}
+      <MobileSortSheet
+        open={mobileSortOpen}
+        onClose={() => setMobileSortOpen(false)}
+        value={sortBy}
+        onChange={handleSortChange}
+        hasQuery={!!debouncedQuery}
+        hasPriceData={hasPriceData}
+      />
 
       {/* ── Comparison tray ── */}
       <ComparisonTray
