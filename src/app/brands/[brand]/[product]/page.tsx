@@ -1,9 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, FlaskConical, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown } from "lucide-react";
 import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
-import type { ProductScorecard } from "@/data/brands";
+import type { ProductScorecard, ScorePillar } from "@/data/brands";
+import { ProductHero } from "@/components/scorecards/ProductHero";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Static params + metadata
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function generateStaticParams() {
   const params: { brand: string; product: string }[] = [];
@@ -16,7 +21,11 @@ export function generateStaticParams() {
   return params;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ brand: string; product: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ brand: string; product: string }>;
+}) {
   const { brand: brandSlug, product: productSlug } = await params;
   const product = getProductBySlug(brandSlug, productSlug);
   const brand = getBrandBySlug(brandSlug);
@@ -26,14 +35,19 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
     title: `${product.productName} Review, Clean Sheet Score ${product.score}/100`,
     description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${product.score}/100 (${product.scoreLabel}). Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
     keywords: [
-      `${product.productName} review`, `${product.productName} India`, `is ${product.productName} safe`,
-      `${brand.name} ${product.concern.split(",")[0].trim()} ${product.productType === "sunscreen" ? "sunscreen" : product.productType === "treatment" ? "peel" : product.productType === "toner" ? "toner" : "serum"} review`,
-      `${brand.name} ingredients safe`, `${product.productName} ingredients`,
-      "clean beauty India", "ingredient checker India",
+      `${product.productName} review`,
+      `${product.productName} India`,
+      `is ${product.productName} safe`,
+      `${brand.name} ingredients safe`,
+      `${product.productName} ingredients`,
+      "clean beauty India",
+      "ingredient checker India",
     ],
-    alternates: { canonical: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}` },
+    alternates: {
+      canonical: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
+    },
     openGraph: {
-      title: `${product.productName}, Score ${product.score}/100 | The Clean Sheet™`,
+      title: `${product.productName}, Score ${product.score}/100 | The Clean Sheet`,
       description: `${product.scoreLabel} rating. ${product.summary.slice(0, 150)}...`,
       url: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
       type: "article",
@@ -42,134 +56,366 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   };
 }
 
-function ScoreRing({ score, size = 88 }: { score: number; size?: number }) {
-  const sw = 8;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const c = scoreColors(score);
-  const logoSize = Math.round((r - sw / 2) * 2) - 1;
-  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
-  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
-  const br = Math.round(size * 0.13);
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+type ProofStatus =
+  | "verified"
+  | "supported"
+  | "not-found"
+  | "not-verified"
+  | "needs-context";
+
+interface ProofCard {
+  claim: string;
+  status: ProofStatus;
+  explanation: string;
+  evidenceType: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Style helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function proofStatusStyles(status: ProofStatus) {
+  switch (status) {
+    case "verified":
+      return { dot: "bg-[#248179]", accent: "#248179", label: "Verified", labelCls: "text-[#248179]" };
+    case "supported":
+      return { dot: "bg-blue-500", accent: "#3b82f6", label: "Supported", labelCls: "text-blue-600" };
+    case "needs-context":
+      return { dot: "bg-amber-500", accent: "#f59e0b", label: "Needs context", labelCls: "text-amber-700" };
+    case "not-verified":
+      return { dot: "bg-[#fd6158]", accent: "#fd6158", label: "Not verified", labelCls: "text-[#fd6158]" };
+    case "not-found":
+      return { dot: "bg-[#b0a8a4]", accent: "#b0a8a4", label: "Not found", labelCls: "text-[#b0a8a4]" };
+  }
+}
+
+function ingredientFlagStyles(flag: "ok" | "warn" | "info") {
+  switch (flag) {
+    case "ok":
+      return { dot: "bg-[#248179]", label: "Low concern", labelCls: "text-[#248179]", rowBg: "" };
+    case "info":
+      return { dot: "bg-blue-400", label: "Worth noting", labelCls: "text-blue-600", rowBg: "bg-blue-50/30" };
+    case "warn":
+      return { dot: "bg-[#fd6158]", label: "Caution", labelCls: "text-[#fd6158]", rowBg: "bg-[#fd6158]/[0.04]" };
+  }
+}
+
+function pillarColor(pct: number) {
+  return pct >= 90 ? "#248179" : pct >= 75 ? "#3b82f6" : pct >= 60 ? "#f59e0b" : "#fd6158";
+}
+
+function pillarNameColor(pct: number) {
+  return pct >= 90 ? "#0f766e" : pct >= 75 ? "#1d4ed8" : pct >= 60 ? "#b45309" : "#dc2626";
+}
+
+function pillarRatingLabel(pct: number) {
+  return pct >= 90 ? "Excellent" : pct >= 75 ? "Strong" : pct >= 60 ? "Good" : pct >= 45 ? "Fair" : "Concern";
+}
+
+function PillarDots({ score, max }: { score: number; max: number }) {
+  const pct = score / max;
+  const filled = Math.round(pct * 4);
+  const dotColor = pct >= 0.80 ? "#248179" : pct >= 0.55 ? "#D4A843" : "#fd6158";
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={sw} />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-        <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
-      </div>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-        <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
-          {score}
-        </text>
-      </svg>
+    <div className="flex items-center gap-[6px] flex-shrink-0">
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className="block w-2.5 h-2.5 rounded-full flex-shrink-0"
+          style={{ backgroundColor: i < filled ? dotColor : "#E4E2E0" }}
+        />
+      ))}
     </div>
   );
 }
 
-function PillarBar({ name, score, max, note }: { name: string; score: number; max: number; note: string }) {
-  const pct = Math.round((score / max) * 100);
-  const color = pct >= 90 ? "bg-teal-500" : pct >= 70 ? "bg-blue-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
-  const label = pct >= 90 ? "Excellent" : pct >= 75 ? "Strong" : pct >= 60 ? "Good" : pct >= 45 ? "Fair" : "Concern";
-  const labelColor = pct >= 90 ? "text-teal-600" : pct >= 75 ? "text-blue-600" : pct >= 60 ? "text-amber-600" : "text-red-600";
-  return (
-    <div className="py-4 border-b border-ink-50 last:border-0">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-medium text-ink-800">{name}</span>
-        <span className={`text-xs font-medium flex-shrink-0 ml-4 ${labelColor}`}>{label}</span>
-      </div>
-      <div className="h-1.5 bg-ink-100 rounded-full overflow-hidden mb-2">
-        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
-      </div>
-      <p className="text-xs text-ink-500 leading-relaxed">{note}</p>
-    </div>
-  );
+// ─────────────────────────────────────────────────────────────────────────────
+// Data helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function simplifyPillarName(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes("ingredient") || n.includes("safety")) return "Ingredient Safety";
+  if (n.includes("formula")) return "Formula Design";
+  if (n.includes("claims")) return "Claims Evidence";
+  if (n.includes("transparency")) return "Transparency";
+  return name;
 }
 
-function IngredientRow({ name, note, flag }: { name: string; note: string; flag: "ok" | "warn" | "info" }) {
-  const styles = {
-    ok:   { dot: "bg-teal-500",  row: "",                      label: "Safe",    labelCls: "text-teal-600" },
-    info: { dot: "bg-blue-400",  row: "bg-blue-50/40",         label: "Note",    labelCls: "text-blue-600" },
-    warn: { dot: "bg-amber-500", row: "bg-amber-50/60",        label: "Caution", labelCls: "text-amber-700" },
-  }[flag];
-  return (
-    <tr className={`${styles.row} border-b border-ink-50`}>
-      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs sm:text-sm font-medium text-ink-900 w-[35%] sm:w-auto">
-        <div className="flex items-start gap-1.5">
-          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-0.5 ${styles.dot}`} />
-          <span className="break-words min-w-0">{name}</span>
-        </div>
-      </td>
-      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs text-ink-500 leading-relaxed">{note}</td>
-      <td className="py-2 px-2 sm:py-2.5 sm:px-4 text-xs font-medium text-right whitespace-nowrap">
-        <span className={styles.labelCls}>{styles.label}</span>
-      </td>
-    </tr>
-  );
+function getPillarOneLiner(note: string): string {
+  const sentence = note.split(/\.\s+/)[0];
+  return sentence.length > 180
+    ? sentence.slice(0, 180).replace(/\s+\S+$/, "") + "..."
+    : sentence + ".";
 }
 
-function RelatedProductCard({ product, brandSlug }: { product: ProductScorecard; brandSlug: string }) {
-  const c = scoreColors(product.score);
-  const size = 48;
-  const sw = 5;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (product.score / 100) * circ;
-  const logoSize = Math.round((r - sw / 2) * 2) - 1;
-  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
-  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
-  const br = Math.round(size * 0.145);
-  return (
-    <Link href={`/brands/${brandSlug}/${product.slug}`} className="group flex items-center gap-3 p-3 rounded-xl border border-ink-100 hover:border-teal-200 hover:shadow-sm transition-all bg-white">
-      <div className="w-12 h-12 rounded-lg bg-ink-50 overflow-hidden flex-shrink-0">
-        <Image src={product.image} alt={product.productName} width={48} height={48} className="object-contain p-1 w-full h-full" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-xs font-medium text-ink-900 group-hover:text-teal-700 transition-colors line-clamp-2 leading-snug">
-          {product.productName}
-        </div>
-        <div className="text-[10px] text-ink-400 mt-0.5">{product.priceRange}</div>
-      </div>
-      <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-          <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
-        </div>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
-            strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-            transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-          <circle cx={bx} cy={by} r={br} fill={c.ring} />
-          <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="monospace">
-            {product.score}
-          </text>
-        </svg>
-      </div>
-    </Link>
-  );
+/** Consumer-friendly one-liner per pillar, derived from product context. */
+function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): string {
+  const displayName = simplifyPillarName(pillar.name);
+  const pass = product.pass_badges.map((b) => b.toLowerCase());
+  const pct = Math.round((pillar.score / pillar.max) * 100);
+
+  if (displayName === "Ingredient Safety") {
+    const isMineral = pass.some(
+      (b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("zinc"))
+    );
+    const isFragFree = pass.some(
+      (b) => b.includes("fragrance-free") || b.includes("fragrance free")
+    );
+    const isEOFree = pass.some(
+      (b) => b.includes("no essential oils") || b.includes("essential oil free")
+    );
+    if (isMineral && isFragFree && isEOFree) return "Mineral only UV filter, fragrance free, and no essential oils.";
+    if (isMineral && isFragFree) return "Mineral only UV filter with a fragrance free formula.";
+    if (isMineral) return "Mineral only UV filter (Zinc Oxide) with no chemical filter concerns.";
+    if (isFragFree && pct >= 80) return "Clean allergen profile with a fragrance free formula.";
+    return getPillarOneLiner(pillar.note);
+  }
+
+  if (displayName === "Formula Design") {
+    const isAnhydrous =
+      product.productType === "sunscreen" &&
+      product.ingredients.length > 0 &&
+      product.ingredients[0].name.toLowerCase().includes("dimethicone");
+    const isMineral = pass.some(
+      (b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("zinc"))
+    );
+    if (isAnhydrous && isMineral) return "Water free silicone gel base designed for a lighter, matte finish.";
+    if (isAnhydrous) return "Anhydrous silicone gel base for a smooth, non-greasy wear.";
+    if (product.productType === "sunscreen" && pass.some((b) => b.includes("filter"))) {
+      return "Multi-filter formula designed for broad-spectrum coverage and photostability.";
+    }
+    return getPillarOneLiner(pillar.note);
+  }
+
+  if (displayName === "Claims Evidence") {
+    const hasSPFEvidence = pass.some(
+      (b) => b.includes("published spf") || (b.includes("spf") && b.includes("test"))
+    );
+    const hasMultipleReports = pass.filter(
+      (b) => b.includes("published") || b.includes("test report") || b.includes("dermatologist")
+    ).length >= 2;
+    if (hasSPFEvidence && hasMultipleReports && pct >= 80) {
+      return "Strong public evidence compared with most sunscreen product pages.";
+    }
+    if (hasSPFEvidence && pct >= 65) return "Published SPF test report available. Some claims need more context.";
+    if (hasSPFEvidence) return "SPF test report available, but some supporting claims are weaker.";
+    if (pct >= 75) return "Good evidence for stated claims based on public information.";
+    return getPillarOneLiner(pillar.note);
+  }
+
+  if (displayName === "Transparency") {
+    const hasInci = pass.some((b) => b.includes("inci verified"));
+    if (hasInci && pct >= 75) return "Full ingredient list is publicly available on the brand website.";
+    if (hasInci) return "Ingredient list is available, but some transparency gaps were noted.";
+    return getPillarOneLiner(pillar.note);
+  }
+
+  return getPillarOneLiner(pillar.note);
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ brand: string; product: string }> }) {
+function buildProofCards(product: ProductScorecard): ProofCard[] {
+  const pass = product.pass_badges.map((b) => b.toLowerCase());
+  const warn = product.warn_badges.map((b) => b.toLowerCase());
+  const cards: ProofCard[] = [];
+
+  if (product.productType === "sunscreen") {
+    if (pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")))) {
+      cards.push({
+        claim: "SPF Rating",
+        status: "verified",
+        explanation: "A published SPF test report is available from the brand. This is more public evidence than most Indian sunscreens provide.",
+        evidenceType: "Published test report",
+      });
+    } else if (warn.some((b) => b.includes("spf") && (b.includes("not verified") || b.includes("unusual") || b.includes("unverified")))) {
+      cards.push({
+        claim: "SPF Rating",
+        status: "not-verified",
+        explanation: "The SPF claim could not be verified from publicly available test evidence.",
+        evidenceType: "Not found",
+      });
+    } else {
+      cards.push({
+        claim: "SPF Rating",
+        status: "supported",
+        explanation: "SPF is stated on packaging. No independently published test report found.",
+        evidenceType: "Brand claim",
+      });
+    }
+
+    cards.push({
+      claim: "UVA / PA Protection",
+      status: "supported",
+      explanation: "PA rating is stated on packaging. The brand's pattern of publishing test reports supports this claim.",
+      evidenceType: "Brand claim + test report pattern",
+    });
+
+    if (pass.some((b) => b.includes("100% mineral") || (b.includes("mineral") && (b.includes("zinc") || b.includes("only"))))) {
+      cards.push({
+        claim: "100% Mineral Formula",
+        status: "verified",
+        explanation: "Zinc Oxide is the only UV filter in the ingredient list. No chemical filters present. Confirmed directly from the INCI.",
+        evidenceType: "INCI check",
+      });
+    }
+
+    if (pass.some((b) => b.includes("water resist"))) {
+      cards.push({
+        claim: "Water Resistant",
+        status: "supported",
+        explanation: "A published water resistance test report is available from the brand.",
+        evidenceType: "Published test report",
+      });
+    }
+  }
+
+  if (pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"))) {
+    cards.push({
+      claim: "Fragrance Free",
+      status: "verified",
+      explanation: "No fragrance of any kind found in the INCI. No parfum, no essential oils, no Benzyl Alcohol.",
+      evidenceType: "INCI check",
+    });
+  } else if (warn.some((b) => b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") || b.includes("benzyl alcohol"))) {
+    cards.push({
+      claim: "Fragrance Free",
+      status: "not-verified",
+      explanation: "Brand does not claim fragrance-free. Fragrance allergens are present in the formula.",
+      evidenceType: "INCI check",
+    });
+  }
+
+  if (pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"))) {
+    cards.push({
+      claim: "Essential Oil Free",
+      status: "verified",
+      explanation: "No essential oils found in the ingredient list.",
+      evidenceType: "INCI check",
+    });
+  }
+
+  if (pass.some((b) => b.includes("non-comedogenic"))) {
+    const hasWarn = warn.some((b) => b.includes("comedogenic") || b.includes("isostearic"));
+    cards.push({
+      claim: "Non-Comedogenic",
+      status: hasWarn ? "needs-context" : "supported",
+      explanation: hasWarn
+        ? "A published non-comedogenic test report exists, but Isostearic Acid is in the formula and has comedogenic potential on some rating scales."
+        : "A published non-comedogenic test report is available from the brand.",
+      evidenceType: "Published test report",
+    });
+  }
+
+  if (pass.some((b) => b.includes("vegan"))) {
+    const hasVeganContradiction = warn.some(
+      (b) => (b.includes("vegan") && b.includes("whey")) || (b.includes("dairy") && b.includes("vegan"))
+    );
+    cards.push({
+      claim: "Vegan",
+      status: hasVeganContradiction ? "not-verified" : "supported",
+      explanation: hasVeganContradiction
+        ? "Brand claims vegan, but Whey Protein (dairy-derived) appears in the ingredient list. This is a direct public evidence contradiction."
+        : "A published vegan test report is available. No animal-derived ingredients found in the INCI.",
+      evidenceType: hasVeganContradiction ? "INCI check vs brand claim" : "Published test report",
+    });
+  }
+
+  if (pass.some((b) => b.includes("dermatologist"))) {
+    cards.push({
+      claim: "Dermatologist Tested",
+      status: "supported",
+      explanation: "A published dermatologist test report is available from the brand.",
+      evidenceType: "Published test report",
+    });
+  }
+
+  return cards.slice(0, 8);
+}
+
+function buildAtAGlance(product: ProductScorecard): { label: string; value: boolean }[] {
+  const pass = product.pass_badges.map((b) => b.toLowerCase());
+  const warn = product.warn_badges.map((b) => b.toLowerCase());
+  const items: { label: string; value: boolean }[] = [];
+
+  // Fragrance free
+  const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
+  const hasFragAllergen = warn.some((b) =>
+    b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
+    b.includes("benzyl alcohol") || b.includes("parfum")
+  );
+  if (fragFree) items.push({ label: "Fragrance free", value: true });
+  else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
+
+  // Essential oil free
+  const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
+  if (eoFree) items.push({ label: "Essential oil free", value: true });
+
+  // Alcohol free (check ingredient list)
+  const hasAlcohol = product.ingredients.some((i) => {
+    const n = i.name.toLowerCase();
+    return n === "alcohol" || n.includes("alcohol denat");
+  });
+  const alcoholWarn = warn.some((b) => b.includes("denatured alcohol") || b.includes("alcohol denat"));
+  if (hasAlcohol || alcoholWarn) items.push({ label: "Alcohol free", value: false });
+  else items.push({ label: "Alcohol free", value: true });
+
+  // Paraben free
+  const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
+  items.push({ label: "Paraben free", value: !hasParaben });
+
+  // Non-comedogenic
+  if (pass.some((b) => b.includes("non-comedogenic"))) {
+    items.push({ label: "Non-comedogenic", value: true });
+  }
+
+  // Dermatologist tested
+  if (pass.some((b) => b.includes("dermatologist"))) {
+    items.push({ label: "Dermatologist tested", value: true });
+  }
+
+  // Vegan
+  const isVegan = pass.some((b) => b.includes("vegan"));
+  const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
+  if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
+  else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
+
+  // Sunscreen-specific
+  if (product.productType === "sunscreen") {
+    const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
+    items.push({ label: "SPF verified", value: spfVerified });
+
+    const reefSafe = pass.some((b) => b.includes("reef-safe") || b.includes("reef safe"));
+    if (reefSafe) items.push({ label: "Reef safe", value: true });
+  }
+
+  return items.slice(0, 8);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Main page
+// ─────────────────────────────────────────────────────────────────────────────
+
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ brand: string; product: string }>;
+}) {
   const { brand: brandSlug, product: productSlug } = await params;
   const brand = getBrandBySlug(brandSlug);
   const product = getProductBySlug(brandSlug, productSlug);
   if (!brand || !product) notFound();
 
-  const c = scoreColors(product.score);
-  const totalScore = product.pillars.reduce((s, p) => s + p.score, 0);
-  const totalMax = product.pillars.reduce((s, p) => s + p.max, 0);
   const okCount = product.ingredients.filter((i) => i.flag === "ok").length;
   const warnCount = product.ingredients.filter((i) => i.flag === "warn").length;
   const infoCount = product.ingredients.filter((i) => i.flag === "info").length;
   const relatedProducts = brand.products.filter((p) => p.slug !== productSlug).slice(0, 4);
+
+  const proofCards = buildProofCards(product);
+  const atAGlance = buildAtAGlance(product);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -177,8 +423,8 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home",    item: "https://thecleansheet.in" },
-          { "@type": "ListItem", position: 2, name: "Brands",  item: "https://thecleansheet.in/brands" },
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
+          { "@type": "ListItem", position: 2, name: "Brands", item: "https://thecleansheet.in/brands" },
           { "@type": "ListItem", position: 3, name: brand.name, item: `https://thecleansheet.in/brands/${brandSlug}` },
           { "@type": "ListItem", position: 4, name: product.productName, item: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}` },
         ],
@@ -189,7 +435,11 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
         brand: { "@type": "Brand", name: brand.name },
         image: product.image,
         description: product.summary,
-        offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: product.priceRange.split("-")[0].replace(/[₹,\s]/g, "") },
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "INR",
+          lowPrice: product.priceRange.split("-")[0].replace(/[^0-9]/g, ""),
+        },
         review: {
           "@type": "Review",
           reviewRating: { "@type": "Rating", ratingValue: product.score, bestRating: 100, worstRating: 0 },
@@ -213,280 +463,337 @@ export default async function ProductPage({ params }: { params: Promise<{ brand:
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ── Hero ── */}
-      <div className="bg-teal-950 pt-10 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs text-teal-400 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-teal-200 transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/brands" className="hover:text-teal-200 transition-colors">Brands</Link>
-            <span>/</span>
-            <Link href={`/brands/${brandSlug}`} className="hover:text-teal-200 transition-colors">{brand.name}</Link>
-            <span>/</span>
-            <span className="text-teal-200 line-clamp-1">{product.productName}</span>
-          </nav>
+      <ProductHero
+        product={product}
+        brand={brand}
+        okCount={okCount}
+        warnCount={warnCount}
+        infoCount={infoCount}
+      />
 
-          {/* Mobile hero: score ring inline with name */}
-          <div className="flex items-start gap-4 mb-4 lg:hidden">
-            <div className="flex-shrink-0">
-              <ScoreRing score={product.score} size={64} />
+      {/* ── Body ── */}
+      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
+
+        {/* 1. At a glance */}
+        {atAGlance.length > 0 && (
+          <section id="at-a-glance">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>At a glance</h2>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                <span className="text-[10px] text-teal-400 uppercase tracking-widest">{brand.name}</span>
-                <span className="w-1 h-1 rounded-full bg-teal-600 flex-shrink-0" />
-                <span className="text-[10px] text-teal-500 capitalize">{product.productType.replace("-", " ")}</span>
-              </div>
-              <h1 className="text-xl font-medium text-white tracking-tight leading-tight mb-1">
-                {product.productName}
-              </h1>
-              <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${c.bg} ${c.text} ${c.border}`}>
-                {product.scoreLabel}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-10 items-start">
-            {/* Left, product info */}
-            <div>
-              <div className="hidden lg:flex items-center gap-2 mb-4">
-                <span className="text-xs text-teal-400 uppercase tracking-widest">{brand.name}</span>
-                <span className="w-1 h-1 rounded-full bg-teal-600" />
-                <span className="text-xs text-teal-500 capitalize">{product.productType.replace("-", " ")}</span>
-              </div>
-
-              <h1 className="hidden lg:block text-2xl sm:text-3xl font-medium text-white tracking-tight mb-3 leading-tight">
-                {product.productName}
-              </h1>
-              <p className="text-teal-300/80 text-sm mb-4">{product.concern}</p>
-
-              {/* Badges */}
-              <div className="mb-4">
-                {product.pass_badges.map((b) => (
-                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-teal-500/15 border border-teal-500/30 text-teal-300 px-2 py-0.5 rounded whitespace-nowrap">
-                    {b}
-                  </span>
-                ))}
-                {product.warn_badges.map((b) => (
-                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-red-500/15 border border-red-500/30 text-red-300 px-2 py-0.5 rounded whitespace-nowrap">
-                    {b}
-                  </span>
-                ))}
-                {product.info_badges.map((b) => (
-                  <span key={b} className="inline-block mr-1.5 mb-1.5 font-mono text-[10px] uppercase tracking-wider bg-blue-500/15 border border-blue-500/30 text-blue-300 px-2 py-0.5 rounded whitespace-nowrap">
-                    {b}
-                  </span>
-                ))}
-              </div>
-
-              {/* Mobile: ingredient stats strip */}
-              <div className="grid grid-cols-3 gap-2 mb-4 lg:hidden">
-                {[
-                  { label: "Safe",    value: okCount,   color: "text-teal-400" },
-                  { label: "Note",    value: infoCount, color: "text-blue-400" },
-                  { label: "Caution", value: warnCount, color: "text-amber-400" },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="bg-white/8 rounded-xl p-2.5 text-center">
-                    <div className={`text-lg font-medium ${color}`}>{value}</div>
-                    <div className="text-white/40 text-[9px] mt-0.5">{label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-teal-400">
-                <span>{product.priceRange}</span>
-                <span className="w-1 h-1 rounded-full bg-teal-700" />
-                <span>Analysed {new Date(product.analyzedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
-              </div>
-            </div>
-
-            {/* Right, score card - desktop only */}
-            <div className="hidden lg:block bg-white/8 border border-white/12 rounded-3xl p-7 backdrop-blur-sm">
-              <div className="flex items-center gap-5 mb-6">
-                <ScoreRing score={product.score} size={88} />
-                <div>
-                  <div className="text-white/50 text-xs uppercase tracking-widest mb-1">Clean Sheet Score</div>
-                  <div className="text-4xl font-medium text-white">{product.score}<span className="text-white/40 text-xl">/100</span></div>
-                  <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border mt-1.5 ${c.bg} ${c.text} ${c.border}`}>
-                    {product.scoreLabel}
-                  </span>
-                </div>
-              </div>
-
-              {/* Ingredient stats */}
-              <div className="grid grid-cols-3 gap-3 text-center mb-5">
-                {[
-                  { label: "Safe",    value: okCount,   color: "text-teal-400" },
-                  { label: "Note",    value: infoCount, color: "text-blue-400" },
-                  { label: "Caution", value: warnCount, color: "text-amber-400" },
-                ].map(({ label, value, color }) => (
-                  <div key={label} className="bg-white/6 rounded-xl p-3">
-                    <div className={`text-xl font-medium ${color}`}>{value}</div>
-                    <div className="text-white/40 text-[10px] mt-0.5">{label} ingredients</div>
-                  </div>
-                ))}
-              </div>
-
-              <p className="text-teal-200/70 text-xs leading-relaxed">{product.summary.slice(0, 180)}…</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Product image + summary ── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <div className="grid lg:grid-cols-3 gap-10">
-
-          {/* Product image */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              <div className="aspect-[3/2] sm:aspect-square rounded-2xl sm:rounded-3xl bg-ink-50 border border-ink-100 overflow-hidden flex items-center justify-center p-4 sm:p-8 mb-4">
-                <Image
-                  src={product.image}
-                  alt={product.productName}
-                  width={400}
-                  height={400}
-                  className="object-contain w-full h-full"
-                />
-              </div>
-
-              {/* Key actives */}
-              <div className="bg-teal-50 border border-teal-100 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <FlaskConical size={14} className="text-teal-600" />
-                  <span className="text-xs font-medium text-teal-800 uppercase tracking-wider">Key Actives</span>
-                </div>
-                <div className="space-y-3">
-                  {product.keyActives.map((a) => (
-                    <div key={a.name}>
-                      <div className="text-sm font-medium text-ink-800 mb-0.5">{a.name}</div>
-                      <div className="text-xs text-ink-500 leading-relaxed">{a.function}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main content */}
-          <div className="lg:col-span-2 space-y-10">
-
-            {/* Summary */}
-            <div>
-              <div className="text-xs font-medium text-ink-400 uppercase tracking-widest mb-3">Expert Summary</div>
-              <p className="text-ink-700 leading-relaxed text-[15px]">{product.summary}</p>
-            </div>
-
-            {/* Score pillars */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-xs font-medium text-ink-400 uppercase tracking-widest">Score Breakdown</div>
-                <span className="text-xs font-mono text-ink-500">{totalScore}/{totalMax} points</span>
-              </div>
-              <div className="border border-ink-100 rounded-2xl overflow-hidden divide-y divide-ink-50">
-                {product.pillars.map((pillar) => (
-                  <div key={pillar.name} className="px-5">
-                    <PillarBar {...pillar} />
+            <div className="bg-white rounded-2xl border border-[#efe9e0] p-4 sm:p-5">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                {atAGlance.map(({ label, value }) => (
+                  <div key={label} className="flex items-center gap-2.5">
+                    <span
+                      className="text-sm flex-shrink-0 w-4 text-center"
+                      style={{ color: value ? "#248179" : "#fd6158" }}
+                    >
+                      {value ? "✓" : "✗"}
+                    </span>
+                    <span className="text-xs text-[#282828]/75">{label}</span>
                   </div>
                 ))}
               </div>
             </div>
+          </section>
+        )}
 
-            {/* India context */}
-            {product.indiaContext && (
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5">
-                <div className="flex items-start gap-3">
-                  <div className="text-lg flex-shrink-0">🇮🇳</div>
-                  <div>
-                    <div className="text-xs font-medium text-amber-800 uppercase tracking-wider mb-1.5">India Skin Context</div>
-                    <p className="text-sm text-amber-900 leading-relaxed">{product.indiaContext}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Ingredient table */}
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="text-xs font-medium text-ink-400 uppercase tracking-widest">Full Ingredient List</div>
-                <div className="flex items-center gap-3 ml-auto text-[10px]">
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block" /> Safe</span>
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" /> Note</span>
-                  <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" /> Caution</span>
-                </div>
-              </div>
-              <div className="border border-ink-100 rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-ink-50 border-b border-ink-100">
-                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Ingredient</th>
-                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider">Note</th>
-                      <th className="py-2 px-2 sm:py-2.5 sm:px-4 text-[10px] font-medium text-ink-500 uppercase tracking-wider text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {product.ingredients.map((ing) => (
-                      <IngredientRow key={ing.name} {...ing} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-[10px] text-ink-400 mt-2">Ingredients listed in INCI order as declared on product packaging. Position reflects approximate concentration (high → low).</p>
+        {/* 2. What was checked */}
+        <section id="proof">
+          <div className="mb-4">
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What was checked</h2>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Certification badge ── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="bg-teal-950 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-teal-800 flex items-center justify-center flex-shrink-0">
-            <ShieldCheck size={26} className="text-teal-300" />
-          </div>
-          <div className="flex-1 text-center sm:text-left">
-            <div className="text-white font-medium mb-1">About this scorecard</div>
-            <p className="text-teal-300/80 text-sm leading-relaxed mb-3">
-              Clean Sheet Scores are generated by analysing every ingredient against India, EU, US & Korean safety regulations.
-              No brand sponsorship. No affiliate relationships. Independent science-backed analysis only.
+            <p className="text-xs text-[#b0a8a4] pl-[19px]">
+              Each claim checked against publicly available evidence: published test reports, the ingredient list, and regulatory data.
             </p>
-            <p className="text-teal-400/70 text-xs leading-relaxed font-medium mb-1">The Clean Sheet does not use fear-based ingredient labels. We assess products through a structured evidence hierarchy:</p>
-            <ul className="text-teal-300/60 text-xs leading-relaxed space-y-0.5 list-none">
-              <li>What global regulations say</li>
-              <li>What toxicology says</li>
-              <li>What the formula concentration shows</li>
-              <li>What the product format changes</li>
-              <li>What the intended user needs</li>
-              <li>What testing evidence proves</li>
-              <li>What the brand is claiming</li>
-            </ul>
           </div>
-          <Link href="/analyzer"
-            className="flex-shrink-0 inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
-            Analyse another product <ArrowRight size={14} />
-          </Link>
-        </div>
-      </div>
-
-      {/* ── More from this brand ── */}
-      {relatedProducts.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-medium text-ink-950">More from {brand.name}</h2>
-            <Link href={`/brands/${brandSlug}`} className="text-sm text-teal-600 hover:text-teal-800 transition-colors flex items-center gap-1">
-              All {brand.name} products <ArrowRight size={12} />
-            </Link>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {proofCards.map((card) => {
+              const s = proofStatusStyles(card.status);
+              return (
+                <div key={card.claim} className="relative rounded-xl border border-[#efe9e0] bg-white p-4 pl-5 overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ backgroundColor: s.accent }} />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-[#282828]">{card.claim}</span>
+                    <span className={`text-[10px] flex-shrink-0 ml-3 ${s.labelCls}`}>{s.label}</span>
+                  </div>
+                  <p className="text-xs text-[#282828]/70 leading-relaxed mb-2">{card.explanation}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                    <span className="text-[10px] text-[#b0a8a4]">{card.evidenceType}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {relatedProducts.map((p) => (
-              <RelatedProductCard key={p.slug} product={p} brandSlug={brandSlug} />
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+            {(
+              [
+                { dot: "bg-[#248179]", label: "Verified: confirmed from public evidence" },
+                { dot: "bg-blue-500", label: "Supported: consistent with available evidence" },
+                { dot: "bg-amber-500", label: "Needs context: relevant for some users" },
+                { dot: "bg-[#fd6158]", label: "Not verified: could not be confirmed" },
+              ] as const
+            ).map(({ dot, label }) => (
+              <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+                {label}
+              </span>
             ))}
           </div>
-        </div>
-      )}
+        </section>
 
-      {/* ── Back link ── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
-        <Link href={`/brands/${brandSlug}`} className="inline-flex items-center gap-2 text-sm text-ink-500 hover:text-ink-800 transition-colors">
+        {/* 3. Score breakdown */}
+        <section id="score-rationale">
+          <div className="mb-4">
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Score breakdown</h2>
+            </div>
+            <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+              How this product was rated across four areas. Open any row for the full rationale.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
+            {product.pillars.map((pillar) => {
+              const displayName = simplifyPillarName(pillar.name);
+              const pct = Math.round((pillar.score / pillar.max) * 100);
+              const color = pillarColor(pct);
+              const nameColor = pillarNameColor(pct);
+              const ratingLabel = pillarRatingLabel(pct);
+              const summary = generatePillarSummary(pillar, product);
+
+              return (
+                <details key={pillar.name} className="group">
+                  <summary className="px-4 py-3.5 cursor-pointer list-none select-none">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <PillarDots score={pillar.score} max={pillar.max} />
+                        <span className="text-sm" style={{ color: nameColor, fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 flex-shrink-0 ml-4">
+                        <span className="text-xs" style={{ color, fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{ratingLabel}</span>
+                        <span className="text-[10px] text-[#b0a8a4]">{pillar.score}/{pillar.max}</span>
+                        <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
+                      </div>
+                    </div>
+                    <p className="text-xs text-[#282828]/60 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>
+                  </summary>
+                  <div className="px-4 pb-4 pt-0 bg-[#f7f7f5] border-t border-[#efe9e0]">
+                    <p className="text-xs text-[#282828]/65 leading-relaxed pt-4 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{pillar.note}</p>
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 4. Full ingredient list — show 8, expand */}
+        <section id="ingredients">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+            <div>
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Ingredient list</h2>
+              <p className="text-xs text-[#b0a8a4] mt-0.5">
+                {product.ingredients.length} ingredients · INCI order
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mb-2.5">
+            {(
+              [
+                { dot: "bg-[#248179]", label: "Safe" },
+                { dot: "bg-blue-400", label: "Note" },
+                { dot: "bg-[#fd6158]", label: "Caution" },
+              ] as const
+            ).map(({ dot, label }) => (
+              <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-[#faf7f2] border-b border-[#efe9e0]">
+                  <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider w-[52%] sm:w-auto">Ingredient</th>
+                  <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider hidden sm:table-cell">What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                {product.ingredients.slice(0, 8).map((ing) => {
+                  const s = ingredientFlagStyles(ing.flag);
+                  return (
+                    <tr key={ing.name} className={`${s.rowBg} border-b border-[#efe9e0]`}>
+                      <td className="py-1.5 px-3 sm:px-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+                          <span className="text-xs sm:text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-3 sm:px-4 text-xs text-[#b0a8a4] leading-relaxed hidden sm:table-cell">{ing.note}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {product.ingredients.length > 8 && (
+              <details className="group">
+                <summary className="flex items-center justify-center gap-1.5 px-4 py-2.5 cursor-pointer list-none text-xs font-medium text-[#248179] hover:bg-[#faf7f2] border-t border-[#efe9e0] transition-colors select-none">
+                  <span className="group-open:hidden">Show all {product.ingredients.length} ingredients</span>
+                  <span className="hidden group-open:inline">Show fewer</span>
+                  <ChevronDown size={12} className="transition-transform group-open:rotate-180 flex-shrink-0" />
+                </summary>
+                <table className="w-full text-left border-t border-[#efe9e0]">
+                  <tbody>
+                    {product.ingredients.slice(8).map((ing) => {
+                      const s = ingredientFlagStyles(ing.flag);
+                      return (
+                        <tr key={ing.name} className={`${s.rowBg} border-b border-[#efe9e0] last:border-0`}>
+                          <td className="py-1.5 px-3 sm:px-4">
+                            <div className="flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+                              <span className="text-xs sm:text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-1.5 px-3 sm:px-4 text-xs text-[#b0a8a4] leading-relaxed hidden sm:table-cell">{ing.note}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </details>
+            )}
+          </div>
+          <p className="text-[10px] text-[#b0a8a4] mt-2">
+            INCI order as declared on packaging. Position reflects approximate concentration (high to low).
+          </p>
+        </section>
+
+        {/* 5. Reviews */}
+        <section id="reviews">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Reviews</h2>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-[#efe9e0] p-4 sm:p-5">
+            <div className="flex flex-col items-center text-center py-5">
+              <p className="text-sm font-medium text-[#282828] mb-1">Be the first to review this product</p>
+              <p className="text-xs text-[#b0a8a4] mb-5 max-w-xs">
+                Real experiences from people with your skin type help others make better decisions.
+              </p>
+              <a
+                href="https://forms.gle/placeholder"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#248179] text-white text-xs font-medium rounded-lg hover:bg-[#1e6b62] transition-colors"
+              >
+                Write a review
+                <ArrowRight size={12} />
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* 6. About this review — absorbs methodology + India context */}
+        <section id="methodology">
+          <div className="bg-[#282828] rounded-2xl p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="text-white mb-2">About this review</div>
+                <p className="text-white/60 text-sm leading-relaxed mb-1.5">
+                  This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
+                </p>
+                <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
+                  {["Independent review", "Public evidence only"].map((m) => (
+                    <span key={m} className="text-[11px] text-white/35">{m}</span>
+                  ))}
+                </div>
+                <details className="group">
+                  <summary className="flex items-center gap-1.5 cursor-pointer list-none text-xs text-[#248179] hover:text-[#248179]/80 transition-colors select-none">
+                    <ChevronDown size={11} className="transition-transform group-open:rotate-180 flex-shrink-0" />
+                    Full methodology
+                  </summary>
+                  <ul className="mt-3 space-y-1.5 text-xs text-white/35 leading-relaxed">
+                    <li>What global regulations say about each ingredient</li>
+                    <li>What toxicology evidence shows at cosmetic concentrations</li>
+                    <li>What formula concentration context changes</li>
+                    <li>What the product format and leave-on contact time changes</li>
+                    <li>What the stated user group needs</li>
+                    <li>What published test evidence confirms</li>
+                    <li>What the brand is claiming vs what evidence supports</li>
+                  </ul>
+                </details>
+                {product.indiaContext && (
+                  <div className="mt-4 pt-4 border-t border-white/10 flex items-start gap-2.5">
+                    <span className="text-base flex-shrink-0 leading-none mt-0.5">🇮🇳</span>
+                    <p className="text-xs text-white/50 leading-relaxed">{product.indiaContext}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. More from brand — horizontal scrollable strip */}
+        {relatedProducts.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>More from {brand.name}</h2>
+              </div>
+              <Link href={`/brands/${brandSlug}`} className="text-xs text-[#248179] hover:underline flex items-center gap-1">
+                See all <ArrowRight size={11} />
+              </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2">
+              {relatedProducts.map((p) => {
+                const c = scoreColors(p.score);
+                return (
+                  <Link
+                    key={p.slug}
+                    href={`/brands/${brandSlug}/${p.slug}`}
+                    className="group flex-shrink-0 flex items-center gap-2.5 p-3 rounded-xl border border-[#efe9e0] hover:border-[#248179]/30 hover:shadow-sm transition-all bg-white w-[200px] sm:w-auto"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#faf7f2] overflow-hidden flex-shrink-0">
+                      <Image
+                        src={p.image}
+                        alt={p.productName}
+                        width={40}
+                        height={40}
+                        className="object-contain p-1 w-full h-full"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-[#282828] group-hover:text-[#248179] transition-colors line-clamp-2 leading-snug">
+                        {p.productName}
+                      </div>
+                    </div>
+                    <div className={`text-xs px-1.5 py-0.5 rounded-full border flex-shrink-0 ${c.bg} ${c.text} ${c.border}`}>
+                      {p.score}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Back link */}
+        <Link
+          href={`/brands/${brandSlug}`}
+          className="inline-flex items-center gap-2 text-sm text-[#b0a8a4] hover:text-[#282828] transition-colors"
+        >
           <ArrowLeft size={14} /> Back to {brand.name}
         </Link>
       </div>
