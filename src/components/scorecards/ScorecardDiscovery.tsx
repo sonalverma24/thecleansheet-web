@@ -123,11 +123,18 @@ function relevanceScore(product: ProductScorecard, terms: string[]): number {
   const name = product.productName.toLowerCase();
   const brand = product.brand.toLowerCase();
   const concern = product.concern.toLowerCase();
+  // Split concern into individual chunks for per-term matching
+  const concernChunks = concern.split(/[,;]+/).map((c) => c.trim()).filter(Boolean);
   for (const t of terms) {
+    // Skip single-character tokens — they match everything and add noise
+    if (t.length < 2) continue;
     if (name.includes(t)) s += 100;
     if (brand.includes(t)) s += 50;
+    // Search both the active name AND its function description
     if (product.keyActives.some((a) => a.name.toLowerCase().includes(t))) s += 80;
+    if (product.keyActives.some((a) => a.function.toLowerCase().includes(t))) s += 40;
     if (concern.includes(t)) s += 40;
+    if (concernChunks.some((ch) => ch.includes(t) || t.includes(ch))) s += 35;
     if (product.category?.toLowerCase().includes(t)) s += 60;
     if (product.subCategory?.toLowerCase().includes(t)) s += 55;
     if (product.concernTags?.some((ct) => ct.toLowerCase().includes(t))) s += 45;

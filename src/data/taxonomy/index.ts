@@ -161,7 +161,7 @@ export function findTaxonomyMatch(raw: string): TaxonomyItem | undefined {
  */
 export function expandTaxonomyQuery(raw: string): string[] {
   const input = raw.toLowerCase().trim();
-  const tokens = input.split(/\s+/).filter(Boolean);
+  const tokens = input.split(/\s+/).filter((t) => t.length >= 2);
   const expanded = new Set<string>([input, ...tokens]);
 
   // Find all taxonomy items that any token or the full query matches

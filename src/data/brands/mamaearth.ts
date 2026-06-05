@@ -96,6 +96,11 @@ const products: ProductScorecard[] = [
     info_badges: ["No Published Test Reports Found", "Active Concentrations Not Disclosed"],
     indiaContext: "Sodium Ascorbyl Phosphate is more heat-stable than L-Ascorbic Acid, a genuine advantage in India's warm climate where pure Vitamin C oxidises rapidly. The conversion step means results build more slowly than serums using 3-O-Ethyl Ascorbic Acid. Particularly useful for Fitzpatrick III-V skin for mild PIH reduction. Fragrance sensitivity is heightened in hot weather when skin is flushed and more permeable - consider patch testing if you have reactive or atopic skin.",
     analyzedAt: "2026-06-02",
+    category: "Serums",
+    subCategory: "Vitamin C Serum",
+    concernTags: ["Dullness", "Pigmentation", "Tanning", "Post Acne Marks"],
+    suitabilityTags: ["Daily Use", "Melanin Rich Skin"],
+    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Active % Not Verified", "Clinical Claim Not Verified"],
   },
 
   /* -------------------------------------------------
@@ -165,6 +170,11 @@ const products: ProductScorecard[] = [
     info_badges: ["Contains Fragrance (Parfum) - Lower Risk in Rinse-Off", "No Published Test Reports Found", "Traditional Ubtan Botanicals"],
     indiaContext: "The ubtan ritual traditionally used freshly prepared pastes left on skin for extended contact time - significantly more bioactive exposure than a rinse-off face wash. This product captures the cultural identity and the ingredient heritage without replicating the traditional application. As a daily gentle cleanser with a pleasant skin feel, it performs well for Indian skin. Use it for cleansing quality and mild exfoliation rather than expecting the brightening results of a targeted leave-on treatment.",
     analyzedAt: "2026-06-02",
+    category: "Face Cleansers",
+    subCategory: "Foaming Cleanser",
+    concernTags: ["Dullness", "Texture"],
+    suitabilityTags: ["Daily Use", "Beginner Friendly"],
+    cautionTags: ["Clinical Claim Not Verified"],
   },
 
   /* -------------------------------------------------
@@ -234,6 +244,11 @@ const products: ProductScorecard[] = [
     info_badges: ["No Published Test Reports Found", "Active Concentrations Not Disclosed", "HA Molecular Weight Not Disclosed"],
     indiaContext: "A gel moisturizer is the right format for India's humid climate - the absence of heavy emollients prevents the greasy, pore-blocking feel that cream moisturisers cause in high humidity. Niacinamide at a functional concentration helps regulate sebum, particularly relevant during summer and monsoon when oiliness increases. Use under SPF during the day. For consumers with a history of fragrance sensitivity or atopic dermatitis, the undisclosed Parfum in this formula warrants a patch test before daily use.",
     analyzedAt: "2026-06-02",
+    category: "Moisturizers",
+    subCategory: "Gel Moisturizer",
+    concernTags: ["Dehydrated Skin", "Oily Skin", "Dullness"],
+    suitabilityTags: ["Daily Use", "Oily Skin", "Combination Skin", "Beginner Friendly"],
+    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag"],
   },
 
   /* -------------------------------------------------
@@ -305,6 +320,11 @@ const products: ProductScorecard[] = [
     info_badges: ["Retinol + Bakuchiol Combination", "Begin 2-3x Weekly, Build Gradually", "Aqueous Cream Vehicle (Lower Retinol Stability Than Anhydrous)"],
     indiaContext: "Retinol cream is an accessible entry point for Indian consumers new to retinoids: the cream vehicle is gentler than a concentrated serum, and Bakuchiol may reduce the adjustment period and buffer early irritation. Begin 2-3 times per week and wear SPF 30+ every morning - retinol increases photosensitivity, and unprotected post-retinol sun exposure in India's UV-intense conditions is a direct PIH trigger. Indian skin (Fitzpatrick III-V) has a higher post-inflammation hyperpigmentation risk if the retinol adjustment phase is combined with UV exposure. Store in a cool, dark place. The undisclosed fragrance in this product is worth noting: if you develop any unexpected redness or itching after starting use, fragrance sensitivity during the adjustment phase is one possible cause.",
     analyzedAt: "2026-06-02",
+    category: "Moisturizers",
+    subCategory: "Night Cream",
+    concernTags: ["Fine Lines", "Wrinkles", "Texture", "Skin Renewal", "Collagen Support"],
+    suitabilityTags: ["Active Experienced Users", "Retinoid Beginners"],
+    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Retinoid Flag", "Pregnancy Not Reviewed", "Active % Not Verified"],
   },
 
 ];

@@ -147,6 +147,11 @@ const products: ProductScorecard[] = [
     info_badges: ["Penta-Filter Technology", "Published Non-Comedogenic & Dermatologist Test Reports", "Natural Fragrance Present"],
     indiaContext: "The filter selection here is well-suited to Indian conditions: all five UV filters are photostable, meaning their UVA and UVB protection does not degrade under intense UV exposure the way older filter systems can. Niacinamide in the formula helps reduce post-UV darkening, relevant for Fitzpatrick III-VI skin. Fragrance-sensitive or atopic individuals should note Benzyl Alcohol and lemongrass oil. Reapply every two hours in direct sun regardless of the 12-hour claim, as physical and sweat removal reduces effective filter coverage.",
     analyzedAt: "2026-06-02",
+    category: "Sunscreens",
+    subCategory: "Chemical Sunscreen",
+    concernTags: ["Photoageing", "Tanning", "Pigmentation", "Sun Protection"],
+    suitabilityTags: ["Daily Use", "Active Experienced Users"],
+    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Essential Oil Flag", "Active % Not Verified", "Clinical Claim Not Verified"],
   },
 
   /* -------------------------------------------------
@@ -234,6 +239,11 @@ const products: ProductScorecard[] = [
     info_badges: ["Anhydrous Elastomer Gel Technology", "Lightly Tinted (Iron Oxide)", "Published Blue Light Test Report"],
     indiaContext: "Mineral-only sunscreens suit consumers who want to avoid all chemical UV filters - particularly relevant for those with rosacea, sensitive skin, or pregnancy, where zinc oxide's photostability and safety profile are well established. The elastomer gel vehicle is designed to reduce the white cast and heavy feel typical of mineral sunscreens, making it viable for daily use in India's climate. For dark skin tones (Fitzpatrick V-VI), the light tint may not fully neutralise white cast at higher application quantities. For best SPF performance, apply the recommended 2 mg per cm2 and reapply every two hours.",
     analyzedAt: "2026-06-02",
+    category: "Sunscreens",
+    subCategory: "Mineral Sunscreen",
+    concernTags: ["Photoageing", "Tanning", "Oily Skin", "Acne", "Sun Protection"],
+    suitabilityTags: ["Daily Use", "Oily Skin", "Acne Prone Skin", "Fragrance Sensitive Users"],
+    cautionTags: ["Contains Comedogenic Ingredients"],
   },
 
   /* -------------------------------------------------
@@ -340,6 +350,11 @@ const products: ProductScorecard[] = [
     info_badges: ["Contains Penetration Enhancer (Transcutol / Diethylene Glycol Monoethyl Ether)", "4 Distinct HA Forms Found (7 Claimed)", "Ceramide NP Likely at Trace Concentration"],
     indiaContext: "Multi-weight HA serums work differently in humid vs dry climates. In India's humid monsoon conditions, lighter lower-MW HA performs better for texture. The Transcutol (penetration enhancer) in this formula increases absorption of niacinamide and other actives - this is an efficacy benefit but should be known to consumers stacking other active serums. The Whey Protein ingredient should be resolved by the brand before this product is used by consumers with dairy allergies or those purchasing it on ethical vegan grounds.",
     analyzedAt: "2026-06-02",
+    category: "Serums",
+    subCategory: "Hyaluronic Acid Serum",
+    concernTags: ["Dehydrated Skin", "Dry Skin", "Fine Lines", "Barrier Damage"],
+    suitabilityTags: ["Daily Use", "Fragrance Sensitive Users"],
+    cautionTags: ["Clinical Claim Not Verified", "Active % Not Verified"],
   },
 
 ];
