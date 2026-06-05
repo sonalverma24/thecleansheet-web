@@ -8,28 +8,27 @@ interface FilterChipsProps {
   onClearAll: () => void;
 }
 
-const LABEL_MAP: Record<string, string> = {
-  categories: "Category",
-  productTypes: "Product type",
-  scoreRanges: "Score",
-  activeIngredients: "Active",
-  skinConcerns: "Concern",
-  suitability: "For",
-  cautionFlags: "Caution",
-  priceRanges: "Price",
+const LABEL_MAP: Record<keyof ActiveFilters, string> = {
+  categories:          "Category",
+  productTypes:        "Type",
+  scoreRanges:         "Score",
+  activeIngredients:   "Active",
+  skinConcerns:        "Concern",
+  suitability:         "For",
+  cautionFlags:        "Caution",
+  certificationStatus: "Cert",
+  priceRanges:         "Price",
 };
+
+/** Keys where chips should use coral (caution) styling */
+const CAUTION_KEYS = new Set<keyof ActiveFilters>(["cautionFlags"]);
 
 export function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps) {
   const chips: { key: keyof ActiveFilters; value: string; label: string }[] = [];
 
   (Object.keys(filters) as Array<keyof ActiveFilters>).forEach((key) => {
-    const values = filters[key];
-    values.forEach((value) => {
-      chips.push({
-        key,
-        value,
-        label: `${LABEL_MAP[key] ?? key}: ${value}`,
-      });
+    filters[key].forEach((value) => {
+      chips.push({ key, value, label: `${LABEL_MAP[key]}: ${value}` });
     });
   });
 
@@ -37,24 +36,41 @@ export function FilterChips({ filters, onRemove, onClearAll }: FilterChipsProps)
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {chips.map(({ key, value, label }) => (
-        <button
-          key={`${key}-${value}`}
-          onClick={() => onRemove(key, value)}
-          className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-700 text-xs px-2.5 py-1 rounded-full hover:bg-teal-100 transition-colors group"
-        >
-          {label}
-          <X
-            size={11}
-            className="text-teal-400 group-hover:text-teal-700 transition-colors"
-            aria-hidden
-          />
-        </button>
-      ))}
+      {chips.map(({ key, value, label }) => {
+        const isCaution = CAUTION_KEYS.has(key);
+        return (
+          <button
+            key={`${key}-${value}`}
+            onClick={() => onRemove(key, value)}
+            className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition-colors group"
+            style={
+              isCaution
+                ? {
+                    background: "#fff1f0",
+                    border: "1px solid #fd6158",
+                    color: "#fd6158",
+                  }
+                : {
+                    background: "#e3f1ef",
+                    border: "1px solid #248179",
+                    color: "#248179",
+                  }
+            }
+          >
+            {label}
+            <X
+              size={11}
+              className="transition-opacity group-hover:opacity-60"
+              aria-hidden
+            />
+          </button>
+        );
+      })}
       {chips.length > 1 && (
         <button
           onClick={onClearAll}
-          className="text-xs text-ink-500 hover:text-ink-800 underline underline-offset-2 transition-colors"
+          className="text-xs underline underline-offset-2 transition-colors hover:opacity-60"
+          style={{ color: "#b0a8a4" }}
         >
           Clear all
         </button>

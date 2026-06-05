@@ -211,7 +211,7 @@ export default function BrandPreviewPage() {
                 className="bg-white rounded-lg px-4 sm:px-5 py-3.5 sm:py-4 flex gap-3 sm:gap-5 items-center"
                 style={{ borderLeft: `4px solid ${layer.color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
               >
-                <div className="text-xl sm:text-2xl flex-shrink-0" style={{ color: `${layer.color}30`, fontWeight: 300 }}>{layer.num}</div>
+                <div className="text-xl sm:text-2xl flex-shrink-0" style={{ color: "#6b6868", fontWeight: 300 }}>{layer.num}</div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] sm:text-[14px] font-medium tracking-tight mb-0.5" style={{ color: "#282828" }}>{layer.title}</p>
                   <p className="text-[11px] sm:text-[12.5px] leading-relaxed" style={{ color: "#6b6868" }}>{layer.desc}</p>

@@ -26,11 +26,11 @@ export function ComparisonTray({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-ink-200 shadow-2xl">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4">
         {/* Selected products */}
-        <div className="flex items-center gap-3 flex-1 overflow-x-auto">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 overflow-x-auto">
           <span className="text-xs text-ink-500 whitespace-nowrap flex-shrink-0">
-            Comparing {products.length}/4
+            {products.length}/4
           </span>
           <div className="flex items-center gap-2">
             {products.map((p) => (
@@ -38,38 +38,36 @@ export function ComparisonTray({
                 key={`${p.brandSlug}/${p.slug}`}
                 className="relative flex-shrink-0 group"
               >
-                <div className="w-12 h-12 rounded-xl bg-ink-50 border border-ink-100 overflow-hidden flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-ink-50 border border-ink-100 overflow-hidden flex items-center justify-center">
                   {p.image ? (
                     <Image
                       src={p.image}
                       alt={p.productName}
-                      width={40}
-                      height={40}
+                      width={36}
+                      height={36}
                       className="object-contain p-1"
                     />
                   ) : (
-                    <span className="text-lg">🧴</span>
+                    <span className="text-base">🧴</span>
                   )}
                 </div>
+                {/* Remove button: always visible on mobile, hover on desktop */}
                 <button
                   onClick={() => onRemove(`${p.brandSlug}/${p.slug}`)}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-ink-800 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-ink-800 text-white flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   aria-label={`Remove ${p.productName}`}
                 >
-                  <X size={9} />
+                  <X size={10} />
                 </button>
-                <p className="text-[9px] text-ink-500 text-center mt-0.5 w-12 truncate">
-                  {p.productName.split(" ").slice(0, 2).join(" ")}
-                </p>
               </div>
             ))}
-            {/* Empty slots */}
+            {/* Empty slots — hide on very small screens */}
             {Array.from({ length: Math.max(0, 2 - products.length) }).map((_, i) => (
               <div
                 key={`empty-${i}`}
-                className="w-12 h-12 rounded-xl border-2 border-dashed border-ink-200 flex items-center justify-center flex-shrink-0"
+                className="hidden sm:flex w-11 h-11 rounded-xl border-2 border-dashed border-ink-200 items-center justify-center flex-shrink-0"
               >
-                <span className="text-ink-300 text-lg">+</span>
+                <span className="text-ink-300 text-base">+</span>
               </div>
             ))}
           </div>
@@ -79,17 +77,20 @@ export function ComparisonTray({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={onClearAll}
-            className="text-xs text-ink-400 hover:text-ink-700 transition-colors whitespace-nowrap"
+            className="text-sm text-ink-400 hover:text-ink-700 transition-colors whitespace-nowrap"
+            style={{ minHeight: 44, padding: "0 4px" }}
           >
             Clear
           </button>
           <button
             onClick={handleCompare}
             disabled={products.length < 2}
-            className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-800 disabled:bg-ink-200 disabled:text-ink-400 text-white text-xs font-medium px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 disabled:bg-ink-200 disabled:text-ink-400 text-white text-sm font-medium px-4 rounded-xl transition-colors whitespace-nowrap"
+            style={{ minHeight: 44 }}
           >
-            <GitCompare size={13} />
-            Compare now
+            <GitCompare size={14} />
+            <span className="hidden sm:inline">Compare now</span>
+            <span className="sm:hidden">Compare</span>
           </button>
         </div>
       </div>

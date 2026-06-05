@@ -1,229 +1,784 @@
 "use client";
-import { useState } from "react";
-import { ChevronDown, X } from "lucide-react";
-import { PRODUCT_TAXONOMY, PRODUCT_CATEGORIES } from "@/lib/product-taxonomy";
+import { useState, useMemo, useEffect } from "react";
+import { ChevronDown, X, Search } from "lucide-react";
+import { ACTIVE_INGREDIENTS, CERTIFICATION_STATUS } from "@/data/taxonomy";
 import type { ActiveFilters, FilterOptions } from "./ScorecardDiscovery";
 
-interface FilterPanelProps {
-  options: FilterOptions;
-  filters: ActiveFilters;
-  onToggle: (key: keyof ActiveFilters, value: string) => void;
-  onClearAll: () => void;
-  mobileOpen: boolean;
-  onMobileClose: () => void;
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+/** Concern groups: ordered list of [group label, concern labels[]] */
+const CONCERN_GROUPS: [string, string[]][] = [
+  [
+    "Brightening & Pigmentation",
+    ["Pigmentation", "Melasma", "Tanning", "Dullness", "Post Acne Marks"],
+  ],
+  [
+    "Acne & Oil Control",
+    ["Acne", "Blackheads", "Whiteheads", "Oily Skin", "Enlarged Pores", "Comedogenicity"],
+  ],
+  [
+    "Exfoliation & Texture",
+    ["Texture"],
+  ],
+  [
+    "Ageing & Firmness",
+    [
+      "Fine Lines", "Wrinkles", "Loss of Firmness", "Elasticity",
+      "Collagen Support", "Age Prevention", "Photoageing", "Skin Renewal",
+    ],
+  ],
+  [
+    "Hydration & Barrier",
+    ["Dry Skin", "Dehydrated Skin", "Barrier Damage"],
+  ],
+  [
+    "Soothing & Sensitive",
+    ["Sensitive Skin", "Redness", "Rosacea Prone", "Eczema Prone"],
+  ],
+];
+
+/** Popular actives shown first before grouped list */
+const POPULAR_ACTIVE_LABELS = [
+  "Vitamin C",
+  "Niacinamide",
+  "Retinol",
+  "Salicylic Acid",
+  "Hyaluronic Acid",
+  "Ceramides",
+  "Zinc Oxide",
+  "Peptides",
+];
+
+/** Active ingredient group display labels (parent_id -> display name) */
+const AI_GROUP_LABELS: Record<string, string> = {
+  ai_grp_brightening: "Brightening & Pigmentation",
+  ai_grp_acne:        "Acne & Oil Control",
+  ai_grp_exfoliation: "Exfoliation & Texture",
+  ai_grp_ageing:      "Ageing & Firmness",
+  ai_grp_hydration:   "Hydration & Barrier",
+  ai_grp_soothing:    "Soothing & Sensitive",
+  ai_grp_sunscreen:   "Sunscreen Filters",
+  ai_grp_hair:        "Hair & Scalp",
+};
+
+const CERT_DOT: Record<string, string> = {
+  "TCS Certified": "bg-[#248179]",
+  "Under Review":  "bg-amber-400",
+  "Not Certified": "bg-[#b0a8a4]",
+  "Data Limited":  "bg-[#b0a8a4]",
+  "Not Reviewed":  "bg-[#d8d2cf]",
+};
+
+// ── Shared Checkbox ────────────────────────────────────────────────────────────
+
+function TcsCheckbox({
+  checked,
+  indeterminate,
+  isCaution,
+}: {
+  checked: boolean;
+  indeterminate?: boolean;
+  isCaution?: boolean;
+}) {
+  const activeColor = isCaution ? "#fd6158" : "#248179";
+  const activeBg   = isCaution ? "#fff1f0" : "#e3f1ef";
+  return (
+    <span
+      className="flex-shrink-0 transition-all duration-100"
+      style={{
+        width: 16,
+        height: 16,
+        borderRadius: 5,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: checked || indeterminate
+          ? `2px solid ${activeColor}`
+          : "2px solid #b0a8a4",
+        background: checked
+          ? activeColor
+          : indeterminate
+          ? activeBg
+          : "transparent",
+      }}
+    >
+      {checked && (
+        <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+          <path
+            d="M1 3.5L3.5 6L8 1"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+      {!checked && indeterminate && (
+        <svg width="8" height="2" viewBox="0 0 8 2" fill="none">
+          <path
+            d="M1 1H7"
+            stroke={activeColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
+    </span>
+  );
 }
 
-const SCORE_ORDER = ["Excellent", "Good", "Fair", "Concern"];
+// ── Option Row (fixed 38px height, no layout shift) ───────────────────────────
 
-// ── Generic flat section ───────────────────────────────────────────────────────
-function FilterSection({
+function OptionRow({
+  value,
+  count,
+  checked,
+  onChange,
+  indent = false,
+  semibold = false,
+  isCaution = false,
+}: {
+  value: string;
+  count: number;
+  checked: boolean;
+  onChange: () => void;
+  indent?: boolean;
+  semibold?: boolean;
+  isCaution?: boolean;
+}) {
+  const activeTextColor = isCaution ? "#fd6158" : "#248179";
+  return (
+    <label
+      className="flex items-center gap-2 cursor-pointer group select-none"
+      style={{
+        height: 38,
+        paddingLeft: indent ? 28 : 0,
+        flexShrink: 0,
+      }}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      <TcsCheckbox checked={checked} isCaution={isCaution} />
+      <span
+        className="flex-1 truncate transition-colors duration-100"
+        style={{
+          fontSize: 14,
+          fontWeight: semibold ? 600 : 400,
+          color: checked ? activeTextColor : "#282828",
+          opacity: indent && !semibold ? 0.8 : 1,
+          lineHeight: 1.2,
+        }}
+      >
+        {value}
+      </span>
+      <span
+        className="flex-shrink-0 tabular-nums"
+        style={{ fontSize: 12, color: "#b0a8a4" }}
+      >
+        {count}
+      </span>
+    </label>
+  );
+}
+
+// ── Internal search bar ────────────────────────────────────────────────────────
+
+function InternalSearch({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="relative mb-1">
+      <Search
+        size={12}
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+        style={{ color: "#b0a8a4" }}
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-lg border text-ink-800 placeholder:text-ink-300 focus:outline-none transition-colors"
+        style={{
+          paddingLeft: 28,
+          paddingRight: value ? 28 : 8,
+          paddingTop: 6,
+          paddingBottom: 6,
+          fontSize: 13,
+          background: "#faf7f2",
+          borderColor: "rgba(176,168,164,0.35)",
+        }}
+      />
+      {value && (
+        <button
+          onClick={() => onChange("")}
+          className="absolute right-2 top-1/2 -translate-y-1/2"
+          aria-label="Clear search"
+        >
+          <X size={11} style={{ color: "#b0a8a4" }} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Section label (sub-group divider inside a section) ─────────────────────────
+
+function SectionSubLabel({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        fontSize: 10,
+        color: "#b0a8a4",
+        textTransform: "uppercase",
+        letterSpacing: "0.07em",
+        fontWeight: 600,
+        padding: "8px 0 2px",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+// ── Accordion wrapper ──────────────────────────────────────────────────────────
+
+function Accordion({
   label,
-  optionKey,
-  options,
-  selected,
-  onToggle,
-  defaultCollapsed = false,
+  selectedCount,
+  defaultOpen,
+  children,
 }: {
   label: string;
-  optionKey: keyof ActiveFilters;
-  options: { value: string; count: number }[];
-  selected: string[];
-  onToggle: (key: keyof ActiveFilters, value: string) => void;
-  defaultCollapsed?: boolean;
+  selectedCount: number;
+  defaultOpen: boolean;
+  children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  if (options.length === 0) return null;
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-ink-100 pb-4 mb-4">
+    <div
+      style={{
+        borderBottom: "1px solid rgba(176,168,164,0.25)",
+        marginBottom: 4,
+      }}
+    >
+      {/* Header */}
       <button
-        onClick={() => setCollapsed((p) => !p)}
-        className="flex items-center justify-between w-full mb-3 text-left"
+        onClick={() => setOpen((p) => !p)}
+        className="flex items-center justify-between w-full text-left"
+        style={{ height: 44 }}
       >
-        <span className="text-xs font-medium text-ink-800 uppercase tracking-wider">{label}</span>
-        <ChevronDown
-          size={13}
-          className={`text-ink-400 transition-transform ${collapsed ? "-rotate-90" : ""}`}
-        />
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "#282828",
+          }}
+        >
+          {label}
+        </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {selectedCount > 0 && (
+            <span
+              className="tabular-nums"
+              style={{
+                fontSize: 10,
+                background: "#248179",
+                color: "white",
+                borderRadius: 10,
+                padding: "1px 6px",
+                fontWeight: 600,
+              }}
+            >
+              {selectedCount}
+            </span>
+          )}
+          <ChevronDown
+            size={13}
+            style={{
+              color: "#b0a8a4",
+              transform: open ? "rotate(0deg)" : "rotate(-90deg)",
+              transition: "transform 0.15s ease",
+            }}
+          />
+        </div>
       </button>
-      {!collapsed && (
-        <div className="space-y-2">
-          {options.map(({ value, count }) => (
-            <CheckRow
-              key={value}
-              value={value}
-              count={count}
-              checked={selected.includes(value)}
-              onChange={() => onToggle(optionKey, value)}
-              indent={false}
-            />
-          ))}
+
+      {/* Body */}
+      {open && (
+        <div style={{ paddingBottom: 10 }}>
+          {children}
         </div>
       )}
     </div>
   );
 }
 
-// ── Shared checkbox row ────────────────────────────────────────────────────────
-function CheckRow({
-  value,
-  count,
-  checked,
-  onChange,
-  indent,
+// ── Generic flat section (with optional internal search) ───────────────────────
+
+function FlatSection({
+  label,
+  optionKey,
+  options,
+  selected,
+  onToggle,
+  defaultOpen = false,
+  searchThreshold = 8,
+  searchPlaceholder = "Search...",
+  isCaution = false,
 }: {
-  value: string;
-  count: number;
-  checked: boolean;
-  onChange: () => void;
-  indent: boolean;
+  label: string;
+  optionKey: keyof ActiveFilters;
+  options: { value: string; count: number }[];
+  selected: string[];
+  onToggle: (key: keyof ActiveFilters, value: string) => void;
+  defaultOpen?: boolean;
+  searchThreshold?: number;
+  searchPlaceholder?: string;
+  isCaution?: boolean;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  if (options.length === 0) return null;
+
+  const showSearch = options.length > searchThreshold;
+
+  const selectedItems = options.filter((o) => selected.includes(o.value));
+  const unselectedItems = options.filter((o) => !selected.includes(o.value));
+
+  const filteredUnselected = searchQuery
+    ? unselectedItems.filter((o) =>
+        o.value.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : unselectedItems;
+
+  // Selected items always shown, filtered unselected below
+  const visibleItems = searchQuery
+    ? [...selectedItems, ...filteredUnselected]
+    : options;
+
+  const noResults = searchQuery && filteredUnselected.length === 0 && selectedItems.length === 0;
+
   return (
-    <label className={`flex items-center gap-2.5 cursor-pointer group ${indent ? "pl-4" : ""}`}>
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
-      <span
-        className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-          checked ? "bg-teal-600 border-teal-600" : "border-ink-300 group-hover:border-teal-400"
-        }`}
+    <Accordion
+      label={label}
+      selectedCount={selectedItems.length}
+      defaultOpen={defaultOpen}
+    >
+      {showSearch && (
+        <InternalSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={searchPlaceholder}
+        />
+      )}
+
+      <div
+        style={
+          visibleItems.length > 10
+            ? { overflowY: "auto", maxHeight: 340 }
+            : undefined
+        }
       >
-        {checked && (
-          <svg width="9" height="7" viewBox="0 0 9 7" fill="none" className="text-white">
-            <path d="M1 3.5L3.5 6L8 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        {noResults ? (
+          <p style={{ fontSize: 12, color: "#b0a8a4", padding: "6px 0" }}>
+            No matching filter found.
+          </p>
+        ) : (
+          visibleItems.map(({ value, count }) => (
+            <OptionRow
+              key={value}
+              value={value}
+              count={count}
+              checked={selected.includes(value)}
+              onChange={() => onToggle(optionKey, value)}
+              isCaution={isCaution}
+            />
+          ))
         )}
-      </span>
-      <span className={`text-xs transition-colors flex-1 ${checked ? "text-teal-700 font-medium" : "text-ink-600 group-hover:text-ink-900"}`}>
-        {value}
-      </span>
-      <span className="text-[10px] text-ink-400 font-sans tabular-nums">{count}</span>
-    </label>
+      </div>
+    </Accordion>
   );
 }
 
-// ── Hierarchical Category + Product Type section ───────────────────────────────
-function CategoryProductTypeSection({
-  categoryOptions,
-  productTypeOptions,
-  selectedCategories,
-  selectedProductTypes,
-  onToggleCategory,
-  onToggleProductType,
+
+// ── Active Ingredient Section (grouped + searchable) ───────────────────────────
+
+function ActiveIngredientSection({
+  options,
+  selected,
+  onToggle,
 }: {
-  categoryOptions: { value: string; count: number }[];
-  productTypeOptions: { value: string; count: number }[];
-  selectedCategories: string[];
-  selectedProductTypes: string[];
-  onToggleCategory: (v: string) => void;
-  onToggleProductType: (v: string) => void;
+  options: { value: string; count: number }[];
+  selected: string[];
+  onToggle: (key: keyof ActiveFilters, value: string) => void;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const isGroupExpanded = (g: string) => expandedGroups[g] !== false;
+  const toggleGroup = (g: string) =>
+    setExpandedGroups((p) => ({ ...p, [g]: !isGroupExpanded(g) }));
 
-  // Which categories to show: those with at least one product in current options
-  const availableCats = PRODUCT_CATEGORIES.filter((cat) =>
-    categoryOptions.some((o) => o.value === cat)
+  const selectedCount = useMemo(
+    () => options.filter((o) => selected.includes(o.value)).length,
+    [options, selected]
   );
 
-  // Which product types to show for a given category:
-  // intersection of taxonomy types for that cat AND what's in productTypeOptions
-  const typesForCategory = (cat: string) => {
-    const taxonomyTypes = PRODUCT_TAXONOMY[cat] ?? [];
-    return taxonomyTypes
-      .map((t) => productTypeOptions.find((o) => o.value === t))
-      .filter(Boolean) as { value: string; count: number }[];
-  };
-
-  // Track which category groups are expanded (all expanded by default if small set)
-  const [expandedCats, setExpandedCats] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(availableCats.map((c) => [c, true]))
+  const optionMap = useMemo(
+    () => new Map(options.map((o) => [o.value, o.count])),
+    [options]
   );
 
-  const toggleCatExpand = (cat: string) =>
-    setExpandedCats((p) => ({ ...p, [cat]: !p[cat] }));
+  const popularOptions = useMemo(
+    () =>
+      POPULAR_ACTIVE_LABELS.filter((l) => optionMap.has(l)).map((l) => ({
+        value: l,
+        count: optionMap.get(l)!,
+      })),
+    [optionMap]
+  );
 
-  if (availableCats.length === 0) return null;
+  // Groups: group label -> options[] (in taxonomy order, only those with products)
+  const groupedOptions = useMemo(() => {
+    const groups = new Map<string, { value: string; count: number }[]>();
+    for (const ai of ACTIVE_INGREDIENTS) {
+      if (!ai.parent_id || !optionMap.has(ai.label)) continue;
+      const groupLabel = AI_GROUP_LABELS[ai.parent_id] ?? ai.parent_id;
+      if (!groups.has(groupLabel)) groups.set(groupLabel, []);
+      groups.get(groupLabel)!.push({ value: ai.label, count: optionMap.get(ai.label)! });
+    }
+    return groups;
+  }, [optionMap]);
+
+  if (options.length === 0) return null;
+
+  // When searching: show selected items + matching items
+  const selectedItems = options.filter((o) => selected.includes(o.value));
+  const filteredUnselected = searchQuery
+    ? options.filter(
+        (o) =>
+          !selected.includes(o.value) &&
+          o.value.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+  const noSearchResults =
+    searchQuery && filteredUnselected.length === 0 && selectedItems.length === 0;
 
   return (
-    <div className="border-b border-ink-100 pb-4 mb-4">
-      {/* Section header */}
-      <button
-        onClick={() => setCollapsed((p) => !p)}
-        className="flex items-center justify-between w-full mb-3 text-left"
-      >
-        <span className="text-xs font-medium text-ink-800 uppercase tracking-wider">Product type</span>
-        <ChevronDown
-          size={13}
-          className={`text-ink-400 transition-transform ${collapsed ? "-rotate-90" : ""}`}
-        />
-      </button>
+    <Accordion
+      label="Active Ingredient"
+      selectedCount={selectedCount}
+      defaultOpen={false}
+    >
+      <InternalSearch
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search actives"
+      />
 
-      {!collapsed && (
-        <div className="space-y-1">
-          {availableCats.map((cat) => {
-            const catOption = categoryOptions.find((o) => o.value === cat);
-            if (!catOption) return null;
-            const catChecked = selectedCategories.includes(cat);
-            const subTypes = typesForCategory(cat);
-            const isExpanded = expandedCats[cat] ?? true;
+      {searchQuery ? (
+        // Search mode
+        <div>
+          {noSearchResults ? (
+            <p style={{ fontSize: 12, color: "#b0a8a4", padding: "6px 0" }}>
+              No matching filter found.
+            </p>
+          ) : (
+            <>
+              {selectedItems.map(({ value, count }) => (
+                <OptionRow
+                  key={value}
+                  value={value}
+                  count={count}
+                  checked
+                  onChange={() => onToggle("activeIngredients", value)}
+                />
+              ))}
+              {filteredUnselected.map(({ value, count }) => (
+                <OptionRow
+                  key={value}
+                  value={value}
+                  count={count}
+                  checked={false}
+                  onChange={() => onToggle("activeIngredients", value)}
+                />
+              ))}
+            </>
+          )}
+        </div>
+      ) : (
+        // Browse mode
+        <div>
+          {popularOptions.length > 0 && (
+            <div>
+              <SectionSubLabel label="Popular" />
+              {popularOptions.map(({ value, count }) => (
+                <OptionRow
+                  key={value}
+                  value={value}
+                  count={count}
+                  checked={selected.includes(value)}
+                  onChange={() => onToggle("activeIngredients", value)}
+                />
+              ))}
+            </div>
+          )}
+
+          {Array.from(groupedOptions.entries()).map(([groupLabel, items]) => {
+            if (items.length === 0) return null;
+            const expanded = isGroupExpanded(groupLabel);
+            const PREVIEW = 4;
+            const showToggle = items.length > PREVIEW;
+            const visible = expanded ? items : items.slice(0, PREVIEW);
+            const groupSelectedCount = items.filter((i) =>
+              selected.includes(i.value)
+            ).length;
 
             return (
-              <div key={cat}>
-                {/* Category row */}
-                <div className="flex items-center gap-1">
-                  {/* Expand/collapse sub-types */}
-                  <button
-                    onClick={() => toggleCatExpand(cat)}
-                    className="p-0.5 text-ink-400 hover:text-ink-700 transition-colors flex-shrink-0"
-                    aria-label={isExpanded ? `Collapse ${cat}` : `Expand ${cat}`}
+              <div key={groupLabel}>
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => toggleGroup(groupLabel)}
+                  style={{ padding: "8px 0 2px" }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "#b0a8a4",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      fontWeight: 600,
+                    }}
                   >
+                    {groupLabel}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {groupSelectedCount > 0 && (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          background: "#248179",
+                          color: "white",
+                          borderRadius: 8,
+                          padding: "1px 5px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {groupSelectedCount}
+                      </span>
+                    )}
                     <ChevronDown
                       size={11}
-                      className={`transition-transform ${isExpanded ? "" : "-rotate-90"}`}
+                      style={{
+                        color: "#b0a8a4",
+                        transform: expanded ? "rotate(0deg)" : "rotate(-90deg)",
+                        transition: "transform 0.12s ease",
+                      }}
                     />
-                  </button>
-                  <label className="flex items-center gap-2.5 cursor-pointer group flex-1">
-                    <input
-                      type="checkbox"
-                      checked={catChecked}
-                      onChange={() => onToggleCategory(cat)}
-                      className="sr-only"
-                    />
-                    <span
-                      className={`w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-colors ${
-                        catChecked
-                          ? "bg-teal-600 border-teal-600"
-                          : "border-ink-300 group-hover:border-teal-400"
-                      }`}
-                    >
-                      {catChecked && (
-                        <svg width="9" height="7" viewBox="0 0 9 7" fill="none" className="text-white">
-                          <path d="M1 3.5L3.5 6L8 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-                    <span
-                      className={`text-xs font-medium transition-colors flex-1 ${
-                        catChecked ? "text-teal-700" : "text-ink-700 group-hover:text-ink-900"
-                      }`}
-                    >
-                      {cat}
-                    </span>
-                    <span className="text-[10px] text-ink-400 font-sans tabular-nums">
-                      {catOption.count}
-                    </span>
-                  </label>
+                  </div>
                 </div>
 
-                {/* Sub-types */}
-                {isExpanded && subTypes.length > 0 && (
-                  <div className="mt-1.5 space-y-1.5">
-                    {subTypes.map(({ value, count }) => (
-                      <CheckRow
+                {expanded && (
+                  <div>
+                    {visible.map(({ value, count }) => (
+                      <OptionRow
                         key={value}
                         value={value}
                         count={count}
-                        checked={selectedProductTypes.includes(value)}
-                        onChange={() => onToggleProductType(value)}
-                        indent
+                        checked={selected.includes(value)}
+                        onChange={() => onToggle("activeIngredients", value)}
+                      />
+                    ))}
+                    {showToggle && (
+                      <button
+                        onClick={() => toggleGroup(groupLabel)}
+                        style={{
+                          fontSize: 12,
+                          color: "#248179",
+                          cursor: "pointer",
+                          padding: "2px 0 4px",
+                        }}
+                      >
+                        {expanded && items.length > PREVIEW
+                          ? "Show less"
+                          : `+${items.length - PREVIEW} more`}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Accordion>
+  );
+}
+
+// ── Concern Section (grouped + searchable) ────────────────────────────────────
+
+function ConcernSection({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: { value: string; count: number }[];
+  selected: string[];
+  onToggle: (key: keyof ActiveFilters, value: string) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const isGroupExpanded = (g: string) => expandedGroups[g] !== false;
+  const toggleGroup = (g: string) =>
+    setExpandedGroups((p) => ({ ...p, [g]: !isGroupExpanded(g) }));
+
+  const optionMap = useMemo(
+    () => new Map(options.map((o) => [o.value, o.count])),
+    [options]
+  );
+
+  // Build groups: only include items that have product data
+  const groups = useMemo(
+    () =>
+      CONCERN_GROUPS.map(([groupLabel, labels]) => ({
+        groupLabel,
+        items: labels
+          .filter((l) => optionMap.has(l))
+          .map((l) => ({ value: l, count: optionMap.get(l)! })),
+      })).filter((g) => g.items.length > 0),
+    [optionMap]
+  );
+
+  const selectedCount = useMemo(
+    () => options.filter((o) => selected.includes(o.value)).length,
+    [options, selected]
+  );
+
+  if (groups.length === 0) return null;
+
+  // Search mode: show selected + matching across all groups
+  const selectedItems = options.filter((o) => selected.includes(o.value));
+  const filteredUnselected = searchQuery
+    ? options.filter(
+        (o) =>
+          !selected.includes(o.value) &&
+          o.value.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+  const noSearchResults =
+    !!searchQuery && filteredUnselected.length === 0 && selectedItems.length === 0;
+
+  return (
+    <Accordion label="Concern" selectedCount={selectedCount} defaultOpen={false}>
+      <InternalSearch
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Search concerns"
+      />
+
+      {searchQuery ? (
+        <div>
+          {noSearchResults ? (
+            <p style={{ fontSize: 12, color: "#b0a8a4", padding: "6px 0" }}>
+              No matching filter found.
+            </p>
+          ) : (
+            <>
+              {selectedItems.map(({ value, count }) => (
+                <OptionRow
+                  key={value}
+                  value={value}
+                  count={count}
+                  checked
+                  onChange={() => onToggle("skinConcerns", value)}
+                />
+              ))}
+              {filteredUnselected.map(({ value, count }) => (
+                <OptionRow
+                  key={value}
+                  value={value}
+                  count={count}
+                  checked={false}
+                  onChange={() => onToggle("skinConcerns", value)}
+                />
+              ))}
+            </>
+          )}
+        </div>
+      ) : (
+        <div>
+          {groups.map(({ groupLabel, items }) => {
+            const expanded = isGroupExpanded(groupLabel);
+            const groupSelectedCount = items.filter((i) =>
+              selected.includes(i.value)
+            ).length;
+
+            return (
+              <div key={groupLabel}>
+                <div
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => toggleGroup(groupLabel)}
+                  style={{ padding: "8px 0 2px" }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "#b0a8a4",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {groupLabel}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {groupSelectedCount > 0 && (
+                      <span
+                        style={{
+                          fontSize: 9,
+                          background: "#248179",
+                          color: "white",
+                          borderRadius: 8,
+                          padding: "1px 5px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {groupSelectedCount}
+                      </span>
+                    )}
+                    <ChevronDown
+                      size={11}
+                      style={{
+                        color: "#b0a8a4",
+                        transform: expanded ? "rotate(0deg)" : "rotate(-90deg)",
+                        transition: "transform 0.12s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {expanded && (
+                  <div>
+                    {items.map(({ value, count }) => (
+                      <OptionRow
+                        key={value}
+                        value={value}
+                        count={count}
+                        checked={selected.includes(value)}
+                        onChange={() => onToggle("skinConcerns", value)}
                       />
                     ))}
                   </div>
@@ -233,11 +788,82 @@ function CategoryProductTypeSection({
           })}
         </div>
       )}
-    </div>
+    </Accordion>
   );
 }
 
-// ── Main panel content ────────────────────────────────────────────────────────
+// ── Certification Section (with status dots) ───────────────────────────────────
+
+function CertSection({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: { value: string; count: number }[];
+  selected: string[];
+  onToggle: (key: keyof ActiveFilters, value: string) => void;
+}) {
+  if (options.length === 0) return null;
+
+  const selectedCount = options.filter((o) => selected.includes(o.value)).length;
+
+  return (
+    <Accordion
+      label="Certification Status"
+      selectedCount={selectedCount}
+      defaultOpen={false}
+    >
+      {options.map(({ value, count }) => {
+        const checked = selected.includes(value);
+        const dot = CERT_DOT[value] ?? "bg-[#b0a8a4]";
+        return (
+          <label
+            key={value}
+            className="flex items-center gap-2 cursor-pointer select-none"
+            style={{ height: 38 }}
+          >
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => onToggle("certificationStatus", value)}
+              className="sr-only"
+            />
+            <TcsCheckbox checked={checked} />
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+            <span
+              className="flex-1 truncate transition-colors duration-100"
+              style={{
+                fontSize: 14,
+                color: checked ? "#248179" : "#282828",
+              }}
+            >
+              {value}
+            </span>
+            <span
+              className="flex-shrink-0 tabular-nums"
+              style={{ fontSize: 12, color: "#b0a8a4" }}
+            >
+              {count}
+            </span>
+          </label>
+        );
+      })}
+    </Accordion>
+  );
+}
+
+// ── Panel content ──────────────────────────────────────────────────────────────
+
+interface FilterPanelProps {
+  options: FilterOptions;
+  filters: ActiveFilters;
+  onToggle: (key: keyof ActiveFilters, value: string) => void;
+  onClearAll: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+  resultCount?: number;
+}
+
 function PanelContent({
   options,
   filters,
@@ -245,96 +871,93 @@ function PanelContent({
   onClearAll,
 }: Pick<FilterPanelProps, "options" | "filters" | "onToggle" | "onClearAll">) {
   const hasActive = Object.values(filters).some((a) => a.length > 0);
-  const scoreOptions = SCORE_ORDER
-    .map((s) => options.scoreRanges.find((x) => x.value === s))
+
+  const certTaxonomyOrder = CERTIFICATION_STATUS.filter(
+    (c) => c.is_public && !c.is_admin_only
+  ).map((c) => c.label);
+  const certOptions = certTaxonomyOrder
+    .map((label) => options.certificationStatus.find((o) => o.value === label))
     .filter(Boolean) as { value: string; count: number }[];
 
   return (
-    <>
-      <div className="flex items-center justify-between mb-5">
-        <span className="text-sm font-medium text-ink-900">Filters</span>
+    <div>
+      {/* Header */}
+      <div
+        className="flex items-center justify-between"
+        style={{ height: 44, flexShrink: 0 }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 500, color: "#282828" }}>
+          Filters
+        </span>
         {hasActive && (
-          <button onClick={onClearAll} className="text-[11px] text-teal-600 hover:text-teal-800 transition-colors">
+          <button
+            onClick={onClearAll}
+            className="transition-opacity hover:opacity-60"
+            style={{ fontSize: 11, color: "#248179", cursor: "pointer" }}
+          >
             Clear all
           </button>
         )}
       </div>
 
-      {/* Score range */}
-      <FilterSection
-        label="Score range"
-        optionKey="scoreRanges"
-        options={scoreOptions}
-        selected={filters.scoreRanges}
+      {/* 1. Product Category (expanded by default) */}
+      <FlatSection
+        label="Product Category"
+        optionKey="categories"
+        options={options.categories}
+        selected={filters.categories}
         onToggle={onToggle}
+        defaultOpen={true}
       />
 
-      {/* Hierarchical Category + Product Type */}
-      <CategoryProductTypeSection
-        categoryOptions={options.categories}
-        productTypeOptions={options.productTypes}
-        selectedCategories={filters.categories}
-        selectedProductTypes={filters.productTypes}
-        onToggleCategory={(v) => onToggle("categories", v)}
-        onToggleProductType={(v) => onToggle("productTypes", v)}
-      />
-
-      {/* Active ingredient */}
-      <FilterSection
-        label="Active ingredient"
-        optionKey="activeIngredients"
+      {/* 2. Active Ingredient */}
+      <ActiveIngredientSection
         options={options.activeIngredients}
         selected={filters.activeIngredients}
         onToggle={onToggle}
-        defaultCollapsed
       />
 
-      {/* Skin concern */}
-      <FilterSection
-        label="Skin concern"
-        optionKey="skinConcerns"
+      {/* 4. Concern (grouped) */}
+      <ConcernSection
         options={options.skinConcerns}
         selected={filters.skinConcerns}
         onToggle={onToggle}
-        defaultCollapsed
       />
 
-      {/* Suitability */}
-      <FilterSection
+      {/* 5. Suitability */}
+      <FlatSection
         label="Suitability"
         optionKey="suitability"
         options={options.suitability}
         selected={filters.suitability}
         onToggle={onToggle}
-        defaultCollapsed
+        defaultOpen={false}
       />
 
-      {/* Caution flags */}
-      <FilterSection
-        label="Caution flags"
-        optionKey="cautionFlags"
-        options={options.cautionFlags}
-        selected={filters.cautionFlags}
+      {/* 6. Certification Status */}
+      <CertSection
+        options={certOptions}
+        selected={filters.certificationStatus}
         onToggle={onToggle}
-        defaultCollapsed
       />
 
-      {/* Price range */}
+      {/* 7. Price Range */}
       {options.priceRanges.length > 0 && (
-        <FilterSection
-          label="Price range"
+        <FlatSection
+          label="Price Range"
           optionKey="priceRanges"
           options={options.priceRanges}
           selected={filters.priceRanges}
           onToggle={onToggle}
-          defaultCollapsed
+          defaultOpen={false}
         />
       )}
-    </>
+    </div>
   );
 }
 
-// ── Public export ─────────────────────────────────────────────────────────────
+// ── Public export ──────────────────────────────────────────────────────────────
+
 export function ScorecardFilterPanel({
   options,
   filters,
@@ -342,36 +965,161 @@ export function ScorecardFilterPanel({
   onClearAll,
   mobileOpen,
   onMobileClose,
+  resultCount,
 }: FilterPanelProps) {
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  const activeCount = Object.values(filters).reduce((s, a) => s + a.length, 0);
+
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-60 flex-shrink-0">
-        <div className="sticky top-6">
-          <PanelContent options={options} filters={filters} onToggle={onToggle} onClearAll={onClearAll} />
+      <aside className="hidden lg:block flex-shrink-0" style={{ width: 310 }}>
+        <div
+          className="sticky overflow-y-auto"
+          style={{
+            top: 72,
+            maxHeight: "calc(100vh - 88px)",
+            paddingRight: 24,
+            borderRight: "1px solid rgba(176,168,164,0.2)",
+          }}
+        >
+          <PanelContent
+            options={options}
+            filters={filters}
+            onToggle={onToggle}
+            onClearAll={onClearAll}
+          />
         </div>
       </aside>
 
       {/* Mobile bottom sheet */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={onMobileClose} aria-hidden />
-          <div className="relative bg-white rounded-t-3xl max-h-[80vh] flex flex-col shadow-2xl">
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-ink-200" />
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={onMobileClose}
+            aria-hidden
+          />
+          <div
+            className="relative rounded-t-3xl flex flex-col shadow-2xl"
+            style={{
+              background: "#faf7f2",
+              maxHeight: "92vh",
+            }}
+          >
+            {/* Handle bar */}
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div
+                className="rounded-full"
+                style={{ width: 40, height: 4, background: "rgba(176,168,164,0.45)" }}
+              />
             </div>
-            <div className="flex items-center justify-between px-5 pb-4 border-b border-ink-100">
-              <span className="font-medium text-ink-900">Filters</span>
-              <button onClick={onMobileClose} className="p-2 rounded-full hover:bg-ink-100 transition-colors" aria-label="Close filters">
-                <X size={16} className="text-ink-600" />
+
+            {/* Mobile header */}
+            <div
+              className="flex items-center justify-between flex-shrink-0"
+              style={{
+                height: 52,
+                paddingLeft: 20,
+                paddingRight: 12,
+                borderBottom: "1px solid rgba(176,168,164,0.25)",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: 16, fontWeight: 600, color: "#282828" }}>
+                  Filters
+                </span>
+                {activeCount > 0 && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      background: "#248179",
+                      color: "white",
+                      borderRadius: 10,
+                      padding: "2px 7px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {activeCount}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={onMobileClose}
+                className="flex items-center justify-center rounded-full transition-colors"
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "rgba(176,168,164,0.15)",
+                }}
+                aria-label="Close filters"
+              >
+                <X size={16} style={{ color: "#282828" }} />
               </button>
             </div>
-            <div className="overflow-y-auto flex-1 px-5 pt-4">
-              <PanelContent options={options} filters={filters} onToggle={onToggle} onClearAll={onClearAll} />
+
+            {/* Scrollable filter list */}
+            <div
+              className="overflow-y-auto flex-1"
+              style={{ padding: "0 20px" }}
+            >
+              <PanelContent
+                options={options}
+                filters={filters}
+                onToggle={onToggle}
+                onClearAll={onClearAll}
+              />
             </div>
-            <div className="px-5 py-4 border-t border-ink-100">
-              <button onClick={onMobileClose} className="w-full bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium py-3 rounded-xl transition-colors">
-                Apply filters
+
+            {/* Sticky footer */}
+            <div
+              className="flex-shrink-0 flex items-center gap-3"
+              style={{
+                padding: "16px 20px",
+                borderTop: "1px solid rgba(176,168,164,0.25)",
+                background: "#faf7f2",
+              }}
+            >
+              {activeCount > 0 && (
+                <button
+                  onClick={onClearAll}
+                  className="flex-shrink-0 transition-opacity hover:opacity-60"
+                  style={{
+                    fontSize: 14,
+                    color: "#b0a8a4",
+                    fontWeight: 500,
+                    minHeight: 48,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                  }}
+                >
+                  Clear all
+                </button>
+              )}
+              <button
+                onClick={onMobileClose}
+                className="flex-1 text-white font-medium rounded-2xl transition-colors active:opacity-90"
+                style={{
+                  background: "#248179",
+                  fontSize: 15,
+                  minHeight: 48,
+                }}
+              >
+                {resultCount !== undefined
+                  ? `Show ${resultCount} product${resultCount !== 1 ? "s" : ""}`
+                  : "Apply filters"}
               </button>
             </div>
           </div>

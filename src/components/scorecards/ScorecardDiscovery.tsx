@@ -25,6 +25,7 @@ import type { ProductScorecard } from "@/data/brands/types";
 import type { BrandSummary } from "@/data/brands";
 import { scoreColors } from "@/data/brands";
 import { expandQuery } from "@/lib/search-synonyms";
+import { buildControlledFilterOptions } from "@/data/taxonomy";
 import { track } from "@/lib/analytics";
 
 import { ScorecardSearchBar } from "./ScorecardSearchBar";
@@ -33,7 +34,7 @@ import { FilterChips } from "./FilterChips";
 import { SortDropdown } from "./SortDropdown";
 import { ScorecardResultCard } from "./ScorecardResultCard";
 import { ComparisonTray } from "./ComparisonTray";
-import { ProductComparisonTable } from "./ProductComparisonTable";
+import { ComparisonDecisionEngine } from "./ComparisonDecisionEngine";
 import { NoResultsCard } from "./NoResultsCard";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ export interface ActiveFilters {
   skinConcerns: string[];
   suitability: string[];
   cautionFlags: string[];
+  certificationStatus: string[];
   priceRanges: string[];
 }
 
@@ -67,6 +69,7 @@ export interface FilterOptions {
   skinConcerns: { value: string; count: number }[];
   suitability: { value: string; count: number }[];
   cautionFlags: { value: string; count: number }[];
+  certificationStatus: { value: string; count: number }[];
   priceRanges: { value: string; count: number }[];
 }
 
@@ -78,6 +81,7 @@ const EMPTY_FILTERS: ActiveFilters = {
   skinConcerns: [],
   suitability: [],
   cautionFlags: [],
+  certificationStatus: [],
   priceRanges: [],
 };
 
@@ -85,58 +89,32 @@ const PAGE_SIZE = 12;
 const DEBOUNCE_MS = 300;
 
 // ── Helper: price bucket ──────────────────────────────────────────────────────
-function priceBucket(price?: number): string | null {
-  if (!price) return null;
-  if (price < 500) return "Under ₹500";
-  if (price < 1000) return "₹500-₹1,000";
-  if (price < 2000) return "₹1,000-₹2,000";
+
+/** Extract the minimum price from a raw priceRange string like "Rs. 799 - Rs. 1,199" or "₹664-₹699" */
+function parseMinPrice(raw: string): number | null {
+  const cleaned = raw
+    .replace(/Rs\.\s*/gi, "")
+    .replace(/₹/g, "")
+    .replace(/,/g, "")
+    .trim();
+  const m = cleaned.match(/^(\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+function priceBucket(price?: number, priceRange?: string): string | null {
+  const p = price ?? (priceRange ? parseMinPrice(priceRange) : null);
+  if (!p) return null;
+  if (p < 500) return "Under ₹500";
+  if (p < 1000) return "₹500-₹1,000";
+  if (p < 2000) return "₹1,000-₹2,000";
   return "₹2,000+";
 }
 
-// ── Helper: build filter options from product list ────────────────────────────
+// ── Helper: build controlled filter options from product list ─────────────────
+// Only taxonomy-recognized labels appear as filter options.
+// Raw free-text strings are silently dropped.
 function buildFilterOptions(products: ProductScorecard[]): FilterOptions {
-  const count = <T extends string>(items: T[]): { value: T; count: number }[] => {
-    const map = new Map<T, number>();
-    items.forEach((v) => map.set(v, (map.get(v) ?? 0) + 1));
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([value, count]) => ({ value, count }));
-  };
-
-  return {
-    categories: count(products.flatMap((p) => (p.category ? [p.category] : []))),
-    productTypes: count(products.flatMap((p) => (p.subCategory ? [p.subCategory] : []))),
-    scoreRanges: count(products.map((p) => p.scoreLabel)),
-    activeIngredients: count(
-      products.flatMap((p) =>
-        p.keyActives.map((a) => a.name.split("(")[0].trim().split("%").pop()?.trim() ?? a.name.split("(")[0].trim())
-      )
-    ),
-    skinConcerns: count(
-      products.flatMap((p) => [
-        ...(p.concernTags ?? []),
-        ...p.concern.split(",").map((s) => s.trim()).filter(Boolean),
-      ])
-    ),
-    suitability: count(
-      products.flatMap((p) => [
-        ...(p.suitabilityTags ?? []),
-        ...p.pass_badges,
-      ])
-    ),
-    cautionFlags: count(
-      products.flatMap((p) => [
-        ...(p.cautionTags ?? []),
-        ...p.warn_badges,
-      ])
-    ),
-    priceRanges: count(
-      products.flatMap((p) => {
-        const b = priceBucket(p.price);
-        return b ? [b] : [];
-      })
-    ),
-  };
+  return buildControlledFilterOptions(products);
 }
 
 // ── Helper: relevance score ───────────────────────────────────────────────────
@@ -165,53 +143,59 @@ function relevanceScore(product: ProductScorecard, terms: string[]): number {
 
 // ── Helper: match active filters ─────────────────────────────────────────────
 function matchesFilters(product: ProductScorecard, filters: ActiveFilters): boolean {
-  const { categories, productTypes, scoreRanges, activeIngredients, skinConcerns, suitability, cautionFlags, priceRanges } = filters;
+  const {
+    categories, productTypes, scoreRanges, activeIngredients,
+    skinConcerns, suitability, cautionFlags, certificationStatus, priceRanges,
+  } = filters;
 
   if (categories.length && !categories.includes(product.category ?? "")) return false;
   if (productTypes.length && !productTypes.includes(product.subCategory ?? "")) return false;
   if (scoreRanges.length && !scoreRanges.includes(product.scoreLabel)) return false;
 
+  if (certificationStatus.length) {
+    const cs = product.certificationStatus ?? "Not Reviewed";
+    // Normalize stored values to taxonomy labels
+    const normMap: Record<string, string> = {
+      "tcs-certified": "TCS Certified",
+      "under-review":  "Under Review",
+      "not-certified": "Not Certified",
+    };
+    const label = normMap[cs] ?? cs;
+    if (!certificationStatus.includes(label)) return false;
+  }
+
   if (activeIngredients.length) {
     const productActives = product.keyActives.map((a) =>
-      a.name.split("(")[0].trim().split("%").pop()?.trim() ?? a.name.split("(")[0].trim()
+      a.name.split("(")[0].trim().replace(/\s+\d[\d.]*%.*/, "").trim().toLowerCase()
     );
-    if (!activeIngredients.some((a) => productActives.some((pa) => pa.toLowerCase().includes(a.toLowerCase())))) {
-      return false;
-    }
+    if (!activeIngredients.some((a) =>
+      productActives.some((pa) => pa.includes(a.toLowerCase()) || a.toLowerCase().includes(pa))
+    )) return false;
   }
 
   if (skinConcerns.length) {
-    const productConcerns = [
-      ...(product.concernTags ?? []),
-      ...product.concern.split(",").map((s) => s.trim()),
-    ].map((s) => s.toLowerCase());
+    const productConcerns = (product.concernTags ?? []).map((s) => s.toLowerCase());
     if (!skinConcerns.some((c) => productConcerns.some((pc) => pc.includes(c.toLowerCase())))) {
       return false;
     }
   }
 
   if (suitability.length) {
-    const productSuit = [
-      ...(product.suitabilityTags ?? []),
-      ...product.pass_badges,
-    ].map((s) => s.toLowerCase());
+    const productSuit = (product.suitabilityTags ?? []).map((s) => s.toLowerCase());
     if (!suitability.some((s) => productSuit.some((ps) => ps.includes(s.toLowerCase())))) {
       return false;
     }
   }
 
   if (cautionFlags.length) {
-    const productCautions = [
-      ...(product.cautionTags ?? []),
-      ...product.warn_badges,
-    ].map((s) => s.toLowerCase());
+    const productCautions = (product.cautionTags ?? []).map((s) => s.toLowerCase());
     if (!cautionFlags.some((c) => productCautions.some((pc) => pc.includes(c.toLowerCase())))) {
       return false;
     }
   }
 
   if (priceRanges.length) {
-    const bucket = priceBucket(product.price);
+    const bucket = priceBucket(product.price, product.priceRange);
     if (!bucket || !priceRanges.includes(bucket)) return false;
   }
 
@@ -231,6 +215,7 @@ function filtersToParams(filters: ActiveFilters, query: string, sort: SortOption
   if (filters.skinConcerns.length) p.set("concern", filters.skinConcerns.join(","));
   if (filters.suitability.length) p.set("suit", filters.suitability.join(","));
   if (filters.cautionFlags.length) p.set("caution", filters.cautionFlags.join(","));
+  if (filters.certificationStatus.length) p.set("cert", filters.certificationStatus.join(","));
   if (filters.priceRanges.length) p.set("price", filters.priceRanges.join(","));
   return p;
 }
@@ -245,6 +230,7 @@ function paramsToFilters(sp: URLSearchParams): ActiveFilters {
     skinConcerns: split("concern"),
     suitability: split("suit"),
     cautionFlags: split("caution"),
+    certificationStatus: split("cert"),
     priceRanges: split("price"),
   };
 }
@@ -661,14 +647,51 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       {/* ── PRODUCTS SEARCH VIEW ── */}
       {view === "products" && (
         <>
-          {/* Sticky search bar */}
-          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm py-3 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-6 border-b border-ink-100">
-            <ScorecardSearchBar
-              value={query}
-              onChange={handleQueryChange}
-              resultCount={results.length}
-              isSearching={!!debouncedQuery || hasActiveFilters}
-            />
+          {/* Sticky top bar: search + mobile filter/sort controls */}
+          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm -mx-4 sm:-mx-6 px-4 sm:px-6 mb-4 border-b border-ink-100">
+            <div className="pt-3 pb-3">
+              <ScorecardSearchBar
+                value={query}
+                onChange={handleQueryChange}
+                resultCount={results.length}
+                isSearching={!!debouncedQuery || hasActiveFilters}
+              />
+            </div>
+            {/* Mobile only: filter + sort row */}
+            <div className="lg:hidden flex items-center gap-2 pb-3">
+              <button
+                onClick={() => setMobileFilterOpen(true)}
+                className="inline-flex items-center gap-1.5 border border-ink-200 text-ink-700 text-sm font-medium px-3 rounded-xl transition-colors active:bg-ink-50"
+                style={{ minHeight: 40 }}
+              >
+                <SlidersHorizontal size={14} />
+                Filters
+                {hasActiveFilters && (
+                  <span
+                    className="text-white rounded-full flex items-center justify-center font-sans"
+                    style={{
+                      background: "#248179",
+                      fontSize: 10,
+                      width: 18,
+                      height: 18,
+                    }}
+                  >
+                    {Object.values(filters).reduce((s, a) => s + a.length, 0)}
+                  </span>
+                )}
+              </button>
+              <span className="text-xs text-ink-400 font-sans ml-1">
+                {results.length} product{results.length !== 1 ? "s" : ""}
+              </span>
+              <div className="ml-auto">
+                <SortDropdown
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  hasQuery={!!debouncedQuery}
+                  hasPriceData={hasPriceData}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Active filter chips */}
@@ -691,31 +714,17 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
               onClearAll={clearAllFilters}
               mobileOpen={mobileFilterOpen}
               onMobileClose={() => setMobileFilterOpen(false)}
+              resultCount={results.length}
             />
 
             {/* Results */}
             <div className="flex-1 min-w-0">
-              {/* Toolbar */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  {/* Mobile filter button */}
-                  <button
-                    onClick={() => setMobileFilterOpen(true)}
-                    className="lg:hidden inline-flex items-center gap-1.5 border border-ink-200 text-ink-600 text-xs px-3 py-2 rounded-xl hover:border-teal-300 hover:text-teal-700 transition-colors"
-                  >
-                    <SlidersHorizontal size={13} />
-                    Filters
-                    {hasActiveFilters && (
-                      <span className="bg-teal-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-sans">
-                        {Object.values(filters).reduce((s, a) => s + a.length, 0)}
-                      </span>
-                    )}
-                  </button>
-                  <span className="text-xs text-ink-400 font-sans">
-                    {results.length} product{results.length !== 1 ? "s" : ""}
-                    {debouncedQuery ? ` for "${debouncedQuery}"` : ""}
-                  </span>
-                </div>
+              {/* Desktop toolbar */}
+              <div className="hidden lg:flex items-center justify-between mb-5">
+                <span className="text-xs text-ink-400 font-sans">
+                  {results.length} product{results.length !== 1 ? "s" : ""}
+                  {debouncedQuery ? ` for "${debouncedQuery}"` : ""}
+                </span>
                 <SortDropdown
                   value={sortBy}
                   onChange={handleSortChange}
@@ -790,7 +799,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
 
       {/* ── Comparison modal ── */}
       {showComparison && comparingProducts.length >= 2 && (
-        <ProductComparisonTable
+        <ComparisonDecisionEngine
           products={comparingProducts}
           onClose={() => setShowComparison(false)}
         />

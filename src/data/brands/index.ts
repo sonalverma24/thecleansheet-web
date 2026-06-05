@@ -8,11 +8,13 @@ import { antinormBrand } from "./antinorm";
 import { simpleBrand } from "./simple";
 import { mamaearthBrand } from "./mamaearth";
 import { codeskinBrand } from "./codeskin";
+import { deconstructBrand } from "./deconstruct";
+import { aqualogicaBrand } from "./aqualogica";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand, mamaearthBrand, codeskinBrand];
+export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand, mamaearthBrand, codeskinBrand, deconstructBrand, aqualogicaBrand];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);
