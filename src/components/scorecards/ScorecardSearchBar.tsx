@@ -31,10 +31,6 @@ export function ScorecardSearchBar({
     placeholderIdx.current += 1;
   };
 
-  useEffect(() => {
-    // Auto-focus on mount
-    inputRef.current?.focus();
-  }, []);
 
   return (
     <div className="relative">
