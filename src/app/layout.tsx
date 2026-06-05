@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppBubble from "@/components/WhatsAppBubble";
 import FormModal from "@/components/FormModal";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 /* Playfair Display, fallback for Cooper BT if browser hasn't loaded
    the self-hosted font yet (flash prevention). Cooper BT woff2 files
@@ -197,11 +198,13 @@ export default function RootLayout({
             }),
           }}
         />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <WhatsAppBubble />
-        <FormModal />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <WhatsAppBubble />
+          <FormModal />
+        </AuthProvider>
       </body>
     </html>
   );

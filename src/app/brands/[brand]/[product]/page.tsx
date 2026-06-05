@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown } from "lucide-react";
 import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar } from "@/data/brands";
 import { ProductHero } from "@/components/scorecards/ProductHero";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Static params + metadata
@@ -469,6 +470,7 @@ export default async function ProductPage({
         okCount={okCount}
         warnCount={warnCount}
         infoCount={infoCount}
+        brandSlug={brandSlug}
       />
 
       {/* ── Body ── */}
@@ -677,31 +679,7 @@ export default async function ProductPage({
         </section>
 
         {/* 5. Reviews */}
-        <section id="reviews">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Reviews</h2>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl border border-[#efe9e0] p-4 sm:p-5">
-            <div className="flex flex-col items-center text-center py-5">
-              <p className="text-sm font-medium text-[#282828] mb-1">Be the first to review this product</p>
-              <p className="text-xs text-[#b0a8a4] mb-5 max-w-xs">
-                Real experiences from people with your skin type help others make better decisions.
-              </p>
-              <a
-                href="https://forms.gle/placeholder"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#248179] text-white text-xs font-medium rounded-lg hover:bg-[#1e6b62] transition-colors"
-              >
-                Write a review
-                <ArrowRight size={12} />
-              </a>
-            </div>
-          </div>
-        </section>
+        <ReviewsSection productId={`${brandSlug}/${productSlug}`} />
 
         {/* 6. About this review — absorbs methodology + India context */}
         <section id="methodology">

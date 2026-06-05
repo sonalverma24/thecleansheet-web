@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ExternalLink, FlaskConical } from "lucide-react";
 import { getBrandBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
+import { BrandProductCard } from "@/components/scorecards/BrandProductCard";
 
 export function generateStaticParams() {
   return getAllBrandSummaries().map((b) => ({ brand: b.slug }));
@@ -66,36 +67,6 @@ function ScoreRing({ score, size = 72 }: { score: number; size?: number }) {
   );
 }
 
-function ProductScoreRing({ score, size = 56 }: { score: number; size?: number }) {
-  const sw = 5;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const c = scoreColors(score);
-  const logoSize = Math.round((r - sw / 2) * 2) - 1;
-  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
-  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
-  const br = Math.round(size * 0.145);
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-        <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
-      </div>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-        <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
-          {score}
-        </text>
-      </svg>
-    </div>
-  );
-}
 
 export default async function BrandPage({ params }: { params: Promise<{ brand: string }> }) {
   const { brand: slug } = await params;
@@ -233,70 +204,9 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
             {brand.products
               .sort((a, b) => b.score - a.score)
-              .map((product) => {
-                const pc = scoreColors(product.score);
-                return (
-                  <Link key={product.slug} href={`/brands/${slug}/${product.slug}`} className="group">
-                    <article className="border border-ink-100 hover:border-teal-200 rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-teal-900/8 transition-all duration-300 hover:-translate-y-0.5 bg-white h-full flex flex-col">
-                      {/* Product image */}
-                      <div className="relative aspect-square bg-ink-50 overflow-hidden">
-                        <Image
-                          src={product.image}
-                          alt={product.productName}
-                          fill
-                          className="object-contain p-2 sm:p-4 group-hover:scale-105 transition-transform duration-500"
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        />
-                        {/* Score badge */}
-                        <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5">
-                          <ProductScoreRing score={product.score} size={40} />
-                        </div>
-                        {/* Verdict badge */}
-                        <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 max-w-[45%]">
-                          <span className={`block truncate text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full border ${pc.bg} ${pc.text} ${pc.border}`}>
-                            {product.scoreLabel}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Info */}
-                      <div className="p-2.5 sm:p-4 flex flex-col flex-1">
-                        <h3 className="text-[11px] sm:text-sm font-medium text-ink-900 group-hover:text-teal-700 transition-colors leading-snug mb-1 sm:mb-1.5 line-clamp-2">
-                          {product.productName}
-                        </h3>
-                        <p className="hidden sm:block text-xs text-ink-400 mb-3 line-clamp-1">{product.concern}</p>
-
-                        {/* Badges */}
-                        <div className="mb-2 sm:mb-3 flex-1">
-                          {product.pass_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-sans text-[8px] sm:text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1 sm:px-1.5 py-0.5 rounded max-w-full truncate">
-                              {b}
-                            </span>
-                          ))}
-                          {product.warn_badges.slice(0, 1).map((b) => (
-                            <span key={b} className="inline-block mr-1 mb-1 font-sans text-[8px] sm:text-[9px] uppercase tracking-wider bg-red-50 text-red-600 border border-red-200 px-1 sm:px-1.5 py-0.5 rounded max-w-full truncate">
-                              {b}
-                            </span>
-                          ))}
-                          {/* Show second pass badge only on larger screens */}
-                          {product.pass_badges.slice(1, 2).map((b) => (
-                            <span key={b} className="hidden sm:inline-block mr-1 mb-1 font-sans text-[9px] uppercase tracking-wider bg-teal-50 text-teal-600 border border-teal-200 px-1.5 py-0.5 rounded max-w-full truncate">
-                              {b}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-ink-50 mt-auto">
-                          <span className="text-[10px] sm:text-xs text-ink-500">{product.priceRange}</span>
-                          <span className="text-teal-600 text-[10px] sm:text-xs font-medium flex items-center gap-0.5 group-hover:gap-1 transition-all">
-                            Details <ArrowRight size={10} />
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  </Link>
-                );
-              })}
+              .map((product) => (
+                <BrandProductCard key={product.slug} product={product} brandSlug={slug} />
+              ))}
           </div>
         </div>
 

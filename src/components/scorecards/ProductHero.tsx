@@ -13,6 +13,7 @@ import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { scoreColors } from "@/data/brands";
+import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Consumer Fit Statement
@@ -715,13 +716,14 @@ export interface ProductHeroProps {
   okCount: number;
   warnCount: number;
   infoCount: number;
+  brandSlug: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function ProductHero({ product, brand, okCount, warnCount, infoCount }: ProductHeroProps) {
+export function ProductHero({ product, brand, okCount, warnCount, infoCount, brandSlug }: ProductHeroProps) {
   const { bestFor, cautionIf } = getQuickDecision(product);
   const priceDisplay = formatPrice(product);
   const analysedDisplay = formatAnalysedDate(product.analyzedAt);
@@ -939,33 +941,8 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount }: P
             {/* Spacer for badge overlap */}
             <div className="h-8" />
 
-            {/* Action buttons */}
-            <div className="flex gap-2">
-              <Link
-                href="#reviews"
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#248179] hover:bg-[#1e6b62] text-white text-xs py-2.5 rounded-xl transition-colors"
-              >
-                Add Review
-              </Link>
-              <Link
-                href="/brands"
-                className="flex items-center justify-center gap-1.5 border border-[#efe9e0] bg-white hover:border-[#248179]/30 text-[#282828] text-xs py-2.5 px-4 rounded-xl transition-colors"
-              >
-                Compare
-              </Link>
-            </div>
-
-            {/* Star rating — clickable to reviews */}
-            <Link href="#reviews" className="flex items-center gap-2 group">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
-                <path d="M9 1.5l2.09 4.24 4.67.68-3.38 3.29.8 4.65L9 11.9l-4.18 2.46.8-4.65L2.24 6.42l4.67-.68z"
-                  fill="#fd6158" />
-              </svg>
-              <span className="text-sm text-[#282828]">—</span>
-              <span className="text-xs text-[#b0a8a4] group-hover:text-[#248179] transition-colors">
-                No reviews yet
-              </span>
-            </Link>
+            {/* Live review actions (Add Review button + rating display) */}
+            <HeroActions productId={`${brandSlug}/${product.slug}`} />
 
             {/* Buy Now */}
             <div>
