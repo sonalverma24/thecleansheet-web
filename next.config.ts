@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "aqualogica.in" },
       { protocol: "https", hostname: "thedermaco.com" },
       { protocol: "https", hostname: "lotusherbals.com" },
+      { protocol: "https", hostname: "www.lotus.in" },
     ],
     dangerouslyAllowSVG: true,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

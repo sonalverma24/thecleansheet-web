@@ -29,7 +29,7 @@ const products: ProductScorecard[] = [
     summary: "Lotus Herbals' flagship Whiteglow moisturiser and one of India's best-selling skincare products. A hybrid gel-cream that combines SPF 25 PA+++ sun protection with a brightening complex built around Mulberry Extract (Morus Alba), Saxifraga Sarmentosa (White Strawberry) Extract, and Milk Enzymes. SPF 25 is at the lower end of recommended daily protection — adequate for minimal incidental UV exposure but insufficient for prolonged outdoor use. The formula uses Titanium Dioxide as a physical UV filter. Contains synthetic fragrance — a notable point for fragrance-sensitive users. Niacinamide is not listed; brightening relies on botanical extract tyrosinase inhibition rather than actives-first formulation. Full INCI is not consistently disclosed on all product packagings.",
     score: 68,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/WHITEGLOW-SPF25.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/WG_brightening_Gel_creme_01_4e521ffb-5931-4a7f-b8bd-a6344d4ef799.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -103,7 +103,7 @@ const products: ProductScorecard[] = [
     summary: "A 3-in-1 cleanser, scrub, and brightening formula in one from Lotus Herbals' Whiteglow range. The formula incorporates Walnut Shell Powder as a physical exfoliant — a contested ingredient in facial scrubs; the American Academy of Dermatology advises against abrasive scrubs on the face due to micro-tear potential. Mulberry Extract and Milk Enzymes continue the brightening approach from the Whiteglow range. Surfactant system uses Sodium Laureth Sulfate (SLES) as primary surfactant — a standard anionic surfactant that can be drying for sensitive or dry skin types. Contains synthetic fragrance. The 3-in-1 claim covers cleansing, exfoliation via Walnut Shell Powder, and brightening via botanical extracts.",
     score: 62,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/WHITEGLOW-FACEWASH.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/02_FOP.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -175,7 +175,7 @@ const products: ProductScorecard[] = [
     summary: "Lotus Herbals' flagship anti-ageing moisturiser with SPF 25. The Gineplex Youth Compound is the brand's proprietary anti-ageing complex, containing Ginseng Extract (Panax Ginseng), Epidermal Growth Factor (EGF, via Oligopeptide-1), and Phytosterols. EGF (Oligopeptide-1) is a growth factor peptide that stimulates cell proliferation and collagen synthesis — a clinically supported anti-ageing active. Phytosterols from plant sources support barrier function. The SPF 25 uses Titanium Dioxide (physical) combined with chemical filters. Contains synthetic fragrance. One of the more interesting anti-ageing formulas in the Indian mass-market segment for its EGF inclusion.",
     score: 72,
     scoreLabel: "Good",
-    image: "https://lotusherbals.com/cdn/shop/files/YOUTHRX-CREME.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/YouthRXantiageingdaycream.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -249,7 +249,7 @@ const products: ProductScorecard[] = [
     summary: "A lightweight gel-format SPF 50 PA+++ sunscreen from Lotus Herbals' Safe Sun line. The matte-gel texture uses Tapioca Starch or Silica-based oil absorbers for a non-greasy finish suited to oily and combination skin. UV filters include chemical actives — the specific filter combination is not fully published on all labelling. PA+++ (PPD >= 8) provides good UVA protection, though PA++++ (PPD >= 16) is now the recommended standard for Indian conditions. Aqua-gel formulation is appropriate for India's humid climate. Contains synthetic fragrance.",
     score: 70,
     scoreLabel: "Good",
-    image: "https://lotusherbals.com/cdn/shop/files/SAFE-SUN-MATTE-GEL-SPF50.jpg",
+    image: "https://www.lotus.in/cdn/shop/products/uv-screen-mattegel-spf-50-pa-648526_d5d81f8f-34c4-469d-9b81-c6e7e57bea70.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -318,7 +318,7 @@ const products: ProductScorecard[] = [
     summary: "Lotus Herbals' entry into the Vitamin C serum category, part of the Radiant Choice range. The Vitamin C form used is not confirmed on public-facing product pages — key information for assessing formula stability in India's heat. The brightening complex combines Vitamin C with Turmeric Extract (Curcuma Longa), Saffron Extract, and Hyaluronic Acid. Curcumin in Turmeric has published brightening and anti-inflammatory data. Saffron Extract contains safranal and crocin with antioxidant and mild brightening properties. Fragrance is present. Full INCI is not published on the product page reviewed — active concentrations are not disclosed.",
     score: 65,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/RADIANT-CHOICE-VIT-C-SERUM.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/B09R49T16G_1.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -390,7 +390,7 @@ const products: ProductScorecard[] = [
     summary: "An oil-control face wash with Salicylic Acid and Kaolin Clay. Salicylic Acid in a rinse-off format provides BHA pore-clearing action with reduced contact time vs leave-on. Kaolin Clay is a naturally occurring mineral that absorbs excess sebum during cleansing. Tea Tree Oil (Melaleuca Alternifolia) has published antimicrobial activity against C. acnes. The surfactant system and SLES presence are noted below. Contains synthetic fragrance. Active concentrations not disclosed.",
     score: 65,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/MATTE-MAGIC-FACEWASH.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/02_272a3664-cbb3-4fc9-906d-20da41040fef.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -462,7 +462,7 @@ const products: ProductScorecard[] = [
     summary: "Lotus Herbals' highest SPF offering in the Safe Sun range at SPF 70 PA+++. The higher SPF is achieved through a higher UV filter concentration or additional filters versus the SPF 50 formula. PA+++ (PPD >= 8) remains below the PA++++ standard increasingly recommended for Indian conditions. UV filter identities are not fully disclosed on reviewed product labelling. Contains synthetic fragrance in a leave-on sun protection product. Limited transparency overall but strong SPF claim for outdoor protection.",
     score: 66,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/SAFE-SUN-SPF70.jpg",
+    image: "https://www.lotus.in/cdn/shop/products/SPF70_Frontcopy2.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -529,7 +529,7 @@ const products: ProductScorecard[] = [
     summary: "A dual-action brightening and anti-ageing serum combining Vitamin C, Hyaluronic Acid, Niacinamide, and Retinol in a single product. The multi-active approach is ambitious — combining retinol and Vitamin C in one formula presents formulation stability challenges unless specific pH stabilisation strategies are employed. Full INCI and active concentrations are not disclosed. If the formula pH is calibrated for retinol stability (~5.5-6), it may not be optimal for Vitamin C efficacy (typically <3.5 for L-ascorbic acid). Without knowing the Vitamin C form, stability assessment is not possible. Contains synthetic fragrance.",
     score: 63,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/SKIN-PERFECT-SERUM.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/Yrxfaceserum_72991bc1-0504-4e16-af66-92d1eae31e60.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -601,7 +601,7 @@ const products: ProductScorecard[] = [
     summary: "An overnight sleep mask from the Whiteglow range combining the brand's Mulberry Extract and Milk Enzyme brightening complex with a gel-creme texture designed for overnight use. Higher contact time versus daytime moisturisers allows better absorption of botanical actives. Hyaluronic Acid is included for overnight hydration. The product uses the same Whiteglow botanical brightening complex. Contains synthetic fragrance. Full INCI not published on reviewed labelling. Suitable as an occasional-use overnight treatment or a daily overnight step.",
     score: 66,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/WHITEGLOW-SLEEP-MASK.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/WhiteGlow_Advanced_Pink_Glow_Face_Masque.png",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -673,7 +673,7 @@ const products: ProductScorecard[] = [
     summary: "A brightening face wash from the Radiant Choice line combining Vitamin C and Turmeric (Curcuma Longa) as the primary actives. Both are rinsed off during cleansing — their brightening efficacy in a wash-off format is limited compared to leave-on products. The formula includes Glycerin for moisture and a surfactant system. Turmeric's curcumin has mild brightening, anti-inflammatory, and antioxidant properties but staining risk at high concentrations in rinse-off is minimal due to the short contact time. Contains synthetic fragrance. Full INCI not published.",
     score: 64,
     scoreLabel: "Fair",
-    image: "https://lotusherbals.com/cdn/shop/files/RADIANT-CHOICE-VIT-C-FACEWASH.jpg",
+    image: "https://www.lotus.in/cdn/shop/files/UbtanfaceWash01copy_2e6e2708-14c2-49e1-8e62-d306bff1aa14.jpg",
     pillars: [
       {
         name: "Safety & Toxicity",
@@ -733,7 +733,7 @@ const products: ProductScorecard[] = [
 export const lotusHerbalsBrand: Brand = {
   name: "Lotus Herbals",
   slug: "lotus-herbals",
-  logo: "https://lotusherbals.com/cdn/shop/files/lotus-herbals-logo.png",
+  logo: "https://cdn.shopify.com/s/files/1/0428/8063/0937/files/LH-logo.png?v=1736943839",
   tagline: "India's original herbal beauty brand since 1993",
   description: "Lotus Herbals is one of India's oldest and largest herbal skincare brands, founded in 1993 by Kamal Passi in New Delhi. With over three decades of presence across pharmacies, supermarkets, and beauty counters, Lotus is a household name built on botanical and plant-derived formulations. The brand's product range spans skincare, sun protection, and colour cosmetics. Lotus products are widely accessible at mass-market price points. Note: Lotus Herbals does not consistently publish full INCI ingredient lists across all product formats — transparency is an area where the brand trails newer actives-first Indian labels. Most formulas contain synthetic fragrance.",
   founded: "1993",
