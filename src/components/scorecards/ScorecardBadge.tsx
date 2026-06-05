@@ -32,18 +32,18 @@ export function ScorecardBadge({
 
   const sizeClasses =
     size === "md"
-      ? "text-[11px] px-2.5 py-1 gap-1.5"
-      : "text-[10px] px-2 py-0.5 gap-1";
+      ? "text-[11px] px-2.5 py-1 gap-1.5 max-w-[140px]"
+      : "text-[10px] px-2 py-0.5 gap-1 max-w-[110px]";
 
   const iconSize = size === "md" ? 11 : 10;
 
   return (
     <span
-      title={tooltip}
-      className={`inline-flex items-center rounded-full border font-normal whitespace-nowrap ${colorClasses} ${sizeClasses}`}
+      title={tooltip ?? label}
+      className={`inline-flex items-center rounded-full border font-normal overflow-hidden ${colorClasses} ${sizeClasses}`}
     >
-      <Icon size={iconSize} strokeWidth={2} aria-hidden />
-      {label}
+      <Icon size={iconSize} strokeWidth={2} className="shrink-0" aria-hidden />
+      <span className="truncate">{label}</span>
     </span>
   );
 }
