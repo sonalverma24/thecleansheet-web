@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { ScorecardBadge } from "./ScorecardBadge";
 import { scoreColors } from "@/data/brands";
 import type { ProductScorecard } from "@/data/brands/types";
@@ -104,11 +103,8 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2 border-t border-ink-50 mt-auto">
+          <div className="pt-2 border-t border-ink-50 mt-auto">
             <span className="font-semibold text-ink-900 tabular-nums text-sm leading-tight">{product.priceRange}</span>
-            <span className="text-teal-600 text-xs font-medium flex items-center gap-0.5 group-hover:gap-1 transition-all">
-              Details <ArrowRight size={10} />
-            </span>
           </div>
         </div>
       </article>

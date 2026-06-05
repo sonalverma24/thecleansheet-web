@@ -634,14 +634,11 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
                         {brand.tagline}
                       </p>
                       <CleanMeter score={brand.avgScore} />
-                      <div className="flex items-center justify-between pt-4 mt-4 border-t border-ink-50">
+                      <div className="flex items-center pt-4 mt-4 border-t border-ink-50">
                         <div className="flex items-center gap-1.5 text-xs text-ink-400">
                           <FlaskConical size={12} />
                           {brand.productCount} products scored
                         </div>
-                        <span className="flex items-center gap-1 text-teal-600 text-xs font-medium group-hover:gap-2 transition-all">
-                          View scorecards <ArrowRight size={12} />
-                        </span>
                       </div>
                     </div>
                   </article>
