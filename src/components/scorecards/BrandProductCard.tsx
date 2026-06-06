@@ -15,9 +15,7 @@ interface BrandProductCardProps {
 
 export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) {
   const pc = scoreColors(product.score);
-  const allBadges = getCardBadges(product);
-  const cardBadges = allBadges.slice(0, 2);
-  const extraBadgeCount = allBadges.length - 2;
+  const cardBadges = getCardBadges(product);
   const categoryLabel = getProductCategoryLabel(product);
   const isPending = categoryLabel === "Category Pending";
 
@@ -47,7 +45,7 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
               <span style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 700,
-                fontSize: 16,
+                fontSize: 24,
                 color: pc.ring,
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
@@ -83,23 +81,19 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             {product.productName}
           </h3>
 
-          {/* Badges */}
+          {/* Badges — max 3, one per type (active / for / watch) */}
           {cardBadges.length > 0 && (
-            <div className="flex flex-nowrap items-center gap-1.5 mb-2 h-6 overflow-hidden">
+            <div className="flex gap-1 mb-2 h-6 overflow-hidden">
               {cardBadges.map((badge) => (
-                <ScorecardBadge
-                  key={badge.id}
-                  family={badge.family}
-                  label={badge.label}
-                  icon={badge.icon}
-                  tooltip={badge.tooltip}
-                />
+                <div key={badge.id} className="flex-1 min-w-0 flex">
+                  <ScorecardBadge
+                    family={badge.family}
+                    label={badge.label}
+                    icon={badge.icon}
+                    tooltip={badge.tooltip}
+                  />
+                </div>
               ))}
-              {extraBadgeCount > 0 && (
-                <span className="shrink-0 text-[10px] leading-none" style={{ color: "#b0a8a4" }}>
-                  +{extraBadgeCount}
-                </span>
-              )}
             </div>
           )}
 

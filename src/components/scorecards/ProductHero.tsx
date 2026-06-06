@@ -637,6 +637,7 @@ function formatAnalysedDate(isoDate: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
+  const { ring } = scoreColors(score);
   return (
     <div
       className="relative flex-shrink-0"
@@ -652,17 +653,18 @@ function ScoreBadge({ score }: { score: number }) {
         className="w-full h-full object-contain"
         priority
       />
-      {/* Score number overlaid in centre */}
+      {/* Score number overlaid in centre, coloured by grade */}
       <div
         className="absolute inset-0 flex items-center justify-center"
-        style={{ paddingTop: "8px" }} /* nudge down into the open centre space */
+        style={{ paddingTop: "8px" }}
       >
         <span
-          className="text-[#1a1a1a] leading-none select-none"
+          className="leading-none select-none"
           style={{
             fontFamily: "'Cooper BT', sans-serif",
             fontSize: "52px",
             fontWeight: 700,
+            color: ring,
           }}
         >
           {score}

@@ -286,16 +286,15 @@ export function resolveBadges(product: ProductScorecard): BadgeDefinition[] {
 // ── Card selection ────────────────────────────────────────────────────────────
 
 /**
- * Select up to 6 badges for a product card following the display priority spec:
- *   1. Best certification/verification badge
- *   2. Hero active badge
- *   3. Second active badge
- *   4. Best free_from or suitability badge
- *   5. Best ethics badge
- *   6. Highest-priority caution badge
+ * Select exactly up to 3 badges for a product card — one per type:
  *
- * Slots are filled in order; if a family has no matching badge the slot is skipped.
- * Result is at most 6 badges, in the order above.
+ *   Slot 1 — ACTIVE:       Hero key ingredient (what the product does)
+ *   Slot 2 — FOR:          Best free_from or suitability signal (who it is for)
+ *   Slot 3 — WATCH:        Most important caution; fallback to premium
+ *                          verification (not INCI_VERIFIED) or second active
+ *
+ * At most one badge per slot. Empty slots are skipped. No overflow count —
+ * the three slots are already the full editorial selection for the tile.
  */
 export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const all = resolveBadges(product);
@@ -303,32 +302,30 @@ export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const byFamily = (family: BadgeDefinition["family"]) =>
     all.filter((b) => b.family === family);
 
-  // INCI_VERIFIED is present on almost every product and adds no differentiating
-  // signal on a tile. Show it only on detail pages. More meaningful verification
-  // badges (TCS_CERTIFIED, SPF_VERIFIED, etc.) are still surfaced.
-  const verification = byFamily("verification").find((b) => b.id !== "INCI_VERIFIED");
-  const actives      = byFamily("active").slice(0, 2);
+  // Slot 1: hero active ingredient
+  const active = byFamily("active")[0];
+
+  // Slot 2: best free_from or suitability signal
   const freeFromOrSuit = [
     ...byFamily("free_from"),
     ...byFamily("suitability"),
   ].sort((a, b) => a.priority - b.priority)[0];
-  const ethics   = byFamily("ethics")[0];
-  const value    = byFamily("value")[0];
-  const caution  = byFamily("caution")[0];
 
-  const selected: BadgeDefinition[] = [
-    ...actives,
-    freeFromOrSuit,
-    verification,
-    ethics ?? value,
-    caution,
-  ].filter((b): b is BadgeDefinition => b !== undefined);
+  // Slot 3: caution first; then premium verification (not INCI_VERIFIED);
+  // then second active as a last resort
+  const caution       = byFamily("caution")[0];
+  const verification  = byFamily("verification").find((b) => b.id !== "INCI_VERIFIED");
+  const secondActive  = byFamily("active")[1];
+  const slot3         = caution ?? verification ?? secondActive;
 
-  // Deduplicate (same badge could appear in multiple slots edge case)
+  const selected: BadgeDefinition[] = [active, freeFromOrSuit, slot3]
+    .filter((b): b is BadgeDefinition => b !== undefined);
+
+  // Deduplicate (edge case: same badge could win multiple slots)
   const seen = new Set<string>();
   return selected.filter((b) => {
     if (seen.has(b.id)) return false;
     seen.add(b.id);
     return true;
-  }).slice(0, 6);
+  });
 }

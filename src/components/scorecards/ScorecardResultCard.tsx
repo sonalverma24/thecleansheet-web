@@ -28,10 +28,7 @@ export function ScorecardResultCard({
   const productId = `${product.brandSlug}/${product.slug}`;
   const canCompare = isComparing || compareCount < 4;
 
-  const allBadges = getCardBadges(product);
-  const MAX_BADGES = 2;
-  const cardBadges = allBadges.slice(0, MAX_BADGES);
-  const extraBadgeCount = allBadges.length - MAX_BADGES;
+  const cardBadges = getCardBadges(product);
   const categoryLabel = getProductCategoryLabel(product);
   const displayPrice = getDisplayPrice(product);
   const isPending = categoryLabel === "Category Pending";
@@ -72,7 +69,7 @@ export function ScorecardResultCard({
               <span style={{
                 fontFamily: "var(--font-display)",
                 fontWeight: 700,
-                fontSize: 16,
+                fontSize: 24,
                 color: c.ring,
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
@@ -115,26 +112,19 @@ export function ScorecardResultCard({
             </h3>
           </div>
 
-          {/* Taxonomy badges (max 2; remainder shown as +N) */}
+          {/* Badges — max 3, one per type (active / for / watch) */}
           {cardBadges.length > 0 && (
-            <div className="flex flex-nowrap items-center gap-1.5 mb-2 h-6 overflow-hidden">
+            <div className="flex gap-1 mb-2 h-6 overflow-hidden">
               {cardBadges.map((badge) => (
-                <ScorecardBadge
-                  key={badge.id}
-                  family={badge.family}
-                  label={badge.label}
-                  icon={badge.icon}
-                  tooltip={badge.tooltip}
-                />
+                <div key={badge.id} className="flex-1 min-w-0 flex">
+                  <ScorecardBadge
+                    family={badge.family}
+                    label={badge.label}
+                    icon={badge.icon}
+                    tooltip={badge.tooltip}
+                  />
+                </div>
               ))}
-              {extraBadgeCount > 0 && (
-                <span
-                  className="shrink-0 text-[10px] leading-none"
-                  style={{ color: "#b0a8a4" }}
-                >
-                  +{extraBadgeCount}
-                </span>
-              )}
             </div>
           )}
 

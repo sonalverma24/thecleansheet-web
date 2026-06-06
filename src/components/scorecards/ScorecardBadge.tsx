@@ -33,7 +33,7 @@ export function ScorecardBadge({
   const sizeClasses =
     size === "md"
       ? "text-[11px] px-2.5 py-1 gap-1.5 max-w-[140px]"
-      : "text-[10px] h-6 px-2 gap-1 leading-none max-w-[120px]";
+      : "text-[10px] h-6 w-full px-2 gap-1 leading-none";
 
   const iconSize = size === "md" ? 11 : 10;
 
@@ -43,7 +43,7 @@ export function ScorecardBadge({
       className={`inline-flex items-center rounded-full border font-normal overflow-hidden ${colorClasses} ${sizeClasses}`}
     >
       <Icon size={iconSize} strokeWidth={2} className="shrink-0" aria-hidden />
-      <span className="truncate">{label}</span>
+      <span className="truncate min-w-0">{label}</span>
     </span>
   );
 }
