@@ -117,7 +117,7 @@ export function ScorecardResultCard({
 
           {/* Taxonomy badges (max 2; remainder shown as +N) */}
           {cardBadges.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2 flex-1">
+            <div className="flex flex-nowrap items-center gap-1.5 mb-2 h-6 overflow-hidden">
               {cardBadges.map((badge) => (
                 <ScorecardBadge
                   key={badge.id}
@@ -129,8 +129,8 @@ export function ScorecardResultCard({
               ))}
               {extraBadgeCount > 0 && (
                 <span
-                  className="inline-flex items-center self-center"
-                  style={{ fontSize: 10, color: "#b0a8a4" }}
+                  className="shrink-0 text-[10px] leading-none"
+                  style={{ color: "#b0a8a4" }}
                 >
                   +{extraBadgeCount}
                 </span>

@@ -33,7 +33,7 @@ export function ScorecardBadge({
   const sizeClasses =
     size === "md"
       ? "text-[11px] px-2.5 py-1 gap-1.5 max-w-[140px]"
-      : "text-[10px] px-2 py-0.5 gap-1 max-w-[110px]";
+      : "text-[10px] h-6 px-2 gap-1 leading-none max-w-[120px]";
 
   const iconSize = size === "md" ? 11 : 10;
 

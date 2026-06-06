@@ -303,7 +303,10 @@ export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const byFamily = (family: BadgeDefinition["family"]) =>
     all.filter((b) => b.family === family);
 
-  const verification = byFamily("verification")[0];
+  // INCI_VERIFIED is present on almost every product and adds no differentiating
+  // signal on a tile. Show it only on detail pages. More meaningful verification
+  // badges (TCS_CERTIFIED, SPF_VERIFIED, etc.) are still surfaced.
+  const verification = byFamily("verification").find((b) => b.id !== "INCI_VERIFIED");
   const actives      = byFamily("active").slice(0, 2);
   const freeFromOrSuit = [
     ...byFamily("free_from"),
@@ -314,9 +317,9 @@ export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const caution  = byFamily("caution")[0];
 
   const selected: BadgeDefinition[] = [
-    verification,
     ...actives,
     freeFromOrSuit,
+    verification,
     ethics ?? value,
     caution,
   ].filter((b): b is BadgeDefinition => b !== undefined);
