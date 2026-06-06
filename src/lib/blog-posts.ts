@@ -25,6 +25,278 @@ export type BlogBlock =
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "last-week-in-beauty-may-30-june-5-2026",
+    category: "Industry",
+    readTime: "18 min read",
+    date: "June 5, 2026",
+    title: "Last Week in Beauty",
+    subtitle: "May 30 to June 5, 2026. The global signals that matter for India.",
+    excerpt: "Beauty news often looks global on the surface. But if you read the signals closely, most of these stories matter for India too. Here is what mattered this week.",
+    author: "The Clean Sheet Team",
+    image: "/images/last-week-in-beauty-june-5.jpg",
+    content: [
+      {
+        type: "paragraph",
+        text: "Beauty news often looks global on the surface.",
+      },
+      {
+        type: "paragraph",
+        text: "A retailer reports stronger numbers in the US. A luxury group evaluates acquisitions in Europe. A beauty giant moves leadership around. A brand adjusts pricing because of tariffs.",
+      },
+      {
+        type: "paragraph",
+        text: "But if you read the signals closely, most of these stories matter for India too.",
+      },
+      {
+        type: "paragraph",
+        text: "India is now one of the most interesting beauty markets in the world because it has everything happening at once: premiumisation, price pressure, influencer-led discovery, ingredient awareness, quick-commerce buying, dermatologist content, and a growing trust gap between what brands claim and what consumers can verify.",
+      },
+      {
+        type: "paragraph",
+        text: "Here is what mattered this week.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Ulta's strong quarter shows why beauty retail is becoming more selective",
+      },
+      {
+        type: "paragraph",
+        text: "Ulta Beauty reported a strong first quarter, with net sales rising to $3.2 billion and comparable sales growing 5.3 percent. The growth came from stronger transactions, higher average ticket size, prestige beauty, fragrance, celebrity-led brands, social commerce, and AI-supported discovery.",
+      },
+      {
+        type: "paragraph",
+        text: "For India, the point is not Ulta itself. The point is what this says about beauty retail.",
+      },
+      {
+        type: "callout",
+        text: "Retailers are no longer just shelves. They are discovery engines.",
+      },
+      {
+        type: "paragraph",
+        text: "In India, Nykaa, Tira, Myntra, Amazon, Blinkit, Zepto, pharmacy chains, salon retail, and brand-owned D2C websites are all fighting for the same consumer attention. The consumer may discover a serum on Instagram, compare it on Nykaa, check reviews on Amazon, ask a friend on WhatsApp, and then buy it on quick commerce if she needs it tonight.",
+      },
+      {
+        type: "paragraph",
+        text: "That makes one thing very clear for brands: being listed is not enough.",
+      },
+      {
+        type: "paragraph",
+        text: "A product needs a reason to be chosen quickly. The old reasons were discount, packaging, influencer visibility, or dermatologist mention. Those still matter. But the next layer is proof.",
+      },
+      {
+        type: "paragraph",
+        text: "If two sunscreens both say SPF 50, PA++++, non-comedogenic, dermatologist tested, no white cast, and suitable for oily skin, the consumer needs a better way to compare them. Which finished product was tested? Which claim is supported? Which claim is just label language?",
+      },
+      {
+        type: "paragraph",
+        text: "That is where Indian beauty retail will have to evolve.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Estee Lauder's M&A discipline is a warning for founder-led Indian brands",
+      },
+      {
+        type: "paragraph",
+        text: "Estee Lauder's proposed deal with Puig did not go through, reportedly because of valuation. The company is still open to acquisitions, but only where the price, growth, and profitability make sense.",
+      },
+      {
+        type: "paragraph",
+        text: "This matters for Indian D2C beauty because many founder-led brands are still built around the idea that attention can become acquisition value. It can. But not always.",
+      },
+      {
+        type: "paragraph",
+        text: "A brand can have a beautiful Instagram page, a few viral products, strong founder storytelling, and still struggle when a larger group asks harder questions.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "What is the repeat rate?",
+          "What is the gross margin after discounts?",
+          "Are the claims defensible?",
+          "Is the manufacturer reliable?",
+          "Are the actives stable through shelf life?",
+          "Does the brand own any real product advantage, or only demand?",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "For India, this is especially important because the D2C beauty market is crowded. We have many brands saying similar things: clean, toxin-free, dermatologist-tested, science-backed, natural, Ayurvedic, active-led, clinically proven.",
+      },
+      {
+        type: "paragraph",
+        text: "The brands that will become acquirable are not the ones with the loudest claims. They are the ones with better product discipline, better documentation, cleaner claim language, and proof that survives diligence.",
+      },
+      {
+        type: "callout",
+        text: "A viral product may get a term sheet conversation started. A well-documented product can help close it.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Sephora Collection's leadership reset shows the power of retailer-owned beauty",
+      },
+      {
+        type: "paragraph",
+        text: "LVMH appointed Sylvia Tournery, formerly a senior Lancome executive, to lead Sephora Collection. This matters because Sephora Collection is no longer just a basic private label. It is a serious owned-brand platform inside one of the strongest beauty retail ecosystems in the world.",
+      },
+      {
+        type: "paragraph",
+        text: "India should watch this closely.",
+      },
+      {
+        type: "paragraph",
+        text: "Retailer-owned beauty is coming for the same space as indie beauty. It has data that independent brands do not have: what consumers search for, what they compare, what they abandon, what they repurchase, and which price points convert.",
+      },
+      {
+        type: "paragraph",
+        text: "In India, this could become relevant for platforms like Nykaa, Tira, Amazon, and quick-commerce channels. If a retailer knows that Indian consumers are searching for barrier repair moisturisers under Rs. 700, fragrance-free body washes, lip tints under Rs. 500, mineral sunscreens, pregnancy-safe skincare, or scalp serums, it can build products around that demand.",
+      },
+      {
+        type: "paragraph",
+        text: "But retailer-owned products still need credibility. Shelf power can create trial. It cannot guarantee trust.",
+      },
+      {
+        type: "paragraph",
+        text: "Consumers will still ask the same questions: what is in the product, what was tested, who is it suitable for, and what should I be careful about?",
+      },
+      {
+        type: "paragraph",
+        text: "For Indian brands, this is a reminder that distribution advantage can shift quickly. Product proof is harder to copy.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "e.l.f.'s pricing move is relevant to India's value beauty race",
+      },
+      {
+        type: "paragraph",
+        text: "e.l.f. Beauty expects tariff refunds and plans to use part of that money to reduce prices on selected products. That may sound like a US supply-chain story, but the larger point is very relevant to India.",
+      },
+      {
+        type: "paragraph",
+        text: "Beauty shoppers care about price. Even premium shoppers care about value.",
+      },
+      {
+        type: "paragraph",
+        text: "In India, the consumer may buy a Rs. 2,500 serum, but she will still ask whether it is worth it. She may buy a Rs. 399 sunscreen, but she will still expect it to work. She may choose a Rs. 199 lip tint on impulse, but she will still judge texture, staying power, irritation, and shade payoff.",
+      },
+      {
+        type: "paragraph",
+        text: "This is why Indian beauty has a strange tension right now. Consumers want better products, but they are not always willing to pay blindly. They want dermat-backed claims, Korean-style textures, premium packaging, safe actives, and visible results. But they also compare price per ml, wait for discounts, and switch brands fast.",
+      },
+      {
+        type: "paragraph",
+        text: "For brands, the lesson from e.l.f. is useful: affordability can be a serious strategy when it is paired with consistency.",
+      },
+      {
+        type: "callout",
+        text: "A low price does not excuse weak claims. A high price does not prove quality.",
+      },
+      {
+        type: "paragraph",
+        text: "In India, the sharper question will be: what does the consumer get for the price? Is it better testing, better texture, better packaging, better stability, better ingredients, or just better marketing?",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Asia's beauty influence is no longer a trend. It is the operating model.",
+      },
+      {
+        type: "paragraph",
+        text: "South Korea reportedly overtook the US in cosmetics exports, reaching $11.4 billion. Olive Young continued its US expansion. Chinese beauty group Proya acquired a controlling stake in Flower Knows.",
+      },
+      {
+        type: "paragraph",
+        text: "This matters for India because Asian beauty has already changed what Indian consumers expect. K-beauty made Indian consumers more aware of sunscreens, essences, barrier creams, ampoules, cleansing balms, cica, ceramides, niacinamide, lightweight textures, and routine-building. Chinese beauty is showing how fast packaging, colour cosmetics, storytelling, and social commerce can move. Japanese beauty continues to influence sunscreen, cleansing, and minimal routines.",
+      },
+      {
+        type: "paragraph",
+        text: "India is not outside this movement. It is part of it.",
+      },
+      {
+        type: "paragraph",
+        text: "But India has its own use case. Hot weather, humidity, pollution, sweat, pigmentation, acne marks, melasma, tanning, scalp concerns, hard water, diverse skin tones, and very different price bands.",
+      },
+      {
+        type: "paragraph",
+        text: "Copying Korean or Chinese beauty formats is not enough.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "An Indian sunscreen needs to work in Indian heat.",
+          "An Indian moisturiser needs to make sense for humid cities and dry climates.",
+          "An Indian pigmentation product needs to be careful with claims, irritation risk, and realistic timelines.",
+          "An Indian baby care product needs a much higher proof standard than a soft label and pastel packaging.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "The opportunity for India is not to imitate Asia. It is to build products that are tested for Indian consumer reality.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "What The Clean Sheet is watching",
+      },
+      {
+        type: "paragraph",
+        text: "The strongest signal this week is that beauty is becoming more demanding at every level.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Retailers want products that convert.",
+          "Investors want brands that can survive diligence.",
+          "Consumers want results without confusion.",
+          "Founders want scale without losing credibility.",
+          "Platforms want fewer weak claims and fewer complaints.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "India has already solved beauty discovery. We have influencers, marketplaces, dermatologists on Instagram, quick commerce, founder-led brands, and endless product launches.",
+      },
+      {
+        type: "paragraph",
+        text: "What India has not solved yet is verification.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "A consumer can see SPF 50 on the front of a sunscreen, but may not know whether the finished product was tested properly.",
+          "A serum can say 10 percent niacinamide, but the buyer may not know whether the active was assayed in the finished formula.",
+          "A baby lotion can say gentle, but the parent may not know whether fragrance allergens, preservative system, pH, microbial safety, and stability were properly checked.",
+          "A product can say dermatologist tested, but the consumer may not know whether that means a real study, a patch test, or just a formula review.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "This is the gap India now needs to close.",
+      },
+      {
+        type: "paragraph",
+        text: "The next phase of Indian beauty will not only be about more brands, better packaging, faster launches, or bigger influencer campaigns.",
+      },
+      {
+        type: "paragraph",
+        text: "It will be about proof that consumers can actually understand.",
+      },
+      {
+        type: "callout",
+        text: "The Indian beauty market is not short of choice. It is short of certainty.",
+      },
+      {
+        type: "cta",
+        text: "Is your brand ready for the next phase of Indian beauty? The Clean Sheet founding cohort is open now.",
+        href: "/certification",
+        label: "Apply for Certification",
+      },
+    ],
+  },
+  {
     slug: "the-concentration-illusion",
     category: "Science",
     readTime: "15 min read",
