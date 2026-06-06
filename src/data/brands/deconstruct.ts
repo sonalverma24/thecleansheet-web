@@ -106,7 +106,7 @@ const products: ProductScorecard[] = [
     productType: "leave-on",
     concern: "Acne, blackheads, excess oil, open pores, skin texture",
     summary: "A leave-on BHA serum with Salicylic Acid at a brand-confirmed 2% (the maximum permitted OTC concentration in India and the EU) and Niacinamide at a brand-confirmed 3%. The formula uses Liposomal Technology for the Salicylic Acid delivery - encapsulating the BHA in phospholipid liposomes that improve skin penetration and reduce surface irritation by releasing the active more gradually. Niacinamide at 3% independently regulates sebum production and reduces the inflammation associated with acne. The combination of a pore-clearing BHA with a sebum-regulating B vitamin targets both the symptom (blocked pores) and the cause (excess oil). Fragrance-free and alcohol-free.",
-    score: 87,
+    score: 86,
     scoreLabel: "Good",
     image: "https://thedeconstruct.in/cdn/shop/files/nicenamide_serum.png?v=1780034534",
     pillars: [

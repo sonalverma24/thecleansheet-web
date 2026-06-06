@@ -395,7 +395,7 @@ const products: ProductScorecard[] = [
     subCategory: "Acne Serum",
     concern: "Active acne, oiliness, clogged pores, blackheads, cell turnover",
     summary: "An acne-targeted serum featuring encapsulated Salicylic Acid at 2%, delivered via a Dextrin/Polydextrose/Amylopectin starch matrix for timed and controlled release. Encapsulation serves two purposes: (1) it moderates SA release rate, improving tolerability; (2) it allows stable formulation at a range of pH values. Niacinamide at position 7 provides anti-inflammatory support and PIH prevention. Blueberry Extract and Prickly Pear Extract are soothing botanicals. Two formulation flags: Ethoxydiglycol (Transcutol/CPE) appears at position 16, which would enhance the percutaneous penetration of SA and other actives. Rosa Damascena (Rose) Flower Water at position 14 introduces EU fragrance allergens into a leave-on product.",
-    score: 86,
+    score: 87,
     scoreLabel: "Good",
     image: "https://plumgoodness.com/cdn/shop/files/SA-Serum-30ml-01.jpg?v=1775713159",
     pillars: [
