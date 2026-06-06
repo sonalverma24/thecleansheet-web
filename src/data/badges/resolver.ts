@@ -286,15 +286,16 @@ export function resolveBadges(product: ProductScorecard): BadgeDefinition[] {
 // ── Card selection ────────────────────────────────────────────────────────────
 
 /**
- * Select exactly up to 3 badges for a product card — one per type:
+ * Select exactly up to 3 badges for a product card — ingredient actives are
+ * omitted (the product name already carries that signal). Slots are:
  *
- *   Slot 1 — ACTIVE:       Hero key ingredient (what the product does)
- *   Slot 2 — FOR:          Best free_from or suitability signal (who it is for)
- *   Slot 3 — WATCH:        Most important caution; fallback to premium
- *                          verification (not INCI_VERIFIED) or second active
+ *   Slot 1 — FOR:    Best free_from or suitability signal (who it is for /
+ *                    what it doesn't contain)
+ *   Slot 2 — WATCH:  Most important caution flag
+ *   Slot 3 — TRUST:  Premium verification (TCS Certified, SPF Verified, etc.)
+ *                    or ethics/value badge; INCI_VERIFIED excluded (too generic)
  *
- * At most one badge per slot. Empty slots are skipped. No overflow count —
- * the three slots are already the full editorial selection for the tile.
+ * Empty slots are skipped. No overflow count — the selection is complete.
  */
 export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const all = resolveBadges(product);
@@ -302,26 +303,25 @@ export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const byFamily = (family: BadgeDefinition["family"]) =>
     all.filter((b) => b.family === family);
 
-  // Slot 1: hero active ingredient
-  const active = byFamily("active")[0];
-
-  // Slot 2: best free_from or suitability signal
+  // Slot 1: best free_from or suitability
   const freeFromOrSuit = [
     ...byFamily("free_from"),
     ...byFamily("suitability"),
   ].sort((a, b) => a.priority - b.priority)[0];
 
-  // Slot 3: caution first; then premium verification (not INCI_VERIFIED);
-  // then second active as a last resort
-  const caution       = byFamily("caution")[0];
-  const verification  = byFamily("verification").find((b) => b.id !== "INCI_VERIFIED");
-  const secondActive  = byFamily("active")[1];
-  const slot3         = caution ?? verification ?? secondActive;
+  // Slot 2: most important caution
+  const caution = byFamily("caution")[0];
 
-  const selected: BadgeDefinition[] = [active, freeFromOrSuit, slot3]
+  // Slot 3: meaningful verification or ethics/value (not INCI_VERIFIED)
+  const verification = byFamily("verification").find((b) => b.id !== "INCI_VERIFIED");
+  const ethics       = byFamily("ethics")[0];
+  const value        = byFamily("value")[0];
+  const slot3        = verification ?? ethics ?? value;
+
+  const selected: BadgeDefinition[] = [freeFromOrSuit, caution, slot3]
     .filter((b): b is BadgeDefinition => b !== undefined);
 
-  // Deduplicate (edge case: same badge could win multiple slots)
+  // Deduplicate
   const seen = new Set<string>();
   return selected.filter((b) => {
     if (seen.has(b.id)) return false;
