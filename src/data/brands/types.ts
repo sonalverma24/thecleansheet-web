@@ -47,6 +47,7 @@ export type ProductScorecard = {
   concernTags?: string[];
   suitabilityTags?: string[];
   cautionTags?: string[];
+  routineSlot?: "AM" | "PM" | "AM+PM";
   fragranceStatus?: "free" | "synthetic" | "essential-oil" | "both" | "unknown";
   alcoholStatus?: "free" | "contains-drying" | "contains-fatty-only" | "unknown";
   certificationStatus?: "tcs-certified" | "under-review" | "not-certified";

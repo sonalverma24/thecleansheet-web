@@ -20,6 +20,94 @@
 
 import type { ProductScorecard } from "@/data/brands/types";
 import { BADGE_TAXONOMY, type BadgeDefinition } from "./taxonomy";
+import type { TileChipVariant } from "@/components/scorecards/TileChip";
+
+// ── Tile chip system (product tiles only) ─────────────────────────────────────
+
+export type TileChip = { label: string; variant: TileChipVariant };
+
+/** Map the most specific skin type tag to a short display label. */
+function deriveSkinLabel(tags: string[]): string | null {
+  const priority = ["acne-prone", "sensitive", "oily", "dry", "combination", "normal", "all"];
+  const display: Record<string, string> = {
+    "acne-prone":  "Acne-prone",
+    "sensitive":   "Sensitive",
+    "oily":        "Oily skin",
+    "dry":         "Dry skin",
+    "combination": "Combo skin",
+    "normal":      "Normal skin",
+    "all":         "All skin",
+  };
+  for (const p of priority) {
+    if (tags.includes(p)) return display[p] ?? null;
+  }
+  return null;
+}
+
+/**
+ * Derive the routine slot (AM / PM / AM+PM).
+ * Uses the explicit `routineSlot` field when set; otherwise infers from
+ * category, subCategory, and cautionTags.
+ */
+function deriveRoutineLabel(product: ProductScorecard): string | null {
+  if (product.routineSlot) return product.routineSlot;
+
+  const cat     = (product.category    ?? "").toLowerCase();
+  const subCat  = (product.subCategory ?? "").toLowerCase();
+  const cautions = (product.cautionTags ?? []).map((c) => c.toLowerCase());
+
+  if (cat === "sunscreens") return "AM";
+  if (cautions.some((c) => c.includes("retinoid"))) return "PM";
+  if (
+    subCat.includes("peel") ||
+    cautions.some((c) => c.includes("acid active") || c.includes("strong exfoliant"))
+  ) return "PM";
+
+  return "AM+PM";
+}
+
+/**
+ * Pick the single most important consumer-facing red flag.
+ * Routine-slot concerns (e.g. retinoid = PM) are intentionally excluded here
+ * since the routine chip already communicates that.
+ */
+function deriveFlagLabel(product: ProductScorecard): string | null {
+  const cautions      = (product.cautionTags  ?? []).map((c) => c.toLowerCase());
+  const warnBadges    = (product.warn_badges   ?? []).map((w) => w.toLowerCase());
+  const all           = [...cautions, ...warnBadges];
+  const fragrance     = product.fragranceStatus;
+  const alcohol       = product.alcoholStatus;
+
+  if (all.some((c) => c.includes("allergen")))                           return "Allergen risk";
+  if (all.some((c) => c.includes("spf not verified") || (c.includes("spf") && c.includes("unverified")))) return "SPF unverified";
+  if (alcohol === "contains-drying" || all.some((c) => c.includes("drying alcohol"))) return "Has alcohol";
+  if (fragrance === "synthetic" || fragrance === "both" || all.some((c) => c.includes("contains fragrance"))) return "Has fragrance";
+  if (fragrance === "essential-oil" || all.some((c) => c.includes("essential oil")))  return "Essential oils";
+  if (all.some((c) => c.includes("acid active")))                        return "Contains acids";
+  if (all.some((c) => c.includes("pregnancy")))                          return "Pregnancy caution";
+
+  return null;
+}
+
+/**
+ * Return up to 3 tile chips for a product card:
+ *   1. Skin type  — who it is for
+ *   2. Routine    — AM / PM / AM+PM
+ *   3. Red flag   — top consumer-facing caution (if any)
+ */
+export function getTileChips(product: ProductScorecard): TileChip[] {
+  const chips: TileChip[] = [];
+
+  const skin    = deriveSkinLabel(product.skinTypeTags ?? []);
+  const routine = deriveRoutineLabel(product);
+  const flag    = deriveFlagLabel(product);
+
+  if (skin)    chips.push({ label: skin,    variant: "skin"    });
+  if (routine) chips.push({ label: routine, variant: "routine" });
+  if (flag)    chips.push({ label: flag,    variant: "flag"    });
+
+  return chips;
+}
 
 // ── Text matching helpers ─────────────────────────────────────────────────────
 

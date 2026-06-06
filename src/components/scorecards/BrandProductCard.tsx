@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ScorecardBadge } from "./ScorecardBadge";
+import { TileChip } from "./TileChip";
 import { scoreColors } from "@/data/brands";
 import type { ProductScorecard } from "@/data/brands/types";
-import { getCardBadges } from "@/data/badges/resolver";
+import { getTileChips } from "@/data/badges/resolver";
 import { getProductCategoryLabel } from "@/lib/product-card-helpers";
 
 interface BrandProductCardProps {
@@ -15,7 +15,7 @@ interface BrandProductCardProps {
 
 export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) {
   const pc = scoreColors(product.score);
-  const cardBadges = getCardBadges(product);
+  const chips = getTileChips(product);
   const categoryLabel = getProductCategoryLabel(product);
   const isPending = categoryLabel === "Category Pending";
 
@@ -81,18 +81,11 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             {product.productName}
           </h3>
 
-          {/* Badges — max 3, one per type (active / for / watch) */}
-          {cardBadges.length > 0 && (
-            <div className="flex gap-1 mb-2 h-6 overflow-hidden">
-              {cardBadges.map((badge) => (
-                <div key={badge.id} className="flex-1 min-w-0 flex">
-                  <ScorecardBadge
-                    family={badge.family}
-                    label={badge.label}
-                    icon={badge.icon}
-                    tooltip={badge.tooltip}
-                  />
-                </div>
+          {/* Tile chips: skin type / routine / red flag */}
+          {chips.length > 0 && (
+            <div className="flex gap-1 mb-2 overflow-hidden">
+              {chips.map((chip) => (
+                <TileChip key={chip.variant} label={chip.label} variant={chip.variant} />
               ))}
             </div>
           )}
