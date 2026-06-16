@@ -33,9 +33,15 @@ function cleanURL(url: string): string {
   try {
     const u = new URL(url);
     const trackingParams = [
+      // Ad tracking
       "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term",
       "gclid", "gbraid", "wbraid", "fbclid", "gad_source", "gad_campaignid",
       "msclkid", "ttclid", "li_fat_id", "mc_cid", "mc_eid",
+      // E-commerce platform-specific params that don't affect page content
+      "ptype", "skuId", "skuid", "pps", "ref", "s", "tag",
+      "affid", "aff_id", "affiliate", "offer_id", "network",
+      // Nykaa-specific
+      "productId", "skuId",
     ];
     trackingParams.forEach((p) => u.searchParams.delete(p));
     return u.toString();
@@ -329,8 +335,10 @@ export async function POST(req: Request) {
       const isEcom = isEcomPlatform(q);
       const brandHint = brandHintFromURL(q);
 
-      // Build search query: "brandname product-name"
-      const productQuery = [brandHint, slugFromURL].filter(Boolean).join(" ").trim() || slugFromURL;
+      // For e-commerce platforms (nykaa, amazon, purplle etc.) the domain name is the
+      // MARKETPLACE, not the product brand — don't pollute search queries with "nykaa"
+      const searchBrand = isEcom ? "" : brandHint;
+      const productQuery = [searchBrand, slugFromURL].filter(Boolean).join(" ").trim() || slugFromURL;
       const enc = encodeURIComponent(productQuery);
       const encReview = encodeURIComponent(productQuery + " review india");
 
@@ -451,21 +459,27 @@ export async function POST(req: Request) {
       try { brandDomain = new URL(urlInput).hostname; } catch { /* ignore */ }
       const brandHintForPrompt = isEcomPlatform(urlInput) ? "" : brandHintFromURL(urlInput);
 
+      const isEcommInput = isEcomPlatform(urlInput);
+      const marketplaceName = isEcommInput ? new URL(urlInput).hostname.replace(/^www\./, "") : "";
+
       prompt = `The user submitted a product page URL: ${urlInput}
 Product URL: ${urlInput}
-Brand (from domain): ${brandHintForPrompt || "Unknown"}
-Product hint: ${q}
+${isEcommInput
+  ? `Source: ${marketplaceName} (this is a MARKETPLACE listing, not the brand's own website)
+Product name extracted from URL slug: "${q}"
+IMPORTANT: Identify the actual product brand from the product name above. For example, "l occitane almond delicious hands" → brand is L'Occitane; "venusia max intensive moisturizing cream" → brand is Venusia (by Win-Medicare). Do NOT use "${marketplaceName}" as the brand name.`
+  : `Brand (from domain): ${brandHintForPrompt || "Unknown"}`}
 
 This is a beauty/personal care product page URL. You MUST produce a full scorecard. Never return {"type":"out_of_scope"} for a product URL. If INCI data cannot be found after all searches, score Ingredient Disclosure & Transparency at 0, note it as unavailable, cap the total score at 50, and complete all other pillars with whatever data you can find.
 
 MANDATORY RESEARCH  -  execute ALL of these searches before scoring:
-1. Identify product name and brand from scraped content below (Brand hint from domain: ${brandHintForPrompt || "see domain"}).
+1. Identify product name and brand from the URL slug and scraped content below. ${isEcommInput ? `The brand is NOT "${marketplaceName}" — identify the real manufacturer.` : `Brand hint from domain: ${brandHintForPrompt || "see domain"}.`}
 2. Search InciDecoder: "[brand] [product name] site:incidecoder.com" to get the full INCI list. InciDecoder search results are also included below if available.
-3. Search brand's own website for ingredients: "[product name] ingredients site:${brandDomain}"
+3. Search brand's own website for ingredients: "[brand] [product name] ingredients"${!isEcommInput ? ` site:${brandDomain}` : ""}
 4. Search Nykaa: "[brand] [product name] site:nykaa.com" to get price, rating, review count, and any INCI shown.
 5. Search Amazon India: "[brand] [product name] site:amazon.in" to get price, rating, review count, and ingredients if listed.
 6. Search Flipkart: "[brand] [product name] site:flipkart.com" for additional price/review data.
-7. Search for lab tests and certifications: site:${brandDomain} lab OR test OR certificate OR study OR "clinically tested" OR "dermatologist tested". Also try "[brand] lab test certificate India".
+7. Search for lab tests and certifications: "[brand] lab test certificate India" OR "[brand] [product name] clinically tested dermatologist tested".${!isEcommInput ? ` Also try site:${brandDomain} lab OR certificate.` : ""}
 8. Search for controversies: "[brand] [product name] India controversy banned recall CDSCO"
 
 Use ALL sources found. Combine INCI data across sources: if brand PDP shows partial INCI and InciDecoder shows full INCI, use the fuller list and note the source difference in inciSource.
