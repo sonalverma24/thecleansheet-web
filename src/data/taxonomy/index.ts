@@ -174,7 +174,7 @@ export function expandTaxonomyQuery(raw: string): string[] {
   }
 
   // Also check if the full query CONTAINS a known synonym (multi-word phrase matching).
-  // Only match when input includes the key — not when the key includes the input,
+  // Only match when input includes the key - not when the key includes the input,
   // because that direction causes "retinol" to match "retinol serum", "no retinol",
   // "retinol glow" etc., which expands to unrelated parent categories and concerns.
   for (const [key, item] of SYNONYM_INDEX.entries()) {

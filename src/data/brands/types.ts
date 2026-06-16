@@ -3,6 +3,7 @@ export type ScorePillar = {
   score: number;
   max: number;
   note: string;
+  evidenceGrade?: "A" | "B" | "C" | "D" | "F"; // Pillar 4 (Test Result Transparency) only
 };
 
 export type IngredientEntry = {
@@ -14,6 +15,32 @@ export type IngredientEntry = {
 export type KeyActive = {
   name: string;
   function: string;
+  concentrationConfidence?: "High" | "Medium" | "Low";
+};
+
+export type ClaimsCheckItem = {
+  claim: string;
+  evidenceStatus: "Evidence visible" | "Mentioned only" | "Missing";
+  decision: "Publicly supported" | "Needs proof" | "Not publicly supported";
+  note: string;
+};
+
+export type GlobalScreen = {
+  eu_1223_2009: string;
+  india_cr_2020: string;
+  health_canada_hotlist: string;
+  canada_nhpid: string;
+  tga_australia: string;
+  us_fda_21cfr: string;
+  korea_mfds: string;
+  aicis_australia: string;
+  echa_svhc: string;
+  iarc: string;
+};
+
+export type InciCompleteness = {
+  status: "Full INCI on brand PDP" | "Marketplace only" | "Partial" | "Missing";
+  flags: string[];
 };
 
 export type ProductScorecard = {
@@ -22,21 +49,28 @@ export type ProductScorecard = {
   brand: string;
   brandSlug: string;
   priceRange: string;
-  productType: "leave-on" | "rinse-off" | "treatment" | "sunscreen" | "toner";
+  productType: "leave-on" | "rinse-off" | "treatment" | "sunscreen" | "toner" | "baby" | "eye-area" | "hair";
   concern: string;
   summary: string;
   score: number;
-  scoreLabel: "Excellent" | "Good" | "Fair" | "Concern";
+  scoreLabel: "Excellent" | "Good" | "Fair" | "Concern"; // legacy - keep for backward compat
+  publicDecisionLabel?: string; // new 5-pillar framework label
+  targetUser?: string;
   image: string;
   pillars: ScorePillar[];
   keyActives: KeyActive[];
   ingredients: IngredientEntry[];
+  globalScreen?: GlobalScreen;
+  inciCompleteness?: InciCompleteness;
+  claimsCheck?: ClaimsCheckItem[];
+  missingProof?: string[];
+  cleanSheetNote?: string;
   pass_badges: string[];
   warn_badges: string[];
   info_badges: string[];
   indiaContext: string;
   analyzedAt: string;
-  // Extended optional fields — populate gradually; start with Minimalist as reference
+  // Extended optional fields
   category?: string;
   subCategory?: string;
   price?: number;
@@ -55,6 +89,7 @@ export type ProductScorecard = {
   claimsVerified?: string[];
   claimsNotVerified?: string[];
   availabilitySources?: string[];
+  retailerLinks?: { name: string; url: string }[];
 };
 
 export type Brand = {

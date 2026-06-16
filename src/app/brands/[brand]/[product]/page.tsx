@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
 import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar } from "@/data/brands";
 import { ProductHero } from "@/components/scorecards/ProductHero";
@@ -140,10 +140,17 @@ function PillarDots({ score, max }: { score: number; max: number }) {
 
 function simplifyPillarName(name: string): string {
   const n = name.toLowerCase();
-  if (n.includes("ingredient") || n.includes("safety")) return "Ingredient Safety";
-  if (n.includes("formula")) return "Formula Design";
-  if (n.includes("claims")) return "Claims Evidence";
-  if (n.includes("transparency")) return "Transparency";
+  // New 5-pillar names
+  if (n.includes("inci safety") || n.includes("public inci")) return "Ingredient Safety";
+  if (n.includes("formula logic") || n.includes("formula inference")) return "Formula Logic";
+  if (n.includes("claim support") || n.includes("public claim")) return "Claims Evidence";
+  if (n.includes("test result") || n.includes("transparency")) return "Test Transparency";
+  if (n.includes("consumer clarity") || n.includes("clarity")) return "Consumer Clarity";
+  // Legacy 4-pillar names
+  if (n.includes("ingredient") || n.includes("safety") || n.includes("toxicity")) return "Ingredient Safety";
+  if (n.includes("formula") || n.includes("formulation") || n.includes("quality")) return "Formula Design";
+  if (n.includes("claims") || n.includes("disclosure")) return "Claims Evidence";
+  if (n.includes("ethics") || n.includes("sustain")) return "Ethics";
   return name;
 }
 
@@ -219,7 +226,31 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
   return getPillarOneLiner(pillar.note);
 }
 
+function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
+  if (!product.claimsCheck?.length) return [];
+  return product.claimsCheck.slice(0, 8).map((c) => {
+    let status: ProofStatus;
+    if (c.decision === "Publicly supported" && c.evidenceStatus === "Evidence visible") status = "verified";
+    else if (c.decision === "Publicly supported") status = "supported";
+    else if (c.decision === "Needs proof") status = "needs-context";
+    else if (c.evidenceStatus === "Missing") status = "not-found";
+    else status = "not-verified";
+
+    const evidenceType =
+      c.evidenceStatus === "Evidence visible" ? "Published evidence" :
+      c.evidenceStatus === "Mentioned only" ? "Brand claim" :
+      "Not found";
+
+    return { claim: c.claim, status, explanation: c.note, evidenceType };
+  });
+}
+
 function buildProofCards(product: ProductScorecard): ProofCard[] {
+  // Prefer per-product claimsCheck when available - it is accurate and product-specific
+  const fromData = claimsCheckToProofCards(product);
+  if (fromData.length > 0) return fromData;
+
+  // Fallback: generate from badges for products without claimsCheck
   const pass = product.pass_badges.map((b) => b.toLowerCase());
   const warn = product.warn_badges.map((b) => b.toLowerCase());
   const cards: ProofCard[] = [];
@@ -551,12 +582,21 @@ export default async function ProductPage({
         {/* 3. Score breakdown */}
         <section id="score-rationale">
           <div className="mb-4">
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Score breakdown</h2>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2.5">
+                <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Score breakdown</h2>
+              </div>
+              {product.publicDecisionLabel && (
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#248179]/10 text-[#248179] border border-[#248179]/20">
+                  {product.publicDecisionLabel}
+                </span>
+              )}
             </div>
             <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
-              How this product was rated across four areas. Open any row for the full rationale.
+              {product.publicDecisionLabel
+                ? `Public Evidence Score across ${product.pillars.length} pillars. Open any row for the full rationale.`
+                : `How this product was rated across four areas. Open any row for the full rationale.`}
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
@@ -577,6 +617,11 @@ export default async function ProductPage({
                         <span className="text-sm" style={{ color: nameColor, fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
                       </div>
                       <div className="flex items-center gap-2.5 flex-shrink-0 ml-4">
+                        {pillar.evidenceGrade && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded border text-[#b0a8a4] border-[#efe9e0]">
+                            Grade {pillar.evidenceGrade}
+                          </span>
+                        )}
                         <span className="text-xs" style={{ color, fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{ratingLabel}</span>
                         <span className="text-[10px] text-[#b0a8a4]">{pillar.score}/{pillar.max}</span>
                         <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
@@ -593,7 +638,7 @@ export default async function ProductPage({
           </div>
         </section>
 
-        {/* 4. Full ingredient list — show 8, expand */}
+        {/* 4. Full ingredient list - show 8, expand */}
         <section id="ingredients">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
@@ -678,10 +723,114 @@ export default async function ProductPage({
           </p>
         </section>
 
-        {/* 5. Reviews */}
-        <ReviewsSection productId={`${brandSlug}/${productSlug}`} />
+        {/* 5. Regulatory screen */}
+        {product.globalScreen && (
+          <section id="regulatory-screen">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <div>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Regulatory screen</h2>
+                <p className="text-xs text-[#b0a8a4] mt-0.5">Each ingredient mapped against 10 global regulatory authorities</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
+              {(
+                [
+                  { key: "eu_1223_2009",        label: "EU 1223/2009",         desc: "EU Cosmetics Regulation - Annexes II–VI" },
+                  { key: "india_cr_2020",        label: "India CR 2020",        desc: "India Cosmetics Rules, CDSCO" },
+                  { key: "health_canada_hotlist",label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
+                  { key: "us_fda_21cfr",         label: "US FDA 21 CFR",        desc: "US FDA Parts 700–740" },
+                  { key: "korea_mfds",           label: "MFDS Korea",           desc: "Korea Cosmetics Act" },
+                  { key: "echa_svhc",            label: "ECHA SVHC",            desc: "Substances of Very High Concern" },
+                  { key: "iarc",                 label: "IARC",                 desc: "Carcinogen classifications Groups 1/2A/2B" },
+                  { key: "aicis_australia",      label: "AICIS Australia",      desc: "Australian industrial chemical safety" },
+                  { key: "tga_australia",        label: "TGA Australia",        desc: "Therapeutic claims (if applicable)" },
+                  { key: "canada_nhpid",         label: "Canada NHPID",         desc: "Natural health product ingredients" },
+                ] as const
+              ).map(({ key, label, desc }) => {
+                const val = product.globalScreen![key as keyof typeof product.globalScreen] ?? "";
+                const isClear = val.toLowerCase().includes("no obvious") || val.toLowerCase().includes("not triggered");
+                return (
+                  <div key={key} className="flex items-start gap-3 px-4 py-3">
+                    <span className={`mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full ${isClear ? "bg-[#248179]/15 text-[#248179]" : "bg-[#fd6158]/15 text-[#fd6158]"}`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span className={`block w-1.5 h-1.5 rounded-full ${isClear ? "bg-[#248179]" : "bg-[#fd6158]"}`} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs text-[#282828]">{label}</span>
+                        <span className="text-[10px] text-[#b0a8a4]">{desc}</span>
+                      </div>
+                      <p className="text-xs text-[#282828]/60 mt-0.5">{val}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-[#b0a8a4] mt-2">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+          </section>
+        )}
 
-        {/* 6. About this review — absorbs methodology + India context */}
+        {/* 6. Claims check */}
+        {product.claimsCheck && product.claimsCheck.length > 0 && (
+          <section id="claims-check">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <div>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Claims check</h2>
+                <p className="text-xs text-[#b0a8a4] mt-0.5">Each marketing claim assessed against publicly available evidence</p>
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              {product.claimsCheck.map((c) => {
+                const isSupported  = c.decision === "Publicly supported";
+                const isNeedsProof = c.decision === "Needs proof";
+                const accent  = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
+                const bgClass = isSupported ? "bg-[#248179]/[0.04]" : isNeedsProof ? "bg-amber-50/60" : "bg-[#fd6158]/[0.04]";
+                const Icon    = isSupported ? CheckCircle2 : isNeedsProof ? HelpCircle : AlertCircle;
+                return (
+                  <div key={c.claim} className={`rounded-xl border border-[#efe9e0] p-4 ${bgClass}`}>
+                    <div className="flex items-start gap-3">
+                      <Icon size={15} className="flex-shrink-0 mt-0.5" style={{ color: accent }} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
+                          <span className="text-xs text-[#282828]">{c.claim}</span>
+                          <span className="text-[10px]" style={{ color: accent }}>{c.decision}</span>
+                        </div>
+                        <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
+                        <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* 7. Missing proof */}
+        {product.missingProof && product.missingProof.length > 0 && (
+          <section id="missing-proof">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#b0a8a4] flex-shrink-0" />
+              <div>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would improve this score</h2>
+                <p className="text-xs text-[#b0a8a4] mt-0.5">Public evidence the brand could provide to close verification gaps</p>
+              </div>
+            </div>
+            <div className="bg-[#faf7f2] rounded-2xl border border-[#efe9e0] p-4 sm:p-5">
+              <ul className="space-y-2.5">
+                {product.missingProof.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="text-[#b0a8a4] flex-shrink-0 mt-0.5 text-xs">○</span>
+                    <span className="text-xs text-[#282828]/70 leading-relaxed">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
+        {/* 9. About this review - absorbs methodology + India context */}
         <section id="methodology">
           <div className="bg-[#282828] rounded-2xl p-5 sm:p-6">
             <div className="flex items-start gap-4">
@@ -689,7 +838,8 @@ export default async function ProductPage({
               <div className="flex-1 min-w-0">
                 <div className="text-white mb-2">About this review</div>
                 <p className="text-white/60 text-sm leading-relaxed mb-1.5">
-                  This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
+                  {product.cleanSheetNote ??
+                    "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
                   {["Independent review", "Public evidence only"].map((m) => (
@@ -711,18 +861,12 @@ export default async function ProductPage({
                     <li>What the brand is claiming vs what evidence supports</li>
                   </ul>
                 </details>
-                {product.indiaContext && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex items-start gap-2.5">
-                    <span className="text-base flex-shrink-0 leading-none mt-0.5">🇮🇳</span>
-                    <p className="text-xs text-white/50 leading-relaxed">{product.indiaContext}</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* 7. More from brand — horizontal scrollable strip */}
+        {/* 7. More from brand - horizontal scrollable strip */}
         {relatedProducts.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">

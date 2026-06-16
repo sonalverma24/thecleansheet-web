@@ -91,9 +91,9 @@ function deriveFlagLabel(product: ProductScorecard): string | null {
 
 /**
  * Return up to 3 tile chips for a product card:
- *   1. Skin type  — who it is for
- *   2. Routine    — AM / PM / AM+PM
- *   3. Red flag   — top consumer-facing caution (if any)
+ *   1. Skin type - who it is for
+ *   2. Routine   - AM / PM / AM+PM
+ *   3. Red flag  - top consumer-facing caution (if any)
  */
 export function getTileChips(product: ProductScorecard): TileChip[] {
   const chips: TileChip[] = [];
@@ -374,16 +374,16 @@ export function resolveBadges(product: ProductScorecard): BadgeDefinition[] {
 // ── Card selection ────────────────────────────────────────────────────────────
 
 /**
- * Select exactly up to 3 badges for a product card — ingredient actives are
+ * Select exactly up to 3 badges for a product card - ingredient actives are
  * omitted (the product name already carries that signal). Slots are:
  *
- *   Slot 1 — FOR:    Best free_from or suitability signal (who it is for /
+ *   Slot 1 - FOR:    Best free_from or suitability signal (who it is for /
  *                    what it doesn't contain)
- *   Slot 2 — WATCH:  Most important caution flag
- *   Slot 3 — TRUST:  Premium verification (TCS Certified, SPF Verified, etc.)
+ *   Slot 2 - WATCH:  Most important caution flag
+ *   Slot 3 - TRUST:  Premium verification (TCS Certified, SPF Verified, etc.)
  *                    or ethics/value badge; INCI_VERIFIED excluded (too generic)
  *
- * Empty slots are skipped. No overflow count — the selection is complete.
+ * Empty slots are skipped. No overflow count - the selection is complete.
  */
 export function getCardBadges(product: ProductScorecard): BadgeDefinition[] {
   const all = resolveBadges(product);

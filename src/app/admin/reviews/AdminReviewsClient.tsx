@@ -237,8 +237,8 @@ export function AdminReviewsClient({ reviews, productOptions }: Props) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-xs text-[#282828]">{r.user_name ?? "—"}</div>
-                      <div className="text-[11px] text-[#b0a8a4]">{r.user_email ?? "—"}</div>
+                      <div className="text-xs text-[#282828]">{r.user_name ?? " - "}</div>
+                      <div className="text-[11px] text-[#b0a8a4]">{r.user_email ?? " - "}</div>
                     </td>
                     <td className="px-4 py-3">
                       <StarDisplay rating={r.rating} />

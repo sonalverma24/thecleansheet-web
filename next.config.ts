@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/analyser", destination: "/analyzer", permanent: true },
+      { source: "/analyser/:path*", destination: "/analyzer/:path*", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
@@ -22,6 +28,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "thedermaco.com" },
       { protocol: "https", hostname: "lotusherbals.com" },
       { protocol: "https", hostname: "www.lotus.in" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "lh4.googleusercontent.com" },
+      { protocol: "https", hostname: "lh5.googleusercontent.com" },
+      { protocol: "https", hostname: "lh6.googleusercontent.com" },
     ],
     dangerouslyAllowSVG: true,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

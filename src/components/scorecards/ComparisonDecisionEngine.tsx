@@ -171,7 +171,7 @@ export function ComparisonDecisionEngine({ products, onClose }: ComparisonDecisi
                     {/* Price */}
                     <div className="flex items-baseline gap-2">
                       <span className="text-sm font-semibold text-ink-900">{p.priceRange}</span>
-                      {row.pricePerMl !== "—" && (
+                      {row.pricePerMl !== " - " && (
                         <span className="text-xs text-ink-400">{row.pricePerMl}</span>
                       )}
                     </div>
@@ -460,7 +460,7 @@ function ProductDetailBlock({ product: p }: { product: ProductScorecard }) {
   return (
     <div className="border-b border-ink-50 last:border-b-0 pb-6 last:pb-0">
       <p className="text-xs font-semibold text-ink-600 uppercase tracking-wide mb-4">
-        {p.brand} — {p.productName}
+        {p.brand} - {p.productName}
       </p>
 
       {/* Score breakdown */}

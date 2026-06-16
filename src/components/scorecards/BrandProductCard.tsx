@@ -33,7 +33,7 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
-          {/* Score badge — top right */}
+          {/* Score badge - top right */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
             <div style={{
               background: "rgba(255,255,255,0.96)",
@@ -55,7 +55,7 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             </div>
           </div>
 
-          {/* Category pill — bottom left */}
+          {/* Category pill - bottom left */}
           <div
             className="absolute bottom-2 left-2 max-w-[calc(100%-16px)] overflow-hidden"
             style={{

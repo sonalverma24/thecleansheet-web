@@ -104,7 +104,7 @@ export function getPricePerMlDisplay(p: ProductScorecard): string {
   if (p.pricePerUnit && p.sizeUnit) {
     return `₹${p.pricePerUnit.toFixed(2)}/${p.sizeUnit}`;
   }
-  return "—";
+  return " - ";
 }
 
 // ── Build comparison row ──────────────────────────────────────────────────────

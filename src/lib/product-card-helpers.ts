@@ -70,7 +70,7 @@ function parsePriceRange(raw: string): { min: number; max: number } | null {
     .trim();
 
   // Range: "799 - 1199" or "799-1199" (dash/en-dash/em-dash)
-  const rangeMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*[-–—]\s*(\d+(?:\.\d+)?)$/);
+  const rangeMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*[-– - ]\s*(\d+(?:\.\d+)?)$/);
   if (rangeMatch) {
     return { min: parseFloat(rangeMatch[1]), max: parseFloat(rangeMatch[2]) };
   }
@@ -106,13 +106,13 @@ export function getDisplayPrice(product: ProductScorecard): string {
     return product.price ? fmtPrice(product.price) : "Price unavailable";
   }
 
-  // Already clean ₹ format (starts with ₹, no Rs.) — pass through unchanged
+  // Already clean ₹ format (starts with ₹, no Rs.) - pass through unchanged
   if (raw.startsWith("₹") && !raw.toLowerCase().includes("rs.")) {
     return raw;
   }
 
   const parsed = parsePriceRange(raw);
-  if (!parsed) return raw; // unrecognised format — surface as-is
+  if (!parsed) return raw; // unrecognised format - surface as-is
 
   if (parsed.min === parsed.max) return fmtPrice(parsed.min);
   return `${fmtPrice(parsed.min)}-${fmtPrice(parsed.max)}`;
@@ -142,7 +142,7 @@ export function normalizeSizeUnit(unit: string): string {
 export function getUnitPrice(product: ProductScorecard): string | null {
   const { sizeValue, sizeUnit, price, pricePerUnit, priceRange } = product;
 
-  // 0. Pre-calculated — trust it if present
+  // 0. Pre-calculated - trust it if present
   if (pricePerUnit && pricePerUnit > 0 && sizeUnit) {
     const unit = normalizeSizeUnit(sizeUnit);
     if (!["ml", "g", "oz", "fl oz"].includes(unit)) return null;
@@ -155,7 +155,7 @@ export function getUnitPrice(product: ProductScorecard): string | null {
       const hasPriceData = !!(price || priceRange);
       if (hasPriceData) {
         console.warn(
-          `[unit-price] missing_size — ${product.brand}: ${product.productName}`
+          `[unit-price] missing_size - ${product.brand}: ${product.productName}`
         );
       }
     }
@@ -182,7 +182,7 @@ export function getUnitPrice(product: ProductScorecard): string | null {
 
   if (process.env.NODE_ENV === "development") {
     console.warn(
-      `[unit-price] missing_price — ${product.brand}: ${product.productName}`
+      `[unit-price] missing_price - ${product.brand}: ${product.productName}`
     );
   }
   return null;

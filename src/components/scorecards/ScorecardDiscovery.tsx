@@ -128,7 +128,7 @@ function relevanceScore(product: ProductScorecard, terms: string[]): number {
   // Split concern into individual chunks for per-term matching
   const concernChunks = concern.split(/[,;]+/).map((c) => c.trim()).filter(Boolean);
   for (const t of terms) {
-    // Skip single-character tokens — they match everything and add noise
+    // Skip single-character tokens - they match everything and add noise
     if (t.length < 2) continue;
     if (name.includes(t)) s += 100;
     if (brand.includes(t)) s += 50;

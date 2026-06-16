@@ -203,7 +203,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
           <div className="lg:col-span-2 space-y-8">
 
             {/* Flags alert */}
-            {(ing.CMR_Flag !== "None" || ing.Allergen_Flag !== "None" || ing.Endocrine_Flag === "Yes" || ing.SVHC_Flag === "Yes") && (
+            {(ing.CMR_Flag !== "None" || ing.Allergen_Flag !== "None" || ing.Endocrine_Flag === "Yes" || ing.SVHC_Flag === "Yes" || (ing.IARC_Group && ing.IARC_Group !== "Not classified" && !ing.IARC_Group.startsWith("Not classified"))) && (
               <div className="bg-red-50 border border-red-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 text-red-700 font-medium mb-3">
                   <AlertTriangle size={16} /> Safety Flags
@@ -219,6 +219,11 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                   {ing.SVHC_Flag === "Yes" && (
                     <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-xs font-medium px-2.5 py-1 rounded-full">
                       <AlertTriangle size={11} /> SVHC (EU)
+                    </span>
+                  )}
+                  {ing.IARC_Group && ing.IARC_Group !== "Not classified" && !ing.IARC_Group.startsWith("Not classified") && (
+                    <span className="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 text-xs font-medium px-2.5 py-1 rounded-full">
+                      <AlertTriangle size={11} /> IARC: {ing.IARC_Group}
                     </span>
                   )}
                 </div>
@@ -259,12 +264,12 @@ export default async function IngredientDetailPage({ params }: { params: Promise
             </div>
 
             {/* Concentration limits */}
-            {(ing.Max_Concentration_EU || ing.Max_Concentration_India) && (
+            {(ing.Max_Concentration_EU || ing.Max_Concentration_India || ing.Max_Concentration_US || ing.Max_Concentration_Korea) && (
               <div className="border border-ink-100 rounded-2xl p-6">
                 <h2 className="text-lg font-medium text-ink-900 mb-4 flex items-center gap-2">
                   <FlaskConical size={18} className="text-teal-600" /> Concentration Limits
                 </h2>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div className="bg-ink-50 rounded-xl p-4">
                     <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">India (CDSCO)</div>
                     <p className="text-ink-800 font-medium">{ing.Max_Concentration_India || "Not specified"}</p>
@@ -273,6 +278,18 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                     <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">EU Cosmetics Reg.</div>
                     <p className="text-ink-800 font-medium">{ing.Max_Concentration_EU || "Not specified"}</p>
                   </div>
+                  {ing.Max_Concentration_US && (
+                    <div className="bg-ink-50 rounded-xl p-4">
+                      <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">US FDA (21 CFR)</div>
+                      <p className="text-ink-800 font-medium">{ing.Max_Concentration_US}</p>
+                    </div>
+                  )}
+                  {ing.Max_Concentration_Korea && (
+                    <div className="bg-ink-50 rounded-xl p-4">
+                      <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Korea (MFDS)</div>
+                      <p className="text-ink-800 font-medium">{ing.Max_Concentration_Korea}</p>
+                    </div>
+                  )}
                 </div>
                 {ing.Format_Restriction && ing.Format_Restriction !== "Both" && (
                   <p className="text-sm text-ink-500 mt-3">
@@ -283,6 +300,18 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                   <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl p-3">
                     <AlertTriangle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-800">Baby restriction: {ing.Baby_Restriction}</p>
+                  </div>
+                )}
+                {ing.Pregnancy_Restriction && ing.Pregnancy_Restriction !== "None" && (
+                  <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                    <AlertTriangle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-800">Pregnancy: {ing.Pregnancy_Restriction}</p>
+                  </div>
+                )}
+                {ing.IFRA_Restriction && ing.IFRA_Restriction !== "Not applicable" && !ing.IFRA_Restriction.startsWith("Not applicable") && (
+                  <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                    <AlertTriangle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-800">IFRA: {ing.IFRA_Restriction}</p>
                   </div>
                 )}
               </div>
@@ -315,7 +344,13 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                 <span className={`w-2 h-2 rounded-full ${concern.dot}`} />
                 {concern.label}
               </div>
-              <div className="text-xs text-teal-400 mt-2">
+              {ing.Data_Confidence && (
+                <div className="mt-3 border-t border-teal-800 pt-3">
+                  <div className="text-xs text-teal-400 uppercase tracking-wider mb-1">Data Confidence</div>
+                  <div className="text-sm text-teal-200 font-medium">{ing.Data_Confidence}</div>
+                </div>
+              )}
+              <div className="text-xs text-teal-400 mt-3">
                 Based on peer-reviewed safety data, regulatory status, and expert review by The Clean Sheet panel.
               </div>
             </div>
@@ -331,6 +366,8 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                   { market: "EU", status: ing.EU_Status },
                   { market: "US FDA", status: ing.US_FDA_Status },
                   { market: "Korea (MFDS)", status: ing.Korea_Status },
+                  ...(ing.Australia_TGA_Status ? [{ market: "Australia (TGA)", status: ing.Australia_TGA_Status }] : []),
+                  ...(ing.Canada_NHPID_Status ? [{ market: "Canada (NHPID)", status: ing.Canada_NHPID_Status }] : []),
                 ].map(({ market, status }) => (
                   <div key={market} className="flex items-center justify-between gap-2">
                     <span className="text-sm text-ink-600">{market}</span>

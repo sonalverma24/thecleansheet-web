@@ -57,7 +57,7 @@ export function ScorecardResultCard({
             </div>
           )}
 
-          {/* Score number — top right, overlapping image */}
+          {/* Score number - top right, overlapping image */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
             <div style={{
               background: "rgba(255,255,255,0.96)",
@@ -79,7 +79,7 @@ export function ScorecardResultCard({
             </div>
           </div>
 
-          {/* Category pill — bottom left */}
+          {/* Category pill - bottom left */}
           <div
             className="absolute bottom-2 left-2 max-w-[calc(100%-16px)] overflow-hidden"
             style={{

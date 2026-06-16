@@ -71,7 +71,7 @@ export function HeroActions({ productId }: Props) {
         </Link>
       </div>
 
-      {/* Live star rating — clickable to scroll to reviews */}
+      {/* Live star rating - clickable to scroll to reviews */}
       <button
         onClick={scrollToReviews}
         className="flex items-center gap-2 group text-left"

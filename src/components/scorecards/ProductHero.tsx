@@ -1,7 +1,7 @@
 /**
- * ProductHero — Light editorial design, V3.
+ * ProductHero - Light editorial design, V3.
  *
- * Desktop: 2-col layout — content left / image + score + actions right.
+ * Desktop: 2-col layout - content left / image + score + actions right.
  * Mobile: name → image+badge → content → actions stacked.
  *
  * All exported helpers are stable.
@@ -113,8 +113,9 @@ export function generateConsumerFitStatement(product: ProductScorecard): string 
     return "Built for targeted treatment use, reviewed for active concentration, safety signals, and claims evidence.";
   }
 
-  const category = product.category ?? product.productType.replace(/-/g, " ");
-  return `A ${category} reviewed for formula signals, ingredient safety, claims evidence, and consumer suitability.`;
+  const ptMap: Record<string, string> = { "leave-on": "serum", "rinse-off": "cleanser", "sunscreen": "sunscreen", "toner": "toner", "treatment": "treatment", "baby": "baby product", "eye-area": "eye-area product", "hair": "hair product" };
+  const category = product.category ?? ptMap[product.productType] ?? product.productType.replace(/-/g, " ");
+  return `A ${category.toLowerCase()} reviewed for formula signals, ingredient safety, claims evidence, and consumer suitability.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -508,7 +509,9 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("dry")) { bestFor.push("Dry skin"); continue; }
       if (t.includes("combination")) { bestFor.push("Combination skin"); continue; }
       if (t.includes("sensitive")) { bestFor.push("Sensitive skin types"); continue; }
-      if (t.includes("acne")) { bestFor.push("Acne prone skin"); continue; }
+      if (t.includes("acne") && !bestFor.some((b) => b.toLowerCase().includes("acne"))) { bestFor.push("Acne prone skin"); continue; }
+      if (t.includes("dark spot") || t.includes("pigment")) { bestFor.push("Post-acne marks and dark spots"); continue; }
+      if (t.includes("pore")) { bestFor.push("Visible pores"); continue; }
       if (t.includes("beginner")) { bestFor.push("Skincare beginners"); continue; }
       if (t.includes("pregnan")) { bestFor.push("Pregnancy-safe use"); continue; }
       if (t.includes("baby")) { bestFor.push("Baby and infant skin"); continue; }
@@ -558,6 +561,11 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("acid") || t.includes("aha") || t.includes("bha")) { cautionIf.push("You have reactive or sensitised skin"); continue; }
       if (t.includes("baby")) { cautionIf.push("Using on infants without paediatrician advice"); continue; }
       if (t.includes("spf")) { cautionIf.push("Relying on the SPF claim without independent evidence"); continue; }
+      if (t.includes("niacin")) { cautionIf.push("You have a known niacin sensitivity (niacin flush risk)"); continue; }
+      if (t.includes("penetration enhancer")) { cautionIf.push("Stacking multiple penetration enhancer-based actives"); continue; }
+      if (t.includes("ph not disclosed")) { cautionIf.push("Your skin barrier is already compromised or irritated"); continue; }
+      if (t.includes("dual-acid") || t.includes("strong exfoliant")) { cautionIf.push("You have sensitive or eczema-prone skin"); continue; }
+      if (t.includes("high irritation")) { cautionIf.push("You are new to active skincare - patch test first"); continue; }
     }
   }
 
@@ -582,6 +590,11 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
   if (cautionIf.length === 0) {
     if (product.productType === "sunscreen") cautionIf.push("Want no white cast at all");
     else if (product.productType === "treatment") cautionIf.push("Combining with other active treatments");
+    else if (concern.includes("retinol") || concern.includes("retinoid")) cautionIf.push("Pregnant or trying to conceive");
+    else if (concern.includes("acid") || concern.includes("exfoliat") || concern.includes("peel")) cautionIf.push("You have sensitive or barrier-compromised skin");
+    else if (concern.includes("niacinamide") || concern.includes("pore")) cautionIf.push("Expecting results without consistent daily use");
+    else if (concern.includes("vitamin c") || concern.includes("brightening")) cautionIf.push("Your skin is highly reactive to antioxidant formulas");
+    else cautionIf.push("Your skin is patch-test sensitive to new actives");
   }
 
   return { bestFor: bestFor.slice(0, 3), cautionIf: cautionIf.slice(0, 3) };
@@ -644,7 +657,7 @@ function ScoreBadge({ score }: { score: number }) {
       style={{ width: 130, height: 130 }}
       aria-label={`Score: ${score}/100`}
     >
-      {/* Badge template — "THE CLEAN SHEET" + "EST 2025" already printed */}
+      {/* Badge template - "THE CLEAN SHEET" + "EST 2025" already printed */}
       <Image
         src="/TCS Scoring badge empty.png"
         alt=""
@@ -793,7 +806,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
             {/* Verdict / summary */}
             <p className="text-sm text-[#282828]/65 leading-relaxed mb-5 max-w-xl">
-              {generateVerdict(product)}
+              {product.cleanSheetNote ?? generateVerdict(product)}
             </p>
 
             {/* Mobile only: image + badge */}
@@ -872,11 +885,13 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
             {/* Divider */}
             <div className="border-t border-[#efe9e0] mb-5" />
 
-            {/* Expert Summary */}
-            <div className="mb-5">
-              <div className="text-sm text-[#767373] mb-2" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Expert Summary</div>
-              <p className="text-sm text-[#282828]/70 leading-relaxed">{product.summary}</p>
-            </div>
+            {/* India Context */}
+            {product.indiaContext && (
+              <div className="mb-5">
+                <div className="text-sm text-[#248179] mb-2" style={{ fontFamily: "'Cooper BT', sans-serif" }}>India Context</div>
+                <p className="text-sm text-[#282828]/70 leading-relaxed">{product.indiaContext}</p>
+              </div>
+            )}
 
             {/* Key Ingredients */}
             <div className="mb-8">
@@ -908,7 +923,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
           {/* ── RIGHT COLUMN (desktop) ── */}
           <div className="hidden lg:flex flex-col gap-4 relative">
-            {/* Lime blob — top-right decorative */}
+            {/* Lime blob - top-right decorative */}
             <svg
               className="absolute -top-8 -right-8 pointer-events-none z-0"
               width="120" height="120" viewBox="0 0 120 120" fill="none"
@@ -934,7 +949,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                   <span className="text-[10px]">Image pending</span>
                 </div>
               )}
-              {/* Score badge — overlapping bottom-right */}
+              {/* Score badge - overlapping bottom-right */}
               <div className="absolute -bottom-8 -right-6 z-10">
                 <ScoreBadge score={product.score} />
               </div>
@@ -949,7 +964,24 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
             {/* Buy Now */}
             <div>
               <div className="text-sm text-[#fd6158] mb-2" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Buy Now</div>
-              {(product as ProductScorecard & { availabilitySources?: string[] }).availabilitySources?.length ? (
+              {product.retailerLinks?.length ? (
+                <div className="flex flex-col gap-1.5">
+                  {product.retailerLinks.map((r) => (
+                    <a
+                      key={r.name}
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-3 py-2 rounded-xl border border-[#efe9e0] hover:border-[#248179]/40 hover:bg-[#248179]/[0.03] transition-all group"
+                    >
+                      <span className="text-xs text-[#282828]/80 group-hover:text-[#248179] transition-colors">{r.name}</span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#b0a8a4] group-hover:text-[#248179] transition-colors flex-shrink-0">
+                        <path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </a>
+                  ))}
+                </div>
+              ) : (product as ProductScorecard & { availabilitySources?: string[] }).availabilitySources?.length ? (
                 <div className="flex items-center gap-2 flex-wrap">
                   {(product as ProductScorecard & { availabilitySources?: string[] }).availabilitySources!.map((src) => {
                     const retailerMap: Record<string, { label: string; color: string; letter: string }> = {
@@ -963,12 +995,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                     const r = retailerMap[src];
                     if (!r) return null;
                     return (
-                      <span
-                        key={src}
-                        title={r.label}
-                        className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] flex-shrink-0 cursor-pointer"
-                        style={{ backgroundColor: r.color }}
-                      >
+                      <span key={src} title={r.label} className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] flex-shrink-0" style={{ backgroundColor: r.color }}>
                         {r.letter}
                       </span>
                     );

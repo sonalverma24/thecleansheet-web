@@ -8,6 +8,7 @@ import {
   Shield, FlaskConical, FileText, Globe, Zap, Eye,
   Star, Loader2, ExternalLink, Award
 } from "lucide-react";
+import Image from "next/image";
 import type { Scorecard, ChatMessage, ComparisonResult, ExpertAnswer } from "@/lib/types";
 
 /* ─── Known product redirect map ───────────────────────────────────────────
@@ -216,7 +217,7 @@ function ScoreGauge({ score }: { score: number }) {
   const [animated, setAnimated] = useState(false);
   useEffect(() => { const t = setTimeout(() => setAnimated(true), 100); return () => clearTimeout(t); }, []);
 
-  const r = 60, sw = 10;
+  const r = 58, sw = 8, size = 144;
   const circ = 2 * Math.PI * r;
   const offset = animated ? circ - (score / 100) * circ : circ;
   const col = scoreColor(score);
@@ -224,30 +225,29 @@ function ScoreGauge({ score }: { score: number }) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="relative">
-        {/* Outer glow ring */}
-        <div className="absolute inset-0 rounded-full blur-xl opacity-30" style={{ background: col }} />
-        <svg width="152" height="152" viewBox="0 0 152 152" className="relative">
-          {/* Track */}
-          <circle cx="76" cy="76" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={sw} />
-          {/* Progress arc */}
+      <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+        {/* Glow */}
+        <div className="absolute inset-0 rounded-full blur-xl opacity-25 pointer-events-none" style={{ background: col }} />
+        {/* Animated ring */}
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="relative">
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={sw} />
           <circle
-            cx="76" cy="76" r={r}
-            fill="none"
-            stroke={col}
-            strokeWidth={sw}
+            cx={size/2} cy={size/2} r={r}
+            fill="none" stroke={col} strokeWidth={sw}
             strokeDasharray={circ}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            transform="rotate(-90 76 76)"
-            style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)", filter: `drop-shadow(0 0 8px ${col}90)` }}
+            transform={`rotate(-90 ${size/2} ${size/2})`}
+            style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)", filter: `drop-shadow(0 0 10px ${col}80)` }}
           />
-          {/* Score text */}
-          <text x="76" y="70" textAnchor="middle" fontSize="34" fontWeight="600" fill="#f0fdfa" fontFamily="var(--font-geist-sans)">{score}</text>
-          <text x="76" y="88" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.35)" fontFamily="var(--font-geist-sans)">/100</text>
         </svg>
+        {/* Center: Clean Sheet logo + score */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+          <Image src="/logo.png" alt="The Clean Sheet" width={40} height={40} className="rounded-full" />
+          <span className="text-2xl font-semibold leading-none tabular-nums" style={{ color: col }}>{score}</span>
+        </div>
       </div>
-      <span className="text-sm font-medium px-4 py-1.5 rounded-full" style={{ color: col, background: `${col}18`, border: `1px solid ${col}35` }}>
+      <span className="text-xs font-medium px-4 py-1.5 rounded-full" style={{ color: col, background: `${col}18`, border: `1px solid ${col}35` }}>
         {tier.label}
       </span>
     </div>
@@ -765,7 +765,7 @@ export default function AnalyzerPage() {
       "Hunting down the ingredient list…",
       "Ignoring the marketing copy, reading the actual science…",
       "Checking what EU, India, US & Korea regulators say…",
-      "Running the 6-pillar Clean Sheet framework…",
+      "Running the 5-pillar Clean Sheet framework…",
       "Almost done, putting your verdict together…",
     ];
     let idx = 0;
@@ -795,14 +795,17 @@ export default function AnalyzerPage() {
         const winnerCard = data.comparison.winner === "productB" ? data.comparison.productB : data.comparison.productA;
         const opener = `${data.comparison.verdict}${winnerCard.chatOpener ? `\n\n${winnerCard.chatOpener}` : ""}`;
         setChatMessages([{ id: uid(), role: "assistant", content: opener, timestamp: new Date() }]);
+        setQuery("");
       } else if (data.type === "answer" && data.answer) {
         setExpertAnswer(data.answer);
         if (data.answer.chatOpener) setChatMessages([{ id: uid(), role: "assistant", content: data.answer.chatOpener, timestamp: new Date() }]);
+        setQuery("");
       } else {
         const card = data.scorecard;
         if (card && typeof card.score === "number" && card.productName && Array.isArray(card.pillars) && card.pillars.length > 0) {
           setScorecard(card);
           if (card.chatOpener) setChatMessages([{ id: uid(), role: "assistant", content: card.chatOpener, timestamp: new Date() }]);
+          setQuery("");
         } else {
           setOutOfScope(true);
         }
@@ -813,7 +816,6 @@ export default function AnalyzerPage() {
     } finally {
       setIsAnalyzing(false);
       setStatusMsg(null);
-      setQuery("");
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [query, isAnalyzing, router]);
@@ -1004,7 +1006,7 @@ export default function AnalyzerPage() {
                     "Hunting down the ingredient list…",
                     "Ignoring the marketing copy, reading the actual science…",
                     "Checking what EU, India, US & Korea regulators say…",
-                    "Running the 6-pillar Clean Sheet framework…",
+                    "Running the 5-pillar Clean Sheet framework…",
                     "Almost done, putting your verdict together…",
                   ].map((step, i) => {
                     const done = i < stepIdx;
@@ -1051,7 +1053,7 @@ export default function AnalyzerPage() {
                 </p>
               )}
               <button
-                onClick={() => { setNoData(null); setQuery(""); inputRef.current?.focus(); }}
+                onClick={() => { setNoData(null); if (noData.productHint) setQuery(noData.productHint); inputRef.current?.focus(); }}
                 className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
                 style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
               >
@@ -1067,18 +1069,37 @@ export default function AnalyzerPage() {
         <section className="px-4 pb-10">
           <div className="max-w-2xl mx-auto">
             <div className="rounded-3xl p-8 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              <p className="text-3xl mb-4">🧴</p>
-              <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>This one&apos;s outside my lane</p>
-              <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
-                The Clean Sheet™ is built exclusively for beauty and personal care. Try asking about a skincare product, a cosmetic ingredient, or a haircare brand.
-              </p>
-              <button
-                onClick={() => { setOutOfScope(false); setAnalyzeError(null); setQuery(""); inputRef.current?.focus(); }}
-                className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
-                style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
-              >
-                Try a beauty product →
-              </button>
+              {query.startsWith("http") ? (
+                <>
+                  <p className="text-3xl mb-4">🧴</p>
+                  <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>Couldn&apos;t analyse this product</p>
+                  <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    We couldn&apos;t analyse this product. The brand&apos;s website may block scrapers, or INCI data isn&apos;t publicly available. Try pasting the ingredient list directly.
+                  </p>
+                  <button
+                    onClick={() => { setOutOfScope(false); setAnalyzeError(null); inputRef.current?.focus(); }}
+                    className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
+                    style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
+                  >
+                    Paste ingredients instead →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-3xl mb-4">🧴</p>
+                  <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>This one&apos;s outside my lane</p>
+                  <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    The Clean Sheet™ is built exclusively for beauty and personal care. Try asking about a skincare product, a cosmetic ingredient, or a haircare brand.
+                  </p>
+                  <button
+                    onClick={() => { setOutOfScope(false); setAnalyzeError(null); inputRef.current?.focus(); }}
+                    className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
+                    style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
+                  >
+                    Try a beauty product →
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -1196,12 +1217,13 @@ export default function AnalyzerPage() {
       {/* ── Empty state ── */}
       {!hasResult && !isAnalyzing && (
         <section className="px-4 pb-20 pt-2">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* How it works */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { icon: Shield, title: "Product Analysis", desc: "Score any beauty product across 6 safety pillars with real INCI data" },
-                { icon: Globe,  title: "Comparisons",      desc: "Ask 'X or Y for my skin type?' and get a head-to-head verdict" },
-                { icon: FlaskConical, title: "Ingredient Questions", desc: "Is this ingredient safe? Answered with EU, India & CIR science" },
+                { icon: Shield,       title: "Product Analysis",      desc: "Score any beauty product across 4 safety pillars with real INCI data" },
+                { icon: Globe,        title: "Comparisons",           desc: "Ask 'X or Y for my skin type?' and get a head-to-head verdict" },
+                { icon: FlaskConical, title: "Ingredient Questions",  desc: "Is this ingredient safe? Answered with EU, India & CIR science" },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="rounded-2xl p-5 flex sm:flex-col items-center sm:text-center gap-4 sm:gap-0 transition-all"
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -1210,11 +1232,93 @@ export default function AnalyzerPage() {
                     <Icon size={17} style={{ color: "#5eead4" }} />
                   </div>
                   <div>
-                    <div className="font-medium text-sm mb-1" style={{ color: "#f0fdfa" }}>{title}</div>
-                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{desc}</p>
+                    <div className="text-sm mb-1" style={{ color: "#f0fdfa", fontFamily: "Helvetica, Arial, sans-serif" }}>{title}</div>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "Helvetica, Arial, sans-serif" }}>{desc}</p>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* ── Educational Presets Panel ── */}
+            <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div className="px-5 pt-5 pb-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-full" style={{ background: "rgba(210,255,52,0.10)", color: "#d2ff34", fontFamily: "Helvetica, Arial, sans-serif", border: "1px solid rgba(210,255,52,0.20)" }}>
+                    Educational
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "#f0fdfa", fontFamily: "Helvetica, Arial, sans-serif" }}>
+                  Test the analyser logic
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "Helvetica, Arial, sans-serif" }}>
+                  Use pre-loaded examples to see how The Clean Sheet evaluates different formulations.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-5 pb-5">
+                {[
+                  {
+                    title: "Authentic Mild Baby Hydrator",
+                    score: 96,
+                    category: "Baby Care",
+                    purpose: "Previews an excellent, baby-safe squalane and lipid composition.",
+                    accent: "#5eead4",
+                    accentBg: "rgba(94,234,212,0.08)",
+                    ingredients: "Aqua, Squalane, Glycerin, Caprylic/Capric Triglyceride, Ceramide NP, Ceramide AP, Ceramide EOP, Phytosphingosine, Cholesterol, Sodium Hyaluronate, Tocopherol, Carbomer, Xanthan Gum, Sodium Lauroyl Lactylate",
+                  },
+                  {
+                    title: 'Questionable "15% Vitamin C" Serum',
+                    score: 58,
+                    category: "Serum",
+                    purpose: "Demonstrates the Phenoxyethanol Rule - actives listed after the preservative may be below meaningful concentration.",
+                    accent: "#fbbf24",
+                    accentBg: "rgba(251,191,36,0.08)",
+                    ingredients: "Aqua, Glycerin, Niacinamide, Propanediol, Panthenol, Sodium Ascorbyl Phosphate, Ascorbic Acid, Ferulic Acid, Tocopherol, Phenoxyethanol, Ascorbyl Glucoside, Vitamin C (15%), Ethylhexylglycerin, Disodium EDTA, Carbomer",
+                  },
+                  {
+                    title: 'Stripping "Gentle" Charcoal Wash',
+                    score: 42,
+                    category: "Cleanser",
+                    purpose: 'Triggers claim mismatch flags - "gentle" contradicted by harsh surfactants and a formaldehyde releaser.',
+                    accent: "#fd6158",
+                    accentBg: "rgba(253,97,88,0.08)",
+                    ingredients: "Aqua, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Glycerin, Activated Charcoal, DMDM Hydantoin, Fragrance, Sodium Chloride, Citric Acid, PEG-7 Glyceryl Cocoate, Disodium EDTA",
+                  },
+                  {
+                    title: "Standard SPF 50 Chemical Sunscreen",
+                    score: 54,
+                    category: "Sunscreen",
+                    purpose: "Explains Oxybenzone systemic absorption and reef concerns - triggers the sunscreen module.",
+                    accent: "#c084fc",
+                    accentBg: "rgba(192,132,252,0.08)",
+                    ingredients: "Aqua, Homosalate (10%), Oxybenzone (6%), Octinoxate (7.5%), Octocrylene (5%), Glycerin, Dimethicone, Niacinamide, Phenoxyethanol, Fragrance, Carbomer, Disodium EDTA, Tocopheryl Acetate",
+                  },
+                ].map(({ title, score, category, purpose, accent, accentBg, ingredients }) => (
+                  <button
+                    key={title}
+                    onClick={() => { setQuery(ingredients); analyze(ingredients); }}
+                    className="relative flex flex-col gap-2 rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
+                    style={{ background: accentBg, border: `1px solid ${accent}20` }}
+                  >
+                    {/* Score chip */}
+                    <div className="absolute top-3.5 right-3.5 text-xs px-2 py-0.5 rounded-full" style={{ background: accentBg, color: accent, border: `1px solid ${accent}30`, fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {score}
+                    </div>
+                    {/* Category chip */}
+                    <span className="text-[10px] tracking-widest uppercase" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {category}
+                    </span>
+                    <p className="text-sm pr-10" style={{ color: "#f0fdfa", fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {title}
+                    </p>
+                    <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.40)", fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      {purpose}
+                    </p>
+                    <span className="text-[11px] mt-1" style={{ color: accent, fontFamily: "Helvetica, Arial, sans-serif" }}>
+                      Run this example →
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </section>

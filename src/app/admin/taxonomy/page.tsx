@@ -148,7 +148,7 @@ function ItemDrawer({ item, onClose }: { item: TaxonomyItem; onClose: () => void
             { label: "Status", value: item.status },
             { label: "Display order", value: String(item.display_order) },
             { label: "Parent ID", value: item.parent_id ?? "none" },
-            { label: "Description", value: item.description || "—" },
+            { label: "Description", value: item.description || " - " },
           ].map(({ label, value }) => (
             <div key={label}>
               <p className="text-[10px] font-medium text-ink-400 uppercase tracking-wider mb-1">{label}</p>

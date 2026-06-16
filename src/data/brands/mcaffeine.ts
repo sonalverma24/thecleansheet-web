@@ -2,7 +2,7 @@
  * mCaffeine brand data
  *
  * Ingredient list sourced from incidecoder.com (MCaffeine Naked & Rich Chocolate Body Butter,
- * corresponding to the current Choco Body Butter SKU — verified June 2026).
+ * corresponding to the current Choco Body Butter SKU - verified June 2026).
  * mCaffeine is an Indian D2C brand built around caffeine as the hero ingredient.
  * Sold primarily through mcaffeine.com, Nykaa, and Amazon India.
  */
@@ -188,7 +188,7 @@ const products: ProductScorecard[] = [
     certificationStatus: "not-certified",
     claimsMade: ["72-hour moisturization", "Reduces stretch marks", "Heals dry skin"],
     claimsVerified: [],
-    claimsNotVerified: ["72-hour moisturization — no clinical study cited", "Reduces stretch marks — no proven stretch mark actives in the INCI", "Heals dry skin — moisturisation plausible but no quantified study published"],
+    claimsNotVerified: ["72-hour moisturization - no clinical study cited", "Reduces stretch marks - no proven stretch mark actives in the INCI", "Heals dry skin - moisturisation plausible but no quantified study published"],
     availabilitySources: ["Nykaa", "mcaffeine.com", "Amazon India"],
   },
 

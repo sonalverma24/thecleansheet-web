@@ -202,8 +202,8 @@ const products: ProductScorecard[] = [
     alcoholStatus: "free",
     certificationStatus: "not-certified",
     claimsMade: ["AHA exfoliation", "Vitamin C brightening", "Moisturisation"],
-    claimsVerified: ["Tetrahexyldecyl Ascorbate as a brightening Vitamin C — supported by published studies", "Moisturisation — emollient base well-suited"],
-    claimsNotVerified: ["AHA exfoliation — formula contains fruit enzymes and salicylates, not classical AHAs"],
+    claimsVerified: ["Tetrahexyldecyl Ascorbate as a brightening Vitamin C - supported by published studies", "Moisturisation - emollient base well-suited"],
+    claimsNotVerified: ["AHA exfoliation - formula contains fruit enzymes and salicylates, not classical AHAs"],
     availabilitySources: ["Nykaa"],
   },
 
@@ -261,7 +261,7 @@ const products: ProductScorecard[] = [
       },
     ],
     globalScreen: {
-      eu_1223_2009: "Potential concern found — Butylphenyl Methylpropional (Lilial), banned EU March 2022, reprotoxicant Category 1B",
+      eu_1223_2009: "Potential concern found - Butylphenyl Methylpropional (Lilial), banned EU March 2022, reprotoxicant Category 1B",
       india_cr_2020: "No obvious public red flag found",
       health_canada_hotlist: "No obvious public red flag found",
       canada_nhpid: "Not triggered",
@@ -275,7 +275,7 @@ const products: ProductScorecard[] = [
     inciCompleteness: {
       status: "Full INCI on brand PDP",
       flags: [
-        "Butylphenyl Methylpropional (Lilial) declared in INCI — banned in EU since March 2022",
+        "Butylphenyl Methylpropional (Lilial) declared in INCI - banned in EU since March 2022",
         "9 EU-listed fragrance allergens separately declared",
       ],
     },
@@ -389,7 +389,7 @@ const products: ProductScorecard[] = [
     warn_badges: [
       "Synthetic Fragrance",
       "Fragrance Allergens Present",
-      "Contains EU-Banned Ingredient: Butylphenyl Methylpropional (Lilial) — Reproductive Toxicant Category 1B",
+      "Contains EU-Banned Ingredient: Butylphenyl Methylpropional (Lilial) - Reproductive Toxicant Category 1B",
       "Claim Not Publicly Substantiated",
     ],
     info_badges: ["Lilial is banned in the EU since March 2022; sold legally in India as of June 2026"],
@@ -411,8 +411,8 @@ const products: ProductScorecard[] = [
     alcoholStatus: "free",
     certificationStatus: "not-certified",
     claimsMade: ["Firming", "Moisturising", "Guarana for skin tightening"],
-    claimsVerified: ["Moisturisation — emollient base is effective"],
-    claimsNotVerified: ["Firming — caffeine in body cream at typical application quantities has limited clinical evidence for skin tightening"],
+    claimsVerified: ["Moisturisation - emollient base is effective"],
+    claimsNotVerified: ["Firming - caffeine in body cream at typical application quantities has limited clinical evidence for skin tightening"],
     availabilitySources: ["Nykaa"],
   },
 
@@ -593,7 +593,7 @@ const products: ProductScorecard[] = [
     pass_badges: ["INCI Verified", "Paraben-Free", "Vegan-Friendly", "Cruelty-Free (PETA)"],
     warn_badges: ["Synthetic Fragrance", "Fragrance Allergens Present"],
     info_badges: [
-      "No Lilial (EU-banned ingredient present in Bum Bum Cream) — significantly cleaner fragrance profile",
+      "No Lilial (EU-banned ingredient present in Bum Bum Cream) - significantly cleaner fragrance profile",
       "Prebiotic hibiscus ferment is emerging science",
     ],
     indiaContext: "This is Sol de Janeiro's safest body care formula from a regulatory standpoint: no EU-banned ingredients, a rich emollient base suited to dry Indian winters and air-conditioned environments, and only 2 fragrance allergens versus 9 in the Bum Bum Cream. The Shea Butter-dominant base works well for Fitzpatrick III-V skin types prone to dryness and uneven texture. The prebiotic hibiscus ferment is a thoughtful addition for consumers interested in microbiome skin support. At Rs.5155, this is premium pricing but the formulation quality is among the better luxury body butter offerings available in India.",
@@ -614,8 +614,8 @@ const products: ProductScorecard[] = [
     alcoholStatus: "free",
     certificationStatus: "not-certified",
     claimsMade: ["Deep moisture", "Barrier repair", "Prebiotic for skin microbiome"],
-    claimsVerified: ["Deep moisturisation — shea butter, coconut oil, multiple emollients well-supported", "Barrier repair — linoleic-rich oils and squalane ingredient-level support is strong"],
-    claimsNotVerified: ["Prebiotic microbiome benefit — Hibiscus Ferment is an emerging ingredient with limited published clinical data on skin microbiome outcomes"],
+    claimsVerified: ["Deep moisturisation - shea butter, coconut oil, multiple emollients well-supported", "Barrier repair - linoleic-rich oils and squalane ingredient-level support is strong"],
+    claimsNotVerified: ["Prebiotic microbiome benefit - Hibiscus Ferment is an emerging ingredient with limited published clinical data on skin microbiome outcomes"],
     availabilitySources: ["Nykaa"],
   },
 

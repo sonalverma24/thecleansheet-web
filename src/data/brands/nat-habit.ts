@@ -2,7 +2,7 @@
  * Nat Habit brand data
  *
  * Ingredient lists sourced from nathabit.in (verified June 2026).
- * Nat Habit uses common ingredient names (not INCI) on their website — this is a transparency limitation.
+ * Nat Habit uses common ingredient names (not INCI) on their website - this is a transparency limitation.
  * INCI translations are provided below each common-name ingredient.
  * Nat Habit is an Indian D2C brand founded by an IIT-IIM alumna, focused on fresh,
  * Ayurveda-inspired formulations with Ecocert-certified preservation.
@@ -71,10 +71,10 @@ const products: ProductScorecard[] = [
       },
     ],
     globalScreen: {
-      eu_1223_2009: "Potential concern found — Orange Peel Oil (Limonene, EU allergen undisclosed); Benzyl Alcohol in preservative (EU allergen undisclosed); fragrance allergen breakdown absent for leave-on product",
-      india_cr_2020: "Potential concern found — brand uses common ingredient names instead of INCI nomenclature; does not meet India CR 2020 labelling standards",
+      eu_1223_2009: "Potential concern found - Orange Peel Oil (Limonene, EU allergen undisclosed); Benzyl Alcohol in preservative (EU allergen undisclosed); fragrance allergen breakdown absent for leave-on product",
+      india_cr_2020: "Potential concern found - brand uses common ingredient names instead of INCI nomenclature; does not meet India CR 2020 labelling standards",
       health_canada_hotlist: "No obvious public red flag found",
-      canada_nhpid: "Triggered — botanical and essential oil ingredients present (Walnut Oil, Almond Oil, Coconut Oil, Sesame Oil, Sunflower Oil, Patchouli Oil, Orange Peel Oil)",
+      canada_nhpid: "Triggered - botanical and essential oil ingredients present (Walnut Oil, Almond Oil, Coconut Oil, Sesame Oil, Sunflower Oil, Patchouli Oil, Orange Peel Oil)",
       tga_australia: "Not triggered",
       us_fda_21cfr: "No obvious public red flag found",
       korea_mfds: "No obvious public red flag found",
@@ -85,7 +85,7 @@ const products: ProductScorecard[] = [
     inciCompleteness: {
       status: "Partial",
       flags: [
-        "Brand uses common ingredient names instead of INCI nomenclature — does not meet India CR 2020 or EU 1223/2009 labelling standards"
+        "Brand uses common ingredient names instead of INCI nomenclature - does not meet India CR 2020 or EU 1223/2009 labelling standards"
       ]
     },
     keyActives: [
@@ -173,8 +173,8 @@ const products: ProductScorecard[] = [
       "INCI nomenclature is absent throughout the ingredient list. Publishing the full INCI list alongside common names would bring the product into alignment with India CR 2020 and EU 1223/2009 labelling standards."
     ],
     pass_badges: ["Ecocert Preserved", "No Parabens", "No Drying Alcohols", "No Synthetic Preservatives"],
-    warn_badges: ["Fragrance Allergens Present", "Contains Milk (Lac) — allergen not prominently declared", "Patchouli Essential Oil (sensitisation risk)", "Claim Not Publicly Substantiated"],
-    info_badges: ["Not vegan — contains Lac (raw milk) and Cera Alba (beeswax)", "Ingredient list uses common names, not INCI — regulatory transparency gap", "Canada NHPID Relevant", "Ayurveda-Aligned"],
+    warn_badges: ["Fragrance Allergens Present", "Contains Milk (Lac) - allergen not prominently declared", "Patchouli Essential Oil (sensitisation risk)", "Claim Not Publicly Substantiated"],
+    info_badges: ["Not vegan - contains Lac (raw milk) and Cera Alba (beeswax)", "Ingredient list uses common names, not INCI - regulatory transparency gap", "Canada NHPID Relevant", "Ayurveda-Aligned"],
     indiaContext: "Nat Habit occupies a premium-natural niche in Indian body care, and the Double Cocoa formula is particularly suited to Indian winters in North India (Delhi, Punjab, Rajasthan) where extreme seasonal dryness is a common concern. The Lac (raw milk) base aligns with long-standing Ayurvedic skincare traditions of malai and milk application, which gives this product cultural resonance. However, India CR 2020 requires INCI nomenclature on cosmetic labels, and the brand's use of common names does not meet this standard, which limits the ability of Indian consumers to cross-reference ingredients against safety databases or allergy records. For Fitzpatrick III-V skin types prevalent in India, the essential oil blend carries sensitisation risk that warrants a patch test before first use.",
     cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
@@ -187,14 +187,14 @@ const products: ProductScorecard[] = [
     skinTypeTags: ["dry", "normal"],
     concernTags: ["Extreme Dryness", "Moisturisation", "Barrier Repair"],
     suitabilityTags: ["Dry Skin", "Normal Skin", "Skincare Beginners"],
-    cautionTags: ["Contains Milk (Lac) — avoid if milk-allergic", "Patchouli Oil — sensitiser risk", "Orange Peel Oil — Limonene allergen"],
+    cautionTags: ["Contains Milk (Lac) - avoid if milk-allergic", "Patchouli Oil - sensitiser risk", "Orange Peel Oil - Limonene allergen"],
     routineSlot: "PM",
     fragranceStatus: "essential-oil",
     alcoholStatus: "free",
     certificationStatus: "not-certified",
     claimsMade: ["48-hour moisture", "Extreme dryness relief", "DermaCare"],
-    claimsVerified: ["Deep moisturisation — cocoa butter, shea butter, and multi-oil base is consistent with extreme dryness relief"],
-    claimsNotVerified: ["DermaCare — unregulated marketing descriptor without substantiation", "48-hour moisture duration — plausible but not publicly tested"],
+    claimsVerified: ["Deep moisturisation - cocoa butter, shea butter, and multi-oil base is consistent with extreme dryness relief"],
+    claimsNotVerified: ["DermaCare - unregulated marketing descriptor without substantiation", "48-hour moisture duration - plausible but not publicly tested"],
     availabilitySources: ["nathabit.in", "Nykaa"],
   },
 
@@ -250,10 +250,10 @@ const products: ProductScorecard[] = [
       },
     ],
     globalScreen: {
-      eu_1223_2009: "Potential concern found — Clove Oil (Eugenol, EU priority allergen, undisclosed in leave-on product); Rose Oil (Citronellol, Geraniol, EU allergens undisclosed); Benzyl Alcohol in preservative (EU allergen undisclosed); fragrance allergen breakdown absent",
-      india_cr_2020: "Potential concern found — brand uses common ingredient names instead of INCI nomenclature; does not meet India CR 2020 labelling standards",
+      eu_1223_2009: "Potential concern found - Clove Oil (Eugenol, EU priority allergen, undisclosed in leave-on product); Rose Oil (Citronellol, Geraniol, EU allergens undisclosed); Benzyl Alcohol in preservative (EU allergen undisclosed); fragrance allergen breakdown absent",
+      india_cr_2020: "Potential concern found - brand uses common ingredient names instead of INCI nomenclature; does not meet India CR 2020 labelling standards",
       health_canada_hotlist: "No obvious public red flag found",
-      canada_nhpid: "Triggered — botanical and essential oil ingredients present (Walnut Oil, Almond Oil, Coconut Oil, Sesame Oil, Sunflower Oil, Clove Oil, Rose Oil)",
+      canada_nhpid: "Triggered - botanical and essential oil ingredients present (Walnut Oil, Almond Oil, Coconut Oil, Sesame Oil, Sunflower Oil, Clove Oil, Rose Oil)",
       tga_australia: "Not triggered",
       us_fda_21cfr: "No obvious public red flag found",
       korea_mfds: "No obvious public red flag found",
@@ -264,7 +264,7 @@ const products: ProductScorecard[] = [
     inciCompleteness: {
       status: "Partial",
       flags: [
-        "Brand uses common ingredient names instead of INCI nomenclature — does not meet India CR 2020 or EU 1223/2009 labelling standards"
+        "Brand uses common ingredient names instead of INCI nomenclature - does not meet India CR 2020 or EU 1223/2009 labelling standards"
       ]
     },
     keyActives: [
@@ -348,8 +348,8 @@ const products: ProductScorecard[] = [
       "INCI nomenclature is absent throughout. Publishing a full INCI list alongside common names would bring the product into alignment with India CR 2020 and EU 1223/2009 labelling standards."
     ],
     pass_badges: ["Ecocert Preserved", "No Parabens", "No Drying Alcohols", "No Synthetic Preservatives"],
-    warn_badges: ["Fragrance Allergens Present", "Irritant Risk", "Contains Milk (Lac) — allergen not declared", "Claim Not Publicly Substantiated"],
-    info_badges: ["Not vegan — contains Lac (raw milk) and Cera Alba (beeswax)", "Ingredient list uses common names, not INCI — regulatory transparency gap", "Canada NHPID Relevant", "Ayurveda-Aligned"],
+    warn_badges: ["Fragrance Allergens Present", "Irritant Risk", "Contains Milk (Lac) - allergen not declared", "Claim Not Publicly Substantiated"],
+    info_badges: ["Not vegan - contains Lac (raw milk) and Cera Alba (beeswax)", "Ingredient list uses common names, not INCI - regulatory transparency gap", "Canada NHPID Relevant", "Ayurveda-Aligned"],
     indiaContext: "The Multi Nut Shea Malai is popular on nathabit.in for its naturally-sourced multi-oil profile and omega-3 positioning, and walnut, almond, and sunflower oils are familiar and trusted in Indian skincare traditions. However, Clove Oil is a significant sensitisation concern for Indian consumers: Fitzpatrick III-V skin types, which are most prevalent in India, can be more reactive to contact sensitisers, and the application of a high-Eugenol essential oil to large body surface areas (arms, legs, torso) substantially increases cumulative exposure. Consumers with any history of eczema, atopic dermatitis, or fragrance sensitivity should not use this product without medical advice. The lack of INCI naming makes it difficult for Indian consumers to research individual ingredients independently, which is not aligned with India CR 2020 labelling standards.",
     cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
@@ -362,14 +362,14 @@ const products: ProductScorecard[] = [
     skinTypeTags: ["normal", "dry"],
     concernTags: ["Dry Skin", "Moisturisation"],
     suitabilityTags: ["Dry Skin", "Normal Skin", "Skincare Beginners"],
-    cautionTags: ["Clove Oil — major sensitiser (Eugenol)", "Contains Milk (Lac) — avoid if milk-allergic", "Rose Oil — Citronellol and Geraniol allergens"],
+    cautionTags: ["Clove Oil - major sensitiser (Eugenol)", "Contains Milk (Lac) - avoid if milk-allergic", "Rose Oil - Citronellol and Geraniol allergens"],
     routineSlot: "PM",
     fragranceStatus: "essential-oil",
     alcoholStatus: "free",
     certificationStatus: "not-certified",
     claimsMade: ["48-hour moisture lock", "Omega-3 for skin barrier", "Body acne benefit"],
-    claimsVerified: ["Moisturisation — shea butter and multi-oil base is consistent with a moisturising body product", "Omega-3 content at ingredient level — walnut oil contains credible ALA levels"],
-    claimsNotVerified: ["Body acne benefit — Coconut Oil comedogenicity contradicts this claim", "48-hour moisture duration — plausible but not publicly tested"],
+    claimsVerified: ["Moisturisation - shea butter and multi-oil base is consistent with a moisturising body product", "Omega-3 content at ingredient level - walnut oil contains credible ALA levels"],
+    claimsNotVerified: ["Body acne benefit - Coconut Oil comedogenicity contradicts this claim", "48-hour moisture duration - plausible but not publicly tested"],
     availabilitySources: ["nathabit.in", "Nykaa"],
   },
 

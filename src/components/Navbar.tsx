@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import Image from "next/image";
 
 const NAV_LINKS = [
-  { href: "/brands",        label: "Scorecards"     },
-  { href: "/certification", label: "Certification"  },
-  { href: "/learn",         label: "Learn"          },
-  { href: "/blog",          label: "Reads"          },
-  { href: "/about",         label: "About"          },
+  { href: "/brands",        label: "Scorecards"   },
+  { href: "/analyzer",      label: "Analyse"      },
+  { href: "/certification", label: "Certification" },
+  { href: "/learn",         label: "Learn"        },
+  { href: "/blog",          label: "Reads"        },
+  { href: "/about",         label: "About"        },
 ];
 
 export default function Navbar() {
-  const pathname   = usePathname();
+  const pathname    = usePathname();
   const [scrolled,   setScrolled]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -26,6 +27,10 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => setMobileOpen(false), [pathname]);
+
+  // Hide desktop navbar spacer on mobile (bottom nav handles it there)
+  const isAdmin = pathname.startsWith("/admin");
+  if (isAdmin) return null;
 
   return (
     <>
@@ -49,25 +54,28 @@ export default function Navbar() {
                 className="rounded-full group-hover:scale-110 transition-transform duration-200"
                 priority
               />
-              <span className="font-medium text-ink-900 tracking-tight hidden sm:block" style={{ fontFamily: "var(--font-display)" }}>
+              <span className="text-[15px] font-medium text-ink-900 tracking-tight hidden sm:block" style={{ fontFamily: "var(--font-display)" }}>
                 THE CLEAN SHEET
                 <sup className="text-[9px] text-teal-500 ml-0.5 font-sans font-normal">™</sup>
               </span>
             </Link>
 
-            {/* Desktop nav, 3 clean items */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Desktop nav */}
+            <nav className="hidden lg:flex items-center gap-0.5">
               {NAV_LINKS.map(({ href, label }) => {
-                const active = pathname === href || pathname.startsWith(href + "/");
+                const active = href === "/"
+                  ? pathname === "/"
+                  : pathname === href || pathname.startsWith(href + "/");
                 return (
                   <Link
                     key={href}
                     href={href}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-full text-[13px] transition-all duration-200 ${
                       active
-                        ? "bg-teal-600 text-white"
-                        : "text-ink-600 hover:text-ink-900 hover:bg-ink-50"
+                        ? "text-[#248179] bg-[#248179]/8"
+                        : "text-[#282828]/70 hover:text-[#282828] hover:bg-black/4"
                     }`}
+                    style={{ fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 400 }}
                   >
                     {label}
                   </Link>
@@ -75,58 +83,79 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Single CTA */}
-            <div className="hidden md:flex items-center">
-              <button
-                onClick={() => window.dispatchEvent(new Event("openCertifyForm"))}
-                className="flex items-center gap-1.5 bg-coral-500 hover:bg-coral-600 text-white text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-coral-500/30 active:scale-95"
+            {/* Right CTAs */}
+            <div className="hidden lg:flex items-center gap-2">
+              <Link
+                href="/account"
+                className="p-2 rounded-full text-[#b0a8a4] hover:text-[#282828] transition-colors"
+                aria-label="Account"
+              >
+                <User size={18} strokeWidth={1.5} />
+              </Link>
+              <Link
+                href="/for-brands"
+                className="text-[13px] text-white bg-[#fd6158] hover:bg-[#e8564e] px-4 py-2 rounded-full transition-all duration-200"
+                style={{ fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 400 }}
               >
                 Get Certified
-              </button>
+              </Link>
             </div>
 
-            {/* Mobile hamburger */}
+            {/* Mobile hamburger - shown on md and below, but only on desktop-first pages */}
             <button
-              className="md:hidden p-2 rounded-xl text-ink-700 hover:bg-ink-50 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-[#b0a8a4] hover:bg-black/4 transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle menu"
             >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile dropdown menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-ink-100 bg-white">
-            <div className="px-4 py-4 space-y-1">
+          <div className="lg:hidden border-t border-[#b0a8a4]/20 bg-white">
+            <div className="px-4 py-3 space-y-0.5">
               {NAV_LINKS.map(({ href, label }) => {
                 const active = pathname === href || pathname.startsWith(href + "/");
                 return (
                   <Link
                     key={href}
                     href={href}
-                    className={`flex items-center px-4 py-3.5 rounded-2xl text-sm font-medium transition-colors min-h-[48px] ${
-                      active ? "bg-teal-600 text-white" : "text-ink-800 hover:bg-teal-50"
+                    className={`flex items-center px-4 py-3.5 rounded-2xl text-[14px] transition-colors min-h-[48px] ${
+                      active
+                        ? "text-[#248179] bg-[#248179]/8"
+                        : "text-[#282828] hover:bg-black/4"
                     }`}
+                    style={{ fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 400 }}
                   >
                     {label}
                   </Link>
                 );
               })}
-              <div className="pt-3 border-t border-ink-100 mt-3">
-                <button
-                  onClick={() => { setMobileOpen(false); window.dispatchEvent(new Event("openCertifyForm")); }}
-                  className="flex items-center justify-center w-full bg-coral-500 text-white text-sm font-normal px-4 py-3.5 rounded-2xl min-h-[48px]"
+              <div className="pt-2 pb-1 border-t border-[#b0a8a4]/20 mt-2 flex flex-col gap-2">
+                <Link
+                  href="/account"
+                  className="flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl text-[14px] text-[#282828] border border-[#b0a8a4]/30 min-h-[48px] transition-colors hover:bg-black/4"
+                  style={{ fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 400 }}
+                >
+                  <User size={16} strokeWidth={1.5} />
+                  Account
+                </Link>
+                <Link
+                  href="/for-brands"
+                  className="flex items-center justify-center px-4 py-3.5 rounded-2xl text-[14px] text-white bg-[#fd6158] min-h-[48px] transition-colors hover:bg-[#e8564e]"
+                  style={{ fontFamily: "Helvetica, Arial, sans-serif", fontWeight: 400 }}
                 >
                   Get Certified
-                </button>
+                </Link>
               </div>
             </div>
           </div>
         )}
       </header>
-      <div className="h-16" />
+      {/* Spacer - desktop only (mobile uses bottom nav) */}
+      <div className="h-16 hidden lg:block" />
     </>
   );
 }

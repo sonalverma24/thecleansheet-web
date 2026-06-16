@@ -61,7 +61,7 @@ export function ComparisonTray({
                 </button>
               </div>
             ))}
-            {/* Empty slots — hide on very small screens */}
+            {/* Empty slots - hide on very small screens */}
             {Array.from({ length: Math.max(0, 2 - products.length) }).map((_, i) => (
               <div
                 key={`empty-${i}`}

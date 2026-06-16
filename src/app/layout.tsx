@@ -3,6 +3,7 @@ import { Playfair_Display, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import Footer from "@/components/Footer";
 import WhatsAppBubble from "@/components/WhatsAppBubble";
 import FormModal from "@/components/FormModal";
@@ -200,10 +201,12 @@ export default function RootLayout({
         />
         <AuthProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          {/* pb-16 on mobile reserves space for the fixed bottom nav */}
+          <main className="flex-1 pb-16 lg:pb-0">{children}</main>
           <Footer />
           <WhatsAppBubble />
           <FormModal />
+          <MobileBottomNav />
         </AuthProvider>
       </body>
     </html>
