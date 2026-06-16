@@ -1242,16 +1242,11 @@ export default function AnalyzerPage() {
             {/* ── Educational Presets Panel ── */}
             <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div className="px-5 pt-5 pb-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-full" style={{ background: "rgba(210,255,52,0.10)", color: "#d2ff34", fontFamily: "Helvetica, Arial, sans-serif", border: "1px solid rgba(210,255,52,0.20)" }}>
-                    Educational
-                  </span>
-                </div>
                 <p className="text-sm" style={{ color: "#f0fdfa", fontFamily: "Helvetica, Arial, sans-serif" }}>
-                  Test the analyser logic
+                  See it in action
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "Helvetica, Arial, sans-serif" }}>
-                  Use pre-loaded examples to see how The Clean Sheet evaluates different formulations.
+                  Four real formulations showing how the Clean Sheet framework flags problems.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-5 pb-5">
@@ -1295,7 +1290,8 @@ export default function AnalyzerPage() {
                 ].map(({ title, score, category, purpose, accent, accentBg, ingredients }) => (
                   <button
                     key={title}
-                    onClick={() => { setQuery(ingredients); analyze(ingredients); }}
+                    type="button"
+                    onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setQuery(ingredients); analyze(ingredients); }}
                     className="relative flex flex-col gap-2 rounded-2xl p-4 text-left transition-all hover:scale-[1.01]"
                     style={{ background: accentBg, border: `1px solid ${accent}20` }}
                   >
