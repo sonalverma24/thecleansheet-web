@@ -404,6 +404,35 @@ export async function POST(req: Request) {
     const isExpert = !urlInput && isExpertQuestion(q);
     const isComparison = !urlInput && !isExpert && isComparisonQuery(q);
 
+    // For text-based product queries, pre-fetch from external sources just like URL inputs.
+    // This gives Gemini real data to work with instead of relying entirely on grounding.
+    if (!urlInput && !isExpert && !isComparison) {
+      const enc = encodeURIComponent(q);
+      const encReview = encodeURIComponent(q + " review india");
+
+      const [inciContent, nykaaContent, amazonContent, purplleContent, redditContent] = await Promise.all([
+        scrapeURL(`https://incidecoder.com/search?query=${enc}`),
+        scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
+        scrapeURL(`https://www.amazon.in/s?k=${enc}`),
+        scrapeURL(`https://www.purplle.com/search?q=${enc}`),
+        scrapeURL(`https://www.reddit.com/search/?q=${encReview}&sort=relevance`),
+      ]);
+
+      const contextParts: string[] = [];
+      if (nykaaContent && !isBlockedPage(nykaaContent))
+        contextParts.push(`--- Nykaa search results ---\n${nykaaContent.slice(0, 5000)}`);
+      if (amazonContent && !isBlockedPage(amazonContent))
+        contextParts.push(`--- Amazon India search results ---\n${amazonContent.slice(0, 5000)}`);
+      if (purplleContent && !isBlockedPage(purplleContent))
+        contextParts.push(`--- Purplle search results ---\n${purplleContent.slice(0, 5000)}`);
+      if (redditContent && !isBlockedPage(redditContent))
+        contextParts.push(`--- Reddit reviews ---\n${redditContent.slice(0, 5000)}`);
+      scrapedContext = contextParts.join("\n\n");
+
+      if (inciContent && !isBlockedPage(inciContent))
+        inciDecoderContext = inciContent.slice(0, 5000);
+    }
+
     const systemInstruction = isComparison
       ? COMPARISON_SYSTEM_PROMPT
       : isExpert
@@ -503,18 +532,24 @@ NICHE BRAND NOTE: If this is a small/emerging Indian brand not well indexed on G
 
 Product: ${q}
 
+--- Pre-fetched data (Nykaa, Amazon, Purplle, Reddit) ---
+${scrapedContext || "(no pre-fetched data available)"}
+
+--- InciDecoder search results ---
+${inciDecoderContext || "(search InciDecoder manually: \"${q} site:incidecoder.com\")"}
+
 MANDATORY RESEARCH  -  execute ALL of these before scoring:
 1. Search Google for the product: "[product name]" to find the brand's official product page and open it.
-2. Search InciDecoder: "[product name] site:incidecoder.com" to get the full INCI ingredient list.
-3. Search Nykaa: "[product name] site:nykaa.com" to get price, rating, review count, and INCI if available.
-4. Search Amazon India: "[product name] site:amazon.in" to get price, rating, and reviews.
+2. Search InciDecoder: "[product name] site:incidecoder.com" — also check InciDecoder results above.
+3. Search Nykaa: "[product name] site:nykaa.com" — also check Nykaa results above.
+4. Search Amazon India: "[product name] site:amazon.in" — also check Amazon results above.
 5. Search Purplle: "[product name] site:purplle.com" — essential for niche Indian brands.
 6. Search Flipkart for additional price/review data.
-7. Search Reddit: "[brand] [product name] review india" for authentic user experiences.
+7. Search Reddit: "[brand] [product name] review india" — also check Reddit results above.
 8. Search for lab tests: "[brand] lab test certificate" and "[brand] clinical study".
 9. Search for controversies: "[product name] India banned recalled CDSCO controversy".
 
-Use ALL sources. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product; produce a complete scorecard JSON. Never return out_of_scope.`;
+Use ALL sources above plus your own web search. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product; produce a complete scorecard JSON. Never return out_of_scope.`;
     }
 
     const result = await model.generateContent(prompt);
