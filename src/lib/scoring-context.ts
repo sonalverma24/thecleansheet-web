@@ -49,11 +49,14 @@ RESEARCH PROTOCOL (execute in order before scoring):
 Step 1: Find the INCI list. Search priority ORDER matters:
   a. Brand's own website product page (PDP): "[brand] [product name] ingredients site:[brand-domain]"
   b. Brand's own website general search: "[product name] ingredients"
-  c. Third-party sources: incidecoder.com, openbeautyfacts.org, nykaa.com, amazon.in
-  Record WHERE you found the INCI; this affects the Transparency score:
- - Found on brand PDP: no deduction
- - Found ONLY on third-party (InciDecoder, Nykaa, Amazon etc.) but NOT confirmed on brand's own site: -3 pts from Transparency
- - Not found anywhere: score Full Ingredient Disclosure at 0, cap total score at 50, note "INCI not publicly available"
+  c. Third-party sources: incidecoder.com, openbeautyfacts.org, nykaa.com, amazon.in, purplle.com
+
+  IMPORTANT - Indian brand INCI reality: Most Indian brands (Mamaearth, Minimalist, Dot & Key, mCaffeine etc.) publish their INCI list on their product page inside a JavaScript-rendered accordion or tab. Google Search grounding CANNOT reliably extract content from JavaScript-collapsed sections. Do NOT penalize or flag "INCI not on brand website" merely because your grounding search did not return it from the brand site. If you find the INCI on InciDecoder, Nykaa, Amazon.in, or Purplle — the brand HAS made it publicly accessible. Brands provide this data to these platforms directly.
+
+  Record WHERE you found the INCI:
+ - Found on brand PDP or on InciDecoder or on Nykaa/Amazon/Purplle: no deduction — INCI is publicly accessible
+ - Not found on ANY public source (not on InciDecoder, not on Nykaa, not on Amazon, not on Purplle): score Full Ingredient Disclosure at 0, cap total score at 50, note "INCI not publicly available"
+ - DO NOT use the warn badge "INCI not on brand website" unless you have confirmed it is absent from ALL of: InciDecoder, Nykaa, Amazon.in, Purplle, and the brand's own website
 
 Step 2: Find the price in India.
   Search: "[product name] [brand] price India"
@@ -86,8 +89,9 @@ Step 5: Check transparency documentation.
  - "Dermatologist tested" with no linked study: -3 pts (penalise the unsubstantiated claim)
  - SPF claimed but no ISO 24444-compliant test report found publicly: -4 pts
  - "Natural X%" or "organic X%" claimed without ISO 16128 or equivalent methodology cited: -2 pts
- - INCI not on brand PDP (only found on third-party): -3 pts
+ - INCI not found on ANY public platform (not InciDecoder, not Nykaa, not Amazon, not brand site): -5 pts
   DO NOT award transparency points for information you cannot confirm is actually published. Absence of confirmed evidence = apply the deduction.
+  DO NOT deduct for "INCI only on third party" — Nykaa and InciDecoder are legitimate public disclosure channels that Indian brands actively supply data to.
 
 Use what you find. Do not fabricate INCI, prices, or reviews.
 
@@ -345,7 +349,7 @@ CATEGORY TRIGGERS (apply extra scrutiny when product type matches):
 ---
 
 INCI COMPLETENESS FLAGS (apply when relevant):
- - Full INCI missing from brand website
+ - Full INCI missing from ALL public sources (InciDecoder, Nykaa, Amazon, brand site)
  - Fragrance not disclosed beyond "parfum"
  - Essential oil blend not broken down
  - Active % claimed but not disclosed
