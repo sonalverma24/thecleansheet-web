@@ -314,21 +314,16 @@ const VALID_PILLAR_NAMES = new Set([
 
 function isValidScorecard(parsed: Record<string, unknown> | null): boolean {
   if (!parsed) return false;
+  // After normalizeScorecard runs, score should always be an integer number.
+  // Guard against old-format /10 scores (e.g. 8.2) that survived normalization.
   if (typeof parsed.score !== "number") return false;
-  // Score must be an integer 0-100 (not a /10 scale like 9.2)
   if (parsed.score < 0 || parsed.score > 100) return false;
   if (!Number.isInteger(parsed.score)) return false;
   if (typeof parsed.productName !== "string" || parsed.productName.length === 0) return false;
-  if (!Array.isArray(parsed.pillars) || (parsed.pillars as unknown[]).length === 0) return false;
-  // Require at least 4 pillars to distinguish from old 3-pillar or single-pillar formats.
-  // We no longer require exact pillar name matches — Gemini occasionally paraphrases pillar
-  // names slightly (e.g. "INCI Safety Screen" vs "Public INCI Safety Screen"), and rejecting
-  // otherwise-valid scorecards on name variation causes silent scoring failures.
-  if ((parsed.pillars as unknown[]).length < 4) return false;
-  // Each pillar must have a name and a numeric score
-  const pillars = parsed.pillars as Array<Record<string, unknown>>;
-  const allHaveScores = pillars.every(p => typeof p.name === "string" && typeof p.score === "number");
-  return allHaveScores;
+  // Require at least 3 pillars — lenient enough to accept partial responses
+  // while still rejecting single-pillar or empty responses.
+  if (!Array.isArray(parsed.pillars) || (parsed.pillars as unknown[]).length < 3) return false;
+  return true;
 }
 
 // Normalize a raw Gemini scorecard object in-place before validation:
@@ -337,13 +332,34 @@ function isValidScorecard(parsed: Record<string, unknown> | null): boolean {
 // 2. Derives scoreLabel if missing — the system prompt uses publicDecisionLabel but
 //    the frontend TypeScript type and display logic expect scoreLabel.
 function normalizeScorecard(sc: Record<string, unknown>): void {
-  if (typeof sc.score === "number" && !Number.isInteger(sc.score)) {
+  // Coerce main score: Gemini sometimes returns "78" (string) or 78.5 (float)
+  if (typeof sc.score === "string") {
+    const n = parseFloat(sc.score);
+    if (!isNaN(n)) sc.score = Math.round(n);
+  } else if (typeof sc.score === "number" && !Number.isInteger(sc.score)) {
     sc.score = Math.round(sc.score as number);
   }
+
+  // Coerce pillar scores similarly
+  if (Array.isArray(sc.pillars)) {
+    for (const p of sc.pillars as Array<Record<string, unknown>>) {
+      if (typeof p.score === "string") {
+        const n = parseFloat(p.score);
+        if (!isNaN(n)) p.score = Math.round(n);
+      } else if (typeof p.score === "number" && !Number.isInteger(p.score)) {
+        p.score = Math.round(p.score as number);
+      }
+    }
+  }
+
+  // Derive scoreLabel if missing
   if (!sc.scoreLabel && typeof sc.score === "number") {
     const s = sc.score as number;
     sc.scoreLabel = s >= 85 ? "Excellent" : s >= 70 ? "Good" : s >= 50 ? "Fair" : "Concern";
   }
+
+  // Ensure type field is "single" if missing (Gemini sometimes omits it)
+  if (!sc.type) sc.type = "single";
 }
 
 function parseJSON(text: string) {
