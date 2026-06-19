@@ -371,19 +371,32 @@ function normalizeScorecard(sc: Record<string, unknown>): void {
 }
 
 function parseJSON(text: string) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
-    try {
-      return JSON.parse(stripped);
-    } catch {
-      const match = stripped.match(/\{[\s\S]*\}/);
-      if (match) {
-        try { return JSON.parse(match[0]); } catch { /* fall through */ }
+  // 1. Direct parse
+  try { return JSON.parse(text); } catch { /* fall through */ }
+
+  // 2. Strip code fences and retry
+  const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  try { return JSON.parse(stripped); } catch { /* fall through */ }
+
+  // 3. Find every top-level '{' and try to parse a balanced JSON object starting there.
+  //    This handles cases where Gemini includes search-result text before/after the JSON.
+  //    We return the FIRST successfully parsed object (Gemini puts the scorecard first).
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== "{") continue;
+    let depth = 0;
+    let end = -1;
+    for (let j = i; j < text.length; j++) {
+      if (text[j] === "{") depth++;
+      else if (text[j] === "}") {
+        depth--;
+        if (depth === 0) { end = j; break; }
       }
     }
+    if (end > i) {
+      try { return JSON.parse(text.slice(i, end + 1)); } catch { /* keep scanning */ }
+    }
   }
+
   return null;
 }
 
@@ -638,6 +651,8 @@ export async function POST(req: Request) {
         // Validate the cached scorecard uses the current 5-pillar format before returning.
         // Old-format entries (e.g. 4-pillar, /10 scoring) are deleted and re-fetched from Gemini.
         const cachedSc = cached_db.scorecard as Record<string, unknown>;
+        // Normalize before validating — old cached entries may have float scores or missing fields
+        normalizeScorecard(cachedSc);
         if (!expired && isValidScorecard(cachedSc)) {
           // Update hit count + last_hit_at
           await db.from('scorecard_cache')
@@ -844,51 +859,18 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
       return noDataFound(fallbackName || productNameFromURL(urlInput));
     }
 
-    // For text queries, retry up to twice if Gemini returns out_of_scope or an invalid scorecard.
-    // Each retry uses a progressively simpler, more direct prompt.
+    // If the main call failed (out_of_scope or invalid scorecard), do one nuclear retry.
+    // Retries 1 & 2 (same model, same system prompt) are skipped — they're unlikely to succeed
+    // if the main call already failed, and firing 3-4 Gemini calls in a row hits rate limits.
+    // The nuclear retry uses a bare system instruction with no out_of_scope concept.
     let finalParsed = parsed;
     if (!isComparison && !isExpert) {
       const needsRetry = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
       if (needsRetry) {
-        // Retry 1: more direct prompt emphasising search-first approach
-        try {
-          const retryResult = await model.generateContent(
-            `Search the web for this beauty/personal care product, then return a complete scorecard JSON. Search thoroughly before deciding anything. If you find the product, score all 5 pillars. If INCI is unavailable after searching, cap score at 50 and note it in the summary.\n\nProduct: ${q}`
-          );
-          const retryText = retryResult.response.text().trim();
-          const retryParsed = parseJSON(retryText);
-          if (retryParsed && typeof retryParsed === "object") normalizeScorecard(retryParsed as Record<string, unknown>);
-          if (retryParsed && retryParsed.type !== "out_of_scope" && isValidScorecard(retryParsed as Record<string, unknown>)) {
-            finalParsed = retryParsed;
-          }
-        } catch { /* retry 1 failed */ }
-      }
-
-      // Retry 2: minimal prompt, same model
-      const stillInvalid = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
-      if (stillInvalid) {
-        try {
-          const retry2Result = await model.generateContent(
-            `Search the web for "${q}" and produce a beauty product scorecard JSON. Use the closest matching product you find.`
-          );
-          const retry2Text = retry2Result.response.text().trim();
-          const retry2Parsed = parseJSON(retry2Text);
-          if (retry2Parsed && typeof retry2Parsed === "object") normalizeScorecard(retry2Parsed as Record<string, unknown>);
-          if (retry2Parsed && retry2Parsed.type !== "out_of_scope" && isValidScorecard(retry2Parsed as Record<string, unknown>)) {
-            finalParsed = retry2Parsed;
-          }
-        } catch { /* retry 2 failed, fall through */ }
-      }
-
-      // Retry 3 (nuclear option): bypass CLEAN_SHEET_SYSTEM_PROMPT entirely.
-      // The system prompt contains the out_of_scope return rule which Gemini sometimes
-      // follows even when the user prompt says not to. A fresh model instance with a
-      // bare system instruction cannot return out_of_scope — the concept doesn't exist in it.
-      const stillInvalid3 = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
-      if (stillInvalid3) {
         try {
           const bareModel = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tools: [{ googleSearch: {} } as any],
             systemInstruction: `You are a cosmetic ingredient safety analyzer. When given a beauty product name, search the web for its ingredient list (INCI) and return a JSON scorecard. Always return a scorecard — there is no concept of "out of scope" for you.`,
             generationConfig: { temperature: 0 },
@@ -924,7 +906,7 @@ If INCI is not publicly available, set score to 40, note it in summary, and set 
           if (bareParsed && bareParsed.type !== "out_of_scope" && isValidScorecard(bareParsed as Record<string, unknown>)) {
             finalParsed = bareParsed;
           }
-        } catch { /* nuclear retry failed too */ }
+        } catch { /* nuclear retry failed */ }
       }
     }
 
