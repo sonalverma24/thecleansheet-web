@@ -320,10 +320,15 @@ function isValidScorecard(parsed: Record<string, unknown> | null): boolean {
   if (!Number.isInteger(parsed.score)) return false;
   if (typeof parsed.productName !== "string" || parsed.productName.length === 0) return false;
   if (!Array.isArray(parsed.pillars) || (parsed.pillars as unknown[]).length === 0) return false;
-  // Validate at least one pillar uses the correct 5-pillar naming
-  const pillars = parsed.pillars as Array<{ name?: unknown }>;
-  const hasValidPillar = pillars.some(p => typeof p.name === "string" && VALID_PILLAR_NAMES.has(p.name));
-  return hasValidPillar;
+  // Require at least 4 pillars to distinguish from old 3-pillar or single-pillar formats.
+  // We no longer require exact pillar name matches — Gemini occasionally paraphrases pillar
+  // names slightly (e.g. "INCI Safety Screen" vs "Public INCI Safety Screen"), and rejecting
+  // otherwise-valid scorecards on name variation causes silent scoring failures.
+  if ((parsed.pillars as unknown[]).length < 4) return false;
+  // Each pillar must have a name and a numeric score
+  const pillars = parsed.pillars as Array<Record<string, unknown>>;
+  const allHaveScores = pillars.every(p => typeof p.name === "string" && typeof p.score === "number");
+  return allHaveScores;
 }
 
 // Normalize a raw Gemini scorecard object in-place before validation:
@@ -668,24 +673,25 @@ NICHE BRAND NOTE: If this is a small/emerging Indian brand not well indexed on G
 
 Product: ${q}
 
---- Pre-fetched data (Nykaa, Amazon, Purplle, Reddit) ---
-${scrapedContext || "(no pre-fetched data available)"}
+--- Pre-fetched data (Open Beauty Facts, InciDecoder product page, Reddit) ---
+${scrapedContext || "(no pre-fetched data available; rely entirely on web search)"}
 
 --- InciDecoder search results ---
-${inciDecoderContext || "(search InciDecoder manually: \"${q} site:incidecoder.com\")"}
+${inciDecoderContext || `(search InciDecoder manually: "${q} site:incidecoder.com")`}
 
 MANDATORY RESEARCH  -  execute ALL of these before scoring:
-1. Search Google for the product: "[product name]" to find the brand's official product page and open it.
-2. Search InciDecoder: "[product name] site:incidecoder.com" — also check InciDecoder results above.
-3. Search Nykaa: "[product name] site:nykaa.com" — also check Nykaa results above.
-4. Search Amazon India: "[product name] site:amazon.in" — also check Amazon results above.
-5. Search Purplle: "[product name] site:purplle.com" — essential for niche Indian brands.
-6. Search Flipkart for additional price/review data.
-7. Search Reddit: "[brand] [product name] review india" — also check Reddit results above.
+1. Search Google for the product: "${q}" to find the brand's official product page and open it.
+2. Search InciDecoder: "${q} site:incidecoder.com" — also check InciDecoder results above.
+3. Search Nykaa: "${q} site:nykaa.com" — essential for Indian brands.
+4. Search Amazon India: "${q} site:amazon.in" — also check Amazon results above.
+5. Search Purplle: "${q} site:purplle.com" — essential for niche Indian brands.
+6. Search the brand's own website for the full ingredient list.
+7. Search Reddit: "${q} review india" for user reviews and discussions.
 8. Search for lab tests: "[brand] lab test certificate" and "[brand] clinical study".
-9. Search for controversies: "[product name] India banned recalled CDSCO controversy".
+9. Search for controversies: "${q} India banned recalled CDSCO controversy".
 
-Use ALL sources above plus your own web search. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product; produce a complete scorecard JSON. Never return out_of_scope.`;
+IMPORTANT: This is definitely a beauty/personal care product. You MUST produce a full scorecard JSON. NEVER return {"type":"out_of_scope"}.
+If the full INCI list cannot be found after all searches: score "Public INCI Safety Screen" at 0, cap total score at 50, set inciSource to "Not publicly available", and complete all other pillars with whatever data you can find.`;
     }
 
     let result: Awaited<ReturnType<typeof model.generateContent>>;
@@ -728,35 +734,36 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
       const fallbackBrand = isEcomPlatform(urlInput) ? "" : brandHintFromURL(urlInput);
       const fallbackQuery = [fallbackBrand, fallbackName].filter(Boolean).join(" ").trim();
       if (fallbackQuery) {
-        const fallbackResult = await model.generateContent(
-          `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product, do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
-        );
-        const fallbackText = fallbackResult.response.text().trim();
-        const fallbackParsed = parseJSON(fallbackText);
-        if (fallbackParsed && typeof fallbackParsed === "object") normalizeScorecard(fallbackParsed as Record<string, unknown>);
-        if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
-          const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: fallbackParsed };
-          // Persist to Supabase
-          try {
-            const sc = fallbackParsed as any;
-            const slug = generateSlug(sc.brand ?? '', sc.productName ?? '');
-            const db = createAdminClient();
-            await db.from('scorecard_cache').upsert({
-              cache_key: cacheKey,
-              source_url: urlInput || null,
-              slug,
-              product_name: sc.productName ?? '',
-              brand_name: sc.brand ?? '',
-              scorecard: sc,
-              hit_count: 1,
-              created_at: new Date().toISOString(),
-              last_hit_at: new Date().toISOString(),
-            }, { onConflict: 'cache_key' });
-            body.slug = slug;
-          } catch { /* non-fatal */ }
-          RESULT_CACHE.set(cacheKey, body);
-          return Response.json(body);
-        }
+        try {
+          const fallbackResult = await model.generateContent(
+            `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product, do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
+          );
+          const fallbackText = fallbackResult.response.text().trim();
+          const fallbackParsed = parseJSON(fallbackText);
+          if (fallbackParsed && typeof fallbackParsed === "object") normalizeScorecard(fallbackParsed as Record<string, unknown>);
+          if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
+            const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: fallbackParsed };
+            try {
+              const sc = fallbackParsed as any;
+              const slug = generateSlug(sc.brand ?? '', sc.productName ?? '');
+              const db = createAdminClient();
+              await db.from('scorecard_cache').upsert({
+                cache_key: cacheKey,
+                source_url: urlInput || null,
+                slug,
+                product_name: sc.productName ?? '',
+                brand_name: sc.brand ?? '',
+                scorecard: sc,
+                hit_count: 1,
+                created_at: new Date().toISOString(),
+                last_hit_at: new Date().toISOString(),
+              }, { onConflict: 'cache_key' });
+              body.slug = slug;
+            } catch { /* non-fatal */ }
+            RESULT_CACHE.set(cacheKey, body);
+            return Response.json(body);
+          }
+        } catch { /* Gemini API error on first fallback — try last resort */ }
       }
       // Last-resort retry: use the full product name from URL slug with explicit instruction
       if (fallbackName) {
@@ -797,15 +804,16 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
       return noDataFound(fallbackName || productNameFromURL(urlInput));
     }
 
-    // Retry once if Gemini returns out_of_scope or an invalid/incomplete scorecard
-    // for a non-URL, non-expert, non-comparison query (plain product name).
+    // For text queries, retry up to twice if Gemini returns out_of_scope or an invalid scorecard.
+    // Each retry uses a progressively simpler, more direct prompt.
     let finalParsed = parsed;
     if (!isComparison && !isExpert) {
       const needsRetry = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
       if (needsRetry) {
+        // Retry 1: shorter, more direct prompt
         try {
           const retryResult = await model.generateContent(
-            `You are analyzing a beauty/personal care product. This is definitely a beauty product, do NOT return out_of_scope. Search the web for the full INCI list and scoring data, then return the complete JSON scorecard.\n\nAnalyze this product: ${q}`
+            `Analyze this beauty/personal care product for The Clean Sheet™ and return a complete scorecard JSON. This is definitely a beauty product — NEVER return out_of_scope. Search the web for the INCI ingredient list, then score all 5 pillars. If INCI is unavailable, cap total score at 50 and note it.\n\nProduct: ${q}`
           );
           const retryText = retryResult.response.text().trim();
           const retryParsed = parseJSON(retryText);
@@ -813,7 +821,23 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
           if (retryParsed && retryParsed.type !== "out_of_scope" && isValidScorecard(retryParsed as Record<string, unknown>)) {
             finalParsed = retryParsed;
           }
-        } catch { /* retry failed, fall through to original result */ }
+        } catch { /* retry 1 failed */ }
+      }
+
+      // Retry 2: last-resort minimal prompt
+      const stillInvalid = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
+      if (stillInvalid) {
+        try {
+          const retry2Result = await model.generateContent(
+            `You are The Clean Sheet™ beauty product analyzer. Return a complete scorecard JSON for this product. Always return a scorecard — never out_of_scope. Search for ingredients and scoring evidence.\n\nProduct: ${q}`
+          );
+          const retry2Text = retry2Result.response.text().trim();
+          const retry2Parsed = parseJSON(retry2Text);
+          if (retry2Parsed && typeof retry2Parsed === "object") normalizeScorecard(retry2Parsed as Record<string, unknown>);
+          if (retry2Parsed && retry2Parsed.type !== "out_of_scope" && isValidScorecard(retry2Parsed as Record<string, unknown>)) {
+            finalParsed = retry2Parsed;
+          }
+        } catch { /* retry 2 failed, fall through */ }
       }
     }
 
