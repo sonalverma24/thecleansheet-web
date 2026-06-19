@@ -442,6 +442,9 @@ SCOPE RULE:
 IN SCOPE: skincare, haircare, body care, personal hygiene, colour cosmetics, sunscreen, deodorant, fragrance, soap, shampoo, conditioner, hair colour, hair oil, serum, moisturiser, face wash, toner, exfoliant, scrub, mask - anything applied to the human body for hygiene, grooming, or aesthetic purposes.
 OUT OF SCOPE: finance, sports, food, technology, clothing. When in doubt = IN SCOPE.
 
+CRITICAL: If the query contains ANY of the following words it is ALWAYS in scope and you MUST return a scorecard - never out_of_scope: sunscreen, serum, moisturiser, moisturizer, face wash, cleanser, toner, cream, lotion, body wash, shampoo, conditioner, oil, mask, scrub, spf, aha, bha, retinol, niacinamide, hyaluronic, vitamin c, vitamin e, peptide, ceramide, salicylic.
+If the product cannot be identified precisely, still produce a scorecard using whatever evidence is publicly available and note the uncertainty in the summary field.
+
 Return ONLY valid JSON. No markdown code fences. No preamble. Start directly with {
 
 OUTPUT JSON STRUCTURE (return exactly this, no deviation):

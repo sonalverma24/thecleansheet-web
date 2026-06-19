@@ -407,6 +407,7 @@ export async function POST(req: Request) {
     // match the full product name on InciDecoder, Nykaa, Amazon etc.
     // Only applied to text queries — never to URLs (regex could corrupt path segments).
     const expandAbbreviations = (text: string): string => text
+      // Abbreviations
       .replace(/\bvit\.?\s*c\b/gi, "vitamin c")
       .replace(/\bvit\.?\s*e\b/gi, "vitamin e")
       .replace(/\bvit\.?\s*b5\b/gi, "vitamin b5")
@@ -417,7 +418,21 @@ export async function POST(req: Request) {
       .replace(/\bbodywash\b/gi, "body wash")
       .replace(/\bfacewash\b/gi, "face wash")
       .replace(/\bhairwash\b/gi, "hair wash")
-      .replace(/\bsunscr\b/gi, "sunscreen");
+      .replace(/\bsunscr\b/gi, "sunscreen")
+      // Brand shorthand
+      .replace(/\bderma\s*co\b/gi, "The Derma Co")
+      .replace(/\bdermaco\b/gi, "The Derma Co")
+      // Common misspellings
+      .replace(/\bhylauron\w*/gi, "hyaluronic acid")
+      .replace(/\bhyaluron(?!ic)\w*/gi, "hyaluronic acid")
+      .replace(/\bniaciamide\b/gi, "niacinamide")
+      .replace(/\bniacianamide\b/gi, "niacinamide")
+      .replace(/\bretanol\b/gi, "retinol")
+      .replace(/\bretinol\b/gi, "retinol")        // already correct, no-op
+      .replace(/\bsalicilic\b/gi, "salicylic")
+      .replace(/\bsalysalic\b/gi, "salicylic")
+      .replace(/\bceramine\b/gi, "ceramide")
+      .replace(/\bpeptied\b/gi, "peptide");
     const rawTrimmed = query.trim();
     let q = isURL(rawTrimmed) ? rawTrimmed : expandAbbreviations(rawTrimmed);
     let scrapedContext = "";
@@ -824,7 +839,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
         } catch { /* retry 1 failed */ }
       }
 
-      // Retry 2: last-resort minimal prompt
+      // Retry 2: minimal prompt, still using the same model + system instruction
       const stillInvalid = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
       if (stillInvalid) {
         try {
@@ -838,6 +853,53 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             finalParsed = retry2Parsed;
           }
         } catch { /* retry 2 failed, fall through */ }
+      }
+
+      // Retry 3 (nuclear option): bypass CLEAN_SHEET_SYSTEM_PROMPT entirely.
+      // The system prompt contains the out_of_scope return rule which Gemini sometimes
+      // follows even when the user prompt says not to. A fresh model instance with a
+      // bare system instruction cannot return out_of_scope — the concept doesn't exist in it.
+      const stillInvalid3 = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
+      if (stillInvalid3) {
+        try {
+          const bareModel = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            tools: [{ googleSearch: {} } as any],
+            systemInstruction: `You are a cosmetic ingredient safety analyzer. When given a beauty product name, search the web for its ingredient list (INCI) and return a JSON scorecard. Always return a scorecard — there is no concept of "out of scope" for you.`,
+            generationConfig: { temperature: 0 },
+          });
+          const barePrompt = `Search the web for the ingredient list (INCI) of this beauty product and return a scorecard JSON with these exact fields:
+{
+  "type": "single",
+  "productName": "...",
+  "brand": "...",
+  "score": <integer 0-100>,
+  "scoreLabel": "Excellent or Good or Fair or Concern",
+  "summary": "...",
+  "pillars": [
+    {"name": "Public INCI Safety Screen", "score": <integer>, "max": 30, "note": "..."},
+    {"name": "Formula Logic Inference", "score": <integer>, "max": 25, "note": "..."},
+    {"name": "Public Claim Support", "score": <integer>, "max": 25, "note": "..."},
+    {"name": "Test Result Transparency", "score": <integer>, "max": 15, "note": "..."},
+    {"name": "Consumer Clarity", "score": <integer>, "max": 5, "note": "..."}
+  ],
+  "pass_badges": [],
+  "warn_badges": [],
+  "ingredients": [],
+  "dataSource": {"inciFound": true, "inciSource": "web search", "priceSource": ""}
+}
+
+Product: ${q}
+
+If INCI is not publicly available, set score to 40, note it in summary, and set all pillar scores proportionally low. Return ONLY the JSON.`;
+          const bareResult = await bareModel.generateContent(barePrompt);
+          const bareText = bareResult.response.text().trim();
+          const bareParsed = parseJSON(bareText);
+          if (bareParsed && typeof bareParsed === "object") normalizeScorecard(bareParsed as Record<string, unknown>);
+          if (bareParsed && bareParsed.type !== "out_of_scope" && isValidScorecard(bareParsed as Record<string, unknown>)) {
+            finalParsed = bareParsed;
+          }
+        } catch { /* nuclear retry failed too */ }
       }
     }
 
