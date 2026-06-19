@@ -750,6 +750,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
     const finalText = result.response.text().trim();
 
     if (!finalText) {
+      if (!urlInput && !isExpert && !isComparison) return noDataFound(q);
       return outOfScope();
     }
 
@@ -975,6 +976,8 @@ If INCI is not publicly available, set score to 40, note it in summary, and set 
     if (isURL(rawQuery)) {
       return noDataFound(productNameFromURL(rawQuery));
     }
-    return outOfScope();
+    // For text queries, return noDataFound — an unexpected exception is a technical failure,
+    // not a signal that the query is outside our scope. "Outside my lane" is wrong here.
+    return noDataFound(rawQuery);
   }
 }
