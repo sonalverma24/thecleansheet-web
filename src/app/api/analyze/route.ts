@@ -825,10 +825,10 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
     if (!isComparison && !isExpert) {
       const needsRetry = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
       if (needsRetry) {
-        // Retry 1: shorter, more direct prompt
+        // Retry 1: more direct prompt emphasising search-first approach
         try {
           const retryResult = await model.generateContent(
-            `Analyze this beauty/personal care product for The Clean Sheet™ and return a complete scorecard JSON. This is definitely a beauty product — NEVER return out_of_scope. Search the web for the INCI ingredient list, then score all 5 pillars. If INCI is unavailable, cap total score at 50 and note it.\n\nProduct: ${q}`
+            `Search the web for this beauty/personal care product, then return a complete scorecard JSON. Search thoroughly before deciding anything. If you find the product, score all 5 pillars. If INCI is unavailable after searching, cap score at 50 and note it in the summary.\n\nProduct: ${q}`
           );
           const retryText = retryResult.response.text().trim();
           const retryParsed = parseJSON(retryText);
@@ -839,12 +839,12 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
         } catch { /* retry 1 failed */ }
       }
 
-      // Retry 2: minimal prompt, still using the same model + system instruction
+      // Retry 2: minimal prompt, same model
       const stillInvalid = !finalParsed || finalParsed.type === "out_of_scope" || !isValidScorecard(finalParsed as Record<string, unknown>);
       if (stillInvalid) {
         try {
           const retry2Result = await model.generateContent(
-            `You are The Clean Sheet™ beauty product analyzer. Return a complete scorecard JSON for this product. Always return a scorecard — never out_of_scope. Search for ingredients and scoring evidence.\n\nProduct: ${q}`
+            `Search the web for "${q}" and produce a beauty product scorecard JSON. Use the closest matching product you find.`
           );
           const retry2Text = retry2Result.response.text().trim();
           const retry2Parsed = parseJSON(retry2Text);

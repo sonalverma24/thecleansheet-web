@@ -439,11 +439,13 @@ Info badges:
 ---
 
 SCOPE RULE:
-IN SCOPE: skincare, haircare, body care, personal hygiene, colour cosmetics, sunscreen, deodorant, fragrance, soap, shampoo, conditioner, hair colour, hair oil, serum, moisturiser, face wash, toner, exfoliant, scrub, mask - anything applied to the human body for hygiene, grooming, or aesthetic purposes.
-OUT OF SCOPE: finance, sports, food, technology, clothing. When in doubt = IN SCOPE.
+ALWAYS search the web first before deciding scope. Never decide a query is out of scope without searching.
 
-CRITICAL: If the query contains ANY of the following words it is ALWAYS in scope and you MUST return a scorecard - never out_of_scope: sunscreen, serum, moisturiser, moisturizer, face wash, cleanser, toner, cream, lotion, body wash, shampoo, conditioner, oil, mask, scrub, spf, aha, bha, retinol, niacinamide, hyaluronic, vitamin c, vitamin e, peptide, ceramide, salicylic.
-If the product cannot be identified precisely, still produce a scorecard using whatever evidence is publicly available and note the uncertainty in the summary field.
+After searching: if you found a beauty, skincare, haircare, body care, personal hygiene, colour cosmetic, fragrance, or grooming product — produce a full scorecard regardless of how vague or misspelled the query was.
+
+Only return {"type":"out_of_scope"} if, after genuinely searching, the query has nothing to do with any product applied to the human body. Example: "weather in Japan", "stock prices", "football scores" — these have no beauty product to score. A query like "derma co sunscreen" or "mamaearth bodywash" always has a matchable product, so always return a scorecard.
+
+If the product cannot be identified precisely: use the closest match found, note the uncertainty in the summary, and still return a full scorecard.
 
 Return ONLY valid JSON. No markdown code fences. No preamble. Start directly with {
 
@@ -657,7 +659,7 @@ TONE:
 - Non-marketing: never use vague "clean beauty" language without scientific grounding
 
 SCOPE RULE:
-Always search the web first. Only return {"type":"out_of_scope"} if after searching the question is clearly unrelated to beauty, skincare, haircare, personal care, or cosmetic ingredients.
+Always search the web first. Only return {"type":"out_of_scope"} if after searching the question is clearly unrelated to beauty, skincare, haircare, personal care, or cosmetic ingredients — for example "weather in Tokyo" or "cricket scores". If there is any plausible connection to personal care, answer it.
 
 Return ONLY valid JSON. No markdown, no preamble. Start directly with {
 
