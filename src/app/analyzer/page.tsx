@@ -189,7 +189,7 @@ function scoreColor(s: number) {
 }
 
 function scoreLabel(s: number) {
-  if (s >= 90) return { label: "Excellent", color: "#4ade80" };
+  if (s >= 85) return { label: "Excellent", color: "#4ade80" };
   if (s >= 70) return { label: "Good",      color: "#2dd4bf" };
   if (s >= 50) return { label: "Fair",      color: "#fbbf24" };
   return              { label: "Concern",   color: "#f87171" };
@@ -810,9 +810,15 @@ export default function AnalyzerPage() {
           setOutOfScope(true);
         }
       }
-    } catch {
+    } catch (err) {
       clearInterval(ticker);
-      setOutOfScope(true);
+      // Network errors and timeouts are not the same as "out of scope" — show a distinct message
+      const isNetworkError = err instanceof TypeError && (err.message.includes("fetch") || err.message.includes("network") || err.message.includes("Failed"));
+      if (isNetworkError) {
+        setAnalyzeError("Connection error. Check your internet and try again.");
+      } else {
+        setOutOfScope(true);
+      }
     } finally {
       setIsAnalyzing(false);
       setStatusMsg(null);
@@ -1064,8 +1070,30 @@ export default function AnalyzerPage() {
         </section>
       )}
 
+      {/* ── Network / connection error ── */}
+      {analyzeError && !outOfScope && !isAnalyzing && (
+        <section className="px-4 pb-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-3xl p-8 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <p className="text-3xl mb-4">⚡</p>
+              <p className="text-base font-medium mb-2" style={{ color: "#f0fdfa" }}>Something went wrong</p>
+              <p className="text-sm leading-relaxed max-w-sm mx-auto mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+                {analyzeError}
+              </p>
+              <button
+                onClick={() => { setAnalyzeError(null); analyze(); }}
+                className="inline-flex items-center gap-2 text-sm font-normal px-5 py-2.5 rounded-full transition-all"
+                style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.25)", color: "#5eead4" }}
+              >
+                Try again →
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Out of scope ── */}
-      {(outOfScope || analyzeError) && !isAnalyzing && (
+      {outOfScope && !isAnalyzing && (
         <section className="px-4 pb-10">
           <div className="max-w-2xl mx-auto">
             <div className="rounded-3xl p-8 text-center" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>

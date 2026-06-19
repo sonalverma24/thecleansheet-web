@@ -454,6 +454,7 @@ OUTPUT JSON STRUCTURE (return exactly this, no deviation):
   "targetUser": "general adult or sensitive skin or baby or pregnancy or eye area - as relevant",
   "summary": "3 sentences: (1) what it is and does, (2) key public INCI finding, (3) what real users report",
   "score": 0-100,
+  "scoreLabel": "Excellent (85-100) or Good (70-84) or Fair (50-69) or Concern (below 50)",
   "publicDecisionLabel": "Strong public evidence or Mostly credible with gaps or Needs proof or Weak public evidence or High concern from public evidence or Not enough public data",
   "pillars": [
     { "name": "Public INCI Safety Screen", "score": number, "max": 30, "note": "State factual findings from visible INCI: ingredient names, regulatory flags, sensitizers, allergens, special population concerns. No scoring arithmetic." },

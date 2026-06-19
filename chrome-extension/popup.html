@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Clean Sheet</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L3 7V12C3 16.55 6.84 20.74 12 22C17.16 20.74 21 16.55 21 12V7L12 2Z" fill="#248179"/>
+          <path d="M10 17L6 13L7.41 11.59L10 14.17L16.59 7.58L18 9L10 17Z" fill="white"/>
+        </svg>
+        <span class="header-title">The Clean Sheet</span>
+      </div>
+      <div id="dev-badge" class="dev-badge" style="display:none">DEV</div>
+    </header>
+
+    <!-- Loading state -->
+    <div id="state-loading" class="state" style="display:none">
+      <div class="loading-ring">
+        <svg class="spinner" viewBox="0 0 50 50">
+          <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke-width="3"/>
+          <circle class="spinner-head" cx="25" cy="25" r="20" fill="none" stroke-width="3"/>
+        </svg>
+      </div>
+      <p class="loading-label" id="loading-label">Reading product page...</p>
+      <p class="loading-sub">This can take up to 30 seconds</p>
+    </div>
+
+    <!-- Not a product page state -->
+    <div id="state-not-product" class="state" style="display:none">
+      <div class="icon-wrap icon-neutral">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#b0a8a4" stroke-width="1.5"/>
+          <path d="M12 7v6" stroke="#b0a8a4" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16.5" r="0.75" fill="#b0a8a4"/>
+        </svg>
+      </div>
+      <p class="state-title">Not a product page</p>
+      <p class="state-sub">Navigate to a beauty product page on Nykaa, Amazon, Purplle, or any brand website and click the extension again.</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="state-error" class="state" style="display:none">
+      <div class="icon-wrap icon-warn">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 9v4" stroke="#fd6158" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16.5" r="0.75" fill="#fd6158"/>
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#fd6158" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="state-title">Could not analyse</p>
+      <p class="state-sub" id="error-msg">We couldn't find ingredient data for this product. Try pasting the URL into the analyser on thecleansheet.in instead.</p>
+      <a id="error-link" class="btn btn-secondary" href="https://thecleansheet.in/analyzer" target="_blank">Open Analyser</a>
+    </div>
+
+    <!-- No data found state -->
+    <div id="state-no-data" class="state" style="display:none">
+      <div class="icon-wrap icon-neutral">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="#b0a8a4" stroke-width="1.5"/>
+          <path d="M21 21l-4.35-4.35" stroke="#b0a8a4" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p class="state-title">No ingredient data found</p>
+      <p class="state-sub">We couldn't find the INCI list for this product from any public source. Try pasting the ingredient list directly into the analyser.</p>
+      <a class="btn btn-secondary" href="https://thecleansheet.in/analyzer" target="_blank">Paste Ingredients</a>
+    </div>
+
+    <!-- Result state -->
+    <div id="state-result" style="display:none">
+
+      <!-- Score hero -->
+      <div class="score-hero">
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 80 80">
+            <circle class="ring-track" cx="40" cy="40" r="32" fill="none" stroke-width="5"/>
+            <circle class="ring-fill" id="ring-fill" cx="40" cy="40" r="32" fill="none" stroke-width="5"
+              stroke-dasharray="201.06" stroke-dashoffset="201.06"
+              stroke-linecap="round" transform="rotate(-90 40 40)"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-number" id="score-number">--</span>
+            <span class="score-denom">/100</span>
+          </div>
+        </div>
+        <div class="score-meta">
+          <p class="score-label" id="score-label">--</p>
+          <p class="product-name" id="product-name">Loading...</p>
+          <p class="brand-name" id="brand-name"></p>
+        </div>
+      </div>
+
+      <!-- Pillar bars -->
+      <div class="pillars" id="pillars"></div>
+
+      <!-- Badges -->
+      <div id="badges-section" class="badges-section" style="display:none">
+        <div id="pass-badges" class="badge-row"></div>
+        <div id="warn-badges" class="badge-row"></div>
+      </div>
+
+      <!-- Top flagged ingredients -->
+      <div id="flags-section" class="flags-section" style="display:none">
+        <p class="section-label">Flagged ingredients</p>
+        <ul id="flags-list" class="flags-list"></ul>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-wrap">
+        <a id="full-scorecard-link" class="btn btn-primary" href="#" target="_blank">
+          View full scorecard
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M7 17L17 7M17 7H7M17 7v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <button class="btn btn-ghost" id="analyse-again-btn">Re-analyse</button>
+      </div>
+
+    </div>
+
+    <!-- Initial / idle state -->
+    <div id="state-idle" class="state">
+      <div class="icon-wrap icon-brand">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7V12C3 16.55 6.84 20.74 12 22C17.16 20.74 21 16.55 21 12V7L12 2Z" fill="#248179" opacity="0.15"/>
+          <path d="M12 2L3 7V12C3 16.55 6.84 20.74 12 22C17.16 20.74 21 16.55 21 12V7L12 2Z" stroke="#248179" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9 12l2 2 4-4" stroke="#248179" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="state-title">Ready to analyse</p>
+      <p class="state-sub">Open any beauty product page and click Analyse, or paste a product URL below.</p>
+      <button class="btn btn-primary" id="analyse-btn">Analyse this page</button>
+      <div class="url-input-wrap">
+        <input type="text" id="url-input" class="url-input" placeholder="Or paste a product URL..." />
+        <button class="btn btn-secondary" id="url-submit-btn">Go</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

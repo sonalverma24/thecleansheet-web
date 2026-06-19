@@ -43,7 +43,7 @@ export function getAllBrandSummaries(): BrandSummary[] {
 }
 
 export function scoreLabel(score: number): "Excellent" | "Good" | "Fair" | "Concern" {
-  if (score >= 90) return "Excellent";
+  if (score >= 85) return "Excellent";
   if (score >= 70) return "Good";
   if (score >= 50) return "Fair";
   return "Concern";

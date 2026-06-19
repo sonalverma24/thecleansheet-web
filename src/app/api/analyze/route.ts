@@ -87,6 +87,46 @@ async function scrapeURL(url: string): Promise<string | null> {
   }
 }
 
+// Open Beauty Facts has a free JSON API with no bot-blocking.
+// It covers hundreds of thousands of cosmetic products from brands worldwide.
+async function searchOpenBeautyFacts(query: string): Promise<string | null> {
+  try {
+    const enc = encodeURIComponent(query);
+    const res = await fetch(
+      `https://world.openbeautyfacts.org/cgi/search.pl?search_terms=${enc}&search_simple=1&json=1&page_size=5`,
+      { headers: { "User-Agent": "TheCleanSheet/1.0" }, signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { products?: unknown[] };
+    const products = data?.products;
+    if (!Array.isArray(products) || products.length === 0) return null;
+
+    const lines: string[] = [];
+    for (const p of products.slice(0, 5)) {
+      const prod = p as Record<string, unknown>;
+      const name = (prod.product_name_en ?? prod.product_name ?? "") as string;
+      const brand = (prod.brands ?? "") as string;
+      const ingredients = (prod.ingredients_text_en ?? prod.ingredients_text ?? "") as string;
+      if (!name && !ingredients) continue;
+      lines.push(`Product: ${[brand, name].filter(Boolean).join(" - ")}`);
+      if (ingredients) lines.push(`Ingredients: ${ingredients}`);
+      lines.push("");
+    }
+    return lines.length > 0 ? lines.join("\n") : null;
+  } catch {
+    return null;
+  }
+}
+
+// InciDecoder search results include links like:
+//   https://incidecoder.com/products/some-brand-product-name
+// Following the first match gives the full per-ingredient breakdown — far more useful
+// than the search listing page alone.
+function extractFirstInciDecoderProductUrl(searchContent: string): string | null {
+  const match = searchContent.match(/https:\/\/incidecoder\.com\/products\/[a-z0-9][a-z0-9-]*/);
+  return match ? match[0] : null;
+}
+
 async function scrapeShopifyJSON(url: string): Promise<string | null> {
   try {
     // Only applies to Shopify product URLs
@@ -125,8 +165,9 @@ const BOT_BLOCK_SIGNALS = [
 ];
 
 // Navigation-noise signals: if first lines look like site nav rather than product content
+// "beauty" deliberately excluded — it appears in legitimate product page titles on beauty sites
 const NAV_NOISE_SIGNALS = [
-  "log in", "sign up", "register", "cart", "wishlist", "offers", "beauty",
+  "log in", "sign up", "register", "cart", "wishlist", "offers",
   "fashion", "wellness", "electronics", "all categories", "my orders",
   "track order", "help center", "contact us", "download app",
 ];
@@ -166,6 +207,17 @@ const SKIP_URL_SEGMENTS = new Set([
   "all", "shop", "store", "product", "items", "listing", "p", "dp",
 ]);
 
+// Segments that look like opaque IDs rather than product names and should be skipped:
+// - Amazon ASINs: B followed by 9 uppercase alphanumeric chars (e.g. B09RSSYQ5R)
+// - Flipkart item IDs: start with "itm" (e.g. itm7f5a45c4c8d2b)
+// - Any segment that is entirely uppercase/digits with no hyphens (random SKU)
+function isOpaqueID(seg: string): boolean {
+  if (/^B[A-Z0-9]{9}$/i.test(seg)) return true;         // Amazon ASIN
+  if (/^itm[a-z0-9]+$/i.test(seg)) return true;          // Flipkart item ID
+  if (/^[A-Z0-9]{8,}$/.test(seg) && !seg.includes("-")) return true; // generic uppercase SKU
+  return false;
+}
+
 // Extract a rough brand hint from the domain (e.g. "discoverpilgrim.com" → "pilgrim",
 // "codeskin.in" → "codeskin", "mamaearth.in" → "mamaearth")
 function brandHintFromURL(url: string): string {
@@ -185,9 +237,13 @@ function productNameFromURL(url: string): string {
     const cleanUrl = url.split("#")[0];
     const path = new URL(cleanUrl).pathname;
     const segments = path.split("/").filter(Boolean);
-    // Pick the LAST segment that isn't a generic path keyword or a bare number
+    // Pick the LAST segment that isn't a generic path keyword, a bare number, or an opaque ID
+    // (Amazon ASINs, Flipkart item IDs, uppercase SKUs are all excluded via isOpaqueID)
     const slug = [...segments].reverse().find(
-      (seg) => seg.length > 3 && !seg.match(/^\d+$/) && !SKIP_URL_SEGMENTS.has(seg.toLowerCase())
+      (seg) => seg.length > 3
+        && !seg.match(/^\d+$/)
+        && !SKIP_URL_SEGMENTS.has(seg.toLowerCase())
+        && !isOpaqueID(seg)
     ) ?? "";
     return slug.replace(/-/g, " ").trim();
   } catch {
@@ -270,6 +326,21 @@ function isValidScorecard(parsed: Record<string, unknown> | null): boolean {
   return hasValidPillar;
 }
 
+// Normalize a raw Gemini scorecard object in-place before validation:
+// 1. Rounds float scores to integers (Gemini sometimes returns 82.5 instead of 83,
+//    which isValidScorecard would reject via the Number.isInteger check).
+// 2. Derives scoreLabel if missing — the system prompt uses publicDecisionLabel but
+//    the frontend TypeScript type and display logic expect scoreLabel.
+function normalizeScorecard(sc: Record<string, unknown>): void {
+  if (typeof sc.score === "number" && !Number.isInteger(sc.score)) {
+    sc.score = Math.round(sc.score as number);
+  }
+  if (!sc.scoreLabel && typeof sc.score === "number") {
+    const s = sc.score as number;
+    sc.scoreLabel = s >= 85 ? "Excellent" : s >= 70 ? "Good" : s >= 50 ? "Fair" : "Concern";
+  }
+}
+
 function parseJSON(text: string) {
   try {
     return JSON.parse(text);
@@ -303,9 +374,16 @@ const noDataFound = (productHint?: string) => Response.json({ type: "no_data_fou
 export async function POST(req: Request) {
   // Parse the body before the try block so we can reference rawQuery in the catch
   let rawQuery = "";
+  let ingredientsHint = ""; // optional: pre-scraped INCI from the browser content script
   try {
     const body = await req.json();
     rawQuery = (body?.query ?? "").trim();
+    // Content script may send ingredients it scraped directly from the page's JS state
+    // (e.g. Nykaa __PRELOADED_STATE__). Validate: must be a string with at least 3 commas.
+    const hint = (body?.ingredientsHint ?? "").trim();
+    if (hint && hint.split(",").length >= 3) {
+      ingredientsHint = hint.slice(0, 8000); // cap at 8k chars
+    }
   } catch {
     return Response.json({ error: "No query provided" }, { status: 400 });
   }
@@ -320,7 +398,23 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-    let q = query.trim();
+    // Expand common beauty abbreviations and normalize spacing so search queries
+    // match the full product name on InciDecoder, Nykaa, Amazon etc.
+    // Only applied to text queries — never to URLs (regex could corrupt path segments).
+    const expandAbbreviations = (text: string): string => text
+      .replace(/\bvit\.?\s*c\b/gi, "vitamin c")
+      .replace(/\bvit\.?\s*e\b/gi, "vitamin e")
+      .replace(/\bvit\.?\s*b5\b/gi, "vitamin b5")
+      .replace(/\bvit\.?\s*b3\b/gi, "vitamin b3")
+      .replace(/\bvit\.?\s*d\b/gi, "vitamin d")
+      .replace(/\bha\b/g, "hyaluronic acid")
+      .replace(/\bmoist\.?\b/gi, "moisturizer")
+      .replace(/\bbodywash\b/gi, "body wash")
+      .replace(/\bfacewash\b/gi, "face wash")
+      .replace(/\bhairwash\b/gi, "hair wash")
+      .replace(/\bsunscr\b/gi, "sunscreen");
+    const rawTrimmed = query.trim();
+    let q = isURL(rawTrimmed) ? rawTrimmed : expandAbbreviations(rawTrimmed);
     let scrapedContext = "";
 
     let urlInput = "";
@@ -342,7 +436,9 @@ export async function POST(req: Request) {
       const enc = encodeURIComponent(productQuery);
       const encReview = encodeURIComponent(productQuery + " review india");
 
-      // Fire all 7 sources in parallel — brand page + Shopify JSON + 5 discovery platforms
+      // Fire all 7 sources in parallel — brand page + Shopify JSON + 5 discovery platforms.
+      // For ecom platform URLs (Nykaa, Amazon etc.) the "brand page" IS already the marketplace,
+      // so skip the redundant Nykaa search slot and use that request for Flipkart instead.
       const [
         pageContent,
         shopifyData,
@@ -355,7 +451,7 @@ export async function POST(req: Request) {
         scrapeURL(q),
         scrapeShopifyJSON(q),
         scrapeURL(`https://incidecoder.com/search?query=${enc}`),
-        scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
+        isEcom ? scrapeURL(`https://www.flipkart.com/search?q=${enc}`) : scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
         scrapeURL(`https://www.amazon.in/s?k=${enc}`),
         scrapeURL(`https://www.purplle.com/search?q=${enc}`),
         scrapeURL(`https://www.reddit.com/search/?q=${encReview}&sort=relevance`),
@@ -376,12 +472,24 @@ export async function POST(req: Request) {
 
       // Assemble context from all sources — labelled so Gemini knows provenance
       const contextParts: string[] = [];
+      // Ingredients pre-scraped by the browser content script from the page's own JS state
+      // (Nykaa __PRELOADED_STATE__, Amazon DOM, Purplle __INITIAL_STATE__).
+      // This is the highest-confidence source — read directly from inside the page,
+      // bypasses bot-blocking that would stop Jina. Always put it first.
+      if (ingredientsHint) {
+        contextParts.push(`--- Ingredient list read directly from ${new URL(urlInput).hostname.replace(/^www\./, "")} page (high confidence, extracted by browser extension) ---\n${ingredientsHint}`);
+      }
       if (shopifyData) contextParts.push(shopifyData);
       if (pageContent && !isBlockedPage(pageContent)) {
-        contextParts.push(`--- Brand website (PDP) ---\n${pageContent}`);
+        // For ecom platform URLs the "page" is a marketplace listing, not the brand's own PDP
+        const pdpLabel = isEcom
+          ? `--- ${new URL(urlInput).hostname.replace(/^www\./, "")} marketplace listing ---`
+          : "--- Brand website (PDP) ---";
+        contextParts.push(`${pdpLabel}\n${pageContent}`);
       }
       if (nykaaContent && !isBlockedPage(nykaaContent)) {
-        contextParts.push(`--- Nykaa search results ---\n${nykaaContent.slice(0, 5000)}`);
+        const nykaaLabel = isEcom ? "--- Flipkart search results ---" : "--- Nykaa search results ---";
+        contextParts.push(`${nykaaLabel}\n${nykaaContent.slice(0, 5000)}`);
       }
       if (amazonContent && !isBlockedPage(amazonContent)) {
         contextParts.push(`--- Amazon India search results ---\n${amazonContent.slice(0, 5000)}`);
@@ -394,9 +502,25 @@ export async function POST(req: Request) {
       }
       scrapedContext = contextParts.join("\n\n");
 
-      if (inciContent && !isBlockedPage(inciContent)) {
+      // Two-hop InciDecoder + Open Beauty Facts in parallel.
+      // InciDecoder product page: extract the first product URL from search results, then fetch it
+      // for the full per-ingredient breakdown. OBF: free JSON API, no bot-blocking, global coverage.
+      const firstInciUrl = inciContent && !isBlockedPage(inciContent)
+        ? extractFirstInciDecoderProductUrl(inciContent)
+        : null;
+      if (inciContent && !isBlockedPage(inciContent))
         inciDecoderContext = inciContent.slice(0, 5000);
-      }
+
+      const [inciProductContent, obfContent] = await Promise.all([
+        firstInciUrl ? scrapeURL(firstInciUrl) : Promise.resolve(null),
+        searchOpenBeautyFacts(q),
+      ]);
+
+      if (inciProductContent && !isBlockedPage(inciProductContent))
+        contextParts.push(`--- InciDecoder product page ---\n${inciProductContent.slice(0, 8000)}`);
+      if (obfContent)
+        contextParts.push(`--- Open Beauty Facts ---\n${obfContent}`);
+      scrapedContext = contextParts.join("\n\n");
     }
 
     // For URL inputs always use the product scorecard path, never route to expert/comparison
@@ -410,27 +534,34 @@ export async function POST(req: Request) {
       const enc = encodeURIComponent(q);
       const encReview = encodeURIComponent(q + " review india");
 
-      const [inciContent, nykaaContent, amazonContent, purplleContent, redditContent] = await Promise.all([
+      const [inciSearchContent, obfContent, redditContent] = await Promise.all([
         scrapeURL(`https://incidecoder.com/search?query=${enc}`),
-        scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
-        scrapeURL(`https://www.amazon.in/s?k=${enc}`),
-        scrapeURL(`https://www.purplle.com/search?q=${enc}`),
+        searchOpenBeautyFacts(q),
         scrapeURL(`https://www.reddit.com/search/?q=${encReview}&sort=relevance`),
       ]);
 
+      // Two-hop InciDecoder: follow the first product link from search results so Gemini
+      // gets the full per-ingredient breakdown, not just the search listing page.
+      let inciProductContent: string | null = null;
+      if (inciSearchContent && !isBlockedPage(inciSearchContent)) {
+        const firstProductUrl = extractFirstInciDecoderProductUrl(inciSearchContent);
+        if (firstProductUrl) {
+          inciProductContent = await scrapeURL(firstProductUrl);
+        }
+      }
+
+      // Assemble context — most structured / authoritative sources first
       const contextParts: string[] = [];
-      if (nykaaContent && !isBlockedPage(nykaaContent))
-        contextParts.push(`--- Nykaa search results ---\n${nykaaContent.slice(0, 5000)}`);
-      if (amazonContent && !isBlockedPage(amazonContent))
-        contextParts.push(`--- Amazon India search results ---\n${amazonContent.slice(0, 5000)}`);
-      if (purplleContent && !isBlockedPage(purplleContent))
-        contextParts.push(`--- Purplle search results ---\n${purplleContent.slice(0, 5000)}`);
+      if (obfContent)
+        contextParts.push(`--- Open Beauty Facts (ingredient database) ---\n${obfContent}`);
+      if (inciProductContent && !isBlockedPage(inciProductContent))
+        contextParts.push(`--- InciDecoder product page ---\n${inciProductContent.slice(0, 8000)}`);
       if (redditContent && !isBlockedPage(redditContent))
         contextParts.push(`--- Reddit reviews ---\n${redditContent.slice(0, 5000)}`);
       scrapedContext = contextParts.join("\n\n");
 
-      if (inciContent && !isBlockedPage(inciContent))
-        inciDecoderContext = inciContent.slice(0, 5000);
+      if (inciSearchContent && !isBlockedPage(inciSearchContent))
+        inciDecoderContext = inciSearchContent.slice(0, 5000);
     }
 
     const systemInstruction = isComparison
@@ -451,14 +582,19 @@ export async function POST(req: Request) {
       const db = createAdminClient();
       const { data: cached_db } = await db
         .from('scorecard_cache')
-        .select('slug, scorecard, hit_count')
+        .select('slug, scorecard, hit_count, created_at')
         .eq('cache_key', cacheKey)
         .maybeSingle();
       if (cached_db) {
+        // TTL: expire cached scorecards after 30 days so reformulations and new data are picked up
+        const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+        const cachedAt = (cached_db as any).created_at ? new Date((cached_db as any).created_at).getTime() : 0;
+        const expired = Date.now() - cachedAt > CACHE_TTL_MS;
+
         // Validate the cached scorecard uses the current 5-pillar format before returning.
         // Old-format entries (e.g. 4-pillar, /10 scoring) are deleted and re-fetched from Gemini.
         const cachedSc = cached_db.scorecard as Record<string, unknown>;
-        if (isValidScorecard(cachedSc)) {
+        if (!expired && isValidScorecard(cachedSc)) {
           // Update hit count + last_hit_at
           await db.from('scorecard_cache')
             .update({ hit_count: (cached_db as any).hit_count + 1, last_hit_at: new Date().toISOString() })
@@ -467,7 +603,7 @@ export async function POST(req: Request) {
           RESULT_CACHE.set(cacheKey, body);
           return Response.json(body);
         } else {
-          // Stale cache entry - delete it so Gemini re-generates with current format
+          // Expired or stale format - delete so Gemini re-generates fresh
           await db.from('scorecard_cache').delete().eq('cache_key', cacheKey);
         }
       }
@@ -552,7 +688,20 @@ MANDATORY RESEARCH  -  execute ALL of these before scoring:
 Use ALL sources above plus your own web search. Combine INCI data across brand page, InciDecoder, and marketplaces. This is definitely a beauty product; produce a complete scorecard JSON. Never return out_of_scope.`;
     }
 
-    const result = await model.generateContent(prompt);
+    let result: Awaited<ReturnType<typeof model.generateContent>>;
+    try {
+      result = await model.generateContent(prompt);
+    } catch (geminiErr: unknown) {
+      // Distinguish Gemini API errors (rate limit, 500, network) from logic errors.
+      // These should NOT return out_of_scope — that's a misleading signal for a
+      // transient infrastructure failure.
+      const msg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
+      console.error("[analyze] Gemini API error:", msg);
+      if (isURL(rawQuery)) {
+        return noDataFound(productNameFromURL(rawQuery));
+      }
+      return Response.json({ type: "error", message: "Analysis service temporarily unavailable. Please try again." }, { status: 503 });
+    }
     const finalText = result.response.text().trim();
 
     if (!finalText) {
@@ -569,6 +718,7 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
     }
 
     const parsed = parseJSON(finalText);
+    if (parsed && typeof parsed === "object") normalizeScorecard(parsed as Record<string, unknown>);
 
     // For URL inputs, never surface out_of_scope, the URL is always a beauty product page.
     // If Gemini still returns out_of_scope or unparseable JSON, fall back to a named search.
@@ -583,6 +733,7 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
         );
         const fallbackText = fallbackResult.response.text().trim();
         const fallbackParsed = parseJSON(fallbackText);
+        if (fallbackParsed && typeof fallbackParsed === "object") normalizeScorecard(fallbackParsed as Record<string, unknown>);
         if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
           const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: fallbackParsed };
           // Persist to Supabase
@@ -615,6 +766,7 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
           );
           const lastText = lastResort.response.text().trim();
           const lastParsed = parseJSON(lastText);
+          if (lastParsed && typeof lastParsed === "object") normalizeScorecard(lastParsed as Record<string, unknown>);
           if (lastParsed && lastParsed.type !== "out_of_scope" && isValidScorecard(lastParsed as Record<string, unknown>)) {
             const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: lastParsed };
             // Persist to Supabase
@@ -657,6 +809,7 @@ Use ALL sources above plus your own web search. Combine INCI data across brand p
           );
           const retryText = retryResult.response.text().trim();
           const retryParsed = parseJSON(retryText);
+          if (retryParsed && typeof retryParsed === "object") normalizeScorecard(retryParsed as Record<string, unknown>);
           if (retryParsed && retryParsed.type !== "out_of_scope" && isValidScorecard(retryParsed as Record<string, unknown>)) {
             finalParsed = retryParsed;
           }
