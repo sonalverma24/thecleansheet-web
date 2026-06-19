@@ -332,6 +332,14 @@ function isValidScorecard(parsed: Record<string, unknown> | null): boolean {
 // 2. Derives scoreLabel if missing — the system prompt uses publicDecisionLabel but
 //    the frontend TypeScript type and display logic expect scoreLabel.
 function normalizeScorecard(sc: Record<string, unknown>): void {
+  // Normalize common field name variations Gemini uses (snake_case vs camelCase)
+  if (!sc.productName) {
+    if (typeof sc.product_name === "string") sc.productName = sc.product_name;
+    else if (typeof sc.name === "string") sc.productName = sc.name;
+    else if (typeof sc.title === "string") sc.productName = sc.title;
+  }
+  if (!sc.brand && typeof sc.brand_name === "string") sc.brand = sc.brand_name;
+
   // Coerce main score: Gemini sometimes returns "78" (string) or 78.5 (float)
   if (typeof sc.score === "string") {
     const n = parseFloat(sc.score);
@@ -919,8 +927,13 @@ If INCI is not publicly available, set score to 40, note it in summary, and set 
       }
     }
 
-    if (!finalParsed) return outOfScope();
-    if (finalParsed.type === "out_of_scope") return outOfScope();
+    if (!finalParsed || finalParsed.type === "out_of_scope") {
+      // For text product queries (not URL, not expert, not comparison), "outside my lane"
+      // is the wrong signal — the query looked like a beauty product but we couldn't score it.
+      // Return noDataFound so the UI shows "Ingredient data not found" instead.
+      if (!urlInput && !isExpert && !isComparison) return noDataFound(q);
+      return outOfScope();
+    }
 
     // Comparison response
     if (isComparison && finalParsed.type === "comparison" && finalParsed.productA && finalParsed.productB) {
@@ -931,6 +944,7 @@ If INCI is not publicly available, set score to 40, note it in summary, and set 
 
     // Validate scorecard has minimum required fields before returning
     if (!isComparison && !isExpert && !isValidScorecard(finalParsed as Record<string, unknown>)) {
+      if (!urlInput) return noDataFound(q);
       return outOfScope();
     }
 
