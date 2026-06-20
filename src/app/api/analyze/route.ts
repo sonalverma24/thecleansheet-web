@@ -404,10 +404,21 @@ function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function generateSlug(brand: string, productName: string): string {
+// Short deterministic hash so each cache_key gets a globally unique slug.
+// Without this, analyzing the same product via URL and then via text generates
+// the same brand-product slug but different cache_keys — the second DB upsert
+// hits the UNIQUE constraint on slug and fails silently, breaking Supabase caching.
+function hashCacheKey(s: string): string {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36).slice(-5);
+}
+
+function generateSlug(brand: string, productName: string, cacheKey: string): string {
   const b = slugify(brand || 'unknown');
   const p = slugify(productName || 'product');
-  return `${b}-${p}`.slice(0, 120);
+  const suffix = hashCacheKey(cacheKey);
+  return `${b}-${p}`.slice(0, 110) + `-${suffix}`;
 }
 
 const outOfScope = () => Response.json({ type: "out_of_scope" });
@@ -800,7 +811,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: fallbackParsed };
             try {
               const sc = fallbackParsed as any;
-              const slug = generateSlug(sc.brand ?? '', sc.productName ?? '');
+              const slug = generateSlug(sc.brand ?? '', sc.productName ?? '', cacheKey);
               const db = createAdminClient();
               await db.from('scorecard_cache').upsert({
                 cache_key: cacheKey,
@@ -834,7 +845,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             // Persist to Supabase
             try {
               const sc = lastParsed as any;
-              const slug = generateSlug(sc.brand ?? '', sc.productName ?? '');
+              const slug = generateSlug(sc.brand ?? '', sc.productName ?? '', cacheKey);
               const db = createAdminClient();
               await db.from('scorecard_cache').upsert({
                 cache_key: cacheKey,
@@ -935,7 +946,7 @@ If INCI is not publicly available, set score to 40, note it in summary, and set 
     // Persist to Supabase
     try {
       const sc = finalParsed as any;
-      const slug = generateSlug(sc.brand ?? '', sc.productName ?? '');
+      const slug = generateSlug(sc.brand ?? '', sc.productName ?? '', cacheKey);
       const db = createAdminClient();
       await db.from('scorecard_cache').upsert({
         cache_key: cacheKey,
