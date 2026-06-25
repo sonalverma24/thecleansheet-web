@@ -535,7 +535,7 @@ export async function POST(req: Request) {
         }
       } else {
         q = slugFromURL;
-        if (!q) return outOfScope();
+        if (!q) return noDataFound();
       }
 
       // Assemble context from all sources — labelled so Gemini knows provenance
@@ -596,15 +596,20 @@ export async function POST(req: Request) {
     const isExpert = !urlInput && isExpertQuestion(q);
     const isComparison = !urlInput && !isExpert && isComparisonQuery(q);
 
-    // For text-based product queries, pre-fetch from external sources just like URL inputs.
-    // This gives Gemini real data to work with instead of relying entirely on grounding.
+    // For text-based product queries, pre-fetch from the same sources as URL inputs.
+    // Nykaa, Amazon, and Purplle are essential for Indian brands — they host full INCI lists
+    // that InciDecoder and OBF often don't have for niche/emerging brands.
     if (!urlInput && !isExpert && !isComparison) {
       const enc = encodeURIComponent(q);
       const encReview = encodeURIComponent(q + " review india");
 
-      const [inciSearchContent, obfContent, redditContent] = await Promise.all([
+      // Fire all sources in parallel — same breadth as URL path
+      const [inciSearchContent, obfContent, nykaaContent, amazonContent, purplleContent, redditContent] = await Promise.all([
         scrapeURL(`https://incidecoder.com/search?query=${enc}`),
         searchOpenBeautyFacts(q),
+        scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
+        scrapeURL(`https://www.amazon.in/s?k=${enc}`),
+        scrapeURL(`https://www.purplle.com/search?q=${enc}`),
         scrapeURL(`https://www.reddit.com/search/?q=${encReview}&sort=relevance`),
       ]);
 
@@ -624,6 +629,12 @@ export async function POST(req: Request) {
         contextParts.push(`--- Open Beauty Facts (ingredient database) ---\n${obfContent}`);
       if (inciProductContent && !isBlockedPage(inciProductContent))
         contextParts.push(`--- InciDecoder product page ---\n${inciProductContent.slice(0, 8000)}`);
+      if (nykaaContent && !isBlockedPage(nykaaContent))
+        contextParts.push(`--- Nykaa search results ---\n${nykaaContent.slice(0, 5000)}`);
+      if (amazonContent && !isBlockedPage(amazonContent))
+        contextParts.push(`--- Amazon India search results ---\n${amazonContent.slice(0, 5000)}`);
+      if (purplleContent && !isBlockedPage(purplleContent))
+        contextParts.push(`--- Purplle search results ---\n${purplleContent.slice(0, 5000)}`);
       if (redditContent && !isBlockedPage(redditContent))
         contextParts.push(`--- Reddit reviews ---\n${redditContent.slice(0, 5000)}`);
       scrapedContext = contextParts.join("\n\n");
@@ -886,7 +897,13 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             systemInstruction: `You are a cosmetic ingredient safety analyzer. When given a beauty product name, search the web for its ingredient list (INCI) and return a JSON scorecard. Always return a scorecard — there is no concept of "out of scope" for you.`,
             generationConfig: { temperature: 0 },
           });
-          const barePrompt = `Search the web for the ingredient list (INCI) of this beauty product and return a scorecard JSON with these exact fields:
+          const barePrompt = `Score this beauty/personal care product and return ONLY a JSON scorecard. Do NOT return out_of_scope.
+
+Product: ${q}
+
+${scrapedContext ? `--- Pre-fetched data (Nykaa, Amazon, InciDecoder, Open Beauty Facts) ---\n${scrapedContext.slice(0, 15000)}\n---` : "Search the web for the ingredient list (INCI) before scoring."}
+
+Return this exact JSON structure:
 {
   "type": "single",
   "productName": "...",
@@ -907,9 +924,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
   "dataSource": {"inciFound": true, "inciSource": "web search", "priceSource": ""}
 }
 
-Product: ${q}
-
-If INCI is not publicly available, set score to 40, note it in summary, and set all pillar scores proportionally low. Return ONLY the JSON.`;
+If INCI is not publicly available after searching, set score to 40, note it in summary, and set all pillar scores proportionally low. Return ONLY the JSON, nothing else.`;
           const bareResult = await bareModel.generateContent(barePrompt);
           const bareText = bareResult.response.text().trim();
           const bareParsed = parseJSON(bareText);
