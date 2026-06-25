@@ -127,6 +127,66 @@ function extractFirstInciDecoderProductUrl(searchContent: string): string | null
   return match ? match[0] : null;
 }
 
+// ── Fix: Resolve short links (share.google, bit.ly, etc.) before scraping ──────
+const SHORTLINK_HOSTS = new Set([
+  "share.google", "bit.ly", "t.co", "tinyurl.com", "goo.gl",
+  "short.io", "ow.ly", "rb.gy", "cutt.ly", "tiny.cc", "is.gd",
+]);
+
+async function resolveShortLink(url: string): Promise<string> {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    const isShort = [...SHORTLINK_HOSTS].some((h) => host === h || host.endsWith(`.${h}`));
+    if (!isShort) return url;
+    const res = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(6000),
+    });
+    return res.url && res.url !== url ? res.url : url;
+  } catch {
+    return url;
+  }
+}
+
+// ── Fix: Web search via Jina search API — finds brand official pages ──────────
+// Jina's s.jina.ai endpoint returns top web results as markdown, no bot-blocking.
+async function searchWebForBrandPage(query: string): Promise<string | null> {
+  try {
+    const enc = encodeURIComponent(query);
+    const res = await fetch(`https://s.jina.ai/${enc}`, {
+      headers: { Accept: "text/plain", "X-Return-Format": "markdown" },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!res.ok) return null;
+    return (await res.text()).slice(0, 10000);
+  } catch {
+    return null;
+  }
+}
+
+// ── Fix: Unwrap scorecard wrappers Gemini sometimes adds ─────────────────────
+// e.g. { "scorecard": { "score": 72, ... } } or { "result": { ... } }
+function unwrapScorecard(parsed: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!parsed || typeof parsed !== "object") return parsed;
+  const wrapperKeys = ["scorecard", "result", "data", "analysis", "product", "response", "output"];
+  for (const key of wrapperKeys) {
+    const val = parsed[key];
+    if (val && typeof val === "object" && !Array.isArray(val)) {
+      const inner = val as Record<string, unknown>;
+      // Only unwrap if inner looks like a scorecard
+      if (
+        typeof inner.score !== "undefined" ||
+        typeof inner.productName !== "undefined" ||
+        Array.isArray(inner.pillars)
+      ) {
+        return inner;
+      }
+    }
+  }
+  return parsed;
+}
+
 async function scrapeShopifyJSON(url: string): Promise<string | null> {
   try {
     // Only applies to Shopify product URLs
@@ -269,26 +329,62 @@ function isExpertQuestion(query: string): boolean {
   // If query contains a specific product type word alongside a brand-sounding name,
   // route to scorecard not expert, e.g. "is ponds moisturiser good for oily skin"
   const productTypeWords = [
+    // Skincare
     "moisturiser", "moisturizer", "serum", "sunscreen", "spf", "face wash", "cleanser",
-    "toner", "cream", "lotion", "gel", "oil", "mask", "sheet mask", "eye cream",
-    "lip balm", "shampoo", "conditioner", "body wash", "scrub", "exfoliant",
-    "primer", "foundation", "bb cream", "cc cream", "micellar", "mist", "essence",
-    "ampoule", "retinol", "vitamin c", "niacinamide", "aha", "bha", "spf", "face cream",
+    "toner", "cream", "lotion", "gel", "mask", "sheet mask", "eye cream", "eye serum",
+    "lip balm", "micellar", "mist", "essence", "ampoule", "face cream", "face oil",
+    "exfoliant", "scrub", "peel", "retinol", "vitamin c", "niacinamide", "aha", "bha",
+    // Haircare
+    "shampoo", "conditioner", "hair mask", "hair oil", "hair serum", "scalp serum",
+    "hair growth", "anti-dandruff", "anti dandruff", "hair fall", "hair care",
+    // Body & hygiene
+    "body wash", "body lotion", "body cream", "body oil", "body scrub",
+    "hand wash", "hand cream", "intimate wash", "feminine wash", "deodorant",
+    "body spray", "antiperspirant", "hand sanitizer",
+    // Baby care
+    "baby lotion", "baby wash", "baby shampoo", "baby oil", "baby cream",
+    "diaper cream", "nappy cream", "baby powder",
+    // Makeup (colour cosmetics)
+    "lipstick", "lip gloss", "lip liner", "lip crayon", "lip tint", "lip stain",
+    "foundation", "concealer", "mascara", "eyeliner", "eye shadow", "eyeshadow",
+    "blush", "bronzer", "contour", "highlighter", "bb cream", "cc cream",
+    "primer", "setting powder", "setting spray", "kajal", "kohl",
+    // Fragrance
+    "perfume", "eau de parfum", "eau de toilette", "cologne", "fragrance", "attar",
+    // Nail
+    "nail polish", "nail paint", "nail serum", "cuticle oil",
   ];
   const containsProductType = productTypeWords.some((w) => q.includes(w));
 
   // Known Indian & global beauty brand names (lowercase)
   const knownBrands = [
-    "ponds", "pond's", "lakme", "mamaearth", "minimalist", "cetaphil", "cerave",
-    "the ordinary", "dot & key", "plum", "wow", "biotique", "himalaya", "neutrogena",
-    "loreal", "l'oreal", "olay", "nivea", "garnier", "vaseline", "dove", "clinic plus",
-    "head & shoulders", "pantene", "sunsilk", "tresemme", "fiama", "santoor",
-    "vicco", "shahnaz", "forest essentials", "kama ayurveda", "beardo", "man matters",
-    "sugar", "nykaa", "mcaffeine", "re'equil", "fixderma", "cosdna", "cosrx",
-    "innisfree", "the face shop", "etude", "klairs", "pyunkang yul", "some by mi",
+    // Indian skincare & haircare
+    "ponds", "pond's", "lakme", "lakmé", "mamaearth", "minimalist", "cetaphil", "cerave",
+    "dot & key", "dot and key", "plum", "wow", "biotique", "himalaya", "mcaffeine",
+    "re'equil", "requil", "fixderma", "aqualogica", "dr sheth", "dr. sheth",
+    "foxtale", "deconstruct", "suganda", "bare anatomy", "hyphen", "codeskin",
+    "pilgrim", "antinorm", "dermaco", "the derma co", "earth rhythm",
+    "bblunt", "wishcare", "love beauty & planet", "love beauty and planet",
+    "forest essentials", "kama ayurveda", "biotique", "khadi naturals",
+    "beardo", "man matters", "bombay shaving company",
+    // Indian makeup
+    "colorbar", "sugar cosmetics", "myglamm", "my glamm", "kay beauty",
+    "faces canada", "swiss beauty", "half n half", "renee", "mars cosmetics",
+    "insight cosmetics", "nykaa cosmetics",
+    // Global skincare
+    "the ordinary", "neutrogena", "loreal", "l'oreal", "olay", "nivea", "garnier",
+    "vaseline", "dove", "clinic plus", "head & shoulders", "pantene", "sunsilk",
+    "tresemme", "fiama", "santoor", "vicco", "shahnaz", "nykaa",
     "dermalogica", "paula's choice", "la roche-posay", "vichy", "avene", "eucerin",
-    "aveeno", "bulldog", "jack black", "supergoop", "tatcha", "drunk elephant",
-    "beauty of joseon", "anua", "isntree", "torriden", "skin1004",
+    "aveeno", "supergoop", "tatcha", "drunk elephant",
+    // Korean & global
+    "cosrx", "innisfree", "the face shop", "etude", "klairs", "pyunkang yul",
+    "some by mi", "beauty of joseon", "anua", "isntree", "torriden", "skin1004",
+    // Global makeup
+    "revlon", "maybelline", "mac", "nars", "charlotte tilbury", "l'oréal paris",
+    "loreal paris", "rimmel", "bourjois", "wet n wild",
+    // Men's grooming
+    "bulldog", "jack black",
   ];
   const containsBrand = knownBrands.some((b) => q.includes(b));
 
@@ -444,6 +540,19 @@ export async function POST(req: Request) {
     return Response.json({ error: "No query provided" }, { status: 400 });
   }
 
+  // ── Fix: handle mixed queries that contain BOTH product text and a URL ───────
+  // e.g. "Minimalist Niacinamide 10% https://share.google/abc" → use text only
+  // e.g. "https://share.google/abc" → resolve the short link to the real URL
+  {
+    const urlsFound = rawQuery.match(/https?:\/\/\S+/g) ?? [];
+    const textOnly = rawQuery.replace(/https?:\/\/\S+/g, "").replace(/\s+/g, " ").trim();
+    if (urlsFound.length > 0 && textOnly.length > 3) {
+      // Has both text and URL — the text is the product name, drop the URL
+      rawQuery = textOnly;
+    }
+    // Short link resolution for pure URL inputs happens inside the main try block (async)
+  }
+
   try {
     const query = rawQuery;
     if (!process.env.GOOGLE_AI_API_KEY) {
@@ -481,7 +590,10 @@ export async function POST(req: Request) {
       .replace(/\bsalysalic\b/gi, "salicylic")
       .replace(/\bceramine\b/gi, "ceramide")
       .replace(/\bpeptied\b/gi, "peptide");
-    const rawTrimmed = query.trim();
+    // Resolve short links (share.google, bit.ly etc.) to real product URLs before any processing
+    const rawTrimmed = isURL(query.trim())
+      ? await resolveShortLink(query.trim())
+      : query.trim();
     let q = isURL(rawTrimmed) ? rawTrimmed : expandAbbreviations(rawTrimmed);
     let scrapedContext = "";
 
@@ -604,13 +716,15 @@ export async function POST(req: Request) {
       const encReview = encodeURIComponent(q + " review india");
 
       // Fire all sources in parallel — same breadth as URL path
-      const [inciSearchContent, obfContent, nykaaContent, amazonContent, purplleContent, redditContent] = await Promise.all([
+      // searchWebForBrandPage uses Jina's search API to find the brand's official PDP
+      const [inciSearchContent, obfContent, nykaaContent, amazonContent, purplleContent, redditContent, brandPageContent] = await Promise.all([
         scrapeURL(`https://incidecoder.com/search?query=${enc}`),
         searchOpenBeautyFacts(q),
         scrapeURL(`https://www.nykaa.com/search/result/?q=${enc}`),
         scrapeURL(`https://www.amazon.in/s?k=${enc}`),
         scrapeURL(`https://www.purplle.com/search?q=${enc}`),
         scrapeURL(`https://www.reddit.com/search/?q=${encReview}&sort=relevance`),
+        searchWebForBrandPage(`${q} ingredients`),
       ]);
 
       // Two-hop InciDecoder: follow the first product link from search results so Gemini
@@ -637,6 +751,8 @@ export async function POST(req: Request) {
         contextParts.push(`--- Purplle search results ---\n${purplleContent.slice(0, 5000)}`);
       if (redditContent && !isBlockedPage(redditContent))
         contextParts.push(`--- Reddit reviews ---\n${redditContent.slice(0, 5000)}`);
+      if (brandPageContent && !isBlockedPage(brandPageContent))
+        contextParts.push(`--- Web search results (brand official page + ingredient sources) ---\n${brandPageContent.slice(0, 8000)}`);
       scrapedContext = contextParts.join("\n\n");
 
       if (inciSearchContent && !isBlockedPage(inciSearchContent))
@@ -800,7 +916,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
       return Response.json({ type: "answer", answer: { type: "answer", text: finalText, verdict: "info" } });
     }
 
-    const parsed = parseJSON(finalText);
+    const parsed = unwrapScorecard(parseJSON(finalText));
     if (parsed && typeof parsed === "object") normalizeScorecard(parsed as Record<string, unknown>);
 
     // For URL inputs, never surface out_of_scope, the URL is always a beauty product page.
@@ -816,7 +932,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             `Analyze this beauty/cosmetic product for The Clean Sheet™ scorecard. This is definitely a beauty/personal care product, do NOT return out_of_scope. Search the web for the full INCI ingredient list, price in India, and reviews, then produce the complete JSON scorecard.\n\nProduct: ${fallbackQuery}`
           );
           const fallbackText = fallbackResult.response.text().trim();
-          const fallbackParsed = parseJSON(fallbackText);
+          const fallbackParsed = unwrapScorecard(parseJSON(fallbackText));
           if (fallbackParsed && typeof fallbackParsed === "object") normalizeScorecard(fallbackParsed as Record<string, unknown>);
           if (fallbackParsed && fallbackParsed.type !== "out_of_scope" && isValidScorecard(fallbackParsed as Record<string, unknown>)) {
             const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: fallbackParsed };
@@ -849,7 +965,7 @@ If the full INCI list cannot be found after all searches: score "Public INCI Saf
             `You are The Clean Sheet™ product analyzer. Analyze this skincare/beauty product and return a complete scorecard JSON. Product name extracted from URL: "${fallbackName}". Search the web for ingredients, price, and reviews. This is a beauty product, always return a scorecard, never out_of_scope.`
           );
           const lastText = lastResort.response.text().trim();
-          const lastParsed = parseJSON(lastText);
+          const lastParsed = unwrapScorecard(parseJSON(lastText));
           if (lastParsed && typeof lastParsed === "object") normalizeScorecard(lastParsed as Record<string, unknown>);
           if (lastParsed && lastParsed.type !== "out_of_scope" && isValidScorecard(lastParsed as Record<string, unknown>)) {
             const body: { type: string; scorecard: unknown; slug?: string } = { type: "single", scorecard: lastParsed };
@@ -927,7 +1043,7 @@ Return this exact JSON structure:
 If INCI is not publicly available after searching, set score to 40, note it in summary, and set all pillar scores proportionally low. Return ONLY the JSON, nothing else.`;
           const bareResult = await bareModel.generateContent(barePrompt);
           const bareText = bareResult.response.text().trim();
-          const bareParsed = parseJSON(bareText);
+          const bareParsed = unwrapScorecard(parseJSON(bareText));
           if (bareParsed && typeof bareParsed === "object") normalizeScorecard(bareParsed as Record<string, unknown>);
           if (bareParsed && bareParsed.type !== "out_of_scope" && isValidScorecard(bareParsed as Record<string, unknown>)) {
             finalParsed = bareParsed;
@@ -937,9 +1053,74 @@ If INCI is not publicly available after searching, set score to 40, note it in s
     }
 
     if (!finalParsed || finalParsed.type === "out_of_scope") {
-      // For text product queries (not URL, not expert, not comparison), "outside my lane"
-      // is the wrong signal — the query looked like a beauty product but we couldn't score it.
-      // Return noDataFound so the UI shows "Ingredient data not found" instead.
+      // Provisional attempt: INCI not found but we can still score Pillars 3-5
+      // (Claim Support, Test Transparency, Consumer Clarity) from brand/product public info.
+      if (!isComparison && !isExpert) {
+        try {
+          const provModel = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            tools: [{ googleSearch: {} } as any],
+            systemInstruction: `You are a cosmetic safety analyst. When INCI is unavailable, return a provisional scorecard scoring only Pillars 3-5. Always return JSON.`,
+            generationConfig: { temperature: 0 },
+          });
+          const provPrompt = `The INCI ingredient list for this product could not be found. Provide a PROVISIONAL scorecard.
+
+Product: ${q}
+${scrapedContext ? `\n--- Available context ---\n${scrapedContext.slice(0, 8000)}\n---` : ""}
+
+Set Pillar 1 (Public INCI Safety Screen, max 30) to 0 and Pillar 2 (Formula Logic Inference, max 25) to 0 because INCI is unavailable.
+Score Pillars 3-5 based on public brand claims, certifications, and consumer reputation:
+- Pillar 3: Public Claim Support (max 25)
+- Pillar 4: Test Result Transparency (max 15)
+- Pillar 5: Consumer Clarity (max 5)
+
+Return ONLY this JSON:
+{
+  "type": "single",
+  "provisional": true,
+  "productName": "...",
+  "brand": "...",
+  "score": <integer, sum of all pillar scores>,
+  "scoreLabel": "Excellent or Good or Fair or Concern",
+  "summary": "Provisional analysis only — full INCI not publicly available. Pillars 1 and 2 scored 0.",
+  "pillars": [
+    {"name": "Public INCI Safety Screen", "score": 0, "max": 30, "note": "INCI not publicly available"},
+    {"name": "Formula Logic Inference", "score": 0, "max": 25, "note": "INCI not publicly available"},
+    {"name": "Public Claim Support", "score": <integer 0-25>, "max": 25, "note": "..."},
+    {"name": "Test Result Transparency", "score": <integer 0-15>, "max": 15, "note": "..."},
+    {"name": "Consumer Clarity", "score": <integer 0-5>, "max": 5, "note": "..."}
+  ],
+  "pass_badges": [],
+  "warn_badges": ["Exact INCI not found — provisional analysis only"],
+  "ingredients": [],
+  "dataSource": {"inciFound": false, "inciSource": "unavailable", "priceSource": ""}
+}`;
+          const provResult = await provModel.generateContent(provPrompt);
+          const provText = provResult.response.text().trim();
+          const provParsed = unwrapScorecard(parseJSON(provText));
+          if (provParsed && typeof provParsed === "object") {
+            normalizeScorecard(provParsed as Record<string, unknown>);
+            // Relax validation for provisional: only need productName + pillars, score can be low
+            const psc = provParsed as Record<string, unknown>;
+            const hasName = typeof psc.productName === "string" && psc.productName.length > 0;
+            const hasPillars = Array.isArray(psc.pillars) && (psc.pillars as unknown[]).length >= 3;
+            if (hasName && hasPillars) {
+              psc.provisional = true;
+              // Ensure warn badge is present
+              const warns = Array.isArray(psc.warn_badges) ? psc.warn_badges as string[] : [];
+              if (!warns.includes("Exact INCI not found — provisional analysis only")) {
+                warns.push("Exact INCI not found — provisional analysis only");
+                psc.warn_badges = warns;
+              }
+              finalParsed = provParsed;
+            }
+          }
+        } catch { /* provisional attempt failed, fall through to noDataFound */ }
+      }
+    }
+
+    if (!finalParsed || finalParsed.type === "out_of_scope") {
       if (!urlInput && !isExpert && !isComparison) return noDataFound(q);
       return outOfScope();
     }

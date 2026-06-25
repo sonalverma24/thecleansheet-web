@@ -367,10 +367,21 @@ function ScorecardView({ card }: { card: Scorecard }) {
           </div>
 
           {/* Summary */}
-          <p className="text-sm leading-relaxed mb-6 px-4 py-3 rounded-2xl"
+          <p className="text-sm leading-relaxed mb-4 px-4 py-3 rounded-2xl"
             style={{ color: "rgba(153,246,228,0.7)", background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.1)" }}>
             {card.summary}
           </p>
+
+          {/* Provisional banner */}
+          {card.provisional && (
+            <div className="flex items-start gap-3 mb-5 px-4 py-3 rounded-2xl"
+              style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)" }}>
+              <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+              <p className="text-xs leading-relaxed" style={{ color: "rgba(245,158,11,0.85)" }}>
+                <span className="font-medium">Provisional analysis</span> - Full ingredient list (INCI) not publicly available. Safety and formula scores are 0. Only brand claims and transparency are scored.
+              </p>
+            </div>
+          )}
 
           {/* Badges */}
           {(card.pass_badges?.length > 0 || card.warn_badges?.length > 0 || card.info_badges?.length > 0) && (

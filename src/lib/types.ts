@@ -48,6 +48,7 @@ export interface Scorecard {
   indiaContext: string;
   chatOpener: string;
   dataSource: DataSource;
+  provisional?: boolean;
 }
 
 export interface ExpertAnswer {
