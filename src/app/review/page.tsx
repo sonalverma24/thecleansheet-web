@@ -1,1297 +1,1086 @@
 "use client";
 
+/* ────────────────────────────────────────────────────────────────
+   THE CLEAN SHEET™ — Review
+   Evidence-First Editorial. Light canvas, dark verdict sheet.
+   Hierarchy through scale, colour and space — never weight.
+──────────────────────────────────────────────────────────────── */
+
 import { useState, useRef, useEffect, useCallback } from "react";
-import Image from "next/image";
-import {
-  Search, Loader2, AlertTriangle, CheckCircle2, Info,
-  ChevronDown, ChevronUp, TrendingUp, ShieldAlert,
-  FlaskConical, Users, LayoutGrid, Star, Zap, ExternalLink,
-  BadgeCheck, TriangleAlert, CircleDot,
-} from "lucide-react";
-import type { ProductReview, ClaimAnalysis, ClaimRiskLevel } from "@/lib/types";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { GuidanceBlock, VerifiedList } from "@/components/VerifiedList";
+import type { Scorecard, ChatMessage, ComparisonResult, ExpertAnswer, ClaimCheckResult, CheckedClaim, VerifiedProduct, FinalVerdict } from "@/lib/types";
 
-/* ─────────────────────────────────────────────────────────────────
-   COLOURS & HELPERS
-───────────────────────────────────────────────────────────────── */
+/* ─── Palette (brand tokens) ─── */
+const INK = "#282828";          // charcoal — dark canvas
+const CREAM = "#fcf9f8";        // light text on dark
+const TEAL = "#248179";
+const TEAL_SOFT = "#80d5cc";    // teal for dark backgrounds
+const CORAL = "#fd6158";
+const LIME = "#d2ff34";
+const WARM = "#b0a8a4";
+const HAIR_DARK = "rgba(252,249,248,0.14)";  // hairline on dark
+const HAIR_LIGHT = "rgba(40,40,40,0.15)";    // hairline on light
 
-const RISK_CONFIG: Record<ClaimRiskLevel, { label: string; color: string; bg: string; border: string }> = {
-  "low":       { label: "Low Risk",       color: "#4ade80", bg: "rgba(74,222,128,0.08)",   border: "rgba(74,222,128,0.2)"  },
-  "medium":    { label: "Medium Risk",    color: "#fbbf24", bg: "rgba(251,191,36,0.08)",   border: "rgba(251,191,36,0.2)"  },
-  "high":      { label: "High Risk",      color: "#f97316", bg: "rgba(249,115,22,0.08)",   border: "rgba(249,115,22,0.2)"  },
-  "very-high": { label: "Very High Risk", color: "#f87171", bg: "rgba(248,113,113,0.08)",  border: "rgba(248,113,113,0.2)" },
-  "red-flag":  { label: "Red Flag",       color: "#ef4444", bg: "rgba(239,68,68,0.10)",    border: "rgba(239,68,68,0.3)"   },
+/* ─── Helpers ─── */
+function uid() { return Math.random().toString(36).slice(2); }
+
+function looksLikeComparison(t: string): boolean {
+  const q = t.toLowerCase();
+  return q.includes(" vs ") || q.includes(" versus ") || q.includes("compare")
+    || q.includes("better than") || q.includes("which is better") || q.includes("which one is")
+    || /better.{1,80}\bor\b/i.test(t) || /\bor\b.{1,80}better/i.test(t);
+}
+function looksLikeQuestion(t: string): boolean {
+  const q = t.toLowerCase().trim();
+  if (/^https?:\/\//.test(q)) return false;
+  const starters = ["is ", "are ", "does ", "do ", "can ", "should ", "what ", "why ", "how ", "tell me about", "explain", "which "];
+  return starters.some((s) => q.startsWith(s)) || q.endsWith("?");
+}
+
+const CLAIM_STEPS = [
+  "Reading the label and product page",
+  "Extracting every marketing claim",
+  "Searching for evidence: studies, certificates, registries",
+  "Grading each claim against TCS evidence standards",
+];
+const SCAN_STEPS = [
+  "Finding the full ingredient list",
+  "Reading the science, not the marketing",
+  "Checking EU, India and global regulations",
+  "Running the six-pillar framework",
+  "Writing your verdict",
+];
+
+const SUGGESTIONS = [
+  "Minimalist 10% Niacinamide Serum",
+  "Cetaphil vs CeraVe for oily skin",
+  "Is DMDM Hydantoin safe?",
+  "Mamaearth Vitamin C Face Wash",
+];
+
+/* ─── Verdict styling — brand colours only ─── */
+const VERDICT_META: Record<CheckedClaim["verdict"], { label: string; color: string; solid?: boolean }> = {
+  verified:      { label: "Verified",          color: LIME },
+  qualified:     { label: "Partial evidence",  color: TEAL_SOFT },
+  unverified:    { label: "No evidence found", color: CORAL },
+  not_permitted: { label: "Not permitted",     color: CORAL, solid: true },
 };
 
-const EVIDENCE_LABELS: Record<number, string> = {
-  1: "No visible proof",
-  2: "Ingredient research only",
-  3: "Percentage disclosed",
-  4: "Finished product tested",
-  5: "Third-party lab tested",
-  6: "Clinical study with details",
-  7: "Published / registered study",
+function scoreColorDark(s: number) {
+  if (s >= 70) return LIME;
+  if (s >= 45) return TEAL_SOFT;
+  return CORAL;
+}
+
+/* ─── The Verdict Panel — one standard, three gates, shown working ─── */
+const VERDICT_STATUS_META: Record<FinalVerdict["status"], { word: string; color: string; note: string }> = {
+  verified:     { word: "Verified",     color: LIME,  note: "Meets The Clean Sheet Standard. Listed under Verified Products." },
+  not_verified: { word: "Not Verified", color: CORAL, note: "Does not meet The Clean Sheet Standard. The failed gate below explains why." },
+  provisional:  { word: "Pending",      color: WARM,  note: "The claim layer could not run — nothing is Verified without its claims checked. Run the review again for the full verdict." },
 };
 
-const CLAIM_TYPE_LABELS: Record<string, string> = {
-  functional:   "Functional",
-  appearance:   "Appearance",
-  active:       "Active",
-  concern:      "Concern",
-  "time-bound": "Time Bound",
-  clinical:     "Clinical",
-  safety:       "Safety",
-  "free-from":  "Free From",
-  emotional:    "Emotional",
-};
-
-function reviewScoreColor(s: number) {
-  if (s >= 85) return "#4ade80";
-  if (s >= 70) return "#2dd4bf";
-  if (s >= 55) return "#fbbf24";
-  if (s >= 40) return "#f97316";
-  return "#f87171";
-}
-
-function reviewScoreLabel(s: number) {
-  if (s >= 85) return "Clean Sheet Strong";
-  if (s >= 70) return "Mostly Transparent";
-  if (s >= 55) return "Needs More Clarity";
-  if (s >= 40) return "High Claim Risk";
-  return "Consumer Confusion Risk";
-}
-
-function evidenceColor(level: number) {
-  if (level >= 6) return "#4ade80";
-  if (level >= 4) return "#2dd4bf";
-  if (level >= 3) return "#fbbf24";
-  if (level >= 2) return "#f97316";
-  return "#f87171";
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   ANIMATED BAR
-───────────────────────────────────────────────────────────────── */
-function AnimBar({ pct, color }: { pct: number; color: string }) {
-  const [w, setW] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setW(pct), 150); return () => clearTimeout(t); }, [pct]);
+function VerdictPanel({ verdict }: { verdict: FinalVerdict }) {
+  const meta = VERDICT_STATUS_META[verdict.status];
   return (
-    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
-      <div className="h-full rounded-full transition-all duration-1000 ease-out"
-        style={{ width: `${w}%`, background: color, boxShadow: `0 0 6px ${color}60` }} />
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   SCORE RING
-───────────────────────────────────────────────────────────────── */
-function ScoreRing({ score }: { score: number }) {
-  const [animated, setAnimated] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setAnimated(true), 100); return () => clearTimeout(t); }, []);
-
-  const r = 52, sw = 7, size = 128;
-  const circ = 2 * Math.PI * r;
-  const col = reviewScoreColor(score);
-
-  return (
-    <div className="flex flex-col items-center gap-2 flex-shrink-0">
-      <div className="relative" style={{ width: size, height: size }}>
-        <div className="absolute inset-0 rounded-full blur-xl opacity-20 pointer-events-none" style={{ background: col }} />
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} />
-          <circle
-            cx={size/2} cy={size/2} r={r} fill="none" stroke={col} strokeWidth={sw}
-            strokeDasharray={circ}
-            strokeDashoffset={animated ? circ - (score / 100) * circ : circ}
-            strokeLinecap="round"
-            transform={`rotate(-90 ${size/2} ${size/2})`}
-            style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)", filter: `drop-shadow(0 0 8px ${col}80)` }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-          <Image src="/logo.png" alt="TCS" width={32} height={32} className="rounded-full" />
-          <span className="text-2xl font-semibold leading-none tabular-nums" style={{ color: col }}>{score}</span>
-        </div>
-      </div>
-      <span className="text-[10px] font-mono text-center leading-tight px-3 py-1 rounded-full"
-        style={{ color: col, background: `${col}15`, border: `1px solid ${col}30` }}>
-        {reviewScoreLabel(score)}
-      </span>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   EVIDENCE DOTS  (7 levels visualised)
-───────────────────────────────────────────────────────────────── */
-function EvidenceDots({ level }: { level: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5,6,7].map((n) => (
-        <div key={n} className="w-2 h-2 rounded-full"
-          style={{ background: n <= level ? evidenceColor(level) : "rgba(255,255,255,0.08)" }} />
-      ))}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   SECTION HEADER
-───────────────────────────────────────────────────────────────── */
-function SectionHeader({ dot, label }: { dot: string; label: string }) {
-  return (
-    <div className="px-5 py-3.5 border-b flex items-center gap-2" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-      <div className="w-1.5 h-1.5 rounded-full" style={{ background: dot }} />
-      <h3 className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.6)" }}>{label}</h3>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   CARD SHELL
-───────────────────────────────────────────────────────────────── */
-function Card({ children, accent }: { children: React.ReactNode; accent?: string }) {
-  return (
-    <div className="rounded-3xl overflow-hidden"
-      style={{
-        background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)",
-        border: `1px solid ${accent ?? "rgba(255,255,255,0.07)"}`,
-      }}>
-      {children}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   CLAIM ROW
-───────────────────────────────────────────────────────────────── */
-function ClaimRow({ claim }: { claim: ClaimAnalysis }) {
-  const [open, setOpen] = useState(false);
-  const risk = RISK_CONFIG[claim.riskLevel];
-
-  return (
-    <button
-      onClick={() => setOpen(!open)}
-      className="w-full text-left rounded-2xl px-4 py-3.5 transition-all"
-      style={{
-        background: open ? risk.bg : "rgba(255,255,255,0.02)",
-        border: `1px solid ${open ? risk.border : "rgba(255,255,255,0.05)"}`,
-      }}
-    >
-      {/* Top row */}
-      <div className="flex items-start gap-3">
-        <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: risk.color, boxShadow: `0 0 5px ${risk.color}80` }} />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm leading-snug mb-1.5" style={{ color: "rgba(255,255,255,0.82)" }}>{claim.text}</p>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {/* Risk badge */}
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full"
-              style={{ color: risk.color, background: risk.bg, border: `1px solid ${risk.border}` }}>
-              {risk.label}
-            </span>
-            {/* Claim type */}
-            {claim.primaryType && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full"
-                style={{ color: "rgba(94,234,212,0.7)", background: "rgba(94,234,212,0.07)", border: "1px solid rgba(94,234,212,0.15)" }}>
-                {CLAIM_TYPE_LABELS[claim.primaryType] ?? claim.primaryType}
-              </span>
-            )}
-            {/* Source */}
-            {claim.source && (
-              <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>
-                via {claim.source}
-              </span>
-            )}
-            {/* Flags */}
-            {claim.asciConcern && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1"
-                style={{ color: "#f97316", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
-                <TriangleAlert size={9} />ASCI
-              </span>
-            )}
-            {claim.drugBoundaryRisk && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1"
-                style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
-                <ShieldAlert size={9} />Drug Boundary
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex-shrink-0 flex flex-col items-end gap-1">
-          <EvidenceDots level={claim.evidenceLevel} />
-          <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>
-            L{claim.evidenceLevel}
-          </span>
-        </div>
-        <div className="flex-shrink-0">
-          {open
-            ? <ChevronUp size={12} style={{ color: "rgba(255,255,255,0.3)" }} />
-            : <ChevronDown size={12} style={{ color: "rgba(255,255,255,0.3)" }} />}
-        </div>
-      </div>
-
-      {/* Expanded details */}
-      {open && (
-        <div className="mt-3 ml-5 space-y-2">
-          <div className="text-xs rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.25)" }}>
-              Evidence Level {claim.evidenceLevel} — {EVIDENCE_LABELS[claim.evidenceLevel]}
-            </span>
-            <p style={{ color: "rgba(255,255,255,0.55)" }}>{claim.evidenceNote}</p>
-          </div>
-          {claim.asciConcern && claim.asciNote && (
-            <div className="text-xs rounded-xl px-3 py-2.5" style={{ background: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.15)" }}>
-              <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(249,115,22,0.6)" }}>ASCI Concern</span>
-              <p style={{ color: "rgba(249,115,22,0.75)" }}>{claim.asciNote}</p>
-            </div>
-          )}
-          {claim.drugBoundaryRisk && claim.drugBoundaryNote && (
-            <div className="text-xs rounded-xl px-3 py-2.5" style={{ background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)" }}>
-              <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(248,113,113,0.6)" }}>Drug Boundary — India</span>
-              <p style={{ color: "rgba(248,113,113,0.75)" }}>{claim.drugBoundaryNote}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </button>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   FULL REVIEW VIEW
-───────────────────────────────────────────────────────────────── */
-function ReviewView({ review }: { review: ProductReview }) {
-  const [showAllClaims, setShowAllClaims] = useState(false);
-  const claims = review.claimMap ?? [];
-  const visibleClaims = showAllClaims ? claims : claims.slice(0, 5);
-
-  const sc = review.scores;
-  const scoreDims = [
-    { label: "Price Fairness",           val: sc.priceFairness,      max: 10 },
-    { label: "Claim Clarity",            val: sc.claimClarity,       max: 15 },
-    { label: "Claim Evidence",           val: sc.claimEvidence,      max: 20 },
-    { label: "Ingredient Transparency",  val: sc.ingredientTransparency, max: 20 },
-    { label: "Formula Logic",            val: sc.formulaLogic,       max: 15 },
-    { label: "Consumer Suitability",     val: sc.consumerSuitability,max: 10 },
-    { label: "Platform Consistency",     val: sc.platformConsistency,max: 10 },
-  ];
-
-  const itScore = review.ingredientTransparency?.score ?? 1;
-  const itColors = ["","#f87171","#f97316","#fbbf24","#2dd4bf","#4ade80"];
-
-  const claimRiskColor = {
-    "low": "#4ade80",
-    "medium": "#fbbf24",
-    "high": "#f97316",
-    "red-flag": "#ef4444",
-  }[review.verdict?.claimRisk ?? "medium"] ?? "#fbbf24";
-
-  const transpColor = {
-    "poor": "#f87171",
-    "basic": "#f97316",
-    "good": "#2dd4bf",
-    "strong": "#4ade80",
-  }[review.verdict?.transparencyLevel ?? "basic"] ?? "#fbbf24";
-
-  return (
-    <div className="space-y-4" style={{ animation: "tcs-fadeUp 0.4s ease both" }}>
-
-      {/* ── HERO ── */}
-      <Card accent="rgba(94,234,212,0.15)">
-        <div className="relative h-0.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.04)" }}>
-          <div className="absolute inset-y-0 w-24 opacity-60" style={{ background: "linear-gradient(90deg,transparent,#5eead4,transparent)", animation: "tcs-scan 2.5s ease-in-out infinite" }} />
-        </div>
-        <div className="p-5 sm:p-7">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.5)" }}>
-              The Clean Sheet™ · Product Review · Claims Intelligence
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-5 items-start mb-5">
-            <ScoreRing score={sc.total} />
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-mono uppercase tracking-[0.15em] mb-1" style={{ color: "rgba(94,234,212,0.5)" }}>
-                {review.brand}{review.parentCompany ? ` · ${review.parentCompany}` : ""}
-              </p>
-              <h2 className="text-xl sm:text-2xl font-medium leading-tight mb-2" style={{ color: "#f0fdfa" }}>
-                {review.productName}
-              </h2>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                {review.category && (
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full"
-                    style={{ color: "#5eead4", background: "rgba(94,234,212,0.1)", border: "1px solid rgba(94,234,212,0.2)" }}>
-                    {review.category}
-                  </span>
-                )}
-                {review.quantity && (
-                  <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{review.quantity}</span>
-                )}
-                {review.priceRange && (
-                  <span className="text-sm font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>{review.priceRange}</span>
-                )}
-                {review.pricePerMl && (
-                  <span className="text-[10px] font-mono px-2.5 py-1 rounded-full"
-                    style={{ color: "#fbbf24", background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.15)" }}>
-                    {review.pricePerMl}
-                  </span>
-                )}
-              </div>
-              {review.heroPromise && (
-                <div className="flex items-start gap-2 text-sm rounded-2xl px-3 py-2.5"
-                  style={{ background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.1)" }}>
-                  <Zap size={13} className="flex-shrink-0 mt-0.5" style={{ color: "#5eead4" }} />
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider block mb-0.5" style={{ color: "rgba(94,234,212,0.45)" }}>Hero Promise</span>
-                    <p style={{ color: "rgba(153,246,228,0.75)" }}>{review.heroPromise}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Claim summary pills */}
-          {review.claimSummary && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {[
-                { key: "low",      label: "Low",       val: review.claimSummary.byRisk?.low },
-                { key: "medium",   label: "Medium",    val: review.claimSummary.byRisk?.medium },
-                { key: "high",     label: "High",      val: review.claimSummary.byRisk?.high },
-                { key: "veryHigh", label: "Very High", val: review.claimSummary.byRisk?.veryHigh },
-                { key: "redFlag",  label: "Red Flag",  val: review.claimSummary.byRisk?.redFlag },
-              ].filter(d => (d.val ?? 0) > 0).map(d => {
-                const riskKey = (d.key === "veryHigh" ? "very-high" : d.key === "redFlag" ? "red-flag" : d.key) as ClaimRiskLevel;
-                const r = RISK_CONFIG[riskKey];
-                return (
-                  <span key={d.key} className="text-[10px] font-mono px-2.5 py-1 rounded-full"
-                    style={{ color: r.color, background: r.bg, border: `1px solid ${r.border}` }}>
-                    {d.val} {d.label}
-                  </span>
-                );
-              })}
-              {(review.claimSummary.asciConcernCount ?? 0) > 0 && (
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full flex items-center gap-1"
-                  style={{ color: "#f97316", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
-                  <TriangleAlert size={9} />
-                  {review.claimSummary.asciConcernCount} ASCI {review.claimSummary.asciConcernCount === 1 ? "concern" : "concerns"}
-                </span>
-              )}
-              {(review.claimSummary.drugBoundaryCount ?? 0) > 0 && (
-                <span className="text-[10px] font-mono px-2.5 py-1 rounded-full flex items-center gap-1"
-                  style={{ color: "#f87171", background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
-                  <ShieldAlert size={9} />
-                  {review.claimSummary.drugBoundaryCount} Drug Boundary
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </Card>
-
-      {/* ── PRICE ACROSS PLATFORMS ── */}
-      {review.priceAcrossPlatforms?.length > 0 && (
-        <Card>
-          <SectionHeader dot="#fbbf24" label="Price Across Platforms" />
-          <div className="p-5">
-            <div className="space-y-2 mb-3">
-              {review.priceAcrossPlatforms.map((p, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>{p.platform}</span>
-                  <div className="flex items-center gap-3">
-                    {p.pricePerMl && (
-                      <span className="text-[10px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>{p.pricePerMl}</span>
-                    )}
-                    <span className="text-sm font-mono font-medium" style={{ color: p.price ? "#f0fdfa" : "rgba(255,255,255,0.25)" }}>
-                      {p.price ?? "—"}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {review.lowestPrice && (
-              <div className="flex items-center gap-2 text-xs rounded-xl px-3.5 py-2.5"
-                style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.15)" }}>
-                <TrendingUp size={12} style={{ color: "#4ade80" }} />
-                <span style={{ color: "rgba(74,222,128,0.8)" }}>Lowest: {review.lowestPrice}</span>
-              </div>
-            )}
-            {review.priceInsight && (
-              <p className="mt-3 text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>{review.priceInsight}</p>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── CLAIM MAP ── */}
-      {claims.length > 0 && (
-        <Card>
-          <SectionHeader dot="#f97316" label={`Claim Map · ${claims.length} claims found`} />
-          <div className="p-5">
-            {/* Evidence ladder key */}
-            <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1">
-              <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.2)" }}>Evidence Scale</span>
-              {[1,2,3,4,5,6,7].map(n => (
-                <div key={n} className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full" style={{ background: evidenceColor(n) }} />
-                  <span className="text-[9px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>L{n}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              {visibleClaims.map((claim, i) => (
-                <ClaimRow key={i} claim={claim} />
-              ))}
-            </div>
-
-            {claims.length > 5 && (
-              <button
-                onClick={() => setShowAllClaims(!showAllClaims)}
-                className="w-full mt-3 flex items-center justify-center gap-2 text-sm py-2.5 rounded-xl transition-all"
-                style={{ color: "#5eead4", border: "1px solid rgba(94,234,212,0.15)", background: "rgba(94,234,212,0.04)" }}>
-                {showAllClaims ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                {showAllClaims ? "Show fewer" : `Show all ${claims.length} claims`}
-              </button>
-            )}
-
-            <p className="mt-4 text-[11px] font-mono italic" style={{ color: "rgba(255,255,255,0.2)" }}>
-              Is the claim proven on this exact product, or only borrowed from the ingredient story?
-            </p>
-          </div>
-        </Card>
-      )}
-
-      {/* ── INGREDIENT TRANSPARENCY ── */}
-      {review.ingredientTransparency && (
-        <Card>
-          <SectionHeader dot="#5eead4" label="Ingredient Transparency" />
-          <div className="p-5">
-            {/* Score 1-5 visual */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex gap-1.5">
-                {[1,2,3,4,5].map(n => (
-                  <div key={n} className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-mono font-medium"
-                    style={{
-                      background: n <= itScore ? `${itColors[itScore]}18` : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${n <= itScore ? `${itColors[itScore]}35` : "rgba(255,255,255,0.06)"}`,
-                      color: n <= itScore ? itColors[itScore] : "rgba(255,255,255,0.15)",
-                    }}>
-                    {n}
-                  </div>
-                ))}
-              </div>
-              <span className="text-sm font-medium" style={{ color: itColors[itScore] }}>
-                {review.ingredientTransparency.label}
-              </span>
-            </div>
-
-            {/* Check grid */}
-            <div className="grid sm:grid-cols-2 gap-2 mb-3">
-              {[
-                { label: "Full INCI Available",           val: review.ingredientTransparency.fullInciAvailable },
-                { label: "INCI Order Correct",            val: review.ingredientTransparency.inciOrderCorrect },
-                { label: "Active % Disclosed",            val: review.ingredientTransparency.activePercentagesDisclosed },
-                { label: "Complexes Explained",           val: review.ingredientTransparency.complexesExplained },
-                { label: "Preservatives Visible",         val: review.ingredientTransparency.preservativesVisible },
-                { label: "Fragrance Disclosed",           val: review.ingredientTransparency.fragranceDisclosed },
-                { label: "pH Disclosed Where Relevant",   val: review.ingredientTransparency.phDisclosedWhereRelevant },
-                { label: "Usage Warnings Clear",          val: review.ingredientTransparency.usageWarningsClear },
-              ].map(({ label, val }) => (
-                <div key={label} className="flex items-center gap-2.5 text-xs rounded-xl px-3 py-2"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  {val
-                    ? <CheckCircle2 size={12} style={{ color: "#4ade80" }} />
-                    : <CircleDot size={12} style={{ color: "rgba(255,255,255,0.2)" }} />}
-                  <span style={{ color: val ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.3)" }}>{label}</span>
-                </div>
-              ))}
-            </div>
-
-            {review.ingredientTransparency.inciSource && (
-              <p className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.25)" }}>
-                INCI source: {review.ingredientTransparency.inciSource}
-              </p>
-            )}
-
-            {review.ingredientTransparency.issues?.length > 0 && (
-              <div className="mt-3 space-y-1.5">
-                {review.ingredientTransparency.issues.map((issue, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs" style={{ color: "rgba(249,115,22,0.75)" }}>
-                    <AlertTriangle size={10} className="flex-shrink-0 mt-0.5" />
-                    {issue}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── FORMULA LOGIC ── */}
-      {review.formulaLogic && (
-        <Card>
-          <SectionHeader dot="#a78bfa" label="Formula Logic" />
-          <div className="p-5">
-            <div className="grid sm:grid-cols-2 gap-2 mb-4">
-              {[
-                { label: "Hero Ingredients Match Claim",  val: review.formulaLogic.heroIngredientsMatchClaim },
-                { label: "Format Suitable for Claim",     val: review.formulaLogic.formatSuitableForClaim },
-                { label: "Actives Likely Meaningful",     val: review.formulaLogic.activesLikelyMeaningful },
-                { label: "Base Formula Appropriate",      val: review.formulaLogic.baseFormulaAppropriate },
-              ].map(({ label, val }) => (
-                <div key={label} className="flex items-center gap-2.5 text-xs rounded-xl px-3 py-2"
-                  style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  {val
-                    ? <CheckCircle2 size={12} style={{ color: "#4ade80" }} />
-                    : <CircleDot size={12} style={{ color: "rgba(255,255,255,0.2)" }} />}
-                  <span style={{ color: val ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.3)" }}>{label}</span>
-                </div>
-              ))}
-            </div>
-
-            {review.formulaLogic.claimOverreach && review.formulaLogic.claimOverreachNote && (
-              <div className="flex items-start gap-2.5 mb-3 px-3.5 py-2.5 rounded-2xl text-xs"
-                style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.18)" }}>
-                <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" style={{ color: "#f87171" }} />
-                <p style={{ color: "rgba(248,113,113,0.8)" }}>
-                  <span className="font-medium">Claim Overreach — </span>
-                  {review.formulaLogic.claimOverreachNote}
-                </p>
-              </div>
-            )}
-
-            {review.formulaLogic.irritancyConcerns?.length > 0 && (
-              <div className="mb-3 space-y-1.5">
-                {review.formulaLogic.irritancyConcerns.map((c, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs" style={{ color: "rgba(251,191,36,0.75)" }}>
-                    <AlertTriangle size={10} className="flex-shrink-0 mt-0.5" />
-                    {c}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {review.formulaLogic.note && (
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.45)" }}>{review.formulaLogic.note}</p>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── CONSUMER SUITABILITY ── */}
-      {review.consumerSuitability && (
-        <Card>
-          <SectionHeader dot="#34d399" label="Consumer Suitability" />
-          <div className="p-5 space-y-4">
-            <div className="grid sm:grid-cols-2 gap-3">
-              {review.consumerSuitability.bestFor?.length > 0 && (
-                <div className="rounded-2xl px-4 py-3" style={{ background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.15)" }}>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <CheckCircle2 size={12} style={{ color: "#4ade80" }} />
-                    <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(74,222,128,0.6)" }}>Best For</span>
-                  </div>
-                  <ul className="space-y-1">
-                    {review.consumerSuitability.bestFor.map((item, i) => (
-                      <li key={i} className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>· {item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {review.consumerSuitability.avoidIf?.length > 0 && (
-                <div className="rounded-2xl px-4 py-3" style={{ background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <AlertTriangle size={12} style={{ color: "#f87171" }} />
-                    <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: "rgba(248,113,113,0.6)" }}>Avoid If</span>
-                  </div>
-                  <ul className="space-y-1">
-                    {review.consumerSuitability.avoidIf.map((item, i) => (
-                      <li key={i} className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>· {item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-3">
-              {review.consumerSuitability.routineFit && (
-                <InfoCell label="Routine Fit" value={review.consumerSuitability.routineFit} />
-              )}
-              {review.consumerSuitability.sensitivityRisk && (
-                <InfoCell label="Sensitivity Risk" value={review.consumerSuitability.sensitivityRisk} />
-              )}
-              {review.consumerSuitability.immediateExpectation && (
-                <InfoCell label="Immediate Expectation" value={review.consumerSuitability.immediateExpectation} />
-              )}
-              {review.consumerSuitability.longTermExpectation && (
-                <InfoCell label="Long-term Expectation" value={review.consumerSuitability.longTermExpectation} />
-              )}
-            </div>
-
-            {review.consumerSuitability.layeringNotes && (
-              <div className="text-xs rounded-xl px-3.5 py-2.5"
-                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>Layering</span>
-                <p style={{ color: "rgba(255,255,255,0.5)" }}>{review.consumerSuitability.layeringNotes}</p>
-              </div>
-            )}
-
-            {review.consumerSuitability.pregnancyOrTeenNote && (
-              <div className="flex items-start gap-2.5 text-xs rounded-xl px-3.5 py-2.5"
-                style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
-                <Info size={11} className="flex-shrink-0 mt-0.5" style={{ color: "#fbbf24" }} />
-                <p style={{ color: "rgba(251,191,36,0.75)" }}>{review.consumerSuitability.pregnancyOrTeenNote}</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── PLATFORM PARITY ── */}
-      {review.platformParity && (
-        <Card accent={review.platformParity.consistent ? "rgba(255,255,255,0.07)" : "rgba(249,115,22,0.2)"}>
-          <SectionHeader dot={review.platformParity.consistent ? "#4ade80" : "#f97316"} label="Platform Parity Check" />
-          <div className="p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-                style={{
-                  background: review.platformParity.consistent ? "rgba(74,222,128,0.08)" : "rgba(249,115,22,0.08)",
-                  border: `1px solid ${review.platformParity.consistent ? "rgba(74,222,128,0.2)" : "rgba(249,115,22,0.2)"}`,
-                }}>
-                {review.platformParity.consistent
-                  ? <BadgeCheck size={13} style={{ color: "#4ade80" }} />
-                  : <TriangleAlert size={13} style={{ color: "#f97316" }} />}
-                <span className="text-xs font-mono"
-                  style={{ color: review.platformParity.consistent ? "#4ade80" : "#f97316" }}>
-                  {review.platformParity.consistent ? "Claims consistent across platforms" : "Claim inconsistencies found"}
-                </span>
-              </div>
-            </div>
-
-            {review.platformParity.issues?.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {review.platformParity.issues.map((issue, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-xs rounded-xl px-3 py-2"
-                    style={{ background: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.12)" }}>
-                    <ExternalLink size={10} className="flex-shrink-0 mt-0.5" style={{ color: "#f97316" }} />
-                    <p style={{ color: "rgba(249,115,22,0.75)" }}>{issue}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {review.platformParity.amplificationPattern && (
-              <div className="mb-3 px-3.5 py-2.5 rounded-2xl text-xs"
-                style={{ background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(248,113,113,0.5)" }}>
-                  Claim Amplification Pattern
-                </span>
-                <p style={{ color: "rgba(248,113,113,0.75)" }}>{review.platformParity.amplificationPattern}</p>
-              </div>
-            )}
-
-            {review.platformParity.packVsOnline && (
-              <div className="mb-3 px-3.5 py-2.5 rounded-2xl text-xs"
-                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span className="font-mono text-[10px] uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>
-                  Pack vs. Online
-                </span>
-                <p style={{ color: "rgba(255,255,255,0.5)" }}>{review.platformParity.packVsOnline}</p>
-              </div>
-            )}
-
-            {review.platformParity.reelAngle && (
-              <div className="flex items-start gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs"
-                style={{ background: "rgba(214,255,62,0.06)", border: "1px solid rgba(214,255,62,0.15)" }}>
-                <Star size={11} className="flex-shrink-0 mt-0.5" style={{ color: "#D6FF3E" }} />
-                <div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider block mb-0.5" style={{ color: "rgba(214,255,62,0.5)" }}>
-                    Reel Angle
-                  </span>
-                  <p style={{ color: "rgba(214,255,62,0.8)" }}>{review.platformParity.reelAngle}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── SCORE BREAKDOWN ── */}
-      <Card>
-        <SectionHeader dot="#5eead4" label="Score Breakdown · 7 Dimensions" />
-        <div className="p-5 space-y-4">
-          {scoreDims.map(({ label, val, max }) => {
-            const pct = Math.round((val / max) * 100);
-            const col = pct >= 80 ? "#4ade80" : pct >= 60 ? "#2dd4bf" : pct >= 40 ? "#fbbf24" : "#f87171";
-            return (
-              <div key={label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
-                  <span className="text-sm font-mono tabular-nums" style={{ color: col }}>
-                    {val}<span style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px" }}>/{max}</span>
-                  </span>
-                </div>
-                <AnimBar pct={pct} color={col} />
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* ── VERDICT ── */}
-      {review.verdict && (
-        <Card accent={`${claimRiskColor}25`}>
-          <SectionHeader dot={claimRiskColor} label="The Clean Sheet Verdict" />
-          <div className="p-5 space-y-3">
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div className="rounded-2xl px-4 py-3" style={{ background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.15)" }}>
-                <div className="text-[10px] font-mono uppercase tracking-wider mb-1.5" style={{ color: "rgba(74,222,128,0.5)" }}>Best Thing</div>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>{review.verdict.bestThing}</p>
-              </div>
-              <div className="rounded-2xl px-4 py-3" style={{ background: "rgba(248,113,113,0.05)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                <div className="text-[10px] font-mono uppercase tracking-wider mb-1.5" style={{ color: "rgba(248,113,113,0.5)" }}>Biggest Concern</div>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>{review.verdict.biggestConcern}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 text-[11px] font-mono px-3 py-1.5 rounded-full"
-                style={{ color: claimRiskColor, background: `${claimRiskColor}12`, border: `1px solid ${claimRiskColor}30` }}>
-                Claim Risk: {review.verdict.claimRisk?.replace("-", " ")}
-              </div>
-              <div className="flex items-center gap-1.5 text-[11px] font-mono px-3 py-1.5 rounded-full"
-                style={{ color: transpColor, background: `${transpColor}12`, border: `1px solid ${transpColor}30` }}>
-                Transparency: {review.verdict.transparencyLevel}
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-3">
-              {review.verdict.whoItMaySuit && (
-                <div className="text-xs rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>May Suit</div>
-                  <p style={{ color: "rgba(255,255,255,0.55)" }}>{review.verdict.whoItMaySuit}</p>
-                </div>
-              )}
-              {review.verdict.whoShouldBeCareful && (
-                <div className="text-xs rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>Be Careful If</div>
-                  <p style={{ color: "rgba(255,255,255,0.55)" }}>{review.verdict.whoShouldBeCareful}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Takeaway */}
-            {review.verdict.cleanSheetTakeaway && (
-              <div className="rounded-2xl px-5 py-4"
-                style={{ background: "linear-gradient(135deg, rgba(214,255,62,0.08), rgba(214,255,62,0.04))", border: "1px solid rgba(214,255,62,0.2)" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Star size={13} style={{ color: "#D6FF3E" }} />
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(214,255,62,0.6)" }}>
-                    Clean Sheet Takeaway
-                  </span>
-                </div>
-                <p className="text-sm leading-relaxed font-medium" style={{ color: "rgba(214,255,62,0.9)" }}>
-                  "{review.verdict.cleanSheetTakeaway}"
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── DATA SOURCE ── */}
-      {review.dataSource && (
-        <Card>
-          <SectionHeader dot="#5eead4" label="Research Sources" />
-          <div className="p-5 grid sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>INCI Source</div>
-              <div className="font-mono text-sm" style={{ color: review.dataSource.inciFound ? "#4ade80" : "#fbbf24" }}>
-                {review.dataSource.inciFound ? "✓ Found" : "⚠ Not found"} · {review.dataSource.inciSource}
-              </div>
-            </div>
-            {review.dataSource.rating && (
-              <div>
-                <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>User Rating</div>
-                <div className="font-mono text-sm" style={{ color: "#f0fdfa" }}>
-                  ★ {review.dataSource.rating}/5 · {review.dataSource.reviewCount}
-                </div>
-              </div>
-            )}
-            {review.dataSource.userSentiment && (
-              <div className="sm:col-span-2">
-                <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>User Sentiment</div>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{review.dataSource.userSentiment}</p>
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ── GO DEEPER ── */}
-      <a href={`/analyzer?q=${encodeURIComponent(review.productName + " " + review.brand)}`}
-        className="flex items-center justify-between gap-3 rounded-2xl px-5 py-4 transition-all hover:opacity-80"
-        style={{ background: "rgba(94,234,212,0.05)", border: "1px solid rgba(94,234,212,0.12)" }}>
+    <div className="pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10">
         <div>
-          <div className="text-[10px] font-mono uppercase tracking-wider mb-0.5" style={{ color: "rgba(94,234,212,0.45)" }}>
-            Want ingredient-level safety?
-          </div>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Run a full ingredient safety analysis — EU, India, FDA, ECHA screening
+          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL_SOFT }}>
+            The Clean Sheet Verdict
+          </p>
+          <p className="font-display mt-4 leading-none text-[56px] md:text-[80px] flex items-center gap-5" style={{ color: meta.color }}>
+            <span className="inline-block w-[14px] h-[14px] rounded-full flex-shrink-0" style={{ background: meta.color }} />
+            {meta.word}
           </p>
         </div>
-        <ExternalLink size={15} className="flex-shrink-0" style={{ color: "rgba(94,234,212,0.4)" }} />
-      </a>
-
-      {/* ── DISCLAIMER ── */}
-      {review.cleanSheetNote && (
-        <p className="text-[11px] leading-relaxed px-1" style={{ color: "rgba(255,255,255,0.2)" }}>
-          {review.cleanSheetNote}
+        <p className="max-w-sm text-[14px] leading-[1.7] md:text-right md:pb-2" style={{ color: WARM }}>
+          {meta.note}
         </p>
+      </div>
+
+      {/* The three gates — the standard, applied in the open */}
+      <div>
+        {verdict.gates.map((g, i) => {
+          const gcol = g.passed === null ? WARM : g.passed ? LIME : CORAL;
+          const glabel = g.passed === null ? "Not assessed" : g.passed ? "Passed" : "Failed";
+          return (
+            <motion.div
+              key={g.id}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08, ease: [0.25, 0.1, 0.25, 1] }}
+              className="py-4 grid md:grid-cols-[60px_220px_140px_1fr] gap-2 md:gap-8 items-baseline"
+              style={{ borderTop: `1px solid ${HAIR_DARK}` }}
+            >
+              <p className="text-[13px]" style={{ color: TEAL_SOFT }}>{String(i + 1).padStart(2, "0")}</p>
+              <p className="text-[16px]" style={{ color: CREAM }}>{g.label}</p>
+              <p className="text-[12px] uppercase flex items-center gap-2.5" style={{ letterSpacing: "0.1em", color: gcol }}>
+                <StatusDot color={gcol} solid={g.passed !== null} />{glabel}
+              </p>
+              <p className="text-[13px] leading-relaxed" style={{ color: WARM }}>{g.detail}</p>
+            </motion.div>
+          );
+        })}
+        <div style={{ borderTop: `1px solid ${HAIR_DARK}` }} />
+        <p className="pt-4 text-[12px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>
+          {verdict.standard}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Editorial primitives ─── */
+function Eyebrow({ children, color = WARM }: { children: React.ReactNode; color?: string }) {
+  return (
+    <p className="text-[12px] uppercase" style={{ color, letterSpacing: "0.14em" }}>
+      {children}
+    </p>
+  );
+}
+
+function StatusDot({ color, solid = true }: { color: string; solid?: boolean }) {
+  return (
+    <span
+      className="inline-block w-[6px] h-[6px] rounded-full flex-shrink-0"
+      style={solid ? { background: color } : { border: `1px solid ${color}` }}
+    />
+  );
+}
+
+const rise = {
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-40px" },
+  transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const },
+};
+
+/* ─── Claim row (dark sheet) ─── */
+function ClaimRow({ claim, index }: { claim: CheckedClaim; index: number }) {
+  const [open, setOpen] = useState(false);
+  const meta = VERDICT_META[claim.verdict] ?? VERDICT_META.unverified;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ duration: 0.45, delay: Math.min(index * 0.06, 0.4), ease: [0.25, 0.1, 0.25, 1] }}
+      style={{ borderTop: `1px solid ${HAIR_DARK}` }}
+    >
+      <button onClick={() => setOpen(!open)} className="w-full text-left py-5 group">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start gap-3 min-w-0">
+            <span className="mt-[9px]"><StatusDot color={meta.color} solid={claim.verdict !== "unverified"} /></span>
+            <p className="text-[17px] leading-relaxed" style={{ color: CREAM }}>
+              &ldquo;{claim.claim}&rdquo;
+            </p>
+          </div>
+          <div className="flex items-center gap-4 flex-shrink-0 pt-1">
+            {meta.solid ? (
+              <span className="text-[11px] uppercase px-3 py-1 rounded-full" style={{ letterSpacing: "0.1em", background: meta.color, color: INK }}>
+                {meta.label}
+              </span>
+            ) : (
+              <span className="text-[11px] uppercase" style={{ letterSpacing: "0.1em", color: meta.color }}>
+                {meta.label}
+              </span>
+            )}
+            <span className="text-[18px] leading-none transition-transform duration-300" style={{ color: WARM, transform: open ? "rotate(45deg)" : "none", display: "inline-block" }}>+</span>
+          </div>
+        </div>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="pl-[18px] pt-3 pb-1 flex flex-col gap-3 max-w-2xl">
+                <p className="text-[15px] leading-relaxed" style={{ color: WARM }}>{claim.explanation}</p>
+                <div className="text-[13px] leading-relaxed" style={{ color: WARM }}>
+                  <span className="uppercase text-[11px]" style={{ letterSpacing: "0.1em", color: meta.color }}>What we found · </span>
+                  {claim.evidence}
+                  {claim.source && claim.source !== "none" && <span> · {claim.source}</span>}
+                </div>
+                {claim.verdict !== "not_permitted" && (
+                  <p className="text-[12px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>
+                    Evidence level {claim.evidenceLevel === "D" || claim.evidenceLevel === "none" ? "none" : claim.evidenceLevel} · required {claim.requiredLevel}
+                  </p>
+                )}
+                {claim.regulatoryNote && (
+                  <p className="text-[14px] leading-relaxed" style={{ color: CORAL }}>{claim.regulatoryNote}</p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </button>
+    </motion.div>
+  );
+}
+
+/* ─── Claim Sheet (dark) ─── */
+function ClaimSheet({ result }: { result: ClaimCheckResult }) {
+  const counts = result.verdictCounts;
+  const col = scoreColorDark(result.integrityScore);
+  const checkedDate = new Date(result.checkedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+  return (
+    <div>
+      {/* Masthead */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 pb-12">
+        <div className="max-w-xl">
+          <Eyebrow color={TEAL_SOFT}>Layer 1 · The Claim Sheet</Eyebrow>
+          <div className="mt-6 flex items-start gap-6">
+            {result.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={result.imageUrl}
+                alt={result.productName}
+                className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-2xl flex-shrink-0"
+                style={{ border: `1px solid ${HAIR_DARK}`, background: "rgba(252,249,248,0.04)" }}
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            )}
+            <div>
+              {result.brand && <p className="text-[14px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>{result.brand}</p>}
+              <h2 className="font-display mt-2 text-[32px] md:text-[40px] leading-[1.15]" style={{ color: CREAM }}>
+                {result.productName}
+              </h2>
+            </div>
+          </div>
+        </div>
+        <div className="pb-1">
+          <p className="text-[12px] uppercase pb-3" style={{ letterSpacing: "0.14em", color: WARM }}>Claim integrity · feeds the marketing gates</p>
+          <p className="font-display leading-none text-[36px] md:text-[44px]" style={{ color: col }}>
+            {result.integrityLabel}
+          </p>
+        </div>
+      </div>
+
+      {/* Verdict tally */}
+      <div className="flex flex-wrap gap-x-8 gap-y-3 pb-10">
+        {([
+          ["verified", counts.verified],
+          ["qualified", counts.qualified],
+          ["unverified", counts.unverified],
+          ["not_permitted", counts.not_permitted],
+        ] as const).filter(([, n]) => n > 0).map(([k, n]) => {
+          const m = VERDICT_META[k];
+          return (
+            <span key={k} className="flex items-center gap-2.5 text-[13px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>
+              <StatusDot color={m.color} solid={k !== "unverified"} />
+              {n} {m.label}
+            </span>
+          );
+        })}
+      </div>
+
+      {/* Summary */}
+      <p className="max-w-2xl text-[18px] leading-[1.7] pb-12" style={{ color: CREAM }}>
+        {result.summary}
+      </p>
+
+      {/* Red flags */}
+      {result.redFlags?.length > 0 && (
+        <div className="pb-12">
+          <Eyebrow color={CORAL}>Red flags</Eyebrow>
+          <div className="mt-4 flex flex-col gap-2">
+            {result.redFlags.map((f, i) => (
+              <p key={i} className="text-[16px] leading-relaxed flex items-baseline gap-3" style={{ color: CREAM }}>
+                <StatusDot color={CORAL} /> {f}
+              </p>
+            ))}
+          </div>
+        </div>
       )}
 
+      {/* Claims */}
+      {result.claims.length > 0 ? (
+        <div>
+          <div className="flex items-baseline justify-between pb-4">
+            <Eyebrow>Every claim this product makes</Eyebrow>
+            <span className="text-[13px]" style={{ color: WARM }}>{result.claims.length} found</span>
+          </div>
+          {result.claims.map((c, i) => <ClaimRow key={i} claim={c} index={i} />)}
+          <div style={{ borderTop: `1px solid ${HAIR_DARK}` }} />
+        </div>
+      ) : (
+        <p className="text-[16px]" style={{ color: WARM }}>No discernible marketing claims found for this product.</p>
+      )}
+
+      <p className="pt-8 text-[12px] leading-relaxed" style={{ color: WARM }}>
+        Checked {checkedDate} · {result.methodologyVersion} · Verdicts are computed from public evidence.
+        A claim without locatable proof is marked accordingly, never assumed true.
+      </p>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   SMALL HELPER: INFO CELL
-───────────────────────────────────────────────────────────────── */
-function InfoCell({ label, value }: { label: string; value: string }) {
+/* ─── Pillar row (dark) — qualitative, no numerals ─── */
+function pillarStatus(pct: number): { word: string; col: string } {
+  if (pct >= 80) return { word: "Strong", col: LIME };
+  if (pct >= 50) return { word: "Adequate", col: TEAL_SOFT };
+  return { word: "Weak", col: CORAL };
+}
+
+function PillarRow({ name, score, max, note, index }: { name: string; score: number; max: number; note?: string; index: number }) {
+  const pct = Math.round((score / max) * 100);
+  const { word, col } = pillarStatus(pct);
   return (
-    <div className="rounded-xl px-3.5 py-2.5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-      <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.2)" }}>{label}</div>
-      <p className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{value}</p>
-    </div>
+    <motion.div {...rise} transition={{ ...rise.transition, delay: Math.min(index * 0.05, 0.3) }} className="py-5" style={{ borderTop: `1px solid ${HAIR_DARK}` }}>
+      <div className="flex items-baseline justify-between gap-6 pb-3">
+        <p className="text-[16px]" style={{ color: CREAM }}>{name}</p>
+        <p className="text-[12px] uppercase flex items-center gap-2.5 flex-shrink-0" style={{ letterSpacing: "0.1em", color: col }}>
+          <StatusDot color={col} />{word}
+        </p>
+      </div>
+      <div className="h-px w-full" style={{ background: HAIR_DARK }}>
+        <motion.div
+          initial={{ width: 0 }}
+          whileInView={{ width: `${pct}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-[3px] -translate-y-[1px]"
+          style={{ background: col }}
+        />
+      </div>
+      {note && <p className="pt-3 text-[13px] leading-relaxed max-w-2xl" style={{ color: WARM }}>{note}</p>}
+    </motion.div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   CLAIM ILLUSTRATION  (inline SVG, no external deps)
-───────────────────────────────────────────────────────────────── */
-function ClaimIllustration() {
+/* ─── Deep scan (dark) — layer 2, feeds the formula gate ─── */
+function DeepScan({ card, verdictStatus }: { card: Scorecard; verdictStatus?: FinalVerdict["status"] }) {
+  const [showAllIngredients, setShowAllIngredients] = useState(false);
+  const [openIngredient, setOpenIngredient] = useState<number | null>(null);
+  const ingredients = card.ingredients || [];
+  const visible = showAllIngredients ? ingredients : ingredients.slice(0, 8);
+  const formulaPass = card.score >= 75;
+  const flagColor = (f: string) => f === "warn" ? CORAL : f === "info" ? TEAL_SOFT : LIME;
+
   return (
-    <div className="relative w-full select-none" style={{ maxWidth: 540 }}>
-      <style>{`
-        @keyframes ci-scan  { 0%{transform:translateY(-10px);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translateY(480px);opacity:0} }
-        @keyframes ci-pulse { 0%,100%{opacity:0.15} 50%{opacity:0.28} }
-        @keyframes ci-mag   { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(2deg)} }
+    <div className="pt-24">
+      {/* Masthead — layer status, the verdict lives in the panel above */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 pb-6">
+        <div className="max-w-xl">
+          <Eyebrow color={TEAL_SOFT}>Layer 2 · The deep scan · six pillars</Eyebrow>
+          <h3 className="font-display mt-4 text-[28px] md:text-[34px] leading-[1.2]" style={{ color: CREAM }}>
+            Inside the formula
+          </h3>
+        </div>
+        <div className="pb-1">
+          <p className="text-[12px] uppercase pb-3" style={{ letterSpacing: "0.14em", color: WARM }}>Formula safety gate</p>
+          <p className="text-[16px] uppercase flex items-center gap-3" style={{ letterSpacing: "0.1em", color: formulaPass ? LIME : CORAL }}>
+            <StatusDot color={formulaPass ? LIME : CORAL} />{formulaPass ? "Passed" : "Failed"}
+          </p>
+        </div>
+      </div>
 
-        /* Position IS the animation — no separate SVG transform attr, so nothing to conflict with */
-        @keyframes ci-bL1 { 0%,100%{transform:translate(8px,140px)}   50%{transform:translate(8px,130px)} }
-        @keyframes ci-bL2 { 0%,100%{transform:translate(8px,265px)}   50%{transform:translate(8px,258px)} }
-        @keyframes ci-bR1 { 0%,100%{transform:translate(350px,58px)}  50%{transform:translate(350px,48px)} }
-        @keyframes ci-bR2 { 0%,100%{transform:translate(350px,222px)} 50%{transform:translate(350px,210px)} }
-        @keyframes ci-bBT { 0%,100%{transform:translate(184px,355px)} 50%{transform:translate(184px,346px)} }
+      <p className="max-w-2xl text-[17px] leading-[1.7] pb-6" style={{ color: CREAM }}>{card.summary}</p>
 
-        .ci-bL1 { animation: ci-bL1 3.8s ease-in-out infinite;        animation-fill-mode: both; }
-        .ci-bL2 { animation: ci-bL2 5.0s ease-in-out infinite 0.6s;  animation-fill-mode: both; }
-        .ci-bR1 { animation: ci-bR1 4.0s ease-in-out infinite;        animation-fill-mode: both; }
-        .ci-bR2 { animation: ci-bR2 4.5s ease-in-out infinite 1.1s;  animation-fill-mode: both; }
-        .ci-bBT { animation: ci-bBT 5.2s ease-in-out infinite 1.7s;  animation-fill-mode: both; }
-        .ci-scan  { animation: ci-scan 4s ease-in-out infinite 0.8s; }
-        .ci-pulse { animation: ci-pulse 3s ease-in-out infinite; }
-        .ci-mag   { animation: ci-mag 6s ease-in-out infinite; transform-origin: 305px 158px; }
-      `}</style>
+      {/* Usage guidance — only for products passing the full standard */}
+      {verdictStatus === "verified" && card.usageGuidance && (
+        <div className="mb-12 pt-6" style={{ borderTop: `1px solid ${HAIR_DARK}` }}>
+          <Eyebrow color={LIME}>How to use it right</Eyebrow>
+          <div className="mt-6">
+            <GuidanceBlock guidance={card.usageGuidance} />
+          </div>
+        </div>
+      )}
 
-      <svg viewBox="0 0 540 460" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-        <defs>
-          <linearGradient id="scanGradCI" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%"   stopColor="#5eead4" stopOpacity="0" />
-            <stop offset="50%"  stopColor="#5eead4" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#5eead4" stopOpacity="0" />
-          </linearGradient>
-        </defs>
+      {/* Badges */}
+      {(card.pass_badges?.length > 0 || card.warn_badges?.length > 0 || card.info_badges?.length > 0) && (
+        <div className="flex flex-wrap gap-2.5 pb-12">
+          {(card.pass_badges || []).map((b) => (
+            <span key={b} className="flex items-center gap-2 text-[12px] uppercase px-4 py-2 rounded-full" style={{ letterSpacing: "0.08em", border: `1px solid ${HAIR_DARK}`, color: LIME }}>
+              <StatusDot color={LIME} />{b}
+            </span>
+          ))}
+          {(card.warn_badges || []).map((b) => (
+            <span key={b} className="flex items-center gap-2 text-[12px] uppercase px-4 py-2 rounded-full" style={{ letterSpacing: "0.08em", border: `1px solid ${HAIR_DARK}`, color: CORAL }}>
+              <StatusDot color={CORAL} />{b}
+            </span>
+          ))}
+          {(card.info_badges || []).map((b) => (
+            <span key={b} className="flex items-center gap-2 text-[12px] uppercase px-4 py-2 rounded-full" style={{ letterSpacing: "0.08em", border: `1px solid ${HAIR_DARK}`, color: TEAL_SOFT }}>
+              <StatusDot color={TEAL_SOFT} />{b}
+            </span>
+          ))}
+        </div>
+      )}
 
-        {/* Background dots */}
-        {[[28,32],[516,42],[45,395],[508,385],[62,218],[490,208],[185,415],[325,18],[20,158],[528,278],[255,445],[130,405]].map(([x,y],i) => (
-          <circle key={i} cx={x} cy={y} r={2.5} fill="#5eead4" opacity={0.1} />
-        ))}
-        {[[28,32,62,218],[62,218,45,395],[516,42,490,208],[490,208,508,385],[325,18,516,42],[20,158,28,32]].map(([x1,y1,x2,y2],i) => (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#5eead4" strokeWidth={0.5} opacity={0.07} strokeDasharray="4 7" />
-        ))}
+      {/* Pillars */}
+      {card.pillars?.length > 0 && (
+        <div className="pb-14">
+          {card.pillars.map((p, i) => (
+            <PillarRow key={p.name} name={p.name} score={p.score} max={p.max} note={p.note} index={i} />
+          ))}
+          <div style={{ borderTop: `1px solid ${HAIR_DARK}` }} />
+        </div>
+      )}
 
-        {/* Ambient glow */}
-        <ellipse cx={240} cy={218} rx={60} ry={92} fill="#5eead4" className="ci-pulse" />
+      {/* Key actives */}
+      {card.keyActives?.length > 0 && (
+        <div className="pb-14">
+          <Eyebrow>Key actives</Eyebrow>
+          <div className="mt-6 grid md:grid-cols-2 gap-x-12 gap-y-8">
+            {card.keyActives.map((a, i) => (
+              <div key={i}>
+                <p className="text-[16px] pb-1.5" style={{ color: LIME }}>{a.name}</p>
+                <p className="text-[14px] leading-relaxed" style={{ color: WARM }}>{a.function}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Bottle */}
-        <rect x={232} y={50} width={16} height={46} rx={6} fill="#0d3530" stroke="#5eead4" strokeWidth={1.2} opacity={0.88} />
-        <ellipse cx={240} cy={98} rx={5} ry={4} fill="#5eead4" opacity={0.55} />
-        <path d="M235 95 L240 110 L245 95" fill="#5eead4" opacity={0.42} />
-        <rect x={210} y={96} width={60} height={30} rx={8} fill="#112f2b" stroke="#5eead4" strokeWidth={1.2} />
-        <rect x={214} y={100} width={52} height={22} rx={6} fill="rgba(94,234,212,0.07)" />
-        <rect x={198} y={124} width={84} height={178} rx={16} fill="#0a2522" stroke="#5eead4" strokeWidth={1.2} />
-        <rect x={202} y={130} width={10} height={160} rx={4} fill="rgba(255,255,255,0.04)" />
-        <rect x={204} y={155} width={72} height={138} rx={10} fill="rgba(94,234,212,0.05)" />
-        <rect x={208} y={160} width={64} height={106} rx={8} fill="rgba(255,255,255,0.03)" stroke="rgba(94,234,212,0.13)" strokeWidth={0.8} />
-        {[170,182,194,206,218].map((y,i) => (
-          <rect key={i} x={215} y={y} width={i===0?44:i===2?28:36} height={3} rx={1.5} fill="rgba(255,255,255,0.11)" />
-        ))}
-        <circle cx={240} cy={248} r={12} fill="rgba(94,234,212,0.12)" stroke="rgba(94,234,212,0.32)" strokeWidth={0.9} />
-        <text x={240} y={252} textAnchor="middle" fontSize={7} fill="#5eead4" fontFamily="monospace" fontWeight={700}>TCS</text>
-        <rect x={198} y={295} width={84} height={12} rx={7} fill="#112f2b" stroke="#5eead4" strokeWidth={0.8} opacity={0.75} />
+      {/* Ingredients */}
+      {ingredients.length > 0 && (
+        <div className="pb-14">
+          <div className="flex items-baseline justify-between pb-2">
+            <Eyebrow>Full ingredient list</Eyebrow>
+            <span className="text-[13px]" style={{ color: WARM }}>{ingredients.length} ingredients</span>
+          </div>
+          {visible.map((ing, i) => (
+            <div key={i} style={{ borderTop: `1px solid ${HAIR_DARK}` }}>
+              <button onClick={() => setOpenIngredient(openIngredient === i ? null : i)} className="w-full text-left py-3.5 flex items-center justify-between gap-6">
+                <span className="flex items-center gap-3 text-[15px]" style={{ color: CREAM }}>
+                  <StatusDot color={flagColor(ing.flag)} />{ing.name}
+                </span>
+                <span className="text-[16px] leading-none transition-transform duration-300" style={{ color: WARM, transform: openIngredient === i ? "rotate(45deg)" : "none", display: "inline-block" }}>+</span>
+              </button>
+              <AnimatePresence initial={false}>
+                {openIngredient === i && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                    <p className="pb-4 pl-[18px] text-[14px] leading-relaxed max-w-2xl" style={{ color: WARM }}>{ing.note}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+          <div style={{ borderTop: `1px solid ${HAIR_DARK}` }} />
+          {ingredients.length > 8 && (
+            <button
+              onClick={() => setShowAllIngredients(!showAllIngredients)}
+              className="mt-6 text-[13px] uppercase px-5 py-2.5 rounded-full transition-colors"
+              style={{ letterSpacing: "0.1em", border: `1px solid ${HAIR_DARK}`, color: CREAM }}
+            >
+              {showAllIngredients ? "Show fewer" : `Show all ${ingredients.length}`}
+            </button>
+          )}
+        </div>
+      )}
 
-        {/* Scan line */}
-        <rect x={198} y={0} width={84} height={3} rx={1} fill="url(#scanGradCI)" className="ci-scan" opacity={0.55} />
+      {/* India context */}
+      {card.indiaContext && (
+        <div className="pb-14">
+          <Eyebrow>India context</Eyebrow>
+          <p className="mt-4 max-w-2xl text-[16px] leading-[1.7]" style={{ color: CREAM }}>{card.indiaContext}</p>
+        </div>
+      )}
 
-        {/* Magnifying glass */}
-        <g className="ci-mag">
-          <circle cx={305} cy={158} r={52} fill="rgba(214,255,62,0.04)" stroke="#D6FF3E" strokeWidth={1.8} />
-          <circle cx={305} cy={158} r={46} fill="none" stroke="rgba(214,255,62,0.11)" strokeWidth={0.8} />
-          <line x1={305} y1={120} x2={305} y2={140} stroke="rgba(214,255,62,0.22)" strokeWidth={0.8} />
-          <line x1={305} y1={176} x2={305} y2={196} stroke="rgba(214,255,62,0.22)" strokeWidth={0.8} />
-          <line x1={267} y1={158} x2={287} y2={158} stroke="rgba(214,255,62,0.22)" strokeWidth={0.8} />
-          <line x1={323} y1={158} x2={343} y2={158} stroke="rgba(214,255,62,0.22)" strokeWidth={0.8} />
-          <line x1={345} y1={196} x2={381} y2={236} stroke="#D6FF3E" strokeWidth={4.5} strokeLinecap="round" />
-          <line x1={345} y1={196} x2={381} y2={236} stroke="rgba(214,255,62,0.28)" strokeWidth={9} strokeLinecap="round" />
-        </g>
-
-        {/* Connector dashes */}
-        <line x1={174} y1={172} x2={198} y2={172} stroke="#5eead4" strokeWidth={0.7} strokeDasharray="3 4" opacity={0.18} />
-        <line x1={174} y1={297} x2={198} y2={273} stroke="#fbbf24" strokeWidth={0.7} strokeDasharray="3 4" opacity={0.18} />
-        <line x1={282} y1={155} x2={350} y2={90}  stroke="#4ade80" strokeWidth={0.7} strokeDasharray="3 4" opacity={0.18} />
-        <line x1={282} y1={238} x2={350} y2={254} stroke="#ef4444" strokeWidth={0.7} strokeDasharray="3 4" opacity={0.18} />
-        <line x1={240} y1={307} x2={240} y2={355} stroke="#f97316" strokeWidth={0.7} strokeDasharray="3 4" opacity={0.18} />
-
-        {/* ── Bubbles: no SVG transform attr — position is baked into the CSS animation keyframes ── */}
-
-        {/* L1 · 5% Niacinamide ✓ · teal · x=8-171, y=140-204 */}
-        <g className="ci-bL1">
-          <rect x={0} y={0} width={163} height={64} rx={12} fill="rgba(94,234,212,0.08)" stroke="rgba(94,234,212,0.26)" strokeWidth={1} />
-          <circle cx={22} cy={22} r={9} fill="rgba(94,234,212,0.14)" />
-          <text x={22} y={27} textAnchor="middle" fontSize={10} fill="#5eead4" fontWeight={700}>✓</text>
-          <text x={38} y={18} fontSize={10} fill="rgba(255,255,255,0.82)" fontFamily="Helvetica,Arial,sans-serif">5% Niacinamide</text>
-          <text x={38} y={31} fontSize={7.5} fill="rgba(94,234,212,0.52)" fontFamily="monospace">Active · % disclosed</text>
-          <g transform="translate(12,45)">
-            {[0,1,2,3,4,5,6].map(n => <circle key={n} cx={n*11} cy={0} r={3} fill={n<3?"#5eead4":"rgba(255,255,255,0.09)"} />)}
-          </g>
-          <text x={107} y={49} fontSize={7} fill="rgba(94,234,212,0.38)" fontFamily="monospace">L3</text>
-        </g>
-
-        {/* L2 · Clinically Proven ? · yellow · x=8-171, y=265-329 */}
-        <g className="ci-bL2">
-          <rect x={0} y={0} width={163} height={64} rx={12} fill="rgba(251,191,36,0.07)" stroke="rgba(251,191,36,0.24)" strokeWidth={1} />
-          <circle cx={22} cy={22} r={9} fill="rgba(251,191,36,0.14)" />
-          <text x={22} y={27} textAnchor="middle" fontSize={10} fill="#fbbf24" fontWeight={700}>?</text>
-          <text x={38} y={18} fontSize={10} fill="rgba(255,255,255,0.82)" fontFamily="Helvetica,Arial,sans-serif">Clinically Proven</text>
-          <text x={38} y={31} fontSize={7.5} fill="rgba(251,191,36,0.5)" fontFamily="monospace">Clinical · No study</text>
-          <g transform="translate(12,45)">
-            {[0,1,2,3,4,5,6].map(n => <circle key={n} cx={n*11} cy={0} r={3} fill={n<2?"#fbbf24":"rgba(255,255,255,0.09)"} />)}
-          </g>
-          <text x={107} y={49} fontSize={7} fill="rgba(251,191,36,0.38)" fontFamily="monospace">L2</text>
-        </g>
-
-        {/* R1 · Deeply Hydrating ✓ · green · x=350-518, y=58-122 */}
-        <g className="ci-bR1">
-          <rect x={0} y={0} width={168} height={64} rx={12} fill="rgba(74,222,128,0.08)" stroke="rgba(74,222,128,0.26)" strokeWidth={1} />
-          <circle cx={22} cy={22} r={9} fill="rgba(74,222,128,0.15)" />
-          <text x={22} y={27} textAnchor="middle" fontSize={10} fill="#4ade80" fontWeight={700}>✓</text>
-          <text x={38} y={18} fontSize={10} fill="rgba(255,255,255,0.82)" fontFamily="Helvetica,Arial,sans-serif">Deeply Hydrating</text>
-          <text x={38} y={31} fontSize={7.5} fill="rgba(74,222,128,0.52)" fontFamily="monospace">Functional · Low Risk</text>
-          <g transform="translate(12,45)">
-            {[0,1,2,3,4,5,6].map(n => <circle key={n} cx={n*11} cy={0} r={3} fill={n<4?"#4ade80":"rgba(255,255,255,0.09)"} />)}
-          </g>
-          <text x={107} y={49} fontSize={7} fill="rgba(74,222,128,0.38)" fontFamily="monospace">L4</text>
-        </g>
-
-        {/* R2 · Removes Dark Spots ⚠ · red · x=350-518, y=222-286 */}
-        <g className="ci-bR2">
-          <rect x={0} y={0} width={168} height={64} rx={12} fill="rgba(239,68,68,0.08)" stroke="rgba(239,68,68,0.28)" strokeWidth={1} />
-          <circle cx={22} cy={22} r={9} fill="rgba(239,68,68,0.15)" />
-          <text x={22} y={27} textAnchor="middle" fontSize={9} fill="#ef4444" fontWeight={700}>⚠</text>
-          <text x={38} y={18} fontSize={9.5} fill="rgba(255,255,255,0.82)" fontFamily="Helvetica,Arial,sans-serif">Removes Dark Spots</text>
-          <text x={38} y={31} fontSize={7.5} fill="rgba(239,68,68,0.52)" fontFamily="monospace">Red Flag · No evidence</text>
-          <g transform="translate(12,45)">
-            {[0,1,2,3,4,5,6].map(n => <circle key={n} cx={n*11} cy={0} r={3} fill={n<1?"#ef4444":"rgba(255,255,255,0.09)"} />)}
-          </g>
-          <text x={107} y={49} fontSize={7} fill="rgba(239,68,68,0.38)" fontFamily="monospace">L1</text>
-        </g>
-
-        {/* BT · 72-Hour Results ? · orange · x=184-344, y=355-419 */}
-        <g className="ci-bBT">
-          <rect x={0} y={0} width={160} height={64} rx={12} fill="rgba(249,115,22,0.08)" stroke="rgba(249,115,22,0.25)" strokeWidth={1} />
-          <circle cx={22} cy={22} r={9} fill="rgba(249,115,22,0.15)" />
-          <text x={22} y={27} textAnchor="middle" fontSize={9} fill="#f97316" fontWeight={700}>?</text>
-          <text x={38} y={18} fontSize={10} fill="rgba(255,255,255,0.82)" fontFamily="Helvetica,Arial,sans-serif">72-Hour Results</text>
-          <text x={38} y={31} fontSize={7.5} fill="rgba(249,115,22,0.5)" fontFamily="monospace">Time-bound · Needs proof</text>
-          <g transform="translate(12,45)">
-            {[0,1,2,3,4,5,6].map(n => <circle key={n} cx={n*11} cy={0} r={3} fill={n<2?"#f97316":"rgba(255,255,255,0.09)"} />)}
-          </g>
-          <text x={107} y={49} fontSize={7} fill="rgba(249,115,22,0.38)" fontFamily="monospace">L2</text>
-        </g>
-
-      </svg>
+      {/* Sources */}
+      {card.dataSource && (
+        <div className="flex flex-wrap gap-x-12 gap-y-4 pt-2 pb-2 text-[13px]" style={{ color: WARM }}>
+          <span>
+            <span className="uppercase text-[11px]" style={{ letterSpacing: "0.1em" }}>INCI · </span>
+            <span style={{ color: card.dataSource.inciFound ? LIME : CORAL }}>{card.dataSource.inciFound ? "Found" : "Partial"}</span>
+            {card.dataSource.inciSource && ` · ${card.dataSource.inciSource}`}
+          </span>
+          {card.dataSource.rating != null && (
+            <span><span className="uppercase text-[11px]" style={{ letterSpacing: "0.1em" }}>Rating · </span>{card.dataSource.rating}/5 · {card.dataSource.reviewCount}</span>
+          )}
+          {card.priceRange && (
+            <span><span className="uppercase text-[11px]" style={{ letterSpacing: "0.1em" }}>Price · </span>{card.priceRange}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   HOW IT WORKS STRIP
-───────────────────────────────────────────────────────────────── */
-function HowItWorks() {
-  const steps = [
-    {
-      num: "01",
-      color: "#f97316",
-      title: "Every claim found",
-      body: "We collect claims from the brand website, Nykaa listing, Amazon title, and product pack. Not one — all of them.",
-    },
-    {
-      num: "02",
-      color: "#fbbf24",
-      title: "Evidence checked",
-      body: "Each claim is rated on a 7-level evidence ladder. Is the proof on this product, or borrowed from an ingredient study?",
-    },
-    {
-      num: "03",
-      color: "#4ade80",
-      title: "Platforms compared",
-      body: "Same product, different claims on different platforms? We catch the amplification — and name it.",
-    },
+/* ─── Comparison (dark) ─── */
+function ComparisonSheet({ result }: { result: ComparisonResult }) {
+  const isTie = result.winner === "tie";
+  const products = [
+    { key: "productA" as const, product: result.productA },
+    { key: "productB" as const, product: result.productB },
   ];
   return (
-    <div className="grid sm:grid-cols-3 gap-3 mb-12">
-      {steps.map(({ num, color, title, body }) => (
-        <div key={num} className="rounded-2xl p-5"
-          style={{ background: "linear-gradient(160deg,#091c1a,#0d2b27)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="text-3xl font-bold font-mono mb-3" style={{ color, opacity: 0.35 }}>{num}</div>
-          <div className="text-sm font-medium mb-1.5" style={{ color: "#f0fdfa" }}>{title}</div>
-          <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.38)" }}>{body}</p>
-        </div>
-      ))}
+    <div>
+      <Eyebrow color={TEAL_SOFT}>Head to head{result.skinConcern ? ` · ${result.skinConcern}` : ""}</Eyebrow>
+      <div className="grid md:grid-cols-2 gap-x-16 gap-y-12 pt-10 pb-12">
+        {products.map(({ key, product }) => {
+          const isWinner = result.winner === key;
+          const pVerified = product.score >= 75;
+          return (
+            <div key={key} className="min-w-0">
+              <div className="flex items-center gap-4 pb-4 flex-wrap">
+                <p className="font-display leading-none text-[32px] md:text-[40px] flex items-center gap-3" style={{ color: pVerified ? LIME : CORAL }}>
+                  <span className="inline-block w-[10px] h-[10px] rounded-full flex-shrink-0" style={{ background: pVerified ? LIME : CORAL }} />
+                  {pVerified ? "Verified" : "Not Verified"}
+                </p>
+                {isWinner && !isTie && (
+                  <span className="text-[11px] uppercase px-3 py-1 rounded-full" style={{ letterSpacing: "0.1em", background: LIME, color: INK }}>Our pick</span>
+                )}
+              </div>
+              <h3 className="font-display text-[24px] leading-tight pb-3" style={{ color: CREAM }}>{product.productName}</h3>
+              <p className="text-[14px] leading-relaxed pb-5" style={{ color: WARM }}>{product.summary}</p>
+              {product.pillars?.map((p) => {
+                const pct = Math.round((p.score / p.max) * 100);
+                const { word, col: pcol } = pillarStatus(pct);
+                return (
+                  <div key={p.name} className="py-2.5" style={{ borderTop: `1px solid ${HAIR_DARK}` }}>
+                    <div className="flex justify-between items-baseline text-[13px] pb-2">
+                      <span style={{ color: CREAM }}>{p.name}</span>
+                      <span className="uppercase text-[11px]" style={{ letterSpacing: "0.1em", color: pcol }}>{word}</span>
+                    </div>
+                    <div className="h-px w-full" style={{ background: HAIR_DARK }}>
+                      <div className="h-[2px] -translate-y-[0.5px]" style={{ background: pcol, width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      <p className="max-w-2xl text-[18px] leading-[1.7]" style={{ color: CREAM }}>{result.verdict}</p>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   LOADING STEPS
-───────────────────────────────────────────────────────────────── */
-const LOADING_STEPS = [
-  "Mapping claims across brand website, Nykaa, Amazon…",
-  "Checking evidence ladder for each claim…",
-  "Comparing prices across platforms…",
-  "Assessing ingredient transparency…",
-  "Running formula logic for this category…",
-  "Checking platform parity — are claims the same everywhere?…",
-  "Checking ASCI compliance and India drug boundary…",
-  "Calculating final scores across 7 dimensions…",
-];
+/* ─── Expert answer (dark) ─── */
+function AnswerSheet({ answer }: { answer: ExpertAnswer }) {
+  const col = answer.verdict === "safe" ? LIME : answer.verdict === "avoid" ? CORAL : answer.verdict === "caution" ? CORAL : TEAL_SOFT;
+  return (
+    <div>
+      <Eyebrow color={TEAL_SOFT}>The expert answer</Eyebrow>
+      <h2 className="font-display mt-6 max-w-2xl text-[30px] md:text-[38px] leading-[1.2]" style={{ color: CREAM }}>{answer.question}</h2>
+      <p className="mt-5 flex items-center gap-2.5 text-[13px] uppercase" style={{ letterSpacing: "0.1em", color: col }}>
+        <StatusDot color={col} />{answer.verdictLabel}
+      </p>
+      <p className="mt-8 max-w-2xl text-[18px] leading-[1.7]" style={{ color: CREAM }}>{answer.text}</p>
+      {answer.keyPoints?.length > 0 && (
+        <div className="mt-10 max-w-2xl">
+          {answer.keyPoints.map((point, i) => (
+            <p key={i} className="py-4 text-[16px] leading-relaxed flex items-baseline gap-3" style={{ color: CREAM, borderTop: `1px solid ${HAIR_DARK}` }}>
+              <StatusDot color={TEAL_SOFT} />{point}
+            </p>
+          ))}
+          <div style={{ borderTop: `1px solid ${HAIR_DARK}` }} />
+        </div>
+      )}
+      {answer.indiaContext && (
+        <div className="mt-10">
+          <Eyebrow>India context</Eyebrow>
+          <p className="mt-4 max-w-2xl text-[16px] leading-[1.7]" style={{ color: CREAM }}>{answer.indiaContext}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
-/* ─────────────────────────────────────────────────────────────────
-   SUGGESTIONS
-───────────────────────────────────────────────────────────────── */
-const SUGGESTIONS = [
-  "Mamaearth Vitamin C Face Wash",
-  "Minimalist 10% Niacinamide Serum",
-  "WOW Skin Science Hair Oil",
-  "mCaffeine Coffee Body Wash",
-  "Plum Green Tea Sunscreen SPF 50",
-];
-
-/* ─────────────────────────────────────────────────────────────────
-   MAIN PAGE
-───────────────────────────────────────────────────────────────── */
+/* ─── Main page ─── */
 export default function ReviewPage() {
   const [query, setQuery] = useState("");
-  const [review, setReview] = useState<ProductReview | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [claimCheck, setClaimCheck] = useState<ClaimCheckResult | null>(null);
+  const [scorecard, setScorecard] = useState<Scorecard | null>(null);
+  const [verdict, setVerdict] = useState<FinalVerdict | null>(null);
+  const [comparison, setComparison] = useState<ComparisonResult | null>(null);
+  const [expertAnswer, setExpertAnswer] = useState<ExpertAnswer | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [phase, setPhase] = useState<"claims" | "scan" | null>(null);
   const [outOfScope, setOutOfScope] = useState(false);
+  const [engineBusy, setEngineBusy] = useState(false);
+  const [claimLayerDown, setClaimLayerDown] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
 
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isChatting, setIsChatting] = useState(false);
+
+  const [verifiedList, setVerifiedList] = useState<VerifiedProduct[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isLoading) return;
-    const interval = setInterval(() => {
-      setStepIdx(i => (i + 1) % LOADING_STEPS.length);
-    }, 2200);
-    return () => clearInterval(interval);
-  }, [isLoading]);
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [chatMessages, isChatting]);
 
-  const runReview = useCallback(async (q?: string) => {
+  const loadVerified = useCallback(() => {
+    fetch("/api/verified-products")
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d?.products)) setVerifiedList(d.products); })
+      .catch(() => { /* section simply stays hidden */ });
+  }, []);
+
+  useEffect(() => { loadVerified(); }, [loadVerified]);
+
+  /* ── Analyze: Claim Check first, then deep scan ── */
+  const analyze = useCallback(async (q?: string) => {
     const text = (q || query).trim();
-    if (!text || isLoading) return;
+    if (!text || isAnalyzing) return;
 
     setQuery(text);
-    setIsLoading(true);
-    setError(null);
+    setIsAnalyzing(true);
     setOutOfScope(false);
-    setReview(null);
-    setStepIdx(0);
+    setEngineBusy(false);
+    setClaimLayerDown(false);
+    setClaimCheck(null);
+    setScorecard(null);
+    setVerdict(null);
+    setComparison(null);
+    setExpertAnswer(null);
+    setChatMessages([]);
+
+    let ticker: ReturnType<typeof setInterval> | null = null;
+    const startTicker = (steps: string[]) => {
+      if (ticker) clearInterval(ticker);
+      let idx = 0;
+      setStepIdx(0);
+      ticker = setInterval(() => {
+        idx = Math.min(idx + 1, steps.length - 1);
+        setStepIdx(idx);
+      }, 4000);
+    };
+
+    const runClaims = !looksLikeComparison(text) && !looksLikeQuestion(text);
+    let claimResult: ClaimCheckResult | null = null;
 
     try {
-      const res = await fetch("/api/review", {
+      if (runClaims) {
+        setPhase("claims");
+        startTicker(CLAIM_STEPS);
+        try {
+          const res = await fetch("/api/claim-check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: text }),
+          });
+          const data = await res.json();
+          if (data?.type === "claim_check") {
+            claimResult = data as ClaimCheckResult;
+            setClaimCheck(claimResult);
+            setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+          }
+        } catch { /* non-fatal — deep scan still runs */ }
+        if (!claimResult) setClaimLayerDown(true);
+      }
+
+      setPhase("scan");
+      startTicker(SCAN_STEPS);
+      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: text }),
+        body: JSON.stringify({ query: text, claimFindings: claimResult }),
       });
       const data = await res.json();
-      if (data.type === "out_of_scope") {
-        setOutOfScope(true);
-      } else if (data.type === "product-review" && data.review) {
-        setReview(data.review as ProductReview);
-        setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
-      } else if (data.type === "error") {
-        setError(data.message ?? "Something went wrong. Please try again.");
+      if (ticker) clearInterval(ticker);
+
+      const openers: string[] = [];
+      if (claimResult?.chatOpener) openers.push(claimResult.chatOpener);
+
+      if (res.status === 503 || data?.error === "busy") {
+        // Engine congestion is not "out of scope" — say so honestly
+        if (!claimResult) { setEngineBusy(true); return; }
+      } else if (data.type === "out_of_scope" || (!res.ok && !data.type) || data.error) {
+        if (!claimResult) { setOutOfScope(true); return; }
+      } else if (data.type === "comparison" && data.comparison) {
+        setComparison(data.comparison);
+        const winnerCard = data.comparison.winner === "productB" ? data.comparison.productB : data.comparison.productA;
+        openers.push(`${data.comparison.verdict}${winnerCard.chatOpener ? `\n\n${winnerCard.chatOpener}` : ""}`);
+      } else if (data.type === "answer" && data.answer) {
+        setExpertAnswer(data.answer);
+        if (data.answer.chatOpener) openers.push(data.answer.chatOpener);
       } else {
-        setError("Could not generate a review. Please try again.");
+        const card = data.scorecard;
+        if (card && typeof card.score === "number" && card.productName && Array.isArray(card.pillars) && card.pillars.length > 0) {
+          setScorecard(card);
+          if (data.verdict?.status && Array.isArray(data.verdict?.gates)) setVerdict(data.verdict as FinalVerdict);
+          if (card.chatOpener) openers.push(card.chatOpener);
+        } else if (!claimResult) {
+          setOutOfScope(true);
+        }
+      }
+
+      if (openers.length > 0) {
+        setChatMessages([{ id: uid(), role: "assistant", content: openers.join("\n\n"), timestamp: new Date() }]);
+      }
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+    } catch {
+      if (ticker) clearInterval(ticker);
+      if (!claimResult) setOutOfScope(true);
+    } finally {
+      if (ticker) clearInterval(ticker);
+      setIsAnalyzing(false);
+      setPhase(null);
+      setQuery("");
+      loadVerified(); // a 75+ result may have just joined the registry
+    }
+  }, [query, isAnalyzing, loadVerified]);
+
+  /* ── Chat ── */
+  const sendChat = useCallback(async () => {
+    const text = chatInput.trim();
+    if (!text || isChatting) return;
+
+    setChatInput("");
+    const userMsg: ChatMessage = { id: uid(), role: "user", content: text, timestamp: new Date() };
+    const aiId = uid();
+    const aiMsg: ChatMessage = { id: aiId, role: "assistant", content: "", timestamp: new Date(), isStreaming: true };
+    setChatMessages((prev) => [...prev, userMsg, aiMsg]);
+    setIsChatting(true);
+
+    const history = chatMessages.filter((m) => !m.isStreaming).map((m) => ({ role: m.role, content: m.content }));
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history,
+          scorecardContext: (claimCheck || scorecard)
+            ? {
+                ...(claimCheck ? { claimCheck: { productName: claimCheck.productName, brand: claimCheck.brand, integrityScore: claimCheck.integrityScore, integrityLabel: claimCheck.integrityLabel, claims: claimCheck.claims, redFlags: claimCheck.redFlags } } : {}),
+                ...(scorecard ? { scorecard } : {}),
+              }
+            : (comparison ? { productA: comparison.productA, productB: comparison.productB, verdict: comparison.verdict, skinConcern: comparison.skinConcern } : null)
+            ?? (expertAnswer ? { question: expertAnswer.question, answer: expertAnswer.text, verdict: expertAnswer.verdict } : null),
+        }),
+      });
+      if (!res.body) throw new Error("No response body");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setChatMessages((prev) => prev.map((m) => m.id === aiId ? { ...m, content: acc, isStreaming: false } : m));
       }
     } catch {
-      setError("Network error. Please check your connection and try again.");
+      setChatMessages((prev) => prev.map((m) => m.id === aiId ? { ...m, content: "Something went wrong. Try again.", isStreaming: false } : m));
     } finally {
-      setIsLoading(false);
+      setIsChatting(false);
+      setTimeout(() => chatInputRef.current?.focus(), 50);
     }
-  }, [query, isLoading]);
+  }, [chatInput, isChatting, chatMessages, claimCheck, scorecard, comparison, expertAnswer]);
 
-  const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") runReview();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); analyze(); }
+  };
+  const handleChatKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
   };
 
+  const hasResult = claimCheck || scorecard || comparison || expertAnswer;
+  const steps = phase === "claims" ? CLAIM_STEPS : SCAN_STEPS;
+
   return (
-    <div className="min-h-screen" style={{ background: "#060f0e" }}>
+    <div style={{ background: "var(--color-white)" }}>
 
-      {/* ── HERO (wide layout, illustration on right) ── */}
-      <div className="relative overflow-hidden border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-        {/* Atmospheric orbs */}
-        <div className="pointer-events-none absolute inset-0">
-          <div style={{ position:"absolute", top:"-15%", right:"-8%", width:560, height:560, background:"radial-gradient(circle, rgba(36,129,121,0.14) 0%, transparent 70%)", borderRadius:"50%" }} />
-          <div style={{ position:"absolute", bottom:"-20%", left:"-5%", width:380, height:380, background:"radial-gradient(circle, rgba(94,234,212,0.07) 0%, transparent 70%)", borderRadius:"50%" }} />
-          <div style={{ position:"absolute", top:"30%", right:"28%", width:200, height:200, background:"radial-gradient(circle, rgba(214,255,62,0.04) 0%, transparent 70%)", borderRadius:"50%" }} />
+      {/* ═══ Hero — light, one idea ═══ */}
+      <section className="relative overflow-hidden">
+        {/* Creative — dropper, fading into the canvas */}
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%]" aria-hidden>
+          <img src="/images/creatives/dropper-drop.jpg" alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.78) 32%, rgba(255,255,255,0.15) 78%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 20%)" }} />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-10 md:pt-14 pb-14 md:pb-20">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}>
+          <Eyebrow color={TEAL}>The Clean Sheet · Product review</Eyebrow>
+          <h1 className="font-display mt-8 text-[44px] md:text-[64px] leading-[1.08] tracking-[-0.02em] text-[var(--color-charcoal)] max-w-3xl">
+            Does it prove<br />what it promises?
+          </h1>
+          <p className="mt-6 text-[18px] leading-[28px] text-[var(--color-warm-gray)] max-w-xl">
+            Paste a product link or type its name. Every marketing claim is checked
+            against actual evidence, then the formula itself.
+          </p>
+        </motion.div>
 
-          {/* Left: copy + search */}
-          <div>
-            {/* Badge */}
-            <div className="flex items-center gap-2.5 mb-6">
-              <Image src="/logo.png" alt="The Clean Sheet" width={40} height={40} className="rounded-full" />
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-[11px] font-mono uppercase tracking-[0.2em]" style={{ color: "rgba(94,234,212,0.7)" }}>
-                  The Clean Sheet™ · Product Review
-                </span>
-              </div>
-            </div>
+        {/* Input — underline editorial style */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.12, ease: [0.25, 0.1, 0.25, 1] }}
+          className="mt-10 max-w-2xl"
+        >
+          <div className="flex items-end gap-6" style={{ borderBottom: `1px solid ${isAnalyzing ? TEAL : INK}` }}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Product link, name, or a question"
+              disabled={isAnalyzing}
+              className="flex-1 bg-transparent py-4 text-[18px] md:text-[20px] outline-none placeholder:text-[var(--color-warm-gray)] text-[var(--color-charcoal)]"
+              style={{ caretColor: TEAL }}
+            />
+            <button
+              onClick={() => analyze()}
+              disabled={!query.trim() || isAnalyzing}
+              className="pb-4 text-[14px] uppercase transition-colors disabled:opacity-30 flex-shrink-0"
+              style={{ letterSpacing: "0.1em", color: TEAL }}
+            >
+              Review →
+            </button>
+          </div>
 
-            {/* Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4"
-              style={{ color: "#f0fdfa", fontFamily: "'Cooper BT', Georgia, serif", letterSpacing: "-0.02em" }}>
-              Does it actually<br />
-              <span style={{ color: "#5eead4" }}>do what it says?</span>
-            </h1>
-            <p className="text-base sm:text-lg leading-relaxed mb-8" style={{ color: "rgba(255,255,255,0.4)", maxWidth: 440 }}>
-              We map every claim a brand makes, check what evidence actually exists, compare prices across Nykaa, Amazon and quick commerce — and give you one honest verdict.
-            </p>
-
-            {/* Search bar */}
-            <div className="rounded-2xl overflow-hidden mb-4"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(94,234,212,0.18)" }}>
-              <div className="flex items-center gap-3 px-4 py-4">
-                <Search size={16} style={{ color: "rgba(94,234,212,0.5)", flexShrink: 0 }} />
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  onKeyDown={handleKey}
-                  placeholder="Product name, brand, or paste a URL…"
-                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-[rgba(255,255,255,0.2)]"
-                  style={{ color: "#f0fdfa" }}
-                  disabled={isLoading}
-                />
+          {/* Suggestions — clean pills */}
+          {!hasResult && !isAnalyzing && (
+            <div className="flex flex-wrap gap-2.5 mt-8">
+              {SUGGESTIONS.map((s) => (
                 <button
-                  onClick={() => runReview()}
-                  disabled={isLoading || !query.trim()}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40"
-                  style={{ background: "rgba(94,234,212,0.14)", color: "#5eead4", border: "1px solid rgba(94,234,212,0.25)" }}>
-                  {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-                  {isLoading ? "Reviewing…" : "Review"}
+                  key={s}
+                  onClick={() => { setQuery(s); analyze(s); }}
+                  className="text-[13px] px-4 py-2 rounded-full transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                  style={{ border: `1px solid ${HAIR_LIGHT}`, color: "var(--color-charcoal)" }}
+                >
+                  {s}
                 </button>
-              </div>
+              ))}
             </div>
+          )}
+        </motion.div>
 
-            {/* Suggestions */}
-            {!review && !isLoading && (
-              <div className="flex flex-wrap gap-2">
-                {SUGGESTIONS.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => { setQuery(s); runReview(s); }}
-                    className="text-[11px] font-mono px-3 py-1.5 rounded-full transition-all hover:opacity-80"
-                    style={{ color: "rgba(94,234,212,0.6)", background: "rgba(94,234,212,0.07)", border: "1px solid rgba(94,234,212,0.12)" }}>
-                    {s}
-                  </button>
-                ))}
+        {/* Loading — calm single line */}
+        <AnimatePresence>
+          {isAnalyzing && !claimCheck && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="mt-14 max-w-2xl"
+            >
+              <div className="h-px w-full overflow-hidden" style={{ background: HAIR_LIGHT }}>
+                <motion.div
+                  className="h-full w-1/3"
+                  style={{ background: TEAL }}
+                  animate={{ x: ["-100%", "300%"] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                />
               </div>
-            )}
-          </div>
+              <div className="flex items-baseline justify-between mt-5">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={`${phase}-${stepIdx}`}
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-[15px]" style={{ color: "var(--color-charcoal)" }}
+                  >
+                    {steps[Math.min(stepIdx, steps.length - 1)]}
+                  </motion.p>
+                </AnimatePresence>
+                <p className="text-[12px] uppercase flex-shrink-0 pl-6" style={{ letterSpacing: "0.12em", color: WARM }}>
+                  {phase === "claims" ? "Layer 1 · Claims" : "Layer 2 · Formula"}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Right: illustration */}
-          <div className="hidden lg:flex items-center justify-center">
-            <ClaimIllustration />
-          </div>
+        {/* Engine busy */}
+        {engineBusy && !isAnalyzing && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-14 max-w-2xl">
+            <p className="text-[18px] text-[var(--color-charcoal)] pb-2">The engine is at capacity right now.</p>
+            <p className="text-[15px] leading-relaxed pb-6" style={{ color: WARM }}>
+              Nothing wrong with your product. Our research layer is briefly rate-limited. Give it a minute and run the same review again.
+            </p>
+            <button
+              onClick={() => { setEngineBusy(false); inputRef.current?.focus(); }}
+              className="text-[13px] uppercase px-5 py-2.5 rounded-full transition-colors"
+              style={{ letterSpacing: "0.1em", border: `1px solid ${INK}`, color: INK }}
+            >
+              Try again
+            </button>
+          </motion.div>
+        )}
+
+        {/* Out of scope */}
+        {outOfScope && !isAnalyzing && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-14 max-w-2xl">
+            <p className="text-[18px] text-[var(--color-charcoal)] pb-2">That one is outside our lane.</p>
+            <p className="text-[15px] leading-relaxed pb-6" style={{ color: WARM }}>
+              The Clean Sheet reviews beauty and personal care only. Try a skincare product, a cosmetic ingredient, or a haircare brand.
+            </p>
+            <button
+              onClick={() => { setOutOfScope(false); setQuery(""); inputRef.current?.focus(); }}
+              className="text-[13px] uppercase px-5 py-2.5 rounded-full transition-colors"
+              style={{ letterSpacing: "0.1em", border: `1px solid ${INK}`, color: INK }}
+            >
+              Try again
+            </button>
+          </motion.div>
+        )}
         </div>
+      </section>
+
+      {/* ═══ Results — the dark sheet ═══ */}
+      <div ref={resultsRef}>
+        <AnimatePresence>
+          {hasResult && (
+            <motion.section
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{ background: INK }}
+            >
+              <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-20 md:py-28">
+                {claimLayerDown && !claimCheck && scorecard && (
+                  <div className="mb-14 pb-6" style={{ borderBottom: `1px solid ${HAIR_DARK}` }}>
+                    <p className="text-[14px] leading-relaxed max-w-2xl" style={{ color: WARM }}>
+                      <span style={{ color: CORAL }}>Claim Check could not complete for this run</span> — the
+                      evidence-research layer was briefly unavailable, so only the formula deep scan is shown.
+                      Run the same review again in a minute, or paste the product URL, for the full claim sheet.
+                    </p>
+                  </div>
+                )}
+                {verdict && scorecard && !isAnalyzing && <VerdictPanel verdict={verdict} />}
+                {claimCheck && <ClaimSheet result={claimCheck} />}
+                {comparison && <ComparisonSheet result={comparison} />}
+                {expertAnswer && <AnswerSheet answer={expertAnswer} />}
+
+                {isAnalyzing && claimCheck && (
+                  <div className="pt-20">
+                    <div className="h-px w-full overflow-hidden" style={{ background: HAIR_DARK }}>
+                      <motion.div className="h-full w-1/3" style={{ background: TEAL_SOFT }}
+                        animate={{ x: ["-100%", "300%"] }} transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }} />
+                    </div>
+                    <p className="mt-5 text-[13px] uppercase" style={{ letterSpacing: "0.12em", color: WARM }}>
+                      Layer 2 · Deep scan running
+                    </p>
+                  </div>
+                )}
+
+                {scorecard && <DeepScan card={scorecard} verdictStatus={verdict?.status} />}
+
+                {claimCheck && !scorecard && !comparison && !expertAnswer && !isAnalyzing && (
+                  <p className="pt-16 text-[13px]" style={{ color: WARM }}>
+                    Deep-scan scorecard unavailable for this product — the claim verdicts above are complete.
+                  </p>
+                )}
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ── HOW IT WORKS (only before first search) ── */}
-      {!review && !isLoading && (
-        <div className="max-w-3xl mx-auto px-4 pt-10">
-          <HowItWorks />
-        </div>
-      )}
+      {/* ═══ Chat — back to light ═══ */}
+      {hasResult && !isAnalyzing && (
+        <section className="max-w-[1200px] mx-auto px-4 md:px-16 py-20 md:py-28">
+          <div className="max-w-2xl">
+            <Eyebrow color={TEAL}>Ask the ingredient expert</Eyebrow>
+            <h3 className="font-display mt-4 text-[28px] leading-[1.2] text-[var(--color-charcoal)] pb-10">
+              Questions about this result?
+            </h3>
 
-      {/* ── LOADING ── */}
-      {isLoading && (
-        <div className="max-w-2xl mx-auto px-4 pt-10">
-          <div className="rounded-3xl p-8 text-center"
-            style={{ background: "linear-gradient(160deg,#091c1a 0%,#0d2b27 60%,#091e1c 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            <div className="flex justify-center mb-5">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 rounded-full blur-lg opacity-40" style={{ background: "#5eead4" }} />
-                <div className="w-12 h-12 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: "rgba(94,234,212,0.3)", borderTopColor: "#5eead4" }} />
-              </div>
+            <div className="flex flex-col gap-6 pb-10">
+              {chatMessages.map((m) => (
+                <div key={m.id} className={m.role === "user" ? "self-end max-w-[85%]" : "max-w-[92%]"}>
+                  {m.role === "user" ? (
+                    <p className="text-[15px] leading-relaxed px-5 py-3 rounded-2xl" style={{ background: "var(--color-surface-subtle)", color: INK, border: `1px solid ${HAIR_LIGHT}` }}>
+                      {m.content}
+                    </p>
+                  ) : (
+                    <div className="flex gap-4">
+                      <span className="mt-2.5 flex-shrink-0"><StatusDot color={TEAL} /></span>
+                      <p className="text-[15px] leading-[1.7] whitespace-pre-wrap" style={{ color: INK }}>
+                        {m.isStreaming && !m.content ? "…" : m.content}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div ref={chatBottomRef} />
             </div>
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] mb-3" style={{ color: "rgba(94,234,212,0.4)" }}>
-              Claims Intelligence Engine · Active
-            </p>
-            <p className="text-sm min-h-[1.5rem] transition-all duration-300" style={{ color: "rgba(255,255,255,0.45)" }}>
-              {LOADING_STEPS[stepIdx]}
-            </p>
+
+            <div className="flex items-end gap-6" style={{ borderBottom: `1px solid ${INK}` }}>
+              <input
+                ref={chatInputRef}
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={handleChatKey}
+                placeholder="Ask about ingredients, safety, your skin type"
+                disabled={isChatting}
+                className="flex-1 bg-transparent py-3.5 text-[16px] outline-none placeholder:text-[var(--color-warm-gray)] text-[var(--color-charcoal)]"
+                style={{ caretColor: TEAL }}
+              />
+              <button
+                onClick={sendChat}
+                disabled={!chatInput.trim() || isChatting}
+                className="pb-3.5 text-[13px] uppercase transition-colors disabled:opacity-30 flex-shrink-0"
+                style={{ letterSpacing: "0.1em", color: TEAL }}
+              >
+                Send →
+              </button>
+            </div>
+
+            <button
+              onClick={() => { setClaimCheck(null); setScorecard(null); setVerdict(null); setComparison(null); setExpertAnswer(null); setChatMessages([]); setQuery(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="mt-12 text-[13px] uppercase transition-colors hover:text-[var(--color-primary)]"
+              style={{ letterSpacing: "0.1em", color: WARM }}
+            >
+              ← Review another product
+            </button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* ── ERRORS ── */}
-      {error && !isLoading && (
-        <div className="max-w-2xl mx-auto px-4 pt-6">
-          <div className="rounded-2xl px-5 py-4 flex items-start gap-3"
-            style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)" }}>
-            <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" style={{ color: "#f87171" }} />
-            <p className="text-sm" style={{ color: "rgba(248,113,113,0.85)" }}>{error}</p>
-          </div>
-        </div>
-      )}
-      {outOfScope && !isLoading && (
-        <div className="max-w-2xl mx-auto px-4 pt-6">
-          <div className="rounded-2xl px-5 py-4 flex items-start gap-3"
-            style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)" }}>
-            <Info size={16} className="flex-shrink-0 mt-0.5" style={{ color: "#fbbf24" }} />
-            <p className="text-sm" style={{ color: "rgba(251,191,36,0.85)" }}>
-              This doesn't look like a beauty or personal care product. Try searching for a moisturizer, serum, shampoo, sunscreen, or body wash.
+      {/* ═══ Verified products — the registry ═══ */}
+      {!hasResult && !isAnalyzing && verifiedList.length > 0 && (
+        <section style={{ background: INK }}>
+          <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-20 md:py-24">
+            <Eyebrow color={LIME}>Verified products</Eyebrow>
+            <h2 className="font-display mt-4 text-[28px] md:text-[36px] leading-[1.15] max-w-2xl" style={{ color: CREAM }}>
+              Reviewed. Passed the bar.<br />Recommended by The Clean Sheet.
+            </h2>
+            <p className="mt-4 text-[15px] leading-[1.7] max-w-xl" style={{ color: WARM }}>
+              Every product here cleared the claim check and the six-pillar scan.
+              Open one for exact usage guidance: how long, how often, what to pair it with.
             </p>
+            <div className="mt-12">
+              <VerifiedList products={verifiedList} />
+            </div>
+            <Link
+              href="/verified"
+              className="mt-10 inline-block text-[13px] uppercase transition-colors hover:opacity-80"
+              style={{ letterSpacing: "0.1em", color: LIME }}
+            >
+              View the full public registry →
+            </Link>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* ── RESULTS ── */}
-      <div ref={resultsRef} className="max-w-2xl mx-auto px-4 pt-6 pb-20">
-        {review && !isLoading && <ReviewView review={review} />}
-      </div>
-
+      {/* ═══ Empty-state explainer ═══ */}
+      {!hasResult && !isAnalyzing && !outOfScope && !engineBusy && (
+        <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-24 md:pb-32">
+          <div className="grid md:grid-cols-3 gap-x-12 gap-y-10 max-w-4xl">
+            {[
+              { n: "01", title: "Claims, checked", desc: "Every marketing claim is graded against real evidence: studies, certificates, registries. Nothing is assumed true." },
+              { n: "02", title: "Formula, scanned", desc: "A six-pillar safety score built on the full INCI list, EU and India regulations, and formulation logic." },
+              { n: "03", title: "Compare and ask", desc: "“X vs Y for oily skin?” or “Is this ingredient safe?” Answered with published science." },
+            ].map(({ n, title, desc }) => (
+              <motion.div key={n} {...rise} className="pt-6" style={{ borderTop: `1px solid ${HAIR_LIGHT}` }}>
+                <p className="text-[13px] pb-4" style={{ color: TEAL }}>{n}</p>
+                <h3 className="font-display text-[22px] text-[var(--color-charcoal)] pb-3">{title}</h3>
+                <p className="text-[14px] leading-[1.7]" style={{ color: WARM }}>{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

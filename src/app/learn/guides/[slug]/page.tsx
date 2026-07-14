@@ -253,7 +253,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
               <DownloadGuideButton guideName={guide.skinType} guideFile={guideFile} guideSlug={slug} />
               <Link
-                href="/analyzer"
+                href="/review"
                 className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-xl transition-colors text-center whitespace-nowrap"
               >
                 Try Ask Clean →

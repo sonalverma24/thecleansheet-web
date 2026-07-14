@@ -6,21 +6,21 @@ import Image from "next/image";
 
 const LINKS = {
   Platform: [
-    { href: "/review",         label: "Product Review"      },
-    { href: "/analyzer",      label: "Ingredient Analyser" },
+    { href: "/review",        label: "Review a Product"    },
     { href: "/certified",     label: "Certified Products"  },
-    { href: "/brands",        label: "Brand Scorecards"    },
-    { href: "/services",      label: "Services"            },
+    { href: "/brands",        label: "For Brands"          },
+    { href: "/certification", label: "Certification"       },
     { href: "/learn",         label: "Learn"               },
   ],
   Learn: [
-    { href: "/ingredients",   label: "Ingredient Glossary" },
-    { href: "/methodology",   label: "Our Methodology"     },
-    { href: "/blog",          label: "Reads"               },
-    { href: "/consumers",     label: "Consumer Safety"     },
+    { href: "/ingredients",         label: "Ingredient Glossary"  },
+    { href: "/learn#scoring",       label: "How We Score"         },
+    { href: "/learn#inci",          label: "Understanding INCI"   },
+    { href: "/learn#india",         label: "India Regulations"    },
   ],
   Company: [
     { href: "/about",         label: "About Us"            },
+    { href: "/about",         label: "Our Mission"         },
     { href: "/contact",       label: "Contact"             },
     { href: "/privacy-policy",label: "Privacy Policy"      },
     { href: "/terms-of-use",  label: "Terms of Use"        },
@@ -32,6 +32,19 @@ export default function Footer() {
   return (
     <footer className="bg-teal-950 text-teal-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+
+        {/* Brand mark — the sheet, signed */}
+        <div className="mb-14 pb-12 border-b border-white/10 overflow-hidden">
+          <p
+            className="font-display leading-[0.95] tracking-[-0.02em] text-white select-none"
+            style={{ fontSize: "clamp(44px, 9vw, 128px)" }}
+          >
+            The Clean Sheet<sup className="text-[0.25em] align-super" style={{ color: "#80d5cc" }}>™</sup>
+          </p>
+          <p className="mt-4 text-[12px] uppercase text-teal-400" style={{ letterSpacing: "0.18em" }}>
+            Proof, not promises · Est. 2025 · India
+          </p>
+        </div>
 
         {/* Top */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-12 sm:mb-16">
@@ -47,15 +60,15 @@ export default function Footer() {
                 className="rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
               />
               <span
-                className="font-medium text-white text-lg tracking-tight"
-                style={{ fontFamily: "var(--font-display)" }}
+                className="text-white text-base uppercase"
+                style={{ fontFamily: "var(--font-sans)", letterSpacing: "0.14em", fontWeight: 400 }}
               >
                 The Clean Sheet
-                <sup className="text-[9px] text-teal-400 ml-0.5 font-sans font-normal">™</sup>
+                <sup className="text-[9px] text-teal-400 ml-0.5">™</sup>
               </span>
             </Link>
             <p className="text-teal-400 text-sm leading-relaxed max-w-xs mb-6">
-              India's first science-backed certification standard for beauty and personal care products.
+              India&apos;s first science-backed certification standard for beauty and personal care products.
               Evidence over marketing. Always.
             </p>
 

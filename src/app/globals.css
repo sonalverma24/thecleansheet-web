@@ -352,3 +352,25 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ─────────────────────────────────────────────────────────
+   EVIDENCE-FIRST EDITORIAL TOKENS
+   (home, review, verified, reads, about, certification)
+───────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/fonts/helvetica-light-587ebe5a59211.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-primary: #248179;
+  --color-coral: #fd6158;
+  --color-lime: #d2ff34;
+  --color-charcoal: #282828;
+  --color-warm-gray: #b0a8a4;
+  --color-white: #ffffff;
+  --color-surface-subtle: #f9f8f7;
+}

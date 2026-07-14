@@ -585,7 +585,7 @@ function CTA() {
             <ArrowRight size={18} />
           </Link>
           <Link
-            href="/analyzer"
+            href="/review"
             className="flex items-center gap-2 text-ink-700 hover:text-ink-950 font-medium text-base transition-colors"
           >
             Or try Ask Clean, free →
