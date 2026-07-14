@@ -6,10 +6,11 @@ import Image from "next/image";
 
 const LINKS = {
   Platform: [
-    { href: "/analyzer",      label: "Ask Clean"           },
+    { href: "/review",         label: "Product Review"      },
+    { href: "/analyzer",      label: "Ingredient Analyser" },
     { href: "/certified",     label: "Certified Products"  },
     { href: "/brands",        label: "Brand Scorecards"    },
-    { href: "/certification", label: "Certification"       },
+    { href: "/services",      label: "Services"            },
     { href: "/learn",         label: "Learn"               },
   ],
   Learn: [

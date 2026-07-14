@@ -934,8 +934,13 @@ export default function AnalyzerPage() {
           </h1>
           <p className="text-base sm:text-lg max-w-lg mx-auto leading-relaxed relative z-10"
             style={{ color: "rgba(153,246,228,0.55)", animation: "tcs-fadeUp 0.4s 0.2s ease both" }}>
-            Analyse a product, compare two, or ask about any ingredient.
-            India&apos;s most rigorous beauty science engine.
+            Ingredient safety screening against EU, India, FDA &amp; ECHA databases.
+          </p>
+          <p className="text-sm relative z-10 mt-2" style={{ color: "rgba(94,234,212,0.35)", animation: "tcs-fadeUp 0.4s 0.25s ease both" }}>
+            Looking for claims &amp; pricing? →{" "}
+            <a href="/review" className="underline underline-offset-2 hover:opacity-80 transition-opacity" style={{ color: "rgba(94,234,212,0.55)" }}>
+              Product Review
+            </a>
           </p>
         </div>
       </section>

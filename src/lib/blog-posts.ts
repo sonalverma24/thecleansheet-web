@@ -25,6 +25,137 @@ export type BlogBlock =
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "beauty-boom-cooling-india-mckinsey-2025",
+    category: "Industry",
+    readTime: "10 min read",
+    date: "July 14, 2026",
+    title: "The Beauty Boom Is Cooling. India Is Where It Gets Interesting.",
+    subtitle: "What McKinsey's State of Beauty 2025 report means for a market that's about to become the industry's main character — and why \"does it actually work\" is the only question left that matters.",
+    excerpt: "The global beauty industry's golden era is slowing to a crawl. McKinsey projects growth dropping from 7% to 5% annually through 2030. Two shifts explain why India is the exception — and why both point in exactly the direction we've argued for all along.",
+    author: "The Clean Sheet Team",
+    image: "/images/New%20images/1.png",
+    content: [
+      {
+        type: "paragraph",
+        text: "For most of the last decade, beauty was the consumer world's golden child. A seemingly endless appetite for newness pushed the global industry to roughly $450 billion, growing about 7% a year from 2022 to 2024 — faster than almost anyone predicted. More launches, more founders, more limited drops, more everything.",
+      },
+      {
+        type: "paragraph",
+        text: "That era is ending. In its State of Beauty 2025 report, McKinsey projects growth slowing to about 5% annually through 2030. Momentum is cooling, markets are saturating, and the shopper who used to buy on hype has turned into a skeptic. In this year's survey, 54% of beauty executives named uncertain consumer appetite and restricted spending as the single biggest risk to the industry's future.",
+      },
+      {
+        type: "paragraph",
+        text: "We read that report the way a referee reads a rulebook: not as bad news, but as a signal that the game is finally being played on the terms we've argued for all along. Two shifts stand out — and both point in the same direction.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Shift one: the growth map is being redrawn, and it runs through India",
+      },
+      {
+        type: "paragraph",
+        text: "Ask the world's beauty executives where the next chapter gets written and they no longer say China. They say India and the Middle East. In McKinsey's survey, these two markets top the list of most promising growth opportunities, and 41% of executives plan to expand distribution in India specifically.",
+      },
+      {
+        type: "paragraph",
+        text: "The numbers underneath that optimism are real. India's beauty and personal care market sits at roughly $31 billion in 2025 and is on track to reach $40 billion by 2030, growing at double-digit rates while mature markets crawl along at low single digits (Redseer, IMARC). Online is already the largest single channel here, at around 30% of sales — a structural head start on a shift the rest of the world is still catching up to.",
+      },
+      {
+        type: "callout",
+        text: "When McKinsey asked Indian consumers what beauty means to them, 58% said it means feeling confident — and fewer than half said it meant keeping up with the latest trends. That's a profoundly different starting point from the trend-chasing, novelty-driven logic that built Western beauty.",
+      },
+      {
+        type: "paragraph",
+        text: "Confidence isn't sold through hype. It's earned through products that do what they promise, explained by people willing to show their work.",
+      },
+      {
+        type: "paragraph",
+        text: "This is the opportunity — and the trap. The brands that grow in India will be the ones that treat Indian skin, Indian climate, Indian budgets and Indian skepticism as the design brief, not a translation exercise.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Shift two: the hype premium is gone",
+      },
+      {
+        type: "paragraph",
+        text: "The second shift is bigger, and it travels everywhere. For roughly five years, a charismatic, public-facing founder was one of the most reliable accelerants a beauty brand could have. Put a recognizable face on the bottle and the brand borrowed their trust.",
+      },
+      {
+        type: "paragraph",
+        text: "That trade has quietly collapsed. In McKinsey's 2025 data, public-facing founders now rank among the lowest factors consumers weigh when deciding what to buy. The thing that's replaced them? Product quality — the number one purchase driver across categories. Shoppers have shifted their attention from who's behind it to does it actually work.",
+      },
+      {
+        type: "paragraph",
+        text: "You can see the same recalibration in how people spend. Consumers still splurge — but selectively, and only where they believe the value is real. A facial serum with a visible result is worth paying up for; a cleanser or a lip balm, less so. Even affordability perceptions split by category: 83% of consumers consider hair care fairly priced, but only 67% say the same of fragrance. Every product now has to argue its own case at the register.",
+      },
+      {
+        type: "paragraph",
+        text: "Notably, McKinsey singles out three old shortcuts that no longer carry a brand on their own: a famous founder, a narrow demographic identity, and — this one matters for us — a broad \"sustainability\" or \"clean\" halo. Consumers have been burned by too many vague claims. A green leaf on the label and the word \"clean\" in the name aren't evidence anymore. They're wallpaper.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Where this leaves a brand like The Clean Sheet",
+      },
+      {
+        type: "paragraph",
+        text: "We'll be honest about our bias: this is the market we were built for.",
+      },
+      {
+        type: "paragraph",
+        text: "The Indian shopper McKinsey describes — value-conscious, skeptical of hype, laser-focused on whether a product delivers — is the exact person our scoring framework exists to serve. Independent research backs it up. Ingredient transparency in India has moved from niche to norm, with a whole consumer segment — the \"Ingredient Investigator,\" roughly 26 to 35 years old — now shopping through an evidence-led, \"show me the proof\" lens rather than the tired natural-versus-chemical binary.",
+      },
+      {
+        type: "paragraph",
+        text: "That's why we don't score products on vibes. We score them on four things, weighted the way they actually matter to your skin and your trust:",
+      },
+      {
+        type: "bullets",
+        items: [
+          "Safety (50%) — because what a product won't do to you is the foundation everything else sits on.",
+          "Efficacy (20%) — does it actually work, backed by evidence, not adjectives.",
+          "Transparency (20%) — will the brand show its full formula and stand behind it.",
+          "Sustainability (10%) — real, verifiable, and never used as a substitute for the three above.",
+        ],
+      },
+      {
+        type: "callout",
+        text: "Read that against McKinsey's findings and the alignment is almost uncomfortable. The report says quality and efficacy now win — we weight for it. It warns that a \"clean\" or \"sustainability\" halo no longer earns trust on its own — which is exactly why we cap sustainability at 10% and refuse to ever call a product \"clean\" as a marketing shortcut.",
+      },
+      {
+        type: "paragraph",
+        text: "Our job isn't to sell you an identity. It's to be the referee who reads the label so you don't have to guess.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The takeaway",
+      },
+      {
+        type: "paragraph",
+        text: "The State of Beauty 2025 isn't really a story about a slowdown. It's a story about the market growing up. The easy money — from newness, from famous faces, from feel-good words — is drying out. What's left is harder and better: real products, in high-potential markets like India, judged on whether they deliver.",
+      },
+      {
+        type: "paragraph",
+        text: "For an industry, that's a puzzle to solve. For a shopper who just wants to know whether the thing in their cart is worth it, it's overdue. And for us, it's simply the scorecard we've been keeping all along.",
+      },
+      {
+        type: "divider",
+      },
+      {
+        type: "paragraph",
+        text: "Sources: McKinsey & Company, State of Beauty 2025 (June 2025); Redseer; IMARC Group; NielsenIQ, The New Face of Indian Beauty.",
+      },
+      {
+        type: "cta",
+        text: "Want to see how products score on the framework built for India's next beauty era?",
+        href: "/brands",
+        label: "Explore Scorecards",
+      },
+    ],
+  },
+  {
     slug: "last-week-in-beauty-may-30-june-5-2026",
     category: "Industry",
     readTime: "18 min read",
