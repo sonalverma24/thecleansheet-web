@@ -136,8 +136,8 @@ export default function ReviewPage() {
         <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%]" aria-hidden>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/creatives/dropper-drop.jpg" alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.78) 32%, rgba(255,255,255,0.15) 78%)" }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 20%)" }} />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to right, ${CREAM} 0%, rgba(252,249,248,0.78) 34%, rgba(252,249,248,0.12) 80%)` }} />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${CREAM} 0%, rgba(252,249,248,0) 22%)` }} />
         </div>
 
         <div className="relative max-w-[1100px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-10">
