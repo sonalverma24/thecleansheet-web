@@ -132,14 +132,10 @@ export default function ReviewPage() {
     <div className="min-h-screen" style={{ background: CREAM }}>
       {/* ═══ Hero + input ═══ */}
       <section className="relative overflow-hidden">
-        {/* Creative, dropper fading into the canvas */}
+        {/* Creative, dropper fading seamlessly into the canvas (static, no scale) */}
         <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%]" aria-hidden>
-          <motion.img
-            src="/images/creatives/dropper-drop.jpg" alt=""
-            className="w-full h-full object-cover"
-            initial={{ scale: 1.08 }} animate={{ scale: 1 }}
-            transition={{ duration: 2.4, ease: EASE }}
-          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/creatives/dropper-drop.jpg" alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.78) 32%, rgba(255,255,255,0.15) 78%)" }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 20%)" }} />
         </div>
