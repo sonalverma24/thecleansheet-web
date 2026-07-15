@@ -110,8 +110,10 @@ export function VerifiedRow({ p }: { p: VerifiedProduct }) {
             onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex-shrink-0 flex items-center justify-center" style={{ border: `1px solid ${HAIR_DARK}` }}>
-            <StatusDot color={LIME} />
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl flex-shrink-0 flex items-center justify-center" style={{ border: `1px solid ${HAIR_DARK}`, background: "rgba(252,249,248,0.04)" }} aria-hidden>
+            <span className="font-display text-[28px] md:text-[34px] leading-none" style={{ color: TEAL_SOFT }}>
+              {(p.brand || p.productName || "?").trim().charAt(0).toUpperCase()}
+            </span>
           </div>
         )}
         <div className="flex-1 min-w-0">

@@ -237,7 +237,7 @@ function ClaimSheet({ result }: { result: ClaimCheckResult }) {
         <div className="max-w-xl">
           <Eyebrow color={TEAL_SOFT}>Layer 1 · The Claim Sheet</Eyebrow>
           <div className="mt-6 flex items-start gap-6">
-            {result.imageUrl && (
+            {result.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={result.imageUrl}
@@ -246,6 +246,16 @@ function ClaimSheet({ result }: { result: ClaimCheckResult }) {
                 style={{ border: `1px solid ${HAIR_DARK}`, background: "rgba(252,249,248,0.04)" }}
                 onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
+            ) : (
+              <div
+                className="w-24 h-24 md:w-28 md:h-28 rounded-2xl flex-shrink-0 flex items-center justify-center"
+                style={{ border: `1px solid ${HAIR_DARK}`, background: "rgba(252,249,248,0.04)" }}
+                aria-hidden
+              >
+                <span className="font-display text-[40px] md:text-[48px] leading-none" style={{ color: TEAL_SOFT }}>
+                  {(result.brand || result.productName || "?").trim().charAt(0).toUpperCase()}
+                </span>
+              </div>
             )}
             <div>
               {result.brand && <p className="text-[14px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>{result.brand}</p>}
@@ -643,74 +653,57 @@ export default function ReviewPage() {
     setExpertAnswer(null);
     setChatMessages([]);
 
-    let ticker: ReturnType<typeof setInterval> | null = null;
-    const startTicker = (steps: string[]) => {
-      if (ticker) clearInterval(ticker);
-      let idx = 0;
-      setStepIdx(0);
-      ticker = setInterval(() => {
-        idx = Math.min(idx + 1, steps.length - 1);
-        setStepIdx(idx);
-      }, 4000);
-    };
-
+    // Progress ticker is cosmetic — the server runs ONE pipeline for the whole review
     const runClaims = !looksLikeComparison(text) && !looksLikeQuestion(text);
-    let claimResult: ClaimCheckResult | null = null;
+    const steps = runClaims ? [...CLAIM_STEPS, ...SCAN_STEPS] : SCAN_STEPS;
+    setPhase(runClaims ? "claims" : "scan");
+    let idx = 0;
+    setStepIdx(0);
+    const ticker = setInterval(() => {
+      idx = Math.min(idx + 1, steps.length - 1);
+      setStepIdx(idx);
+      if (runClaims && idx >= CLAIM_STEPS.length) setPhase("scan");
+    }, 5000);
 
     try {
-      if (runClaims) {
-        setPhase("claims");
-        startTicker(CLAIM_STEPS);
-        try {
-          const res = await fetch("/api/claim-check", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: text }),
-          });
-          const data = await res.json();
-          if (data?.type === "claim_check") {
-            claimResult = data as ClaimCheckResult;
-            setClaimCheck(claimResult);
-            setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
-          }
-        } catch { /* non-fatal — deep scan still runs */ }
-        if (!claimResult) setClaimLayerDown(true);
-      }
-
-      setPhase("scan");
-      startTicker(SCAN_STEPS);
-      const res = await fetch("/api/analyze", {
+      const res = await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: text, claimFindings: claimResult }),
+        body: JSON.stringify({ query: text }),
       });
       const data = await res.json();
-      if (ticker) clearInterval(ticker);
+      clearInterval(ticker);
 
       const openers: string[] = [];
-      if (claimResult?.chatOpener) openers.push(claimResult.chatOpener);
 
       if (res.status === 503 || data?.error === "busy") {
-        // Engine congestion is not "out of scope" — say so honestly
-        if (!claimResult) { setEngineBusy(true); return; }
-      } else if (data.type === "out_of_scope" || (!res.ok && !data.type) || data.error) {
-        if (!claimResult) { setOutOfScope(true); return; }
-      } else if (data.type === "comparison" && data.comparison) {
+        setEngineBusy(true);
+        return;
+      }
+      if (data?.error || !data?.kind || data.kind === "out_of_scope") {
+        setOutOfScope(true);
+        return;
+      }
+
+      if (data.kind === "comparison" && data.comparison) {
         setComparison(data.comparison);
         const winnerCard = data.comparison.winner === "productB" ? data.comparison.productB : data.comparison.productA;
         openers.push(`${data.comparison.verdict}${winnerCard.chatOpener ? `\n\n${winnerCard.chatOpener}` : ""}`);
-      } else if (data.type === "answer" && data.answer) {
+      } else if (data.kind === "answer" && data.answer) {
         setExpertAnswer(data.answer);
         if (data.answer.chatOpener) openers.push(data.answer.chatOpener);
-      } else {
-        const card = data.scorecard;
-        if (card && typeof card.score === "number" && card.productName && Array.isArray(card.pillars) && card.pillars.length > 0) {
-          setScorecard(card);
-          if (data.verdict?.status && Array.isArray(data.verdict?.gates)) setVerdict(data.verdict as FinalVerdict);
-          if (card.chatOpener) openers.push(card.chatOpener);
-        } else if (!claimResult) {
-          setOutOfScope(true);
+      } else if (data.kind === "product") {
+        if (data.claimCheck) {
+          setClaimCheck(data.claimCheck as ClaimCheckResult);
+          if (data.claimCheck.chatOpener) openers.push(data.claimCheck.chatOpener);
         }
+        setClaimLayerDown(!!data.claimLayerDown);
+        if (data.scorecard) {
+          setScorecard(data.scorecard);
+          if (data.scorecard.chatOpener) openers.push(data.scorecard.chatOpener);
+        }
+        if (data.verdict?.status && Array.isArray(data.verdict?.gates)) setVerdict(data.verdict as FinalVerdict);
+        if (!data.claimCheck && !data.scorecard) { setOutOfScope(true); return; }
       }
 
       if (openers.length > 0) {
@@ -718,14 +711,14 @@ export default function ReviewPage() {
       }
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
     } catch {
-      if (ticker) clearInterval(ticker);
-      if (!claimResult) setOutOfScope(true);
+      clearInterval(ticker);
+      setOutOfScope(true);
     } finally {
-      if (ticker) clearInterval(ticker);
+      clearInterval(ticker);
       setIsAnalyzing(false);
       setPhase(null);
       setQuery("");
-      loadVerified(); // a 75+ result may have just joined the registry
+      loadVerified(); // a Verified result may have just joined the registry
     }
   }, [query, isAnalyzing, loadVerified]);
 
@@ -785,7 +778,11 @@ export default function ReviewPage() {
   };
 
   const hasResult = claimCheck || scorecard || comparison || expertAnswer;
-  const steps = phase === "claims" ? CLAIM_STEPS : SCAN_STEPS;
+  const displayStep = phase === "claims"
+    ? CLAIM_STEPS[Math.min(stepIdx, CLAIM_STEPS.length - 1)]
+    : stepIdx >= CLAIM_STEPS.length
+      ? SCAN_STEPS[Math.min(stepIdx - CLAIM_STEPS.length, SCAN_STEPS.length - 1)]
+      : SCAN_STEPS[Math.min(stepIdx, SCAN_STEPS.length - 1)];
 
   return (
     <div style={{ background: "var(--color-white)" }}>
@@ -879,7 +876,7 @@ export default function ReviewPage() {
                     transition={{ duration: 0.3 }}
                     className="text-[15px]" style={{ color: "var(--color-charcoal)" }}
                   >
-                    {steps[Math.min(stepIdx, steps.length - 1)]}
+                    {displayStep}
                   </motion.p>
                 </AnimatePresence>
                 <p className="text-[12px] uppercase flex-shrink-0 pl-6" style={{ letterSpacing: "0.12em", color: WARM }}>
