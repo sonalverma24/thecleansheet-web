@@ -5,6 +5,7 @@ import {
   CheckCircle2, XCircle, ChevronRight, Microscope, Award,
   Users, TrendingUp, Star,
 } from "lucide-react";
+import { ClaimsVerifyButton } from "@/components/ClaimsVerifyButton";
 
 /* ─────────────────────────────────────────────
    HERO GRAPHIC, live evaluation terminal
@@ -148,6 +149,7 @@ function Hero() {
                 Analyse a product for free
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </Link>
+              <ClaimsVerifyButton />
               <Link href="/brands"
                 className="inline-flex items-center justify-center sm:justify-start gap-2 text-ink-600 hover:text-ink-950 font-medium text-sm sm:text-base transition-colors group sm:py-4">
                 View scored products
