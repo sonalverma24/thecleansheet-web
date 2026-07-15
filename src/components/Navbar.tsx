@@ -8,8 +8,8 @@ import Image from "next/image";
 
 const NAV_LINKS = [
   { href: "/brands",        label: "Scorecards"   },
-  { href: "/review",        label: "Review"       },
-  { href: "/services",      label: "Services"      },
+  { href: "/analyzer",      label: "Analyse"      },
+  { href: "/certification", label: "Certification" },
   { href: "/learn",         label: "Learn"        },
   { href: "/blog",          label: "Reads"        },
   { href: "/about",         label: "About"        },
@@ -49,13 +49,13 @@ export default function Navbar() {
               <Image
                 src="/logo.png"
                 alt="The Clean Sheet™"
-                width={56}
-                height={56}
+                width={48}
+                height={48}
                 className="rounded-full group-hover:scale-110 transition-transform duration-200"
                 priority
               />
-              <span className="text-[17px] font-semibold text-ink-900 tracking-tight hidden sm:block" style={{ fontFamily: "var(--font-display)" }}>
-                The Clean Sheet
+              <span className="text-[15px] font-medium text-ink-900 tracking-tight hidden sm:block" style={{ fontFamily: "var(--font-display)" }}>
+                THE CLEAN SHEET
                 <sup className="text-[9px] text-teal-500 ml-0.5 font-sans font-normal">™</sup>
               </span>
             </Link>

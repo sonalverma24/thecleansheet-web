@@ -143,21 +143,13 @@ function Hero() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3"
               style={{ animation: "tcs-fadeUp 0.5s 0.3s ease both" }}>
-              <Link href="/review"
+              <Link href="/analyzer"
                 className="group inline-flex items-center justify-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-medium px-6 py-3.5 sm:px-7 sm:py-4 rounded-2xl text-sm sm:text-base transition-all hover:shadow-2xl hover:shadow-coral-500/30 active:scale-[0.97]">
-                Review a product for free
+                Analyse a product for free
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link href="/services"
-                className="group inline-flex items-center justify-center gap-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium px-6 py-3.5 sm:px-7 sm:py-4 rounded-2xl text-sm sm:text-base transition-all hover:shadow-2xl hover:shadow-teal-600/30 active:scale-[0.97]">
-                Get your claims verified today
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-            <div className="flex items-center gap-2"
-              style={{ animation: "tcs-fadeUp 0.5s 0.35s ease both" }}>
               <Link href="/brands"
-                className="inline-flex items-center gap-2 text-ink-600 hover:text-ink-950 font-medium text-sm sm:text-base transition-colors group py-2">
+                className="inline-flex items-center justify-center sm:justify-start gap-2 text-ink-600 hover:text-ink-950 font-medium text-sm sm:text-base transition-colors group sm:py-4">
                 View scored products
                 <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
@@ -502,9 +494,9 @@ function AnalyzerPreview() {
                 </li>
               ))}
             </ul>
-            <Link href="/review"
+            <Link href="/analyzer"
               className="inline-flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/25 active:scale-[0.98]">
-              <Sparkles size={16} /> Review a Product
+              <Sparkles size={16} /> Open Ask Clean
             </Link>
           </div>
 
@@ -781,10 +773,10 @@ function ForBrands() {
                 </div>
               ))}
             </div>
-            <Link href="/services"
+            <a href="#get-certified"
               className="inline-flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/25 active:scale-[0.98]">
-              Get your claims verified today <ArrowRight size={16} />
-            </Link>
+              Apply for Certification <ArrowRight size={16} />
+            </a>
           </div>
         </div>
       </div>
