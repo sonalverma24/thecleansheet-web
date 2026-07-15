@@ -6,6 +6,7 @@ import {
   Users, Star,
 } from "lucide-react";
 import { Reveal, TitleReveal, KenBurns } from "@/components/motion/Motion";
+import OpenFormButton from "@/components/OpenFormButton";
 
 /* ─────────────────────────────────────────────
    HERO
@@ -45,14 +46,11 @@ function Hero() {
             >
               Review a product for free <span aria-hidden>→</span>
             </Link>
-            <a
-              href="https://forms.gle/h43vNq13BSS4baa77"
-              target="_blank"
-              rel="noopener noreferrer"
+            <OpenFormButton
               className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
             >
               Get your claims verified today <span aria-hidden>→</span>
-            </a>
+            </OpenFormButton>
           </div>
           <Link
             href="/brands"
