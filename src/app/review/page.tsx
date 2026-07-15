@@ -7,12 +7,14 @@
    full claim map, price parity, formula logic, consumer suitability.
 ──────────────────────────────────────────────────────────────── */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Reveal, Stagger, Item } from "@/components/motion/Motion";
 import type {
   ProductReview, DerivedVerdict, ClaimAnalysis, EvidenceLevel,
 } from "@/lib/product-review-types";
+import type { VerifiedProduct } from "@/lib/types";
 
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
@@ -82,7 +84,16 @@ export default function ReviewPage() {
   const [review, setReview] = useState<ProductReview | null>(null);
   const [verdict, setVerdict] = useState<DerivedVerdict | null>(null);
   const [error, setError] = useState<null | "scope" | "busy" | "fail">(null);
+  const [approvedProducts, setApprovedProducts] = useState<VerifiedProduct[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Load the approved registry (reloads after a review, in case one just joined).
+  useEffect(() => {
+    fetch("/api/verified-products")
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d?.products)) setApprovedProducts(d.products); })
+      .catch(() => { /* section stays hidden */ });
+  }, [review]);
 
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
@@ -183,6 +194,31 @@ export default function ReviewPage() {
         </div>
       </section>
 
+      {/* ═══ Approved products showcase ═══ */}
+      {approvedProducts.length > 0 && !review && !loading && (
+        <section className="max-w-[1100px] mx-auto px-4 md:px-16 pb-14">
+          <div className="flex items-baseline justify-between gap-4 mb-6">
+            <h2 className="font-display text-[26px] md:text-[34px]" style={{ color: INK }}>Clean Sheet Approved</h2>
+            <Link href="/verified" className="text-[13px] uppercase flex-shrink-0" style={{ letterSpacing: "0.08em", color: TEAL }}>
+              View all approved →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {approvedProducts.slice(0, 8).map((p) => (
+              <Link key={p.slug} href="/verified" className="group rounded-2xl overflow-hidden block" style={{ border: `1px solid ${HAIR_LIGHT}` }}>
+                <div className="aspect-square overflow-hidden">
+                  <ProductImage src={p.imageUrl} brand={p.brand} />
+                </div>
+                <div className="p-3">
+                  <p className="text-[13px] leading-tight line-clamp-2" style={{ color: INK }}>{p.productName}</p>
+                  <p className="mt-1 text-[11px] uppercase" style={{ letterSpacing: "0.06em", color: TEAL }}>Approved · {p.score}/100</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ═══ Loading ═══ */}
       {loading && (
         <div className="max-w-[1100px] mx-auto px-4 md:px-16 py-10">
@@ -256,6 +292,28 @@ export default function ReviewPage() {
           {/* Body sections (light) */}
           <div className="max-w-[1100px] mx-auto px-4 md:px-16 py-16 md:py-20 space-y-20">
 
+            {/* Consumer suitability — surfaced first, right after the verdict */}
+            {review.consumerSuitability && (
+              <Section title="Who it's for">
+                <div className="grid sm:grid-cols-2 gap-8">
+                  <div>
+                    <p className="text-[13px] uppercase mb-2" style={{ letterSpacing: "0.08em", color: TEAL }}>Best for</p>
+                    <ul className="space-y-1.5">{review.consumerSuitability.bestFor?.map((x, i) => <li key={i} className="text-[15px]" style={{ color: "#4a4644" }}>{x}</li>)}</ul>
+                  </div>
+                  <div>
+                    <p className="text-[13px] uppercase mb-2" style={{ letterSpacing: "0.08em", color: CORAL }}>Approach with care</p>
+                    <ul className="space-y-1.5">{review.consumerSuitability.avoidIf?.map((x, i) => <li key={i} className="text-[15px]" style={{ color: "#4a4644" }}>{x}</li>)}</ul>
+                  </div>
+                </div>
+                <div className="mt-6 grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[14px]" style={{ color: "#6b6764" }}>
+                  {review.consumerSuitability.routineFit && <p><span style={{ color: "#8b8683" }}>Routine · </span>{review.consumerSuitability.routineFit}</p>}
+                  {review.consumerSuitability.sensitivityRisk && <p><span style={{ color: "#8b8683" }}>Sensitivity · </span>{review.consumerSuitability.sensitivityRisk}</p>}
+                  {review.consumerSuitability.immediateExpectation && <p><span style={{ color: "#8b8683" }}>Right away · </span>{review.consumerSuitability.immediateExpectation}</p>}
+                  {review.consumerSuitability.longTermExpectation && <p><span style={{ color: "#8b8683" }}>Over time · </span>{review.consumerSuitability.longTermExpectation}</p>}
+                </div>
+              </Section>
+            )}
+
             {/* Claim map */}
             <Section title="The claim sheet" kicker={`${review.claimMap.length} claims checked`}>
               <Stagger className="space-y-0" gap={0.06}>
@@ -321,28 +379,6 @@ export default function ReviewPage() {
                 {review.formulaLogic.irritancyConcerns?.length > 0 && (
                   <p className="mt-3 text-[14px]" style={{ color: "#8b8683" }}>Watch: {review.formulaLogic.irritancyConcerns.join(", ")}</p>
                 )}
-              </Section>
-            )}
-
-            {/* Consumer suitability */}
-            {review.consumerSuitability && (
-              <Section title="Who it's for">
-                <div className="grid sm:grid-cols-2 gap-8">
-                  <div>
-                    <p className="text-[13px] uppercase mb-2" style={{ letterSpacing: "0.08em", color: TEAL }}>Best for</p>
-                    <ul className="space-y-1.5">{review.consumerSuitability.bestFor?.map((x, i) => <li key={i} className="text-[15px]" style={{ color: "#4a4644" }}>{x}</li>)}</ul>
-                  </div>
-                  <div>
-                    <p className="text-[13px] uppercase mb-2" style={{ letterSpacing: "0.08em", color: CORAL }}>Approach with care</p>
-                    <ul className="space-y-1.5">{review.consumerSuitability.avoidIf?.map((x, i) => <li key={i} className="text-[15px]" style={{ color: "#4a4644" }}>{x}</li>)}</ul>
-                  </div>
-                </div>
-                <div className="mt-6 grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[14px]" style={{ color: "#6b6764" }}>
-                  {review.consumerSuitability.routineFit && <p><span style={{ color: "#8b8683" }}>Routine · </span>{review.consumerSuitability.routineFit}</p>}
-                  {review.consumerSuitability.sensitivityRisk && <p><span style={{ color: "#8b8683" }}>Sensitivity · </span>{review.consumerSuitability.sensitivityRisk}</p>}
-                  {review.consumerSuitability.immediateExpectation && <p><span style={{ color: "#8b8683" }}>Right away · </span>{review.consumerSuitability.immediateExpectation}</p>}
-                  {review.consumerSuitability.longTermExpectation && <p><span style={{ color: "#8b8683" }}>Over time · </span>{review.consumerSuitability.longTermExpectation}</p>}
-                </div>
               </Section>
             )}
 

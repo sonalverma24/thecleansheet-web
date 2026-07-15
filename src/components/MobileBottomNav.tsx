@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, FlaskConical, Layers, BookOpen } from "lucide-react";
+import { Home, Search, ShieldCheck, BookOpen, Newspaper } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/",          label: "Home",      icon: Home          },
-  { href: "/shop",      label: "Shop Safe", icon: ShoppingBag   },
-  { href: "/analyzer",  label: "Analyse",   icon: FlaskConical  },
-  { href: "/routine",   label: "Routine",   icon: Layers        },
-  { href: "/learn",     label: "Learn",     icon: BookOpen      },
+  { href: "/",          label: "Home",     icon: Home        },
+  { href: "/review",    label: "Review",   icon: Search      },
+  { href: "/verified",  label: "Approved", icon: ShieldCheck },
+  { href: "/learn",     label: "Learn",    icon: BookOpen    },
+  { href: "/blog",      label: "Reads",    icon: Newspaper   },
 ];
 
 export default function MobileBottomNav() {

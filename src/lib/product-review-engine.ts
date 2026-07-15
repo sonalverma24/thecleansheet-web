@@ -10,6 +10,7 @@ import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilient } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage } from "@/lib/product-image";
 import { fetchINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
+import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -155,7 +156,26 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
 
-  const result: ProductReviewResult = { type: "product-review", review, verdict: deriveVerdict(review) };
+  const verdict = deriveVerdict(review);
+
+  // Approved products join the registry (shown as tiles on /review and /verified).
+  if (verdict.status === "approved") {
+    upsertVerifiedProduct({
+      slug: slugify(review.productName, review.brand),
+      productName: review.productName,
+      brand: review.brand,
+      score: review.scores.total,
+      scoreLabel: review.scores.label,
+      integrityScore: null,
+      imageUrl: review.imageUrl ?? null,
+      summary: review.verdict?.cleanSheetTakeaway || review.priceInsight || "",
+      usageGuidance: null,
+      verifiedAt: review.reviewedAt || new Date().toISOString(),
+      methodologyVersion: REVIEW_METHODOLOGY_VERSION,
+    });
+  }
+
+  const result: ProductReviewResult = { type: "product-review", review, verdict };
   REVIEW_CACHE.set(key, result);
   return result;
 }
