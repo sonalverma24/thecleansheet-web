@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Product Review engine ("v3.0")
+   THE CLEAN SHEET™ · Product Review engine ("v3.0")
    Runs the original PRODUCT_REVIEW_SYSTEM_PROMPT (grounded web search),
    pulls a product image, and DERIVES an approved / not-approved verdict
    in code from the review's own signals (drug-boundary / red-flag claims,
@@ -16,7 +16,7 @@ export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
 const isURL = (t: string) => /^https?:\/\//i.test(t.trim());
 
-/** Tolerant JSON extraction — handles a stray prose preamble or code fence. */
+/** Tolerant JSON extraction · handles a stray prose preamble or code fence. */
 function parseJSON(text: string): Record<string, unknown> | null {
   if (!text) return null;
   let s = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
@@ -44,7 +44,7 @@ function isValidProductReview(p: unknown): p is ProductReview {
 
 /* ═══════════════ Derived approved / not-approved verdict ═══════════════
    Deterministic. Based on the review's calibrated 0–100 scoring and claim
-   flags — NOT a per-claim deduction pile-up, so an honest product that makes
+   flags, NOT a per-claim deduction pile-up, so an honest product that makes
    many claims is not auto-failed. */
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const drugBoundary = r.claimSummary?.drugBoundaryCount ?? 0;
@@ -93,10 +93,10 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 
   const headline =
     status === "approved"
-      ? "Clean Sheet Approved — claims hold up to the evidence"
+      ? "Clean Sheet Approved. Claims hold up to the evidence."
       : lawful
-        ? "Not Approved — claims outrun the visible proof"
-        : "Not Approved — contains claims that aren't permitted or aren't substantiated";
+        ? "Not Approved. Claims outrun the visible proof."
+        : "Not Approved. Contains claims that aren't permitted or aren't substantiated.";
 
   return { status, headline, gates, standard: `${REVIEW_METHODOLOGY_VERSION} · claims · evidence · formula` };
 }
@@ -107,7 +107,7 @@ export type ProductReviewResult =
   | { type: "out_of_scope" }
   | { type: "error" };
 
-/* In-memory result cache — same query returns the identical review within a
+/* In-memory result cache · same query returns the identical review within a
    running instance, so a product's verdict/score is stable between shares.
    (Full cross-restart persistence to Supabase is the next step.) */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();

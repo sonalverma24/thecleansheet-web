@@ -1,17 +1,20 @@
 "use client";
 
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Review
+   THE CLEAN SHEET™ · Review
    Product Review engine (TCS v3.0) rendered Evidence-First Editorial:
    light canvas, dark verdict sheet. Approved / Not-approved verdict,
    full claim map, price parity, formula logic, consumer suitability.
 ──────────────────────────────────────────────────────────────── */
 
 import { useState, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Reveal, Stagger, Item } from "@/components/motion/Motion";
 import type {
   ProductReview, DerivedVerdict, ClaimAnalysis, EvidenceLevel,
 } from "@/lib/product-review-types";
+
+const EASE = [0.25, 0.1, 0.25, 1] as const;
 
 /* ─── Palette ─── */
 const INK = "#282828";
@@ -117,53 +120,68 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen" style={{ background: CREAM }}>
       {/* ═══ Hero + input ═══ */}
-      <header className="max-w-[1100px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-10">
-        <Reveal>
-          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}>
-            The Clean Sheet · Product Review
-          </p>
-        </Reveal>
-        <h1 className="font-display mt-6 text-[40px] md:text-[58px] leading-[1.05] tracking-[-0.02em]" style={{ color: INK }}>
-          Does it prove<br />what it promises?
-        </h1>
-        <Reveal delay={0.2}>
-          <p className="mt-6 text-[17px] leading-[1.6] max-w-xl" style={{ color: "#6b6764" }}>
-            Paste a product name or link. Every marketing claim is checked against real evidence and the
-            actual ingredient list, then the formula itself — one clear <em>Approved / Not Approved</em> verdict.
-          </p>
-        </Reveal>
+      <section className="relative overflow-hidden">
+        {/* Creative, dropper fading into the canvas */}
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%]" aria-hidden>
+          <motion.img
+            src="/images/creatives/dropper-drop.jpg" alt=""
+            className="w-full h-full object-cover"
+            initial={{ scale: 1.08 }} animate={{ scale: 1 }}
+            transition={{ duration: 2.4, ease: EASE }}
+          />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.78) 32%, rgba(255,255,255,0.15) 78%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 20%)" }} />
+        </div>
 
-        <Reveal delay={0.35}>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 max-w-2xl">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") analyze(); }}
-              placeholder="e.g. La Roche-Posay Mela B3 Serum"
-              disabled={loading}
-              className="flex-1 rounded-full px-6 py-4 text-[16px] outline-none"
-              style={{ background: "#fff", border: `1px solid ${HAIR_LIGHT}`, color: INK }}
-            />
-            <button
-              onClick={() => analyze()}
-              disabled={loading || !query.trim()}
-              className="rounded-full px-8 py-4 text-[16px] text-white transition-opacity disabled:opacity-50"
-              style={{ background: CORAL }}
-            >
-              {loading ? "Reviewing…" : "Review"}
-            </button>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => { setQuery(s); analyze(s); }} disabled={loading}
-                className="text-[13px] px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
-                style={{ border: `1px solid ${HAIR_LIGHT}`, color: "#6b6764" }}>
-                {s}
+        <div className="relative max-w-[1100px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-10">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}>
+              The Clean Sheet · Product Review
+            </p>
+            <h1 className="font-display mt-6 text-[40px] md:text-[58px] leading-[1.05] tracking-[-0.02em]" style={{ color: INK }}>
+              Does it prove<br />what it promises?
+            </h1>
+            <p className="mt-6 text-[17px] leading-[1.6] max-w-xl" style={{ color: "#6b6764" }}>
+              Paste a product name or link. Every marketing claim is checked against real evidence and the
+              actual ingredient list, then the formula itself. One clear <em>Approved / Not Approved</em> verdict.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12, ease: EASE }}
+          >
+            <div className="mt-10 flex flex-col sm:flex-row gap-3 max-w-2xl">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") analyze(); }}
+                placeholder="e.g. La Roche-Posay Mela B3 Serum"
+                disabled={loading}
+                className="flex-1 rounded-full px-6 py-4 text-[16px] outline-none"
+                style={{ background: "#fff", border: `1px solid ${HAIR_LIGHT}`, color: INK }}
+              />
+              <button
+                onClick={() => analyze()}
+                disabled={loading || !query.trim()}
+                className="rounded-full px-8 py-4 text-[16px] text-white transition-opacity disabled:opacity-50"
+                style={{ background: CORAL }}
+              >
+                {loading ? "Reviewing…" : "Review"}
               </button>
-            ))}
-          </div>
-        </Reveal>
-      </header>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {SUGGESTIONS.map((s) => (
+                <button key={s} onClick={() => { setQuery(s); analyze(s); }} disabled={loading}
+                  className="text-[13px] px-3 py-1.5 rounded-full transition-colors disabled:opacity-40"
+                  style={{ border: `1px solid ${HAIR_LIGHT}`, color: "#6b6764" }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ═══ Loading ═══ */}
       {loading && (
@@ -182,7 +200,7 @@ export default function ReviewPage() {
       {error && !loading && (
         <div className="max-w-[1100px] mx-auto px-4 md:px-16 py-10">
           <p className="text-[16px]" style={{ color: INK }}>
-            {error === "busy" ? "The engine is at capacity — please try again in a minute."
+            {error === "busy" ? "The engine is at capacity. Please try again in a minute."
               : error === "scope" ? "That doesn't look like a beauty or personal-care product."
               : "Couldn't complete the review. Please try again."}
           </p>
@@ -268,7 +286,7 @@ export default function ReviewPage() {
                       {review.priceAcrossPlatforms.map((p, i) => (
                         <tr key={i} style={{ borderTop: `1px solid ${HAIR_LIGHT}` }}>
                           <td className="py-3 pr-4">{p.platform}</td>
-                          <td className="py-3 pr-4 whitespace-nowrap">{p.price ?? "—"}</td>
+                          <td className="py-3 pr-4 whitespace-nowrap">{p.price ?? "n/a"}</td>
                           <td className="py-3 pr-4 whitespace-nowrap" style={{ color: "#8b8683" }}>{p.pricePerMl ?? ""}</td>
                           <td className="py-3 text-[13px]" style={{ color: "#8b8683" }}>{p.note ?? ""}</td>
                         </tr>
