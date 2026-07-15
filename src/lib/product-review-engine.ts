@@ -106,9 +106,19 @@ export type ProductReviewResult =
   | { type: "out_of_scope" }
   | { type: "error" };
 
+/* In-memory result cache — same query returns the identical review within a
+   running instance, so a product's verdict/score is stable between shares.
+   (Full cross-restart persistence to Supabase is the next step.) */
+const REVIEW_CACHE = new Map<string, ProductReviewResult>();
+const cacheKey = (q: string) => q.trim().toLowerCase().replace(/\s+/g, " ");
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const q = query.trim();
   if (!q) return { type: "error" };
+
+  const key = cacheKey(q);
+  const cached = REVIEW_CACHE.get(key);
+  if (cached) return cached;
 
   // Ground truth: pull the real INCI so the model can't invent ingredients.
   const inci = await fetchINCI(q);
@@ -144,5 +154,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
 
-  return { type: "product-review", review, verdict: deriveVerdict(review) };
+  const result: ProductReviewResult = { type: "product-review", review, verdict: deriveVerdict(review) };
+  REVIEW_CACHE.set(key, result);
+  return result;
 }
