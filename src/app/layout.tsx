@@ -1,22 +1,213 @@
 import type { Metadata } from "next";
-import { Navigation } from "@/components/layout/Navigation";
-import Footer from "@/components/Footer";
+import { Playfair_Display, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+import { Navigation } from "@/components/layout/Navigation";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import Footer from "@/components/Footer";
+import WhatsAppBubble from "@/components/WhatsAppBubble";
+import FormModal from "@/components/FormModal";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+
+/* Playfair Display, fallback for Cooper BT if browser hasn't loaded
+   the self-hosted font yet (flash prevention). Cooper BT woff2 files
+   are in /public/fonts/ and declared via @font-face in globals.css.    */
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700", "900"],
+  style: ["normal", "italic"],
+});
+
+/* Geist Mono, for INCI lists and technical data */
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "The Clean Sheet App",
-  description: "Decode. Decide. Do Better.",
+  metadataBase: new URL("https://thecleansheet.in"),
+  title: {
+    default: "The Clean Sheet™, India's Clean Beauty Standard",
+    template: "%s | The Clean Sheet™",
+  },
+  description:
+    "India's first science-backed clean beauty platform. AI-powered ingredient analysis, certified product directory, and 25,000+ ingredient database. Know what's in your skincare.",
+  keywords: [
+    "clean beauty India", "ingredient safety checker", "cosmetic ingredient analysis",
+    "skincare product review India", "INCI ingredient checker", "clean beauty certification",
+    "is this product safe", "beauty product ingredients India", "Ask Clean",
+    "The Clean Sheet", "skincare certification India", "clean beauty tool",
+  ],
+  authors: [{ name: "The Clean Sheet", url: "https://thecleansheet.in" }],
+  creator: "The Clean Sheet",
+  publisher: "The Clean Sheet",
+  openGraph: {
+    title: "The Clean Sheet™, India's Clean Beauty Standard",
+    description:
+      "AI-powered ingredient analysis & science-backed certification for beauty products in India. Check if your skincare is truly safe.",
+    url: "https://thecleansheet.in",
+    siteName: "The Clean Sheet",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/images/hero-illustration.jpg",
+        width: 1200,
+        height: 630,
+        alt: "The Clean Sheet, India's Clean Beauty Standard",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Clean Sheet™, India's Clean Beauty Standard",
+    description:
+      "AI-powered ingredient analysis & science-backed certification for beauty products in India.",
+    images: ["/images/hero-illustration.jpg"],
+    site: "@thecleansheet",
+  },
+  alternates: {
+    canonical: "https://thecleansheet.in",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en-IN" className={`${playfair.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen flex flex-col antialiased">
-        <Navigation />
-        <main className="flex-1 w-full mx-auto pb-24 md:pb-0">{children}</main>
-        <Footer />
+        {/* Google Analytics */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-DXHG8FBXQT" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-DXHG8FBXQT');
+        `}</Script>
+
+        {/* Meta Pixel */}
+        <Script id="meta-pixel" strategy="afterInteractive">{`
+          !function(f,b,e,v,n,t,s)
+          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window,document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          fbq('init','1864272357580009');
+          fbq('track','PageView');
+        `}</Script>
+        <noscript>
+          <img height="1" width="1" style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=1864272357580009&ev=PageView&noscript=1"
+            alt=""
+          />
+        </noscript>
+        {/* Structured data, Organization + WebSite with SearchAction */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://thecleansheet.in/#organization",
+                  name: "The Clean Sheet",
+                  url: "https://thecleansheet.in",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://thecleansheet.in/logo.png",
+                    width: 512,
+                    height: 512,
+                  },
+                  description:
+                    "India's first independent science-backed certification and AI-powered ingredient analysis platform for beauty and personal care products.",
+                  foundingLocation: {
+                    "@type": "Place",
+                    addressCountry: "IN",
+                  },
+                  sameAs: [
+                    "https://www.instagram.com/thecleansheet.in",
+                    "https://www.youtube.com/@thecleansheetindia",
+                  ],
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    email: "hello@thecleansheet.in",
+                    contactType: "customer support",
+                    availableLanguage: ["English", "Hindi"],
+                  },
+                  areaServed: "IN",
+                  knowsAbout: [
+                    "Clean Beauty",
+                    "Cosmetic Ingredient Safety",
+                    "INCI Ingredient Analysis",
+                    "Beauty Product Certification",
+                    "Skincare Science",
+                  ],
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://thecleansheet.in/#website",
+                  url: "https://thecleansheet.in",
+                  name: "The Clean Sheet",
+                  description:
+                    "India's clean beauty standard, AI ingredient analysis, product certification, and an ingredient database with 25,000+ cosmetic ingredients.",
+                  publisher: { "@id": "https://thecleansheet.in/#organization" },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate: "https://thecleansheet.in/ingredients?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "SoftwareApplication",
+                  name: "Ask Clean, AI Beauty Ingredient Analyzer",
+                  applicationCategory: "HealthApplication",
+                  operatingSystem: "Web",
+                  url: "https://thecleansheet.in/analyzer",
+                  description:
+                    "Paste any product URL or ingredient list to instantly check ingredient safety, regulatory compliance, and get a science-backed Clean Sheet Score.",
+                  publisher: { "@id": "https://thecleansheet.in/#organization" },
+                  offers: {
+                    "@type": "Offer",
+                    price: "0",
+                    priceCurrency: "INR",
+                  },
+                  availableOnDevice: "Desktop, Mobile",
+                  applicationSubCategory: "Beauty & Skincare",
+                },
+              ],
+            }),
+          }}
+        />
+        <AuthProvider>
+          <Navigation />
+          {/* pb-16 on mobile reserves space for the fixed bottom nav */}
+          <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+          <Footer />
+          <WhatsAppBubble />
+          <FormModal />
+          <MobileBottomNav />
+        </AuthProvider>
       </body>
     </html>
   );
