@@ -9,6 +9,7 @@
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilient } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage } from "@/lib/product-image";
+import { fetchINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -109,9 +110,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const q = query.trim();
   if (!q) return { type: "error" };
 
+  // Ground truth: pull the real INCI so the model can't invent ingredients.
+  const inci = await fetchINCI(q);
+  const inciBlock = inciGroundTruthBlock(inci);
+
   const userPrompt = isURL(q)
-    ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}\nIdentify the product, then search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.`
-    : `Produce a full Clean Sheet Product Review for this product: ${q}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.`;
+    ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}\nIdentify the product, then search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${inciBlock}`
+    : `Produce a full Clean Sheet Product Review for this product: ${q}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
 
   let parsed = parseJSON(await generateResilient(PRODUCT_REVIEW_SYSTEM_PROMPT, userPrompt));
   if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
