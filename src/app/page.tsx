@@ -5,7 +5,7 @@ import {
   CheckCircle2, XCircle, ChevronRight, Microscope, Award,
   Users, TrendingUp, Star,
 } from "lucide-react";
-import { ClaimsVerifyButton } from "@/components/ClaimsVerifyButton";
+import { Reveal, TitleReveal, KenBurns } from "@/components/motion/Motion";
 
 /* ─────────────────────────────────────────────
    HERO GRAPHIC, live evaluation terminal
@@ -106,86 +106,62 @@ function HeroGraphic() {
 ───────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="relative flex items-center overflow-hidden bg-white">
-      <style>{`
-        @keyframes tcs-fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes tcs-slideUp { from { opacity:0; transform:translateY(28px) scale(0.97) } to { opacity:1; transform:translateY(0) scale(1) } }
-        @keyframes tcs-rowIn   { from { opacity:0; transform:translateX(-6px) } to { opacity:1; transform:translateX(0) } }
-        @keyframes tcs-barIn   { from { width:0% } to { } }
-        @keyframes tcs-badgeIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
-      `}</style>
+    <header className="relative overflow-hidden bg-white">
+      {/* Creative — Ken Burns image, settles in slowly and fades into the canvas */}
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[46%]" aria-hidden>
+        <KenBurns src="/images/creatives/hero-flatlay.jpg" className="w-full h-full" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.72) 30%, rgba(255,255,255,0.08) 72%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 22%)" }} />
+      </div>
 
-      {/* Subtle background tint */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 70% 60% at 10% 50%, rgba(36,129,121,0.05) 0%, transparent 70%)" }} />
+      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-20 md:pt-28 pb-20 md:pb-28">
+        <Reveal delay={0}>
+          <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
+            India&apos;s first independent beauty certification
+          </p>
+        </Reveal>
+        <h1 className="font-display mt-8 text-[44px] md:text-[64px] leading-[1.08] tracking-[-0.02em] text-[var(--color-charcoal)] max-w-3xl">
+          <TitleReveal lines={["Proof,", "not promises."]} />
+        </h1>
+        <Reveal delay={0.35}>
+          <p className="mt-6 text-[18px] leading-[28px] text-[var(--color-warm-gray)] max-w-xl">
+            The Clean Sheet checks what beauty products claim against what they can
+            actually prove. Built on science, not marketing.
+          </p>
+        </Reveal>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center py-10 sm:py-12 lg:py-12">
-
-          {/* Left, copy */}
-          <div>
-            <div className="inline-flex items-center gap-2 bg-yellow-500 text-ink-950 rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-xs sm:text-sm font-medium mb-4 sm:mb-5"
-              style={{ animation: "tcs-badgeIn 0.4s ease both" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-ink-800 animate-pulse" />
-              India&apos;s First Independent Beauty Safety Standard
-            </div>
-
-            <h1 className="text-[clamp(1.75rem,5.5vw,3.75rem)] font-medium tracking-tight leading-[1.06] text-ink-950 mb-3 sm:mb-4"
-              style={{ animation: "tcs-fadeUp 0.5s 0.1s ease both" }}>
-              Your skincare claims are only as good as
-              <br />
-              <span className="text-teal-600">the proof behind them.</span>
-            </h1>
-
-            <p className="text-base sm:text-lg text-ink-500 max-w-xl leading-relaxed mb-5 sm:mb-6"
-              style={{ animation: "tcs-fadeUp 0.5s 0.2s ease both" }}>
-              The Clean Sheet is India&apos;s first independent certification for beauty and personal care products, built on science, not marketing.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-start gap-3"
-              style={{ animation: "tcs-fadeUp 0.5s 0.3s ease both" }}>
-              <Link href="/analyzer"
-                className="group inline-flex items-center justify-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-medium px-6 py-3.5 sm:px-7 sm:py-4 rounded-2xl text-sm sm:text-base transition-all hover:shadow-2xl hover:shadow-coral-500/30 active:scale-[0.97]">
-                Analyse a product for free
-                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <ClaimsVerifyButton />
-              <Link href="/brands"
-                className="inline-flex items-center justify-center sm:justify-start gap-2 text-ink-600 hover:text-ink-950 font-medium text-sm sm:text-base transition-colors group sm:py-4">
-                View scored products
-                <ChevronRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </div>
-
-            {/* Sticker button, skin type guides */}
-            <div className="mt-4 inline-block" style={{ transform: "rotate(-2deg)", animation: "tcs-fadeUp 0.5s 0.4s ease both" }}>
-              <Link
-                href="/learn#skin-type-guides"
-                className="inline-flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-ink-950 font-medium text-sm px-4 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all active:scale-[0.96]"
-              >
-                ✦ Find your skin type guide
-              </Link>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-5 mt-5 sm:mt-6"
-              style={{ animation: "tcs-fadeUp 0.5s 0.5s ease both" }}>
-              {["25k+ Ingredients Scored", "EU · India · US · Korea", "No Paid Placements. Ever."].map(t => (
-                <div key={t} className="flex items-center gap-2 text-ink-400 text-xs sm:text-sm">
-                  <CheckCircle2 size={12} className="text-teal-500 flex-shrink-0" />
-                  {t}
-                </div>
-              ))}
-            </div>
+        {/* CTAs — pill shapes */}
+        <Reveal delay={0.5}>
+          <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-4">
+            <Link
+              href="/review"
+              className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-coral)] hover:opacity-90 transition-opacity"
+            >
+              Review a product for free <span aria-hidden>→</span>
+            </Link>
+            <a
+              href="https://forms.gle/h43vNq13BSS4baa77"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
+            >
+              Get your claims verified today <span aria-hidden>→</span>
+            </a>
           </div>
+          <Link
+            href="/brands"
+            className="mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
+          >
+            View scored products <span aria-hidden>›</span>
+          </Link>
+        </Reveal>
 
-          {/* Right, live evaluation graphic */}
-          <div className="flex items-center justify-center mt-6 lg:mt-0">
-            <HeroGraphic />
-          </div>
-
+        {/* Mobile creative */}
+        <div className="lg:hidden mt-12 -mx-4" aria-hidden>
+          <img src="/images/creatives/hero-flatlay.jpg" alt="" className="w-full h-60 object-cover" />
         </div>
       </div>
-    </section>
+    </header>
   );
 }
 

@@ -98,12 +98,12 @@
   --color-danger-100:  #FEE3E1;
 
   /* ── Typography ── */
-  /* Headers: Cooper BT (self-hosted) → Playfair Display → Georgia */
-  --font-display: 'Cooper BT', var(--font-playfair), Georgia, serif;
+  /* Headers: Cooper BT (self-hosted) → Georgia fallback */
+  --font-display: 'Cooper BT', Georgia, 'Times New Roman', serif;
   /* Body: Helvetica Neue → Helvetica → system sans */
   --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   /* Mono: ingredient lists / INCI / technical */
-  --font-mono: var(--font-geist-mono), 'Courier New', monospace;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, 'Courier New', monospace;
 
   /* ── Easing ── */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
