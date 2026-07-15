@@ -30,6 +30,23 @@ export function Reveal({
   );
 }
 
+/* Fade-rise on mount (fires on load, not scroll) — for above-the-fold hero content
+   that must never sit stuck at opacity 0 on mobile. */
+export function HeroReveal({
+  children, delay = 0, y = 16, className,
+}: { children: ReactNode; delay?: number; y?: number; className?: string }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay, ease: EASE }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /* Stagger container + items */
 export function Stagger({
   children, className, gap = 0.09,

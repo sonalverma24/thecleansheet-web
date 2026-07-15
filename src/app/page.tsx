@@ -5,7 +5,7 @@ import {
   CheckCircle2, XCircle, ChevronRight, Microscope, Award,
   Users, Star,
 } from "lucide-react";
-import { Reveal, TitleReveal, KenBurns } from "@/components/motion/Motion";
+import { Reveal, TitleReveal, KenBurns, HeroReveal } from "@/components/motion/Motion";
 import OpenFormButton from "@/components/OpenFormButton";
 
 /* ─────────────────────────────────────────────
@@ -14,32 +14,32 @@ import OpenFormButton from "@/components/OpenFormButton";
 function Hero() {
   return (
     <header className="relative overflow-hidden bg-white">
-      {/* Creative — Ken Burns image, settles in slowly and fades into the canvas */}
+      {/* Creative, Ken Burns image, settles in slowly and fades into the canvas */}
       <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[46%]" aria-hidden>
         <KenBurns src="/images/creatives/hero-flatlay.jpg" className="w-full h-full" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.72) 30%, rgba(255,255,255,0.08) 72%)" }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 22%)" }} />
       </div>
 
-      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-20 md:pt-28 pb-20 md:pb-28">
-        <Reveal delay={0}>
+      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-28 pb-16 md:pb-28">
+        <HeroReveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             India&apos;s first independent beauty certification
           </p>
-        </Reveal>
-        <h1 className="font-display mt-8 text-[44px] md:text-[64px] leading-[1.08] tracking-[-0.02em] text-[var(--color-charcoal)] max-w-3xl">
+        </HeroReveal>
+        <h1 className="font-display mt-6 md:mt-8 text-[40px] md:text-[64px] leading-[1.08] tracking-[-0.02em] text-[var(--color-charcoal)] max-w-3xl">
           <TitleReveal lines={["Proof,", "not promises."]} />
         </h1>
-        <Reveal delay={0.35}>
-          <p className="mt-6 text-[18px] leading-[28px] text-[var(--color-warm-gray)] max-w-xl">
+        <HeroReveal delay={0.15}>
+          <p className="mt-6 text-[17px] md:text-[18px] leading-[26px] md:leading-[28px] text-[var(--color-warm-gray)] max-w-xl">
             The Clean Sheet checks what beauty products claim against what they can
             actually prove. Built on science, not marketing.
           </p>
-        </Reveal>
+        </HeroReveal>
 
-        {/* CTAs — pill shapes */}
-        <Reveal delay={0.5}>
-          <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* CTAs, pill shapes */}
+        <HeroReveal delay={0.3}>
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Link
               href="/review"
               className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-coral)] hover:opacity-90 transition-opacity"
@@ -54,16 +54,16 @@ function Hero() {
           </div>
           <Link
             href="/brands"
-            className="mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
+            className="mt-6 md:mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
           >
             View scored products <span aria-hidden>›</span>
           </Link>
-        </Reveal>
+        </HeroReveal>
 
         {/* Mobile creative */}
-        <div className="lg:hidden mt-12 -mx-4" aria-hidden>
-          <img src="/images/creatives/hero-flatlay.jpg" alt="" className="w-full h-60 object-cover" />
-        </div>
+        <HeroReveal delay={0.4} className="lg:hidden mt-10 -mx-4">
+          <img src="/images/creatives/hero-flatlay.jpg" alt="" className="w-full h-52 object-cover" />
+        </HeroReveal>
       </div>
     </header>
   );
