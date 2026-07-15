@@ -1,14 +1,17 @@
 import Groq from "groq-sdk";
 import { CHAT_SYSTEM_PROMPT } from "@/lib/scoring-context";
+import { rateLimit, rateLimited } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   try {
+    if (!rateLimit(req, "chat", 20)) return rateLimited();
+
     const { message, history, scorecardContext } = await req.json();
 
     if (!process.env.GROQ_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "GROQ_API_KEY not configured" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Chat is temporarily unavailable." }),
+        { status: 503, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -44,9 +47,8 @@ export async function POST(req: Request) {
             if (text) controller.enqueue(encoder.encode(text));
           }
           controller.close();
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : "Chat failed";
-          controller.enqueue(encoder.encode(`Error: ${msg}`));
+        } catch {
+          controller.enqueue(encoder.encode("Something went wrong. Please try again."));
           controller.close();
         }
       },
@@ -60,7 +62,7 @@ export async function POST(req: Request) {
       },
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Chat failed";
-    return Response.json({ error: message }, { status: 500 });
+    console.error("[chat]", err instanceof Error ? err.message : err);
+    return Response.json({ error: "Chat failed. Please try again." }, { status: 500 });
   }
 }

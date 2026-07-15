@@ -31,6 +31,14 @@ export interface DataSource {
   userSentiment: string;
 }
 
+export interface UsageGuidance {
+  howToUse: string[];
+  frequency: string;
+  pairWith: string[];
+  avoidWith: string[];
+  proTip: string;
+}
+
 export interface Scorecard {
   productName: string;
   brand: string;
@@ -48,7 +56,36 @@ export interface Scorecard {
   indiaContext: string;
   chatOpener: string;
   dataSource: DataSource;
-  provisional?: boolean;
+  usageGuidance?: UsageGuidance;
+}
+
+/* ─── The Clean Sheet Standard — one verdict, three gates ─── */
+
+export interface VerdictGateResult {
+  id: "formula" | "lawful_claims" | "honest_claims";
+  label: string;
+  passed: boolean | null; // null = gate could not be assessed this run
+  detail: string;
+}
+
+export interface FinalVerdict {
+  status: "verified" | "not_verified" | "provisional";
+  gates: VerdictGateResult[];
+  standard: string;
+}
+
+export interface VerifiedProduct {
+  slug: string;
+  productName: string;
+  brand: string;
+  score: number;
+  scoreLabel: string;
+  integrityScore: number | null;
+  imageUrl: string | null;
+  summary: string;
+  usageGuidance: UsageGuidance | null;
+  verifiedAt: string;
+  methodologyVersion: string;
 }
 
 export interface ExpertAnswer {
@@ -71,6 +108,46 @@ export interface ComparisonResult {
   productB: Scorecard;
 }
 
+/* ─── Claim Check (primary layer) ─── */
+
+export type ClaimVerdict = "verified" | "qualified" | "unverified" | "not_permitted";
+export type EvidenceLevel = "A" | "B" | "C" | "D" | "none";
+export type ClaimCategory =
+  | "efficacy" | "safety" | "concentration" | "origin"
+  | "sun_protection" | "regulated" | "superlative";
+
+export interface CheckedClaim {
+  claim: string;
+  category: ClaimCategory;
+  verdict: ClaimVerdict;
+  evidenceLevel: EvidenceLevel;
+  requiredLevel: EvidenceLevel;
+  evidence: string;
+  source: string;
+  explanation: string;
+  regulatoryNote: string;
+}
+
+export interface ClaimCheckResult {
+  type: "claim_check";
+  productName: string;
+  brand: string;
+  sourceUrl: string;
+  productFound: boolean;
+  claims: CheckedClaim[];
+  summary: string;
+  redFlags: string[];
+  chatOpener: string;
+  /* Computed in code, deterministic — never by the LLM */
+  integrityScore: number;
+  integrityLabel: "Clean" | "Mostly Clean" | "Mixed" | "Misleading";
+  verdictCounts: Record<ClaimVerdict, number>;
+  methodologyVersion: string;
+  checkedAt: string;
+  /* Product image pulled from the scraped page, when available */
+  imageUrl?: string | null;
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -78,185 +155,4 @@ export interface ChatMessage {
   scorecard?: Scorecard;
   timestamp: Date;
   isStreaming?: boolean;
-}
-
-/* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Product Review Framework Types
-   Claim Credibility · Platform Parity · Consumer Truth
-──────────────────────────────────────────────────────────────── */
-
-export type ClaimType =
-  | "functional"
-  | "appearance"
-  | "active"
-  | "concern"
-  | "time-bound"
-  | "clinical"
-  | "safety"
-  | "free-from"
-  | "emotional";
-
-export type ClaimRiskLevel = "low" | "medium" | "high" | "very-high" | "red-flag";
-
-export type EvidenceLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-
-export interface ClaimAnalysis {
-  text: string;
-  source: string;
-  types: ClaimType[];
-  primaryType: ClaimType;
-  riskLevel: ClaimRiskLevel;
-  evidenceLevel: EvidenceLevel;
-  evidenceNote: string;
-  absoluteLanguage: boolean;
-  asciConcern: boolean;
-  asciNote: string | null;
-  drugBoundaryRisk: boolean;
-  drugBoundaryNote: string | null;
-}
-
-export interface PlatformPrice {
-  platform: string;
-  price: string | null;
-  pricePerMl: string | null;
-  note: string | null;
-}
-
-export interface IngredientTransparencyReview {
-  score: 1 | 2 | 3 | 4 | 5;
-  label:
-    | "Ingredient theatre"
-    | "Basic label transparency"
-    | "Good consumer transparency"
-    | "Strong formula transparency"
-    | "Evidence backed transparency";
-  fullInciAvailable: boolean;
-  inciSource: string;
-  inciOrderCorrect: boolean;
-  activePercentagesDisclosed: boolean;
-  complexesExplained: boolean;
-  preservativesVisible: boolean;
-  fragranceDisclosed: boolean;
-  phDisclosedWhereRelevant: boolean;
-  usageWarningsClear: boolean;
-  issues: string[];
-}
-
-export interface FormulaLogicReview {
-  heroIngredientsMatchClaim: boolean;
-  formatSuitableForClaim: boolean;
-  activesLikelyMeaningful: boolean;
-  baseFormulaAppropriate: boolean;
-  claimOverreach: boolean;
-  claimOverreachNote: string | null;
-  irritancyConcerns: string[];
-  note: string;
-}
-
-export interface ConsumerSuitabilityReview {
-  bestFor: string[];
-  avoidIf: string[];
-  routineFit: string;
-  layeringNotes: string;
-  sensitivityRisk: string;
-  immediateExpectation: string;
-  longTermExpectation: string;
-  pregnancyOrTeenNote: string | null;
-}
-
-export interface PlatformParity {
-  consistent: boolean;
-  issues: string[];
-  amplificationPattern: string | null;
-  mostCautiousPlatform: string;
-  packVsOnline: string;
-  reelAngle: string;
-}
-
-export interface ProductReviewScores {
-  priceFairness: number;
-  claimClarity: number;
-  claimEvidence: number;
-  ingredientTransparency: number;
-  formulaLogic: number;
-  consumerSuitability: number;
-  platformConsistency: number;
-  total: number;
-  label:
-    | "Clean Sheet Strong"
-    | "Mostly Transparent"
-    | "Needs More Clarity"
-    | "High Claim Risk"
-    | "Consumer Confusion Risk";
-}
-
-export interface ProductReviewVerdict {
-  bestThing: string;
-  biggestConcern: string;
-  claimRisk: "low" | "medium" | "high" | "red-flag";
-  transparencyLevel: "poor" | "basic" | "good" | "strong";
-  whoItMaySuit: string;
-  whoShouldBeCareful: string;
-  cleanSheetTakeaway: string;
-}
-
-export interface ProductReviewReelVersion {
-  costAcrossPlatforms: string;
-  whatItClaims: string;
-  whatProofIsVisible: string;
-  whatFormulaSupports: string;
-  whatConsumerShouldExpect: string;
-}
-
-export interface ProductReview {
-  type: "product-review";
-  productName: string;
-  brand: string;
-  parentCompany: string | null;
-  category: string;
-  quantity: string;
-  priceRange: string;
-  pricePerMl: string;
-  targetUser: string;
-  heroPromise: string;
-
-  priceAcrossPlatforms: PlatformPrice[];
-  lowestPrice: string;
-  priceInsight: string;
-
-  claimMap: ClaimAnalysis[];
-  claimSummary: {
-    total: number;
-    byRisk: {
-      low: number;
-      medium: number;
-      high: number;
-      veryHigh: number;
-      redFlag: number;
-    };
-    highestEvidenceLevel: EvidenceLevel;
-    mostCommonType: string;
-    asciConcernCount: number;
-    drugBoundaryCount: number;
-  };
-
-  ingredientTransparency: IngredientTransparencyReview;
-  formulaLogic: FormulaLogicReview;
-  consumerSuitability: ConsumerSuitabilityReview;
-  platformParity: PlatformParity;
-  scores: ProductReviewScores;
-  verdict: ProductReviewVerdict;
-  reelVersion: ProductReviewReelVersion;
-
-  dataSource: {
-    inciFound: boolean;
-    inciSource: string;
-    priceSource: string;
-    reviewPlatforms: string[];
-    rating: number | null;
-    reviewCount: string;
-    userSentiment: string;
-  };
-
-  cleanSheetNote: string;
 }

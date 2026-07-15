@@ -1,0 +1,43 @@
+ARCHIVED 14 Jul 2026 — the old static /analyser demo page (educational presets, no live engine).
+Replaced by the claims-first analyzer at /review. Kept here for reference only; not compiled.
+
+import React from 'react';
+
+export default function AnalyserPage() {
+  const presets = [
+    { title: "Authentic Mild Baby Hydrator", score: 96, expected: "Low irritation risk. Minimal claim risk. Baby safety logic triggered.", color: "bg-[var(--color-primary)]" },
+    { title: "Questionable '15% Vitamin C' Serum", score: 58, expected: "Flags Phenoxyethanol Rule. Deceptive active claim.", color: "bg-[var(--color-coral)]" },
+    { title: "Stripping 'Gentle' Charcoal Wash", score: 42, expected: "Flags SLS and DMDM Hydantoin. Contradiction with 'gentle' claim.", color: "bg-[var(--color-coral)]" },
+    { title: "Standard SPF 50 Chemical Sunscreen", score: 54, expected: "Flags Oxybenzone. Systemic absorption concerns.", color: "bg-[#F59E0B]" },
+  ];
+
+  return (
+    <div className="max-w-[1200px] mx-auto p-4 md:p-8 flex flex-col gap-12">
+      <header className="flex flex-col gap-6 max-w-2xl pt-8">
+        <h1 className="font-display text-4xl md:text-5xl">Analyser</h1>
+        <p className="text-[16px] text-[var(--color-charcoal)]">Test the analyser logic using pre-loaded examples to see how The Clean Sheet evaluates different formulations based on ingredient order and claims.</p>
+      </header>
+
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {presets.map((preset, idx) => (
+          <div key={idx} className="border border-[var(--color-warm-gray)] bg-white p-8 relative flex flex-col gap-6 hover:border-[var(--color-primary)] transition-colors">
+            <div className={`absolute top-6 right-6 w-12 h-12 rounded-full flex items-center justify-center font-display text-xl text-white ${preset.color}`}>
+              {preset.score}
+            </div>
+            <div className="flex">
+              <span className="bg-[var(--color-lime)] px-3 py-1 text-[10px] tracking-widest uppercase text-[var(--color-charcoal)]">Educational Preset</span>
+            </div>
+            <h3 className="font-display text-2xl pr-16">{preset.title}</h3>
+            <div className="text-[14px] text-[var(--color-charcoal)] mt-auto bg-[var(--color-surface-subtle)] p-4 border border-[var(--color-surface-subtle)]">
+              <span className="text-[10px] tracking-widest uppercase text-[var(--color-warm-gray)] block mb-2">Expected Result</span>
+              {preset.expected}
+            </div>
+            <button className="border border-[var(--color-charcoal)] text-[var(--color-charcoal)] py-3 px-8 rounded-full text-[12px] tracking-widest uppercase hover:bg-[var(--color-charcoal)] hover:text-white transition-colors self-start">
+              Run Analysis
+            </button>
+          </div>
+        ))}
+      </section>
+    </div>
+  );
+}
