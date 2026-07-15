@@ -31,12 +31,13 @@ function parseJSON(text: string): Record<string, unknown> | null {
   }
 }
 
-function isValidProductReview(p: Record<string, unknown> | null): p is unknown & ProductReview {
-  if (!p) return false;
-  if (p.type !== "product-review") return false;
-  if (typeof p.productName !== "string" || !p.productName) return false;
-  if (!Array.isArray(p.claimMap)) return false;
-  const scores = p.scores as Record<string, unknown> | undefined;
+function isValidProductReview(p: unknown): p is ProductReview {
+  if (!p || typeof p !== "object") return false;
+  const o = p as Record<string, unknown>;
+  if (o.type !== "product-review") return false;
+  if (typeof o.productName !== "string" || !o.productName) return false;
+  if (!Array.isArray(o.claimMap)) return false;
+  const scores = o.scores as Record<string, unknown> | undefined;
   if (!scores || typeof scores.total !== "number") return false;
   return true;
 }
