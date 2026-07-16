@@ -653,16 +653,20 @@ function formatAnalysedDate(isoDate: string): string {
 function ScoreBadge({ score }: { score: number }) {
   const tier = scoreToTier(score);
 
-  // Approved gets the official branded seal artwork.
+  // Approved gets the official branded seal artwork: circular crop + stamp-down entrance.
   if (tier === "approved") {
     return (
-      <div className="relative flex-shrink-0" style={{ width: 120, height: 120 }} aria-label="Clean Sheet Approved">
+      <div
+        className="relative flex-shrink-0 rounded-full overflow-hidden shadow-md"
+        style={{ width: 120, height: 120, animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" }}
+        aria-label="Clean Sheet Approved"
+      >
         <Image
           src="/images/Logos/Approved Logo for website.png"
           alt="The Clean Sheet — Approved"
           width={120}
           height={120}
-          className="w-full h-full object-contain drop-shadow-sm"
+          className="w-full h-full object-cover rounded-full"
           priority
         />
       </div>

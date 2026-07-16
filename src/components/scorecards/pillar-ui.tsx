@@ -59,7 +59,7 @@ export function TileTierMark({ tier }: { tier: ReviewTier }) {
         alt="Clean Sheet Approved"
         width={52}
         height={52}
-        className="w-[52px] h-[52px] object-contain drop-shadow-md"
+        className="w-[52px] h-[52px] object-cover rounded-full shadow-md"
       />
     );
   }
