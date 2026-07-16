@@ -48,6 +48,31 @@ export function scoreToTier(score: number): ReviewTier {
   return score >= 75 ? "approved" : score >= 60 ? "mostly-clean" : "needs-proof";
 }
 
+/* Tile corner mark: Approved products carry the official branded seal;
+   other tiers show the compact pill so cautions stay visible. */
+export function TileTierMark({ tier }: { tier: ReviewTier }) {
+  if (tier === "approved") {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/images/Logos/Approved Logo for website.png"
+        alt="Clean Sheet Approved"
+        width={52}
+        height={52}
+        className="w-[52px] h-[52px] object-contain drop-shadow-md"
+      />
+    );
+  }
+  return (
+    <span
+      className="inline-block rounded-full"
+      style={{ background: "rgba(255,255,255,0.96)", padding: "2px 3px", boxShadow: "0 1px 6px rgba(0,0,0,0.10)", lineHeight: 1 }}
+    >
+      <TierBadge tier={tier} size="sm" />
+    </span>
+  );
+}
+
 export function TierBadge({ tier, size = "md" }: { tier: ReviewTier; size?: "sm" | "md" | "lg" }) {
   const t = TIER_STYLES[tier];
   const cls =

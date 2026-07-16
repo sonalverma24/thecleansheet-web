@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { TileChip } from "./TileChip";
-import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
+import { scoreToTier, TileTierMark } from "@/components/scorecards/pillar-ui";
 import type { ProductScorecard } from "@/data/brands/types";
 import { getTileChips } from "@/data/badges/resolver";
 import { getProductCategoryLabel } from "@/lib/product-card-helpers";
@@ -32,17 +32,9 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
-          {/* Tier badge - top right */}
+          {/* Tier mark - top right (Approved = branded seal) */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
-            <div style={{
-              background: "rgba(255,255,255,0.96)",
-              borderRadius: 999,
-              padding: "2px 3px",
-              boxShadow: "0 1px 6px rgba(0,0,0,0.10)",
-              lineHeight: 1,
-            }}>
-              <TierBadge tier={scoreToTier(product.score)} size="sm" />
-            </div>
+            <TileTierMark tier={scoreToTier(product.score)} />
           </div>
 
           {/* Category pill - bottom left */}
