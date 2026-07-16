@@ -651,8 +651,25 @@ function formatAnalysedDate(isoDate: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  // Self-contained SVG tier seal (no image asset) — no numeric score shown.
   const tier = scoreToTier(score);
+
+  // Approved gets the official branded seal artwork.
+  if (tier === "approved") {
+    return (
+      <div className="relative flex-shrink-0" style={{ width: 120, height: 120 }} aria-label="Clean Sheet Approved">
+        <Image
+          src="/images/Logos/Approved Logo for website.png"
+          alt="The Clean Sheet — Approved"
+          width={120}
+          height={120}
+          className="w-full h-full object-contain drop-shadow-sm"
+          priority
+        />
+      </div>
+    );
+  }
+
+  // Other tiers: self-contained SVG seal with the tier word.
   const t = TIER_STYLES[tier];
   const words = t.label.replace(/^Clean Sheet\s+/i, "").toUpperCase().split(" ");
   return (
