@@ -197,6 +197,37 @@ export async function getStoredReviewTier(slug: string): Promise<string | null> 
   }
 }
 
+export interface StoredReviewSummary {
+  productSlug: string;
+  productName: string;
+  brand: string;
+  tier: string;
+  imageUrl: string | null;
+  reviewedAt: string;
+}
+
+/** Repository listing for /brands: every product the community has had reviewed. */
+export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary[]> {
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews")
+      .select("product_slug, product_name, brand, tier, image_url, reviewed_at")
+      .eq("rubric_rev", RUBRIC_REV)
+      .order("reviewed_at", { ascending: false })
+      .limit(limit);
+    return (data ?? []).map((r) => ({
+      productSlug: String(r.product_slug),
+      productName: String(r.product_name ?? ""),
+      brand: String(r.brand ?? ""),
+      tier: String(r.tier ?? "needs-proof"),
+      imageUrl: (r.image_url as string | null) ?? null,
+      reviewedAt: String(r.reviewed_at ?? ""),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const q = query.trim();
   if (!q) return { type: "error" };

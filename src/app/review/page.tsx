@@ -73,6 +73,16 @@ export default function ReviewPage() {
       .catch(() => { /* section stays hidden */ });
   }, [review]);
 
+  // Deep link: /review?q=<product> runs the review on arrival (repository hits return instantly).
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (autoRan.current) return;
+    autoRan.current = true;
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q?.trim()) { setQuery(q); analyze(q); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
     if (!text || loading) return;

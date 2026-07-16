@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Microscope } from "lucide-react";
 import { getAllBrandSummaries, ALL_BRANDS, scoreColors } from "@/data/brands";
 import BackButton from "@/components/BackButton";
 import { ScorecardDiscovery } from "@/components/scorecards/ScorecardDiscovery";
+import { listStoredReviews } from "@/lib/product-review-engine";
+import { TierBadge } from "@/components/scorecards/pillar-ui";
+import type { ReviewTier } from "@/lib/product-review-types";
+
+/* The live-review repository grows continuously — refresh the page every 5 min. */
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Clean Beauty Brand Scores, India's Scored Brand Directory",
@@ -75,7 +82,8 @@ const SCORE_LEGEND = [
   { label: "Concern",   range: "0-49",   color: "bg-red-500"   },
 ];
 
-export default function BrandsPage() {
+export default async function BrandsPage() {
+  const storedReviews = await listStoredReviews(24);
   const brands = getAllBrandSummaries();
   const allProducts = ALL_BRANDS.flatMap((b) => b.products);
   const heroScore = [...brands].sort((a, b) => b.avgScore - a.avgScore)[0]?.avgScore ?? 86;
@@ -177,6 +185,39 @@ export default function BrandsPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Live reviews from the repository ── */}
+      {storedReviews.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10">
+          <div className="flex items-baseline justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-lg text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Freshly reviewed</h2>
+              <p className="text-xs text-[#b0a8a4] mt-0.5">Products the community has run through the live review engine.</p>
+            </div>
+            <Link href="/review" className="text-xs text-[#248179] flex-shrink-0">Review a product →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {storedReviews.map((r) => (
+              <Link key={r.productSlug} href={`/review?q=${encodeURIComponent(r.productName)}`} className="group block bg-white rounded-2xl border border-[#efe9e0] overflow-hidden hover:shadow-md transition-shadow">
+                <div className="aspect-square bg-[#faf7f2] flex items-center justify-center overflow-hidden">
+                  {r.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.imageUrl} alt={r.productName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl text-[#b0a8a4]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>{(r.brand || "?").charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="p-2.5">
+                  <p className="text-[11px] leading-tight text-[#282828] line-clamp-2">{r.productName}</p>
+                  <div className="mt-1.5">
+                    <TierBadge tier={r.tier as ReviewTier} size="sm" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Content (client interactive) ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
