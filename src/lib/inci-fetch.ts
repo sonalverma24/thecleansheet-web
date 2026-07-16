@@ -5,23 +5,11 @@
    ingredient-presence claims against fact, not the model's recall.
 ──────────────────────────────────────────────────────────────── */
 
-const JINA = "https://r.jina.ai/";
-
-async function fetchMarkdown(url: string, limit = 60000): Promise<string | null> {
-  try {
-    const res = await fetch(JINA + url, {
-      headers: { Accept: "text/plain", "X-Return-Format": "markdown" },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!res.ok) return null;
-    return (await res.text()).slice(0, limit);
-  } catch {
-    return null;
-  }
-}
+import { fetchPageMarkdown as fetchMarkdown } from "@/lib/scrape";
 
 export interface INCIResult {
   productName: string;
+  slug: string;          // canonical INCIDecoder product slug (repository key)
   ingredients: string[];
   tags: string[];        // e.g. "alcohol-free", "fragrance-free" (as INCIDecoder labels them)
   source: string;        // INCIDecoder product URL
@@ -60,7 +48,7 @@ function parseProductPage(page: string, slug: string): INCIResult | null {
   const imgMatch = page.match(/https:\/\/incidecoder-content[^\s)"']+?(?:photo|front)[^\s)"']*\.(?:jpe?g|png|webp)/i);
   const imageUrl = imgMatch ? imgMatch[0] : null;
 
-  return { productName, ingredients, tags, source: `https://incidecoder.com/products/${slug}`, imageUrl };
+  return { productName, slug, ingredients, tags, source: `https://incidecoder.com/products/${slug}`, imageUrl };
 }
 
 export interface ProductCandidate {

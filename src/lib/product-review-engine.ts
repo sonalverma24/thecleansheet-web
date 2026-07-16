@@ -11,6 +11,7 @@ import { generateResilient } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
+import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
@@ -98,17 +99,34 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     },
   ];
 
-  const status: DerivedVerdict["status"] =
-    total >= APPROVAL_BAR && lawful ? "approved" : "not_approved";
+  /* 4-tier ladder. "Misleading" fires ONLY on hard triggers: a genuine India
+     drug-boundary claim, or a red-flag (unlawful language / claim contradicted
+     by the brand's own INCI). Missing proof is NEVER "misleading". */
+  const redFlags = r.claimSummary?.byRisk?.redFlag ?? 0;
+  const tier: DerivedVerdict["tier"] =
+    drugBoundary > 0 || redFlags > 0
+      ? "misleading"
+      : total >= APPROVAL_BAR
+        ? "approved"
+        : total >= 60
+          ? "mostly-clean"
+          : "needs-proof";
 
-  const headline =
-    status === "approved"
-      ? "Clean Sheet Approved. Claims hold up to the evidence."
-      : !lawful
-        ? "Not Approved. Makes claims that aren't permitted for a cosmetic in India."
-        : "Not Approved. Claims outrun the visible proof.";
+  const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
+    "approved":     { label: "Clean Sheet Approved", headline: "Claims hold up to the evidence." },
+    "mostly-clean": { label: "Mostly Clean",         headline: "A solid product with specific gaps between claims and visible proof." },
+    "needs-proof":  { label: "Needs Proof",          headline: "The claims may be honest, but the proof isn't publicly visible yet." },
+    "misleading":   { label: "Misleading Claims",    headline: "Makes claims that aren't permitted or are contradicted by its own ingredient list." },
+  };
 
-  return { status, headline, gates, standard: `${REVIEW_METHODOLOGY_VERSION} · claims · evidence · formula` };
+  return {
+    status: tier === "approved" ? "approved" : "not_approved",
+    tier,
+    tierLabel: TIER_META[tier].label,
+    headline: TIER_META[tier].headline,
+    gates,
+    standard: `${REVIEW_METHODOLOGY_VERSION} · claims · evidence · formula`,
+  };
 }
 
 /* ═══════════════ Run ═══════════════ */
@@ -118,63 +136,110 @@ export type ProductReviewResult =
   | { type: "out_of_scope" }
   | { type: "error" };
 
-/* Result cache. L1 = in-memory (fast within an instance); L2 = Supabase table
-   public.product_reviews (durable across cold starts) so a product's verdict
-   and score are stable every time it is looked up. Both are defensive. */
+/* ═══════════════ Product review repository ═══════════════
+   Every review (any tier) is stored, keyed by the CANONICAL product slug, so
+   any phrasing or URL that resolves to the same product serves the same stored
+   review. L1 = in-memory; L2 = Supabase public.product_reviews. Defensive. */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();
-/* Bump when the rubric/verdict logic changes so stale cached reviews are not served. */
-const RUBRIC_REV = "r3";
-const cacheKey = (q: string) => `${RUBRIC_REV}:${q.trim().toLowerCase().replace(/\s+/g, " ")}`;
+/* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
+export const RUBRIC_REV = "r4";
 
-/* Verdict logic lives in code, so always re-derive it when serving a cached
+/* Verdict logic lives in code, so always re-derive it when serving a stored
    review — verdict rule changes then apply without re-running the model. */
 function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
   return r.type === "product-review" ? { ...r, verdict: deriveVerdict(r.review) } : r;
 }
 
-async function getCached(key: string): Promise<ProductReviewResult | null> {
-  const mem = REVIEW_CACHE.get(key);
+async function getStored(slug: string): Promise<ProductReviewResult | null> {
+  const mem = REVIEW_CACHE.get(slug);
   if (mem) return withFreshVerdict(mem);
   try {
     const { data } = await createAdminClient()
-      .from("product_reviews").select("result").eq("query_key", key).maybeSingle();
-    if (data?.result) {
+      .from("product_reviews").select("result, rubric_rev")
+      .eq("product_slug", slug).maybeSingle();
+    if (data?.result && data.rubric_rev === RUBRIC_REV) {
       const r = data.result as ProductReviewResult;
-      REVIEW_CACHE.set(key, r);
+      REVIEW_CACHE.set(slug, r);
       return withFreshVerdict(r);
     }
-  } catch { /* cache unavailable */ }
+  } catch { /* repository unavailable */ }
   return null;
 }
 
-async function setCached(key: string, result: ProductReviewResult): Promise<void> {
-  REVIEW_CACHE.set(key, result);
+async function store(slug: string, result: ProductReviewResult): Promise<void> {
+  REVIEW_CACHE.set(slug, result);
+  if (result.type !== "product-review") return;
   try {
-    await createAdminClient()
-      .from("product_reviews")
-      .upsert({ query_key: key, result, created_at: new Date().toISOString() }, { onConflict: "query_key" });
-  } catch { /* cache unavailable */ }
+    await createAdminClient().from("product_reviews").upsert(
+      {
+        product_slug: slug,
+        product_name: result.review.productName,
+        brand: result.review.brand,
+        tier: result.verdict.tier,
+        image_url: result.review.imageUrl ?? null,
+        result,
+        rubric_rev: RUBRIC_REV,
+        reviewed_at: result.review.reviewedAt ?? new Date().toISOString(),
+      },
+      { onConflict: "product_slug" },
+    );
+  } catch { /* repository unavailable */ }
+}
+
+/** Public lookup for pages that overlay tiers (e.g. /brands). */
+export async function getStoredReviewTier(slug: string): Promise<string | null> {
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews").select("tier, rubric_rev").eq("product_slug", slug).maybeSingle();
+    return data?.rubric_rev === RUBRIC_REV ? (data.tier as string) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const q = query.trim();
   if (!q) return { type: "error" };
 
-  const key = cacheKey(q);
-  const cached = await getCached(key);
-  if (cached) return cached;
-
-  // Resolve the product to a single INCIDecoder entry (name + ingredients from the SAME
-  // product). For a vague name that matches several distinct products, ask the user
-  // instead of guessing. URLs already name an exact product, so skip resolution there.
+  // ── Resolve the product to ONE canonical identity ──
+  // Name queries: resolve on INCIDecoder (ambiguous → ask, don't guess).
+  // URLs: scrape the page, take its product name, then resolve the same way.
   let inci: INCIResult | null = null;
-  if (!isURL(q)) {
+  let pageExcerpt = "";
+  let evidenceBlock = "";
+  let pageName: string | null = null;
+
+  if (isURL(q)) {
+    const page = await fetchPageMarkdown(q);
+    if (page) {
+      pageExcerpt = productBodyExcerpt(page);
+      pageName = titleFromMarkdown(page);
+      if (pageName) inci = (await resolveINCI(pageName)).chosen;
+
+      // Brand-published evidence: follow report/study/certificate links and read them.
+      const links = evidenceLinksFromMarkdown(page, q);
+      const docs: string[] = [];
+      for (const link of links.slice(0, 2)) {
+        const doc = await fetchPageMarkdown(link, 20000);
+        if (doc) docs.push(`SOURCE: ${link}\n${productBodyExcerpt(doc, 4000)}`);
+      }
+      if (docs.length) {
+        evidenceBlock = `\n\nBRAND-PUBLISHED EVIDENCE (linked from the product page — read carefully; a real test report here counts as finished-product evidence, Level 4, or Level 5 if an independent lab is named; extract sample size, method, duration, endpoint):\n${docs.join("\n---\n")}`;
+      }
+    }
+  } else {
     const resolution = await resolveINCI(q);
     if (resolution.ambiguous) {
       return { type: "disambiguation", query: q, options: resolution.distinct.map((d) => ({ name: d.name })) };
     }
     inci = resolution.chosen;
   }
+
+  // ── Repository: same product ⇒ same stored review ──
+  const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
+  const stored = await getStored(slug);
+  if (stored) return stored;
+
   const inciBlock = inciGroundTruthBlock(inci);
   // Anchor the review identity to the resolved product so its name never drifts from
   // the ingredient list we actually used.
@@ -182,8 +247,12 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     ? `\nThe product under review is exactly: "${inci.productName}". Use this exact identity as productName/brand in your output. Do NOT substitute a different size or variant, and do NOT review a different product than this one.`
     : "";
 
+  const pageBlock = pageExcerpt
+    ? `\n\nPRODUCT PAGE CONTENT (scraped from the URL the user provided — treat as the primary source of the product's claims):\n${pageExcerpt}`
+    : "";
+
   const userPrompt = isURL(q)
-    ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}\nIdentify the product, then search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${inciBlock}`
+    ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}${anchor}\nAlso search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${pageBlock}${evidenceBlock}${inciBlock}`
     : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
 
   // Up to 3 attempts: the model occasionally returns malformed or truncated JSON.
@@ -213,6 +282,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.imageUrl = imageUrl;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
+  review.productSlug = slug;
+  if (inci) {
+    review.inciIngredients = inci.ingredients;
+    review.inciSourceUrl = inci.source;
+  }
 
   const verdict = deriveVerdict(review);
 
@@ -234,6 +308,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   const result: ProductReviewResult = { type: "product-review", review, verdict };
-  await setCached(key, result);
+  await store(slug, result);
   return result;
 }

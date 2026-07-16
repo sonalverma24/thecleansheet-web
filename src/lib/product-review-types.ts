@@ -173,6 +173,11 @@ export interface ProductReview {
   imageUrl?: string | null;
   methodologyVersion?: string;
   reviewedAt?: string;
+  /** Resolved INCI (ground truth used for grading), for display. */
+  inciIngredients?: string[];
+  inciSourceUrl?: string;
+  /** Canonical product key for the review repository. */
+  productSlug?: string;
 }
 
 /* ─── Derived approved / not-approved verdict (computed in code) ─── */
@@ -184,8 +189,13 @@ export interface ReviewGate {
   detail: string;
 }
 
+export type ReviewTier = "approved" | "mostly-clean" | "needs-proof" | "misleading";
+
 export interface DerivedVerdict {
+  /** Kept for registry back-compat; derived from tier. */
   status: "approved" | "not_approved";
+  tier: ReviewTier;
+  tierLabel: string;
   headline: string;
   gates: ReviewGate[];
   standard: string;

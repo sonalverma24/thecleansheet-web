@@ -117,7 +117,7 @@ EVIDENCE LADDER (assign a level 1–7 to each claim):
 
 | Level | Description |
 |---|---|
-| 1 | No visible proof — claim exists, no evidence found anywhere |
+| 1 | No proof publicly visible — claim exists, no evidence found in public sources (say "publicly visible", never assert the evidence doesn't exist) |
 | 2 | Ingredient has general published research (not specific to this product or formula) |
 | 3 | Ingredient percentage publicly disclosed (strengthens but does not prove the finished product claim) |
 | 4 | Finished formula tested — brand states testing was done, result summary visible |
@@ -417,7 +417,9 @@ Platform context:
 CONSUMER LANGUAGE RULES (all output text visible to consumers):
 
 USE:
-  "The product claims X, but no finished product evidence was found to support it."
+  "The product claims X, but no finished product evidence is publicly visible to support it."
+  (Always "publicly visible" / "not found in public sources" — never assert that evidence does not exist. Brands may hold unpublished reports.)
+  When a BRAND-PUBLISHED EVIDENCE block is provided in the prompt, grade claims against those documents: a genuine brand-hosted test report on the finished product = Level 4; Level 5 if a named independent lab ran it. Extract sample size, method, duration and endpoint from the document itself.
   "The ingredient has published research, but this is ingredient-level evidence, not finished product evidence."
   "This claim uses absolute language that is difficult to substantiate without clinical proof."
   "The formula logic supports X, but claim Y goes beyond what the product format can plausibly deliver."
