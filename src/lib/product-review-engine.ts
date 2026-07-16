@@ -11,6 +11,7 @@ import { generateResilient } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage } from "@/lib/product-image";
 import { fetchINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -108,18 +109,42 @@ export type ProductReviewResult =
   | { type: "out_of_scope" }
   | { type: "error" };
 
-/* In-memory result cache · same query returns the identical review within a
-   running instance, so a product's verdict/score is stable between shares.
-   (Full cross-restart persistence to Supabase is the next step.) */
+/* Result cache. L1 = in-memory (fast within an instance); L2 = Supabase table
+   public.product_reviews (durable across cold starts) so a product's verdict
+   and score are stable every time it is looked up. Both are defensive. */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();
 const cacheKey = (q: string) => q.trim().toLowerCase().replace(/\s+/g, " ");
+
+async function getCached(key: string): Promise<ProductReviewResult | null> {
+  const mem = REVIEW_CACHE.get(key);
+  if (mem) return mem;
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews").select("result").eq("query_key", key).maybeSingle();
+    if (data?.result) {
+      const r = data.result as ProductReviewResult;
+      REVIEW_CACHE.set(key, r);
+      return r;
+    }
+  } catch { /* cache unavailable */ }
+  return null;
+}
+
+async function setCached(key: string, result: ProductReviewResult): Promise<void> {
+  REVIEW_CACHE.set(key, result);
+  try {
+    await createAdminClient()
+      .from("product_reviews")
+      .upsert({ query_key: key, result, created_at: new Date().toISOString() }, { onConflict: "query_key" });
+  } catch { /* cache unavailable */ }
+}
 
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const q = query.trim();
   if (!q) return { type: "error" };
 
   const key = cacheKey(q);
-  const cached = REVIEW_CACHE.get(key);
+  const cached = await getCached(key);
   if (cached) return cached;
 
   // Ground truth: pull the real INCI so the model can't invent ingredients.
@@ -161,7 +186,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   // Approved products join the registry (shown as tiles on /review and /verified).
   if (verdict.status === "approved") {
-    upsertVerifiedProduct({
+    await upsertVerifiedProduct({
       slug: slugify(review.productName, review.brand),
       productName: review.productName,
       brand: review.brand,
@@ -177,6 +202,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   const result: ProductReviewResult = { type: "product-review", review, verdict };
-  REVIEW_CACHE.set(key, result);
+  await setCached(key, result);
   return result;
 }

@@ -312,10 +312,10 @@ CLAIM CHECK FINDINGS (already adjudicated by The Clean Sheet™ Claim Check engi
 ${JSON.stringify(cf.claims.map((c) => ({ claim: c.claim, verdict: c.verdict, evidenceLevel: c.evidenceLevel, explanation: c.explanation })))}`;
 }
 
-function registerIfVerified(card: Scorecard, verdict: FinalVerdict, cf: Compact) {
+async function registerIfVerified(card: Scorecard, verdict: FinalVerdict, cf: Compact) {
   try {
     if (verdict.status !== "verified" || !card.productName) return;
-    upsertVerifiedProduct({
+    await upsertVerifiedProduct({
       slug: slugify(card.productName, card.brand || ""),
       productName: card.productName,
       brand: card.brand || "",
@@ -449,7 +449,7 @@ ${scrapedContext}`;
 
   const scorecard = validateScorecard(parsed as Scorecard, claimFindings);
   const verdict = computeVerdict(scorecard, claimFindings);
-  registerIfVerified(scorecard, verdict, claimFindings);
+  await registerIfVerified(scorecard, verdict, claimFindings);
   return { type: "single", scorecard, verdict };
 }
 
