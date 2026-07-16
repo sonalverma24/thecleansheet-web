@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   if (!brand) return {};
   const tierLabel = TIER_STYLES[scoreToTier(brand.avgScore)].label;
   return {
-    title: `${brand.name} Skincare Review · ${tierLabel} | The Clean Sheet`,
+    title: `${brand.name} Skincare Review · ${tierLabel}`,
     description: `Is ${brand.name} clean beauty? Science-backed reviews for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`,
     keywords: [
       `${brand.name} review India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
     ],
     alternates: { canonical: `https://thecleansheet.in/brands/${slug}` },
     openGraph: {
-      title: `${brand.name} · ${tierLabel} | The Clean Sheet`,
+      title: `${brand.name} · ${tierLabel}`,
       description: `Science-backed ingredient analysis for all ${brand.name} products (${brand.verdict}).`,
       url: `https://thecleansheet.in/brands/${slug}`,
       type: "website",

@@ -130,7 +130,7 @@ export default function ReviewPage() {
             </h1>
             <p className="mt-6 text-[17px] leading-[1.6] max-w-xl" style={{ color: "#6b6764" }}>
               Paste a product name or link. Every marketing claim is checked against real evidence and the
-              actual ingredient list, then the formula itself. One clear <em>Approved / Not Approved</em> verdict.
+              actual ingredient list, then the formula itself. One clear <em>Clean Sheet</em> standing.
             </p>
           </motion.div>
 

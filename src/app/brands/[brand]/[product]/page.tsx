@@ -35,7 +35,7 @@ export async function generateMetadata({
 
   const tierLabel = TIER_STYLES[scoreToTier(product.score)].label;
   return {
-    title: `${product.productName} Review · ${tierLabel} | The Clean Sheet`,
+    title: `${product.productName} Review · ${tierLabel}`,
     description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
     keywords: [
       `${product.productName} review`,
@@ -50,7 +50,7 @@ export async function generateMetadata({
       canonical: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
     },
     openGraph: {
-      title: `${product.productName} · ${tierLabel} | The Clean Sheet`,
+      title: `${product.productName} · ${tierLabel}`,
       description: `${tierLabel}. ${product.summary.slice(0, 150)}...`,
       url: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
       type: "article",
