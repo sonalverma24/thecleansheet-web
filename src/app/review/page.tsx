@@ -11,6 +11,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Reveal, Stagger, Item } from "@/components/motion/Motion";
+import OpenFormButton from "@/components/OpenFormButton";
 import type {
   ProductReview, DerivedVerdict, ClaimAnalysis, EvidenceLevel,
 } from "@/lib/product-review-types";
@@ -410,7 +411,29 @@ export default function ReviewPage() {
               </Section>
             )}
 
-            {/* Disclaimer */}
+            {/* For brands — invitation to work with The Clean Sheet */}
+            <Reveal>
+              <div className="rounded-2xl px-6 py-8 md:px-10 md:py-10" style={{ background: INK }}>
+                <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL_SOFT }}>For the brand behind this product</p>
+                <h3 className="font-display mt-4 text-[24px] md:text-[30px] leading-[1.15]" style={{ color: CREAM }}>
+                  Whether this review is what you hoped for or not, we are on your side.
+                </h3>
+                <p className="mt-4 text-[16px] leading-[1.7] max-w-2xl" style={{ color: WARM }}>
+                  The Clean Sheet helps brands stand behind every claim with the right testing, evidence and
+                  validation, so what you promise is exactly what you can prove. That is what earns lasting
+                  consumer trust, and what moves a product to the top of its category. If you would like to
+                  strengthen this product&apos;s claims, or get your next launch verified from day one, we would love to help.
+                </p>
+                <OpenFormButton
+                  className="mt-7 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-[15px] text-white transition-opacity hover:opacity-90"
+                  style={{ background: CORAL }}
+                >
+                  Work with The Clean Sheet <span aria-hidden>→</span>
+                </OpenFormButton>
+              </div>
+            </Reveal>
+
+            {/* Methodology note */}
             {review.cleanSheetNote && (
               <p className="text-[13px] leading-[1.7] pt-8" style={{ color: "#8b8683", borderTop: `1px solid ${HAIR_LIGHT}` }}>{review.cleanSheetNote}</p>
             )}
