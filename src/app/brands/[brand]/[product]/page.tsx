@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCir
 import { getBrandBySlug, getProductBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar } from "@/data/brands";
 import { ProductHero } from "@/components/scorecards/ProductHero";
+import { scoreToTier, TIER_STYLES, TierBadge } from "@/components/scorecards/pillar-ui";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,9 +33,10 @@ export async function generateMetadata({
   const brand = getBrandBySlug(brandSlug);
   if (!product || !brand) return {};
 
+  const tierLabel = TIER_STYLES[scoreToTier(product.score)].label;
   return {
-    title: `${product.productName} Review, Clean Sheet Score ${product.score}/100`,
-    description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${product.score}/100 (${product.scoreLabel}). Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
+    title: `${product.productName} Review · ${tierLabel} | The Clean Sheet`,
+    description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
     keywords: [
       `${product.productName} review`,
       `${product.productName} India`,
@@ -48,8 +50,8 @@ export async function generateMetadata({
       canonical: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
     },
     openGraph: {
-      title: `${product.productName}, Score ${product.score}/100 | The Clean Sheet`,
-      description: `${product.scoreLabel} rating. ${product.summary.slice(0, 150)}...`,
+      title: `${product.productName} · ${tierLabel} | The Clean Sheet`,
+      description: `${tierLabel}. ${product.summary.slice(0, 150)}...`,
       url: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
       type: "article",
       images: [{ url: product.image, width: 800, height: 800, alt: product.productName }],
@@ -474,17 +476,9 @@ export default async function ProductPage({
         },
         review: {
           "@type": "Review",
-          reviewRating: { "@type": "Rating", ratingValue: product.score, bestRating: 100, worstRating: 0 },
           author: { "@type": "Organization", name: "The Clean Sheet" },
           reviewBody: product.summary,
           datePublished: product.analyzedAt,
-        },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: product.score,
-          bestRating: 100,
-          worstRating: 0,
-          ratingCount: 1,
         },
       },
     ],
@@ -585,7 +579,7 @@ export default async function ProductPage({
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2.5">
                 <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Score breakdown</h2>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>The breakdown</h2>
               </div>
               {product.publicDecisionLabel && (
                 <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#248179]/10 text-[#248179] border border-[#248179]/20">
@@ -623,7 +617,6 @@ export default async function ProductPage({
                           </span>
                         )}
                         <span className="text-xs" style={{ color, fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{ratingLabel}</span>
-                        <span className="text-[10px] text-[#b0a8a4]">{pillar.score}/{pillar.max}</span>
                         <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
                       </div>
                     </div>
@@ -901,8 +894,8 @@ export default async function ProductPage({
                         {p.productName}
                       </div>
                     </div>
-                    <div className={`text-xs px-1.5 py-0.5 rounded-full border flex-shrink-0 ${c.bg} ${c.text} ${c.border}`}>
-                      {p.score}
+                    <div className="flex-shrink-0">
+                      <TierBadge tier={scoreToTier(p.score)} size="sm" />
                     </div>
                   </Link>
                 );

@@ -1,4 +1,5 @@
 "use client";
+import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import Image from "next/image";
 import Link from "next/link";
 import { TileChip } from "./TileChip";
@@ -66,16 +67,7 @@ export function ScorecardResultCard({
               boxShadow: "0 1px 6px rgba(0,0,0,0.10)",
               lineHeight: 1,
             }}>
-              <span style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-                fontSize: 24,
-                color: c.ring,
-                letterSpacing: "-0.02em",
-                lineHeight: 1,
-              }}>
-                {product.score}
-              </span>
+              <TierBadge tier={scoreToTier(product.score)} size="sm" />
             </div>
           </div>
 

@@ -26,6 +26,7 @@ import {
 import type { ProductScorecard } from "@/data/brands/types";
 import type { BrandSummary } from "@/data/brands";
 import { scoreColors } from "@/data/brands";
+import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import { expandQuery } from "@/lib/search-synonyms";
 import { buildControlledFilterOptions } from "@/data/taxonomy";
 import { track } from "@/lib/analytics";
@@ -244,35 +245,6 @@ function paramsToFilters(sp: URLSearchParams): ActiveFilters {
   };
 }
 
-// ── CleanMeter (brand grid) ───────────────────────────────────────────────────
-function CleanMeter({ score }: { score: number }) {
-  const c = scoreColors(score);
-  return (
-    <div className="w-full mt-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] text-ink-400 uppercase tracking-wider font-sans">Clean Meter</span>
-        <span className={`text-xs font-medium ${c.text}`}>{score}/100</span>
-      </div>
-      <div className="relative h-2 rounded-full flex overflow-hidden">
-        <div className="flex-none bg-red-200"   style={{ width: "50%" }} />
-        <div className="flex-none bg-amber-200" style={{ width: "20%" }} />
-        <div className="flex-none bg-blue-200"  style={{ width: "20%" }} />
-        <div className="flex-none bg-teal-200"  style={{ width: "10%" }} />
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow-md ${c.text.replace("text-", "bg-")}`}
-          style={{ left: `calc(${score}% - 7px)` }}
-        />
-      </div>
-      <div className="flex justify-between mt-1.5">
-        <span className="text-[9px] text-ink-300 font-sans">0</span>
-        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(50% - 8px)" }}>50</span>
-        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(20% - 6px)" }}>70</span>
-        <span className="text-[9px] text-ink-300 font-sans" style={{ marginLeft: "calc(20% - 6px)" }}>90</span>
-        <span className="text-[9px] text-ink-300 font-sans">100</span>
-      </div>
-    </div>
-  );
-}
 
 // ── Sort options (shared between desktop dropdown and mobile sheet) ───────────
 const SORT_OPTIONS_LIST: { value: SortOption; label: string; requiresPrice?: boolean }[] = [
@@ -633,7 +605,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
                       <p className="text-ink-500 text-sm leading-relaxed flex-1 mb-4 line-clamp-2">
                         {brand.tagline}
                       </p>
-                      <CleanMeter score={brand.avgScore} />
+                      <div className="w-full mt-4 flex justify-center"><TierBadge tier={scoreToTier(brand.avgScore)} size="sm" /></div>
                       <div className="flex items-center pt-4 mt-4 border-t border-ink-50">
                         <div className="flex items-center gap-1.5 text-xs text-ink-400">
                           <FlaskConical size={12} />

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, ExternalLink, FlaskConical } from "lucide-react";
 import { getBrandBySlug, getAllBrandSummaries, scoreColors } from "@/data/brands";
 import { BrandProductCard } from "@/components/scorecards/BrandProductCard";
+import { scoreToTier, TIER_STYLES, TierBadge } from "@/components/scorecards/pillar-ui";
 
 export function generateStaticParams() {
   return getAllBrandSummaries().map((b) => ({ brand: b.slug }));
@@ -13,17 +14,18 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   const { brand: slug } = await params;
   const brand = getBrandBySlug(slug);
   if (!brand) return {};
+  const tierLabel = TIER_STYLES[scoreToTier(brand.avgScore)].label;
   return {
-    title: `${brand.name} Skincare Review, Clean Sheet Score ${brand.avgScore}/100`,
-    description: `Is ${brand.name} clean beauty? See science-backed scores for all ${brand.products.length} ${brand.name} products, ingredient safety, regulatory compliance, and formulation analysis. Average score: ${brand.avgScore}/100.`,
+    title: `${brand.name} Skincare Review · ${tierLabel} | The Clean Sheet`,
+    description: `Is ${brand.name} clean beauty? Science-backed reviews for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`,
     keywords: [
       `${brand.name} review India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
       `${brand.name} products score`, `${brand.name} skincare India`, `${brand.name} ingredient analysis`,
     ],
     alternates: { canonical: `https://thecleansheet.in/brands/${slug}` },
     openGraph: {
-      title: `${brand.name}, Clean Sheet Score ${brand.avgScore}/100`,
-      description: `Science-backed ingredient analysis for all ${brand.name} products. Average score: ${brand.avgScore}/100 (${brand.verdict}).`,
+      title: `${brand.name} · ${tierLabel} | The Clean Sheet`,
+      description: `Science-backed ingredient analysis for all ${brand.name} products (${brand.verdict}).`,
       url: `https://thecleansheet.in/brands/${slug}`,
       type: "website",
       images: [{ url: brand.logo, width: 512, height: 512, alt: `${brand.name} logo` }],
@@ -53,15 +55,11 @@ function ScoreRing({ score, size = 72 }: { score: number; size?: number }) {
       <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
         <Image src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
       </div>
-      {/* Layer 3, colored arc + score badge on top */}
+      {/* Layer 3, colored arc (no numeric badge — tiers only) */}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={c.ring} strokeWidth={sw}
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-        <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 0.95} fontWeight={700} fill="#fff" fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
-          {score}
-        </text>
       </svg>
     </div>
   );
@@ -154,18 +152,18 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
               <div className="flex items-center gap-5 mb-6">
                 <ScoreRing score={brand.avgScore} size={80} />
                 <div>
-                  <div className="text-white/50 text-xs uppercase tracking-widest mb-1">Avg. Clean Sheet Score</div>
-                  <div className="text-3xl font-medium text-white">{brand.avgScore}<span className="text-white/40 text-lg">/100</span></div>
-                  <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full border mt-1.5 ${c.bg} ${c.text} ${c.border}`}>
+                  <div className="text-white/50 text-xs uppercase tracking-widest mb-2">Clean Sheet Standing</div>
+                  <TierBadge tier={scoreToTier(brand.avgScore)} />
+                  <span className={`block w-fit text-xs font-medium px-2.5 py-0.5 rounded-full border mt-2 ${c.bg} ${c.text} ${c.border}`}>
                     {brand.verdict}
                   </span>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3 text-center">
                 {[
-                  { label: "Products scored", value: brand.products.length },
-                  { label: "Highest score",   value: highestScore },
-                  { label: "Excellent rated", value: brand.products.filter((p) => p.score >= 90).length },
+                  { label: "Products reviewed", value: brand.products.length },
+                  { label: "Approved", value: brand.products.filter((p) => p.score >= 75).length },
+                  { label: "Mostly Clean", value: brand.products.filter((p) => p.score >= 60 && p.score < 75).length },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-white/6 rounded-xl p-3">
                     <div className="text-xl font-medium text-white">{value}</div>
@@ -175,10 +173,10 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
               </div>
               {highestProduct && (
                 <div className="mt-4 pt-4 border-t border-white/10">
-                  <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Top scorer</div>
+                  <div className="text-white/40 text-[10px] uppercase tracking-wider mb-1">Top rated</div>
                   <Link href={`/brands/${slug}/${highestProduct.slug}`}
                     className="text-teal-300 hover:text-teal-100 text-sm font-medium transition-colors line-clamp-1">
-                    {highestProduct.productName} ({highestScore}/100) →
+                    {highestProduct.productName} →
                   </Link>
                 </div>
               )}

@@ -13,6 +13,7 @@ import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { scoreColors } from "@/data/brands";
+import { scoreToTier, TIER_STYLES, TierBadge } from "@/components/scorecards/pillar-ui";
 import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -650,12 +651,15 @@ function formatAnalysedDate(isoDate: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  const { ring } = scoreColors(score);
+  // Tier seal: the TCS badge with the tier word inside — no numeric score shown.
+  const tier = scoreToTier(score);
+  const t = TIER_STYLES[tier];
+  const words = t.label.replace(/^Clean Sheet\s+/i, "").split(" ");
   return (
     <div
       className="relative flex-shrink-0"
       style={{ width: 130, height: 130 }}
-      aria-label={`Score: ${score}/100`}
+      aria-label={t.label}
     >
       {/* Badge template - "THE CLEAN SHEET" + "EST 2025" already printed */}
       <Image
@@ -666,22 +670,26 @@ function ScoreBadge({ score }: { score: number }) {
         className="w-full h-full object-contain"
         priority
       />
-      {/* Score number overlaid in centre, coloured by grade */}
+      {/* Tier word overlaid in centre */}
       <div
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0 flex flex-col items-center justify-center text-center"
         style={{ paddingTop: "8px" }}
       >
-        <span
-          className="leading-none select-none"
-          style={{
-            fontFamily: "'Cooper BT', sans-serif",
-            fontSize: "52px",
-            fontWeight: 700,
-            color: ring,
-          }}
-        >
-          {score}
-        </span>
+        {words.map((w) => (
+          <span
+            key={w}
+            className="leading-[1.1] select-none uppercase"
+            style={{
+              fontFamily: "'Cooper BT', sans-serif",
+              fontSize: words.join(" ").length > 8 ? "15px" : "19px",
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              color: t.fg,
+            }}
+          >
+            {w}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -828,9 +836,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                 </div>
                 <div className="flex flex-col items-center gap-3 flex-shrink-0">
                   <ScoreBadge score={product.score} />
-                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${scoreColors(product.score).bg} ${scoreColors(product.score).text} ${scoreColors(product.score).border}`}>
-                    {product.scoreLabel}
-                  </span>
+                  <TierBadge tier={scoreToTier(product.score)} size="sm" />
                 </div>
               </div>
             </div>
