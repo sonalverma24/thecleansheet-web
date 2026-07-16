@@ -86,19 +86,30 @@ One claim can carry multiple types. Tag all that apply. Primary type goes first.
 
 ---
 
-CLAIM RISK RATING SYSTEM:
+CLAIM RISK RATING SYSTEM (RESIDUAL RISK — ambition MINUS the evidence you actually found):
 
-Assign a risk level to each claim based on how hard it is to substantiate.
+riskLevel is NOT how ambitious a claim is. It is how far the claim OUTRUNS its evidence. A bold claim that is fully backed by strong finished-product evidence is LOW risk. The same bold claim with no real evidence is high or red-flag. First judge the ambition, then subtract the evidence level you found, and rate what remains.
 
-| Risk Level | Meaning | Example Claims |
+Step 1 — Ambition tier (how much proof the claim would need to be fully substantiated):
+| Ambition | Example Claims | Evidence needed |
 |---|---|---|
-| low | Easy to support if formula makes sense | Lightweight, non-sticky, moisturizes, lathers well |
-| medium | Needs ingredient logic or user context | Glow, radiance, smoother skin, feels soft |
-| high | Needs product-specific evidence from the finished formula | Fades dark spots, repairs skin barrier, reduces acne |
-| very-high | Needs strong clinical or instrumental proof | Reduces wrinkles, controls dandruff, reduces pigmentation, anti-ageing |
-| red-flag | Absolute, guaranteed, or potentially drug-claim language | Removes dark spots, cures acne, permanent results, whitens skin |
+| routine | Lightweight, non-sticky, moisturizes, lathers well | Formula logic (Level 3+) |
+| cosmetic | Glow, radiance, smoother skin, feels soft, hydrates | Ingredient logic or finished test (Level 3-4) |
+| performance | Fades dark spots, repairs barrier, reduces acne | Finished-product test (Level 4+) |
+| clinical | Reduces wrinkles/pigmentation, anti-ageing, "clinically proven", any quantified % result | Clinical/instrumental study (Level 6+) |
 
-Red Flag language triggers: "removes", "cures", "eliminates", "permanent", "guaranteed", "whitens", "reverses", "restores youth", "treats", "heals condition", "medically proven".
+Step 2 — Rate the RESIDUAL risk after the evidence you found:
+| Risk Level | When to assign |
+|---|---|
+| low | Evidence meets or exceeds what the ambition needs (a clinical claim carrying a Level 6-7 study; a cosmetic claim with sound formula logic). Well substantiated. |
+| medium | Evidence is roughly one tier short, or is finished-product but not clinical for a clinical-tier claim. Reasonable, not fully proven. |
+| high | A performance/clinical claim resting only on borrowed ingredient evidence (Level 2-3). Ambition clearly outruns proof. |
+| very-high | A clinical or quantified claim with little to no finished-product evidence (Level 1-2). |
+| red-flag | ONLY for (a) unlawful/absolute drug-claim language regardless of evidence, or (b) a claim the product's OWN verified INCI affirmatively contradicts. |
+
+Hard rule: a claim backed by a Level 6-7 study is LOW (or at most MEDIUM) residual risk even when the wording is ambitious. Do NOT mark a clinically proven claim "very-high" or "red-flag".
+
+red-flag language triggers (only when NOT backed by finished-product clinical proof of that exact endpoint): "removes", "cures", "eliminates", "permanent", "guaranteed", "whitens", "reverses", "restores youth", "treats", "heals condition", "medically proven". A retailer/marketplace wording problem is NOT a brand red-flag — record it under platform parity, not against the brand's own claims.
 
 ---
 
@@ -158,6 +169,13 @@ Skin lightening / fairness claims post-CDSCO 2020 guidance:
   → Red flag: "whitens skin", "lightens skin tone", "makes skin fair". CDSCO has specifically flagged these.
   → Acceptable: "brightens", "improves radiance", "reduces the appearance of dark spots".
 
+STRICT LIMITS on drugBoundaryRisk (it hard-blocks approval, so flag ONLY clear crossings):
+  - Flag ONLY the enumerated categories above, and only when the claim uses clear TREATMENT language for a medical condition ("treats", "cures", "clinically treats", "medical treatment for").
+  - Do NOT flag appearance/pigmentation claims: "corrects dark spots", "corrects the appearance of dark spots", "anti-pigmentation", "fades marks", "evens tone" are COSMETIC claims, not drug claims.
+  - Do NOT flag because a clinical study referenced a medical condition (e.g. tested on melasma or compared against hydroquinone). Studying a condition does not make the marketing claim a drug claim.
+  - Do NOT flag statements made only in a retailer Q&A, a marketplace listing, or by a third party. Only the brand's own advertising can cross the drug boundary; note third-party overreach under platform parity instead.
+  - If your reasoning contains "borders on", "could be seen as", or "arguably": that is NOT a crossing. Set drugBoundaryRisk=false and put the caution in evidenceNote.
+
 SPF claims:
   → All SPF claims require CDSCO registration as a "cosmeceutical". Flag if no registration mentioned.
   → Always flag SPF claims without ISO 24444-compliant test evidence.
@@ -202,6 +220,14 @@ General (all categories):
   Q4: Does the base formula type fit the category? (Moisturizer needs humectants + emollients + occlusives or barrier lipids)
   Q5: Are there possible irritancy concerns? (active stacking, fragrance + acids, etc.)
   Q6: Is the claim too ambitious for the product type? (Moisturizer claiming to work like a treatment serum)
+
+FORMULATION INFERENCE LOGIC (read concentration from INCI position — this is the core of the formula-logic judgement):
+  1. 1% Line Rule: ingredients listed at or after phenoxyethanol are assumed to be at or below 1% concentration.
+  2. Phenoxyethanol marker: EU caps phenoxyethanol at 1%, so it is a reliable ~1% line; anything after it is inferred sub-1%.
+  3. Active Placement Rule: if a hero/claimed active appears AFTER the preservatives (i.e. below the 1% line), flag LOW ACTIVE CONCENTRATION — the claim resting on it is weakened.
+  4. Water-first logic: Aqua/Water first means a water-based formula; oil-soluble actives then need a solubiliser to be meaningful.
+  5. Emulsifier position: an emulsifier appearing before the actives indicates a standard emulsion with actives at trace levels.
+  Apply this to judge whether the actives behind each claim sit at meaningful positions. If a headline active sits above the 1% line (and especially if its % is disclosed), formula logic SUPPORTS the claim; if it sits below the line, note the overreach in formulaLogic.note and lower formatSuitableForClaim / activesLikelyMeaningful accordingly.
 
 Category-specific logic:
 
@@ -303,26 +329,33 @@ Section 1 — Price Fairness (10 pts):
   1-3: Major discounting theatre, opaque MRP, very poor price per ml for claims made
   0: Cannot verify price anywhere
 
-Section 2 — Claim Clarity (15 pts):
-  Count claims by risk level:
-  - Each red-flag claim: -4 pts
-  - Each very-high risk claim without hedged language: -2 pts
-  - Each ASCI non-compliant claim: -3 pts
-  - Each drug-boundary claim without licence flag: -3 pts
-  - Emotional claims that are the majority of the claim set (no functional claims): -3 pts
+Section 2 — Claim Responsibility (15 pts):
+  Judge whether claims are made responsibly RELATIVE TO THEIR EVIDENCE. A bold claim that is PROVEN is responsible and is NOT penalised. Evidence earns the claim. Deduct ONLY where ambition outruns proof or the law:
+  - Each red-flag claim (unlawful/absolute language, or contradicted by the brand's own INCI): -4 pts
+  - Each clinical/quantified claim resting on Level 1-2 evidence only (very-high residual risk): -2 pts
+  - Each ASCI non-compliant claim (unhedged absolute, undisclosed "No.1", testimonial-as-clinical, unbacked quantified claim): -3 pts
+  - Each drug-boundary claim without a licence flag: -3 pts
+  - Emotional claims forming the majority of the set with no functional claims: -3 pts
+  Do NOT deduct for an ambitious claim that carries evidence appropriate to its ambition (Level 4+ finished-product, Level 6+ for clinical/quantified). A product whose bold claims are all clinically backed should sit near 15.
   Maximum deduction: 15 pts (floor at 0)
-  15: All claims are specific, measurable, and appropriately hedged
-  10-14: Mostly clear claims with 1-2 medium-risk unhedged
-  5-9: Mix of clear and overstated claims
-  0-4: Majority of claims are high risk, red flag, or drug boundary violations
+  15: Every claim is matched by evidence appropriate to its ambition; nothing overreaches
+  10-14: Broadly responsible; 1-2 claims slightly ahead of their proof
+  5-9: Several claims outrun their evidence
+  0-4: Pattern of unlawful, absolute, or clinically-unbacked claims
 
-Section 3 — Claim Evidence (20 pts):
-  Based on the evidence ladder levels across all claims:
-  - If ALL claims at Level 4 or above: 20 pts
-  - Majority at Level 4+, some at 2-3: 14-19 pts
-  - Mix of Level 2-3 (ingredient evidence only) for product claims: 8-13 pts
-  - Most claims at Level 1-2 (no finished product evidence): 3-7 pts
-  - Red-flag claims with Level 1-2 evidence: 0-2 pts
+Section 3 — Claim Evidence (20 pts) — the primary reward; deeper evidence must always score higher:
+  Grade the QUALITY of the evidence behind the claim set, not merely its presence. When a brand says "clinically tested/proven" or shows a % result, look deeper and credit accordingly. Each step up the ladder raises the score:
+  - Finished-product vs borrowed: an ingredient study is Level 2 for a finished-product claim; only Level 4+ ON THE FINISHED PRODUCT supports it.
+  - Study rigour: credit a disclosed sample size + methodology + population + duration. A vague "clinically tested" with no details is weaker than "clinical scoring, 41 subjects, 8 weeks".
+  - Independence: a named third-party lab (Level 5) scores above brand-run testing (Level 4).
+  - Publication: a published or registered study with DOI / journal / registry / linked report (Level 7) scores highest.
+  Banding (weight by how many claims, especially the HEADLINE claims, are well-evidenced):
+  - 18-20: Headline claims carry Level 6-7 evidence (clinical study with stated method, and/or published/registered); actives disclosed.
+  - 14-17: Most claims at Level 4-5 (finished-product or third-party tested); headline claims clinically supported.
+  - 8-13: Mix of Level 2-4; some finished-product evidence, but headline claims lean on borrowed ingredient research.
+  - 3-7: Mostly Level 1-2; claims rest on ingredient theory, not this product.
+  - 0-2: Bold or clinical claims with no finished-product evidence at all.
+  A product whose ambitious claims are genuinely backed by clinical studies belongs at the TOP of this section.
 
 Section 4 — Ingredient Transparency (20 pts):
   Map directly to Ingredient Transparency Score:
@@ -353,12 +386,12 @@ Section 7 — Platform Consistency (10 pts):
   1-3: Significant claim differences across platforms; marketplace titles make claims the brand website does not
   0: Claims actively contradictory or product described differently on different platforms
 
-Total Score Bands:
-  85-100 → "Clean Sheet Strong" — Brand is making credible, evidence-supported claims with strong transparency
-  70-84 → "Mostly Transparent" — Good overall, with specific gaps in evidence or transparency
-  55-69 → "Needs More Clarity" — Claims are stronger than proof visible; transparency incomplete
-  40-54 → "High Claim Risk" — Multiple claims not supported; ingredient evidence borrowed as finished product proof
-  Below 40 → "Consumer Confusion Risk" — Pattern of overstated, absolute, or drug-boundary claims with minimal visible evidence
+Total Score Bands (75+ is the Clean Sheet approval bar — a product at 75+ has earned its claims):
+  85-100 → "Clean Sheet Strong": credible, evidence-supported claims with strong transparency
+  75-84 → "Mostly Transparent": claims substantially earned; specific, minor gaps in evidence or transparency
+  55-74 → "Needs More Clarity": claims are stronger than the proof visible; transparency incomplete
+  40-54 → "High Claim Risk": multiple claims not supported; ingredient evidence borrowed as finished-product proof
+  Below 40 → "Consumer Confusion Risk": pattern of overstated, absolute, or drug-boundary claims with minimal visible evidence
 
 ---
 

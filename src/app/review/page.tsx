@@ -210,7 +210,7 @@ export default function ReviewPage() {
                   <ProductImage src={p.imageUrl} brand={p.brand} />
                 </div>
                 <p className="mt-2 text-[12px] leading-tight line-clamp-2" style={{ color: INK }}>{p.productName}</p>
-                <p className="mt-0.5 text-[10px] uppercase" style={{ letterSpacing: "0.05em", color: TEAL }}>Approved · {p.score}</p>
+                <p className="mt-0.5 text-[10px] uppercase" style={{ letterSpacing: "0.05em", color: TEAL }}>Clean Sheet Approved</p>
               </Link>
             ))}
           </div>
@@ -295,10 +295,9 @@ export default function ReviewPage() {
                     ))}
                   </Stagger>
 
-                  {/* Score + methodology */}
+                  {/* Transparency label + methodology (numeric score intentionally not shown) */}
                   <div className="mt-8 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                    <span className="font-display text-[40px]" style={{ color: CREAM }}>{review.scores.total}</span>
-                    <span className="text-[14px]" style={{ color: WARM }}>/ 100 · {review.scores.label}</span>
+                    <span className="font-display text-[24px]" style={{ color: CREAM }}>{review.scores.label}</span>
                     <span className="text-[12px] ml-auto" style={{ color: "rgba(176,168,164,0.6)" }}>{review.methodologyVersion ?? "TCS v3.0"}</span>
                   </div>
                 </div>

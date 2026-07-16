@@ -46,20 +46,26 @@ function isValidProductReview(p: unknown): p is ProductReview {
 }
 
 /* ═══════════════ Derived approved / not-approved verdict ═══════════════
-   Deterministic. Based on the review's calibrated 0–100 scoring and claim
-   flags, NOT a per-claim deduction pile-up, so an honest product that makes
-   many claims is not auto-failed. */
+   Deterministic and simple: score >= APPROVAL_BAR approves, with ONE hard
+   block — a genuine India drug-boundary / unlawful claim. Red-flag counts
+   and evidence gaps already shape the score itself; they do not double-
+   penalise here. (75 matches the analyser's FORMULA_BAR.) */
+export const APPROVAL_BAR = 75;
+
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const drugBoundary = r.claimSummary?.drugBoundaryCount ?? 0;
-  const redFlags = r.claimSummary?.byRisk?.redFlag ?? 0;
   const evidencePts = r.scores?.claimEvidence ?? 0;      // out of 20
   const formulaPts = r.scores?.formulaLogic ?? 0;        // out of 15
   const total = r.scores?.total ?? 0;                    // out of 100
   const overreach = r.formulaLogic?.claimOverreach === true;
 
-  const lawful = drugBoundary === 0 && redFlags === 0;
+  // Gates are informational; only `lawful` can block on its own.
+  const lawful = drugBoundary === 0;
   const honest = evidencePts >= 10;                      // ≥ half the evidence points
-  const soundFormula = formulaPts >= 8 && !overreach;    // ≥ ~half + no overreach
+  // Material overreach = flagged AND the formula score itself is mediocre.
+  // A strong formula (11+/15) with one ambitious claim noted passes with a caveat.
+  const materialOverreach = overreach && formulaPts < 11;
+  const soundFormula = formulaPts >= 8 && !materialOverreach;
 
   const gates: ReviewGate[] = [
     {
@@ -67,8 +73,8 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       label: "Lawful claims",
       passed: lawful,
       detail: lawful
-        ? "No drug-boundary or absolute/red-flag claims found"
-        : `${drugBoundary} drug-boundary and ${redFlags} red-flag claim(s) found`,
+        ? "No drug-boundary or unlawful claims found"
+        : `${drugBoundary} claim(s) cross the India drug-cosmetic boundary`,
     },
     {
       id: "evidence",
@@ -83,23 +89,24 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       label: "Formula supports claims",
       passed: soundFormula,
       detail: soundFormula
-        ? "The formula and format plausibly deliver the claims"
-        : overreach
+        ? overreach
+          ? "The formula delivers the core claims; one claim is noted as ambitious"
+          : "The formula and format plausibly deliver the claims"
+        : materialOverreach
           ? "Claims go beyond what this formula/format can plausibly deliver"
           : "Formula logic is weak relative to the claims made",
     },
   ];
 
-  // Approved requires a credible overall score AND all three gates.
   const status: DerivedVerdict["status"] =
-    total >= 70 && lawful && honest && soundFormula ? "approved" : "not_approved";
+    total >= APPROVAL_BAR && lawful ? "approved" : "not_approved";
 
   const headline =
     status === "approved"
       ? "Clean Sheet Approved. Claims hold up to the evidence."
-      : lawful
-        ? "Not Approved. Claims outrun the visible proof."
-        : "Not Approved. Contains claims that aren't permitted or aren't substantiated.";
+      : !lawful
+        ? "Not Approved. Makes claims that aren't permitted for a cosmetic in India."
+        : "Not Approved. Claims outrun the visible proof.";
 
   return { status, headline, gates, standard: `${REVIEW_METHODOLOGY_VERSION} · claims · evidence · formula` };
 }
@@ -115,18 +122,26 @@ export type ProductReviewResult =
    public.product_reviews (durable across cold starts) so a product's verdict
    and score are stable every time it is looked up. Both are defensive. */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();
-const cacheKey = (q: string) => q.trim().toLowerCase().replace(/\s+/g, " ");
+/* Bump when the rubric/verdict logic changes so stale cached reviews are not served. */
+const RUBRIC_REV = "r3";
+const cacheKey = (q: string) => `${RUBRIC_REV}:${q.trim().toLowerCase().replace(/\s+/g, " ")}`;
+
+/* Verdict logic lives in code, so always re-derive it when serving a cached
+   review — verdict rule changes then apply without re-running the model. */
+function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
+  return r.type === "product-review" ? { ...r, verdict: deriveVerdict(r.review) } : r;
+}
 
 async function getCached(key: string): Promise<ProductReviewResult | null> {
   const mem = REVIEW_CACHE.get(key);
-  if (mem) return mem;
+  if (mem) return withFreshVerdict(mem);
   try {
     const { data } = await createAdminClient()
       .from("product_reviews").select("result").eq("query_key", key).maybeSingle();
     if (data?.result) {
       const r = data.result as ProductReviewResult;
       REVIEW_CACHE.set(key, r);
-      return r;
+      return withFreshVerdict(r);
     }
   } catch { /* cache unavailable */ }
   return null;
