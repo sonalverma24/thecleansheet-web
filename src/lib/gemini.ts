@@ -42,7 +42,9 @@ export async function generateResilient(systemInstruction: string, prompt: strin
     if (step.delay) await sleep(step.delay);
     try {
       const result = await mk(step.search).generateContent(prompt);
-      return result.response.text().trim();
+      const text = result.response.text().trim();
+      if (text) return text;
+      lastErr = new Error("empty model response"); // grounded calls occasionally return empty; fall through to the next attempt
     } catch (err) {
       lastErr = err;
       const msg = err instanceof Error ? err.message : String(err);

@@ -9,7 +9,8 @@
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilient } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage } from "@/lib/product-image";
-import { fetchINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
+import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
+import type { INCIResult } from "@/lib/inci-fetch";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
@@ -25,7 +26,7 @@ function parseJSON(text: string): Record<string, unknown> | null {
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if (start === -1 || end === -1 || end < start) return null;
-  s = s.slice(start, end + 1);
+  s = s.slice(start, end + 1).replace(/,(\s*[}\]])/g, "$1"); // tolerate trailing commas (common LLM slip)
   try {
     return JSON.parse(s);
   } catch {
@@ -106,6 +107,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 /* ═══════════════ Run ═══════════════ */
 export type ProductReviewResult =
   | { type: "product-review"; review: ProductReview; verdict: DerivedVerdict }
+  | { type: "disambiguation"; query: string; options: { name: string }[] }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -147,25 +149,40 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const cached = await getCached(key);
   if (cached) return cached;
 
-  // Ground truth: pull the real INCI so the model can't invent ingredients.
-  const inci = await fetchINCI(q);
+  // Resolve the product to a single INCIDecoder entry (name + ingredients from the SAME
+  // product). For a vague name that matches several distinct products, ask the user
+  // instead of guessing. URLs already name an exact product, so skip resolution there.
+  let inci: INCIResult | null = null;
+  if (!isURL(q)) {
+    const resolution = await resolveINCI(q);
+    if (resolution.ambiguous) {
+      return { type: "disambiguation", query: q, options: resolution.distinct.map((d) => ({ name: d.name })) };
+    }
+    inci = resolution.chosen;
+  }
   const inciBlock = inciGroundTruthBlock(inci);
+  // Anchor the review identity to the resolved product so its name never drifts from
+  // the ingredient list we actually used.
+  const anchor = inci
+    ? `\nThe product under review is exactly: "${inci.productName}". Use this exact identity as productName/brand in your output. Do NOT substitute a different size or variant, and do NOT review a different product than this one.`
+    : "";
 
   const userPrompt = isURL(q)
     ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}\nIdentify the product, then search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${inciBlock}`
-    : `Produce a full Clean Sheet Product Review for this product: ${q}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
+    : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
 
-  let parsed = parseJSON(await generateResilient(PRODUCT_REVIEW_SYSTEM_PROMPT, userPrompt));
-  if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
-  if (!isValidProductReview(parsed)) {
-    parsed = parseJSON(
-      await generateResilient(
-        PRODUCT_REVIEW_SYSTEM_PROMPT,
-        `${userPrompt}\n\nReturn ONLY the product-review JSON. Start directly with {`,
-      ),
-    );
+  // Up to 3 attempts: the model occasionally returns malformed or truncated JSON.
+  const prompts = [
+    userPrompt,
+    `${userPrompt}\n\nReturn ONLY the product-review JSON, starting directly with { and ending with }. No prose, no code fence, no trailing commas.`,
+    `${userPrompt}\n\nYour previous output was not valid JSON. Return ONLY the complete, valid product-review JSON object.`,
+  ];
+  let parsed: Record<string, unknown> | null = null;
+  for (const p of prompts) {
+    parsed = parseJSON(await generateResilient(PRODUCT_REVIEW_SYSTEM_PROMPT, p));
+    if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
+    if (isValidProductReview(parsed)) break;
   }
-  if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
   if (!isValidProductReview(parsed)) return { type: "error" };
 
   const review = parsed as ProductReview;

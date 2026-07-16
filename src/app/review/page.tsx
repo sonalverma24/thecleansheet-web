@@ -84,6 +84,7 @@ export default function ReviewPage() {
   const [review, setReview] = useState<ProductReview | null>(null);
   const [verdict, setVerdict] = useState<DerivedVerdict | null>(null);
   const [error, setError] = useState<null | "scope" | "busy" | "fail">(null);
+  const [disambig, setDisambig] = useState<{ query: string; options: { name: string }[] } | null>(null);
   const [approvedProducts, setApprovedProducts] = useState<VerifiedProduct[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -98,7 +99,7 @@ export default function ReviewPage() {
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
     if (!text || loading) return;
-    setLoading(true); setError(null); setReview(null); setVerdict(null); setStepIdx(0);
+    setLoading(true); setError(null); setDisambig(null); setReview(null); setVerdict(null); setStepIdx(0);
 
     const ticker = setInterval(() => setStepIdx((i) => Math.min(i + 1, STEPS.length - 1)), 6000);
     try {
@@ -113,6 +114,8 @@ export default function ReviewPage() {
         setReview(data.review as ProductReview);
         setVerdict((data.verdict as DerivedVerdict) ?? null);
         setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+      } else if (data?.type === "disambiguation" && Array.isArray(data.options) && data.options.length) {
+        setDisambig({ query: data.query ?? text, options: data.options });
       } else if (data?.type === "out_of_scope") {
         setError("scope");
       } else {
@@ -222,6 +225,25 @@ export default function ReviewPage() {
           </div>
           <div className="mt-4 h-[2px] w-full overflow-hidden" style={{ background: HAIR_LIGHT }}>
             <div className="h-full transition-all duration-700" style={{ width: `${((stepIdx + 1) / STEPS.length) * 100}%`, background: TEAL }} />
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Did you mean? (ambiguous query) ═══ */}
+      {disambig && !loading && (
+        <div className="max-w-[1100px] mx-auto px-4 md:px-16 py-10">
+          <p className="text-[13px] uppercase" style={{ letterSpacing: "0.12em", color: TEAL }}>Which one did you mean?</p>
+          <p className="mt-2 text-[17px]" style={{ color: INK }}>
+            &ldquo;{disambig.query}&rdquo; matches a few different products. Pick the exact one so the review uses the right ingredient list.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 max-w-2xl">
+            {disambig.options.map((o) => (
+              <button key={o.name} onClick={() => { setQuery(o.name); analyze(o.name); }}
+                className="text-left rounded-xl px-5 py-4 text-[16px] transition-colors hover:bg-black/[0.03]"
+                style={{ border: `1px solid ${HAIR_LIGHT}`, color: INK }}>
+                {o.name} <span aria-hidden style={{ color: TEAL }}>→</span>
+              </button>
+            ))}
           </div>
         </div>
       )}
