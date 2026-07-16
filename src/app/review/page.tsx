@@ -199,16 +199,14 @@ export default function ReviewPage() {
               View all approved →
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {approvedProducts.slice(0, 8).map((p) => (
-              <Link key={p.slug} href="/verified" className="group rounded-2xl overflow-hidden block" style={{ border: `1px solid ${HAIR_LIGHT}` }}>
-                <div className="aspect-square overflow-hidden">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-4 gap-y-6">
+            {approvedProducts.slice(0, 12).map((p) => (
+              <Link key={p.slug} href="/verified" className="group block">
+                <div className="aspect-square rounded-xl overflow-hidden" style={{ border: `1px solid ${HAIR_LIGHT}` }}>
                   <ProductImage src={p.imageUrl} brand={p.brand} />
                 </div>
-                <div className="p-3">
-                  <p className="text-[13px] leading-tight line-clamp-2" style={{ color: INK }}>{p.productName}</p>
-                  <p className="mt-1 text-[11px] uppercase" style={{ letterSpacing: "0.06em", color: TEAL }}>Approved · {p.score}/100</p>
-                </div>
+                <p className="mt-2 text-[12px] leading-tight line-clamp-2" style={{ color: INK }}>{p.productName}</p>
+                <p className="mt-0.5 text-[10px] uppercase" style={{ letterSpacing: "0.05em", color: TEAL }}>Approved · {p.score}</p>
               </Link>
             ))}
           </div>

@@ -25,6 +25,7 @@ export interface INCIResult {
   ingredients: string[];
   tags: string[];        // e.g. "alcohol-free", "fragrance-free" (as INCIDecoder labels them)
   source: string;        // INCIDecoder product URL
+  imageUrl: string | null; // product front photo hosted by INCIDecoder (no API key needed)
 }
 
 /** Best-effort. Returns null if the ingredient list can't be confidently retrieved. */
@@ -66,7 +67,11 @@ export async function fetchINCI(query: string): Promise<INCIResult | null> {
   const titleMatch = page.match(/Title:\s*(.+?)\s+ingredients/i);
   const productName = titleMatch ? titleMatch[1].trim() : q;
 
-  return { productName, ingredients, tags, source: `https://incidecoder.com${slug}` };
+  // Real product front-photo hosted by INCIDecoder (no API key needed).
+  const imgMatch = page.match(/https:\/\/incidecoder-content[^\s)"']+?(?:photo|front)[^\s)"']*\.(?:jpe?g|png|webp)/i);
+  const imageUrl = imgMatch ? imgMatch[0] : null;
+
+  return { productName, ingredients, tags, source: `https://incidecoder.com${slug}`, imageUrl };
 }
 
 /** Formats the retrieved INCI as a ground-truth block for the system prompt. */

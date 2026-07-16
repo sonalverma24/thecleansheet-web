@@ -145,9 +145,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const review = parsed as ProductReview;
 
-  // Keep the image pulling.
-  let imageUrl: string | null = null;
-  if (isURL(q)) imageUrl = await resolveProductImage(q);
+  // Image pulling: INCIDecoder product photo first (reliable, no API key),
+  // then page scrape (URLs), then Google CSE if configured.
+  let imageUrl: string | null = inci?.imageUrl ?? null;
+  if (!imageUrl && isURL(q)) imageUrl = await resolveProductImage(q);
   if (!imageUrl) {
     const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
     imageUrl = await searchProductImage(imgQuery || q);
