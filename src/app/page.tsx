@@ -352,23 +352,23 @@ function AnalyzerPreview() {
           {/* Left copy */}
           <div>
             <div className="inline-flex items-center gap-2 text-coral-500 text-sm font-normal mb-4 sm:mb-5 uppercase tracking-wide">
-              <Sparkles size={14} /> The Clean Sheet Scoring Engine
+              <Sparkles size={14} /> The Clean Sheet Review Engine
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-4 sm:mb-6">
               Paste a link.
               <br />Get the truth.
             </h2>
             <p className="text-ink-600 text-lg leading-relaxed mb-8">
-              Drop any product URL from Nykaa, Amazon, or a brand website. Or paste the
-              ingredient list. Our scoring engine reads every ingredient against our scientific
-              database and returns a full safety breakdown.
+              Drop a product name or URL. The review engine finds every marketing claim the
+              product makes, digs up the evidence behind each one, reads the real ingredient
+              list, and hands you one clear Clean Sheet standing.
             </p>
             <ul className="space-y-3.5 mb-10">
               {[
-                "Detects banned & high-concern ingredients instantly",
-                "Explains WHY each ingredient is flagged, in plain language",
-                "Suggests science-backed safer alternatives",
-                "Scores Safety, Efficacy, Transparency & Sustainability",
+                "Finds every claim, then grades it on a 1-7 evidence ladder: from 'no proof publicly visible' to published clinical studies",
+                "Reads the actual INCI, so 'fragrance-free' and 'contains actives' claims can't lie",
+                "Checks ASCI advertising rules and the India drug-cosmetic boundary",
+                "Compares price and claims across Nykaa, Amazon, Flipkart & quick commerce",
               ].map(t => (
                 <li key={t} className="flex items-start gap-3 text-ink-700">
                   <CheckCircle2 size={18} className="text-teal-500 flex-shrink-0 mt-0.5" />
@@ -376,13 +376,13 @@ function AnalyzerPreview() {
                 </li>
               ))}
             </ul>
-            <Link href="/analyzer"
+            <Link href="/review"
               className="inline-flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/25 active:scale-[0.98]">
-              <Sparkles size={16} /> Open Ask Clean
+              <Sparkles size={16} /> Review a product free
             </Link>
           </div>
 
-          {/* Right mock UI */}
+          {/* Right mock UI — the review engine result */}
           <div className="relative">
             <div className="absolute -top-5 -right-5 z-20 bg-yellow-500 text-ink-950 text-xs font-medium px-4 py-2 rounded-full shadow-lg">LIVE ✦</div>
             <div className="bg-white rounded-[2rem] border border-ink-100 shadow-2xl shadow-ink-900/8 overflow-hidden">
@@ -391,43 +391,43 @@ function AnalyzerPreview() {
                   <Sparkles size={14} className="text-white" />
                 </div>
                 <div>
-                  <div className="text-sm font-normal text-ink-900">Ask Clean</div>
+                  <div className="text-sm font-normal text-ink-900">Product Review</div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-safe-500 animate-pulse" />
-                    <span className="text-xs text-ink-500">Powered by The Clean Sheet Scoring Engine</span>
+                    <span className="text-xs text-ink-500">Powered by The Clean Sheet Review Engine</span>
                   </div>
                 </div>
               </div>
               <div className="p-5 space-y-4">
-                <div className="bg-teal-50 border border-teal-100 rounded-2xl rounded-bl-sm px-4 py-3 max-w-[88%]">
-                  <p className="text-ink-800 text-sm">Paste a product URL or ingredient list and I'll give you a full Clean Sheet analysis.</p>
-                </div>
                 <div className="flex justify-end">
                   <div className="bg-teal-600 text-white rounded-2xl rounded-br-sm px-4 py-3 max-w-[88%]">
-                    <p className="text-sm">https://nykaa.com/p/sunscreen-spf-50...</p>
+                    <p className="text-sm">La Roche-Posay Mela B3 Serum</p>
                   </div>
                 </div>
                 <div className="bg-teal-50 border border-teal-100 rounded-2xl rounded-bl-sm px-4 py-4">
-                  <p className="text-ink-700 text-sm mb-3">Analyzed! <strong className="text-coral-600">2 high-concern ingredients</strong> found:</p>
+                  <p className="text-ink-700 text-sm mb-3"><strong>26 claims found.</strong> Checked against studies, the INCI, and 8 platforms:</p>
                   <div className="flex items-center gap-3 bg-white border border-ink-100 rounded-xl px-3 py-2.5 mb-3">
-                    <div className="text-2xl font-medium text-ink-900">64</div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo.png" alt="" className="w-9 h-9 rounded-full object-cover" />
                     <div>
-                      <div className="text-xs font-medium text-caution-600 uppercase tracking-wide">FAIR</div>
-                      <div className="text-xs text-ink-400">Clean Sheet Score</div>
+                      <div className="text-xs font-medium text-teal-700 uppercase tracking-wide">Clean Sheet Approved</div>
+                      <div className="text-xs text-ink-400">Claims hold up to the evidence</div>
                     </div>
-                    <div className="ml-auto flex gap-1">
-                      {[1,2,3,4].map(i => <div key={i} className={`w-5 h-1.5 rounded-full ${i<=2?'bg-caution-500':'bg-ink-100'}`} />)}
-                    </div>
+                    <CheckCircle2 size={18} className="ml-auto text-teal-600" />
+                  </div>
+                  <div className="flex items-start gap-2 text-xs text-teal-800 bg-white border border-teal-100 rounded-xl px-3 py-2.5 mb-2">
+                    <CheckCircle2 size={13} className="flex-shrink-0 mt-0.5 text-teal-600" />
+                    <span><strong>&ldquo;Corrects dark spots&rdquo;</strong> — clinical study, 41 women, 8 weeks. Well supported.</span>
                   </div>
                   <div className="flex items-start gap-2 text-xs text-coral-700 bg-coral-50 border border-coral-100 rounded-xl px-3 py-2.5">
                     <XCircle size={13} className="flex-shrink-0 mt-0.5" />
-                    <span><strong>Oxybenzone</strong>, endocrine disruptor, coral reef toxin.</span>
+                    <span><strong>&ldquo;Fragrance-free&rdquo;</strong> on a marketplace listing — contradicted by the INCI.</span>
                   </div>
                 </div>
               </div>
               <div className="px-5 pb-5">
                 <div className="flex items-center gap-2 bg-ink-50 border border-ink-100 rounded-2xl px-4 py-3">
-                  <span className="text-ink-400 text-sm flex-1 select-none">Paste URL or ingredient list...</span>
+                  <span className="text-ink-400 text-sm flex-1 select-none">Paste a product name or URL...</span>
                   <div className="w-7 h-7 rounded-xl bg-coral-500 flex items-center justify-center">
                     <ArrowRight size={13} className="text-white" />
                   </div>
@@ -958,15 +958,15 @@ function CTABanner() {
 const HOME_FAQS = [
   {
     q: "How do I check if a beauty product is safe in India?",
-    a: "The easiest way is to use The Clean Sheet's free AI tool 'Ask Clean'. Paste the product URL or ingredient list and the tool instantly checks every ingredient against India, EU, US & Korean safety standards, flags harmful chemicals, and gives you a science-backed Clean Sheet Score.",
+    a: "The easiest way is The Clean Sheet's free Product Review tool. Paste a product name or URL and it finds every marketing claim, grades each against real evidence and the actual ingredient list, checks India's advertising and drug-boundary rules, and gives you one clear Clean Sheet standing.",
   },
   {
     q: "What is The Clean Sheet?",
-    a: "The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide AI-powered ingredient analysis (Ask Clean), a certified product directory, a database of 25,000+ cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.",
+    a: "The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide an AI-powered Product Review tool that checks marketing claims against evidence, a reviewed product registry, a database of 25,000+ cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.",
   },
   {
     q: "Is The Clean Sheet's ingredient analysis free?",
-    a: "Yes. The Ask Clean tool is completely free to use. Paste any product URL (Nykaa, Myntra, Amazon, brand website) or paste an ingredient list directly, and you'll get a full safety analysis including a Clean Sheet Score within seconds.",
+    a: "Yes. The Product Review tool is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full review: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet standing.",
   },
   {
     q: "What does the Clean Sheet Score mean?",

@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export function Navigation() {
   const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
 
   if (pathname?.startsWith('/app')) {
     return null;
@@ -12,12 +14,12 @@ export function Navigation() {
 
   return (
     <>
-      {/* Desktop Top Nav */}
-      <nav className="hidden md:block border-b border-[var(--color-surface-subtle)]">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-4 flex items-center justify-between">
+      {/* Desktop Top Nav — sticky, blurs over content when scrolling */}
+      <nav className="hidden md:block sticky top-0 z-50 border-b border-[var(--color-surface-subtle)] bg-white/90 backdrop-blur-md">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-3 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex-shrink-0">
-            <img src="/images/logo.png" alt="The Clean Sheet" className="w-24 h-24 object-contain" />
+            <img src="/images/logo.png" alt="The Clean Sheet" className="w-16 h-16 object-contain" />
           </Link>
           <div className="flex items-center gap-6 text-[var(--color-charcoal)] text-[14px] tracking-[0.05em] uppercase">
             <Link href="/review" className="hover:text-[var(--color-primary)] transition-colors">Product Review</Link>
@@ -27,8 +29,26 @@ export function Navigation() {
             <Link href="/about" className="hover:text-[var(--color-primary)] transition-colors">About</Link>
           </div>
         </div>
-        <div className="flex items-center gap-6 text-[14px] tracking-[0.05em] uppercase">
+        <div className="flex items-center gap-4 text-[14px] tracking-[0.05em] uppercase">
           <Link href="/for-brands" className="py-2 px-5 border border-[var(--color-charcoal)] rounded-full hover:bg-[var(--color-charcoal)] hover:text-white transition-colors">Get Certified</Link>
+          {!loading && (
+            user ? (
+              <button
+                onClick={() => signOut()}
+                title={user.email ?? undefined}
+                className="py-2 px-5 rounded-full bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="py-2 px-5 rounded-full bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
+              >
+                Login
+              </Link>
+            )
+          )}
         </div>
         </div>
       </nav>

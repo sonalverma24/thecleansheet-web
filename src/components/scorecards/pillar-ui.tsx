@@ -48,19 +48,44 @@ export function scoreToTier(score: number): ReviewTier {
   return score >= 75 ? "approved" : score >= 60 ? "mostly-clean" : "needs-proof";
 }
 
-/* Tile corner mark: Approved products carry the official branded seal;
+/* Tile corner mark: Approved products carry the TCS logo with an "APPROVED"
+   rubber stamp across it (overflowing the edge, never hiding the logo);
    other tiers show the compact pill so cautions stay visible. */
 export function TileTierMark({ tier }: { tier: ReviewTier }) {
   if (tier === "approved") {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src="/images/Logos/Approved Logo for website.png"
-        alt="Clean Sheet Approved"
-        width={52}
-        height={52}
-        className="w-[52px] h-[52px] object-cover rounded-full shadow-md"
-      />
+      <span className="relative inline-block" style={{ width: 54, height: 54 }} aria-label="Clean Sheet Approved">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt=""
+          width={54}
+          height={54}
+          className="w-[54px] h-[54px] object-cover rounded-full shadow-md bg-white"
+        />
+        {/* Rubber stamp — angled, overflows the logo edge, sits low so the wordmark stays visible */}
+        <span
+          className="absolute uppercase select-none"
+          style={{
+            bottom: 7,
+            left: -9,
+            transform: "rotate(-9deg)",
+            fontSize: 8.5,
+            fontWeight: 800,
+            letterSpacing: "0.12em",
+            lineHeight: 1,
+            color: "#1d6a5f",
+            background: "rgba(255,255,255,0.94)",
+            border: "1.5px solid #1d6a5f",
+            borderRadius: 3,
+            padding: "2.5px 5px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.14)",
+            fontFamily: "Helvetica, Arial, sans-serif",
+          }}
+        >
+          Approved
+        </span>
+      </span>
     );
   }
   return (
