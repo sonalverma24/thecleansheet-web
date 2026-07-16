@@ -34,9 +34,18 @@ export function ScorecardResultCard({
   const displayPrice = getDisplayPrice(product);
   const isPending = categoryLabel === "Category Pending";
 
+  // Live-repository products link to their stored review and wear a NEW badge
+  // for their first 30 days in the catalogue.
+  const isNew =
+    product.freshReview === true &&
+    Date.now() - new Date(product.analyzedAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+  const href = product.freshReview
+    ? `/review?q=${encodeURIComponent(product.productName)}`
+    : `/brands/${product.brandSlug}/${product.slug}`;
+
   return (
     <Link
-      href={`/brands/${product.brandSlug}/${product.slug}`}
+      href={href}
       onClick={() => track("scorecard_opened", { slug: product.slug })}
       className="block group"
     >
@@ -62,6 +71,29 @@ export function ScorecardResultCard({
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
             <TileTierMark tier={scoreToTier(product.score)} />
           </div>
+
+          {/* NEW badge - top left, lime, first 30 days only */}
+          {isNew && (
+            <div className="absolute top-2 left-2" style={{ zIndex: 10 }}>
+              <span
+                className="uppercase select-none"
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.1em",
+                  lineHeight: 1,
+                  color: "#282828",
+                  background: "#d2ff34",
+                  borderRadius: 999,
+                  padding: "4px 9px",
+                  boxShadow: "0 1px 6px rgba(0,0,0,0.12)",
+                  display: "inline-block",
+                }}
+              >
+                New
+              </span>
+            </div>
+          )}
 
           {/* Category pill - bottom left */}
           <div

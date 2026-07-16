@@ -90,6 +90,9 @@ export type ProductScorecard = {
   claimsNotVerified?: string[];
   availabilitySources?: string[];
   retailerLinks?: { name: string; url: string }[];
+  /** Product entered the catalogue via the live review repository (no static
+      detail page — tiles link to the stored review; shows a NEW badge for 30 days). */
+  freshReview?: boolean;
 };
 
 export type Brand = {

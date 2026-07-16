@@ -228,6 +228,57 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
   }
 }
 
+/** Repository products mapped into the static-catalogue tile format, so live
+    reviews sit in the /brands grid exactly like curated products. Tiles link
+    to the stored review (there is no static detail page for them). */
+export async function listRepositoryCatalogueProducts(limit = 60): Promise<import("@/data/brands/types").ProductScorecard[]> {
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews")
+      .select("product_slug, result, reviewed_at")
+      .eq("rubric_rev", RUBRIC_REV)
+      .order("reviewed_at", { ascending: false })
+      .limit(limit);
+
+    const tierToLegacy: Record<string, "Excellent" | "Good" | "Fair" | "Concern"> =
+      { "approved": "Excellent", "mostly-clean": "Good", "needs-proof": "Fair", "misleading": "Concern" };
+
+    return (data ?? []).flatMap((row) => {
+      const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
+      const rv = res?.review;
+      if (!rv?.productName) return [];
+      const tier = res?.verdict?.tier ?? "needs-proof";
+      return [{
+        productName: rv.productName,
+        slug: String(row.product_slug),
+        brand: rv.brand ?? "",
+        brandSlug: slugify(rv.brand ?? "", ""),
+        priceRange: rv.priceRange || rv.lowestPrice || "",
+        productType: "leave-on" as const,
+        concern: rv.category ?? "",
+        summary: rv.verdict?.cleanSheetTakeaway ?? "",
+        score: rv.scores?.total ?? 0,
+        scoreLabel: tierToLegacy[tier] ?? "Fair",
+        targetUser: rv.targetUser ?? "",
+        image: rv.imageUrl ?? "",
+        pillars: [],
+        keyActives: [],
+        ingredients: (rv.inciIngredients ?? []).map((name) => ({ name, note: "", flag: "ok" as const })),
+        pass_badges: [],
+        warn_badges: [],
+        info_badges: [],
+        indiaContext: "",
+        analyzedAt: rv.reviewedAt ?? String(row.reviewed_at ?? ""),
+        category: rv.category,
+        claimsMade: (rv.claimMap ?? []).slice(0, 8).map((c) => c.text),
+        freshReview: true,
+      }];
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const q = query.trim();
   if (!q) return { type: "error" };

@@ -13,7 +13,7 @@ import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { scoreColors } from "@/data/brands";
-import { scoreToTier, TIER_STYLES, TierBadge } from "@/components/scorecards/pillar-ui";
+import { scoreToTier, TIER_STYLES, TierBadge, ApprovedStamp } from "@/components/scorecards/pillar-ui";
 import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -653,22 +653,11 @@ function formatAnalysedDate(isoDate: string): string {
 function ScoreBadge({ score }: { score: number }) {
   const tier = scoreToTier(score);
 
-  // Approved gets the official branded seal artwork: circular crop + stamp-down entrance.
+  // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
   if (tier === "approved") {
     return (
-      <div
-        className="relative flex-shrink-0 rounded-full overflow-hidden shadow-md"
-        style={{ width: 120, height: 120, animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" }}
-        aria-label="Clean Sheet Approved"
-      >
-        <Image
-          src="/images/Logos/Approved Logo for website.png"
-          alt="The Clean Sheet — Approved"
-          width={120}
-          height={120}
-          className="w-full h-full object-cover rounded-full"
-          priority
-        />
+      <div className="flex-shrink-0">
+        <ApprovedStamp size={116} animate />
       </div>
     );
   }

@@ -21,7 +21,7 @@ function Hero() {
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 22%)" }} />
       </div>
 
-      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-28 pb-16 md:pb-28">
+      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-14 md:pt-20 pb-14 md:pb-20">
         <HeroReveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             India&apos;s first independent beauty certification
@@ -99,7 +99,7 @@ function StatsBar() {
 ───────────────────────────────────────────── */
 function TheProblem() {
   return (
-    <section className="py-16 sm:py-20 bg-ink-950">
+    <section className="py-12 sm:py-16 bg-ink-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           <div>
@@ -314,7 +314,7 @@ function VisualProof() {
   ];
 
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mb-14">
           <div className="text-coral-500 text-sm font-normal uppercase tracking-wider mb-3">Why it matters</div>
@@ -346,7 +346,7 @@ function VisualProof() {
 ───────────────────────────────────────────── */
 function AnalyzerPreview() {
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* Left copy */}
@@ -459,7 +459,7 @@ function FourPillars() {
   };
 
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section image banner */}
         <div className="relative h-56 lg:h-72 rounded-3xl overflow-hidden mb-16">
@@ -529,7 +529,7 @@ function IngredientStrip() {
 ───────────────────────────────────────────── */
 function CertificationTiers() {
   return (
-    <section className="relative py-16 sm:py-24 lg:py-28 overflow-hidden">
+    <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden">
       {/* Full-bleed image */}
       <div className="absolute inset-0">
         <Image
@@ -585,7 +585,7 @@ function CertificationTiers() {
 ───────────────────────────────────────────── */
 function ForBrands() {
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left, image with overlay card */}
@@ -671,7 +671,7 @@ function ForBrands() {
 ───────────────────────────────────────────── */
 function ForConsumers() {
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-ink-950">
+    <section className="py-12 sm:py-16 lg:py-20 bg-ink-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -703,10 +703,21 @@ function ForConsumers() {
                 </div>
               ))}
             </div>
-            <Link href="/certified"
-              className="inline-flex items-center gap-2.5 bg-teal-600 hover:bg-teal-500 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl active:scale-[0.98]">
-              Verify a product <ArrowRight size={16} />
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/certified"
+                className="inline-flex items-center gap-2.5 bg-teal-600 hover:bg-teal-500 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl active:scale-[0.98]">
+                Verify a product <ArrowRight size={16} />
+              </Link>
+              <a
+                href="https://chat.whatsapp.com/BUvEDcUj9Dh14dwSVRVvu4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-teal-400/50 text-teal-300 hover:bg-teal-500/10 font-normal px-5 py-3 rounded-full transition-all text-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+                Join our WhatsApp community
+              </a>
+            </div>
           </div>
 
           {/* Right: proof page mock */}
@@ -889,7 +900,7 @@ function HowItWorks() {
     { n:"03", title:"Score. Certify. Publish.",    body:"Products receive a Clean Sheet Score and tier. A QR code links to the public scorecard for real-time consumer verification.", graphic: <StepGraphicPublish /> },
   ];
   return (
-    <section className="py-16 sm:py-24 lg:py-28 bg-white">
+    <section className="py-12 sm:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 text-teal-600 text-sm font-normal mb-4 uppercase tracking-wide">
@@ -988,7 +999,7 @@ const HOME_FAQS = [
 
 function HomeFAQ() {
   return (
-    <section className="py-16 sm:py-20 bg-teal-50/40 border-t border-teal-100">
+    <section className="py-12 sm:py-16 bg-teal-50/40 border-t border-teal-100">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="text-xs font-normal text-ink-400 uppercase tracking-widest mb-3 text-center">Common Questions</div>
         <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight mb-10 text-center">

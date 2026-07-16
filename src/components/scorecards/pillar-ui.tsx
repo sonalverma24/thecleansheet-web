@@ -48,46 +48,55 @@ export function scoreToTier(score: number): ReviewTier {
   return score >= 75 ? "approved" : score >= 60 ? "mostly-clean" : "needs-proof";
 }
 
-/* Tile corner mark: Approved products carry the TCS logo with an "APPROVED"
-   rubber stamp across it (overflowing the edge, never hiding the logo);
+/* The TCS logo with an angled "APPROVED" rubber stamp across its lower third —
+   overflowing the edge, never hiding the wordmark. Scales from tile corners
+   (54px) to the product-page hero (120px+). */
+export function ApprovedStamp({ size = 54, animate = false }: { size?: number; animate?: boolean }) {
+  const s = size / 54; // proportional scale from the tile design
+  return (
+    <span
+      className="relative inline-block"
+      style={{ width: size, height: size, ...(animate ? { animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" } : {}) }}
+      aria-label="Clean Sheet Approved"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo.png"
+        alt=""
+        width={size}
+        height={size}
+        style={{ width: size, height: size }}
+        className="object-cover rounded-full shadow-md bg-white"
+      />
+      <span
+        className="absolute uppercase select-none"
+        style={{
+          bottom: 7 * s,
+          left: -9 * s,
+          transform: "rotate(-9deg)",
+          fontSize: 8.5 * s,
+          fontWeight: 800,
+          letterSpacing: "0.12em",
+          lineHeight: 1,
+          color: "#1d6a5f",
+          background: "rgba(255,255,255,0.94)",
+          border: `${Math.max(1.5 * s, 1.5)}px solid #1d6a5f`,
+          borderRadius: 3 * s,
+          padding: `${2.5 * s}px ${5 * s}px`,
+          boxShadow: "0 1px 4px rgba(0,0,0,0.14)",
+          fontFamily: "Helvetica, Arial, sans-serif",
+        }}
+      >
+        Approved
+      </span>
+    </span>
+  );
+}
+
+/* Tile corner mark: Approved products carry the stamped logo;
    other tiers show the compact pill so cautions stay visible. */
 export function TileTierMark({ tier }: { tier: ReviewTier }) {
-  if (tier === "approved") {
-    return (
-      <span className="relative inline-block" style={{ width: 54, height: 54 }} aria-label="Clean Sheet Approved">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.png"
-          alt=""
-          width={54}
-          height={54}
-          className="w-[54px] h-[54px] object-cover rounded-full shadow-md bg-white"
-        />
-        {/* Rubber stamp — angled, overflows the logo edge, sits low so the wordmark stays visible */}
-        <span
-          className="absolute uppercase select-none"
-          style={{
-            bottom: 7,
-            left: -9,
-            transform: "rotate(-9deg)",
-            fontSize: 8.5,
-            fontWeight: 800,
-            letterSpacing: "0.12em",
-            lineHeight: 1,
-            color: "#1d6a5f",
-            background: "rgba(255,255,255,0.94)",
-            border: "1.5px solid #1d6a5f",
-            borderRadius: 3,
-            padding: "2.5px 5px",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.14)",
-            fontFamily: "Helvetica, Arial, sans-serif",
-          }}
-        >
-          Approved
-        </span>
-      </span>
-    );
-  }
+  if (tier === "approved") return <ApprovedStamp size={54} />;
   return (
     <span
       className="inline-block rounded-full"
