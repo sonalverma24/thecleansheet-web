@@ -119,13 +119,17 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   const ranked = strong.length ? strong : rankedAll;
   const distinct: ProductCandidate[] = ranked.slice(0, 5).map((d) => ({ name: d.name, slug: d.slugs[0], overlap: d.overlap }));
 
+  // Exact name match wins outright — this is what a click on a "did you mean?"
+  // option sends back, so it must never re-trigger the question.
+  const exact = ranked.find((d) => normalizeName(d.name) === normalizeName(q));
+
   // Ambiguous when the top two distinct products match about equally: ask, don't guess.
-  if (ranked.length >= 2 && ranked[0].overlap - ranked[1].overlap < 0.2) {
+  if (!exact && ranked.length >= 2 && ranked[0].overlap - ranked[1].overlap < 0.2) {
     return { chosen: null, distinct, ambiguous: true };
   }
 
   // One clear product: pull ITS ingredients (most complete among its own duplicate entries).
-  const top = ranked[0];
+  const top = exact ?? ranked[0];
   let chosen: INCIResult | null = null;
   for (const slug of top.slugs.slice(0, 2)) {
     const page = await fetchMarkdown(`https://incidecoder.com/products/${slug}`);
