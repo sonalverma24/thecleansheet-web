@@ -420,6 +420,7 @@ USE:
   "The product claims X, but no finished product evidence is publicly visible to support it."
   (Always "publicly visible" / "not found in public sources" — never assert that evidence does not exist. Brands may hold unpublished reports.)
   When a BRAND-PUBLISHED EVIDENCE block is provided in the prompt, grade claims against those documents: a genuine brand-hosted test report on the finished product = Level 4; Level 5 if a named independent lab ran it. Extract sample size, method, duration and endpoint from the document itself.
+  Image-published proof: when the PRODUCT PAGE CONTENT shows a proof/test-results section whose results are published as graphics (marked "[Graphic on page: ...]" — e.g. a "Proof of the Code" section with a moisturization test chart), treat that as the brand publishing finished-product test results = Level 4 for the claims those graphics cover. Name the section in your evidenceNote. Do not invent numbers you cannot read from the text.
   "The ingredient has published research, but this is ingredient-level evidence, not finished product evidence."
   "This claim uses absolute language that is difficult to substantiate without clinical proof."
   "The formula logic supports X, but claim Y goes beyond what the product format can plausibly deliver."

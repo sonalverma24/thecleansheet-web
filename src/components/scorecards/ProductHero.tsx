@@ -651,46 +651,44 @@ function formatAnalysedDate(isoDate: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  // Tier seal: the TCS badge with the tier word inside — no numeric score shown.
+  // Self-contained SVG tier seal (no image asset) — no numeric score shown.
   const tier = scoreToTier(score);
   const t = TIER_STYLES[tier];
-  const words = t.label.replace(/^Clean Sheet\s+/i, "").split(" ");
+  const words = t.label.replace(/^Clean Sheet\s+/i, "").toUpperCase().split(" ");
   return (
-    <div
-      className="relative flex-shrink-0"
-      style={{ width: 130, height: 130 }}
-      aria-label={t.label}
-    >
-      {/* Badge template - "THE CLEAN SHEET" + "EST 2025" already printed */}
-      <Image
-        src="/TCS Scoring badge empty.png"
-        alt=""
-        width={130}
-        height={130}
-        className="w-full h-full object-contain"
-        priority
-      />
-      {/* Tier word overlaid in centre */}
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center text-center"
-        style={{ paddingTop: "8px" }}
-      >
-        {words.map((w) => (
-          <span
+    <div className="relative flex-shrink-0" style={{ width: 120, height: 120 }} aria-label={t.label}>
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        {/* Stamp rings */}
+        <circle cx="60" cy="60" r="57" fill="#fff" stroke={t.fg} strokeWidth="2" />
+        <circle cx="60" cy="60" r="49" fill="none" stroke={t.fg} strokeWidth="0.75" strokeDasharray="2.5 2.5" />
+        {/* Arc text paths */}
+        <defs>
+          <path id="sealTop" d="M 60,60 m -40,0 a 40,40 0 1,1 80,0" />
+          <path id="sealBottom" d="M 60,60 m -40,0 a 40,40 0 1,0 80,0" />
+        </defs>
+        <text fontSize="9.5" letterSpacing="2.2" fill={t.fg} fontFamily="Helvetica, Arial, sans-serif">
+          <textPath href="#sealTop" startOffset="50%" textAnchor="middle">THE CLEAN SHEET</textPath>
+        </text>
+        <text fontSize="7.5" letterSpacing="3" fill={t.fg} opacity="0.7" fontFamily="Helvetica, Arial, sans-serif">
+          <textPath href="#sealBottom" startOffset="50%" textAnchor="middle">EST 2025 · INDIA</textPath>
+        </text>
+        {/* Tier word(s), centred */}
+        {words.map((w, i) => (
+          <text
             key={w}
-            className="leading-[1.1] select-none uppercase"
-            style={{
-              fontFamily: "'Cooper BT', sans-serif",
-              fontSize: words.join(" ").length > 8 ? "15px" : "19px",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              color: t.fg,
-            }}
+            x="60"
+            y={words.length === 1 ? 65 : 58 + i * 15}
+            textAnchor="middle"
+            fontSize={w.length > 8 ? 12 : 15}
+            fontWeight="700"
+            letterSpacing="0.5"
+            fill={t.fg}
+            fontFamily="'Cooper BT', Georgia, serif"
           >
             {w}
-          </span>
+          </text>
         ))}
-      </div>
+      </svg>
     </div>
   );
 }

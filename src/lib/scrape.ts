@@ -31,7 +31,9 @@ export function titleFromMarkdown(md: string): string | null {
     .trim() || null;
 }
 
-/** Trim nav/menu boilerplate from a scraped product page, keep the body. */
+/** Trim nav/menu boilerplate from a scraped product page, keep the body.
+    Image embeds are kept as their captions — brands often publish test-result
+    proof as graphics (e.g. a "Proof of the Code" section of charts). */
 export function productBodyExcerpt(md: string, limit = 9000): string {
   const lines = md.split("\n");
   // Body usually starts at the first H1 after the link-heavy header block.
@@ -39,13 +41,21 @@ export function productBodyExcerpt(md: string, limit = 9000): string {
   if (start === -1) start = 0;
   return lines
     .slice(start)
+    .map((l) => {
+      const t = l.trim();
+      // Keep an image's caption as text; drop caption-less images.
+      if (/^!\[/.test(t)) {
+        const alt = t.match(/^!\[([^\]]*)\]/)?.[1]?.replace(/^Image \d+:\s*/i, "").trim();
+        return alt && alt.length > 3 ? `[Graphic on page: ${alt}]` : "";
+      }
+      return l;
+    })
     .filter((l) => {
       const t = l.trim();
       if (!t) return false;
-      // Drop pure-link nav rows and image rows
+      // Drop pure-link nav rows
       const links = (t.match(/\]\(/g) || []).length;
       if (links >= 3 && t.replace(/\[[^\]]*\]\([^)]*\)/g, "").trim().length < 10) return false;
-      if (/^!\[/.test(t)) return false;
       return true;
     })
     .join("\n")

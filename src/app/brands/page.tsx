@@ -12,17 +12,17 @@ import type { ReviewTier } from "@/lib/product-review-types";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Clean Beauty Brand Scores, India's Scored Brand Directory",
+  title: "Product Reviews · India's Independent Clean Beauty Registry",
   description:
-    "Science-backed scorecards for India's top beauty brands. Real ingredient analysis, regulatory compliance checks, and Clean Sheet Scores, zero brand bias.",
+    "Independent, science-backed reviews of India's beauty products. Marketing claims graded against real evidence, full ingredient analysis, regulatory checks, zero brand bias.",
   keywords: [
     "clean beauty brands India", "Minimalist review India", "best clean skincare brands India",
     "brand ingredient safety score", "skincare brand ranking India", "clean beauty certification India",
   ],
   alternates: { canonical: "https://thecleansheet.in/brands" },
   openGraph: {
-    title: "Clean Beauty Brand Scores | The Clean Sheet™",
-    description: "Real Clean Sheet Scores for Indian beauty brands. Ingredient safety, compliance, formulation logic, all scored.",
+    title: "Product Reviews | The Clean Sheet™",
+    description: "Independent reviews of Indian beauty products. Claims checked against proof, formulas read ingredient by ingredient.",
     url: "https://thecleansheet.in/brands",
     type: "website",
   },
@@ -66,20 +66,20 @@ function HeroRing({ score, size }: { score: number; size: number }) {
           style={{ animation: "drawArc 1.4s cubic-bezier(0.4,0,0.2,1) forwards" }}
         />
         <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.38} textAnchor="middle" fontSize={br * 1.0} fontWeight={700} fill="#fff"
+        <text x={bx} y={by + br * 0.34} textAnchor="middle" fontSize={br * 0.9} fontWeight={700} fill="#fff"
           fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
-          {score}
+          ✓
         </text>
       </svg>
     </div>
   );
 }
 
-const SCORE_LEGEND = [
-  { label: "Excellent", range: "90-100", color: "bg-teal-500"  },
-  { label: "Good",      range: "70-89",  color: "bg-blue-500"  },
-  { label: "Fair",      range: "50-69",  color: "bg-amber-500" },
-  { label: "Concern",   range: "0-49",   color: "bg-red-500"   },
+const TIER_LEGEND = [
+  { label: "Clean Sheet Approved", note: "claims proven",        color: "bg-lime-400"  },
+  { label: "Mostly Clean",         note: "minor gaps",           color: "bg-teal-400"  },
+  { label: "Needs Proof",          note: "evidence not visible", color: "bg-amber-400" },
+  { label: "Misleading",           note: "claims contradicted",  color: "bg-red-400"   },
 ];
 
 export default async function BrandsPage() {
@@ -138,22 +138,23 @@ export default async function BrandsPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="anim-fade-up" style={{ animationDelay: "0.05s" }}>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-teal-300 text-xs px-3 py-1.5 rounded-full mb-6">
-                <Microscope size={12} /> India's First Clean Beauty Scorecard Directory
+                <Microscope size={12} /> India&apos;s Independent Product Review Registry
               </div>
               <h1 className="text-4xl sm:text-5xl font-medium text-white tracking-tight mb-5 leading-[1.1]">
-                Every brand.<br />
-                Every product.<br />
-                <span className="text-teal-400">Scored by science.</span>
+                Every claim.<br />
+                Every ingredient.<br />
+                <span className="text-teal-400">Checked against proof.</span>
               </h1>
               <p className="text-teal-300/75 text-lg leading-relaxed mb-8 max-w-lg">
-                Clean Sheet Scores for India's beauty brands, built on ingredient safety, regulatory compliance, formulation logic, and transparency.
+                Independent reviews of India&apos;s beauty products. Marketing claims graded against real
+                evidence, formulas read ingredient by ingredient, and one clear Clean Sheet standing for each.
               </p>
               <div className="flex flex-wrap gap-2">
-                {SCORE_LEGEND.map(({ label, range, color }) => (
+                {TIER_LEGEND.map(({ label, note, color }) => (
                   <div key={label} className="flex items-center gap-1.5 bg-white/8 border border-white/10 rounded-full px-3 py-1.5">
                     <span className={`w-2 h-2 rounded-full ${color}`} />
                     <span className="text-white/70 text-xs">{label}</span>
-                    <span className="text-white/35 text-xs font-sans">{range}</span>
+                    <span className="text-white/35 text-xs font-sans">{note}</span>
                   </div>
                 ))}
               </div>
