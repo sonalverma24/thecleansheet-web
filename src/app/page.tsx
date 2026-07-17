@@ -14,9 +14,21 @@ import OpenFormButton from "@/components/OpenFormButton";
 function Hero() {
   return (
     <header className="relative overflow-hidden bg-white">
-      {/* Creative, Ken Burns image, settles in slowly and fades into the canvas */}
-      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[46%]" aria-hidden>
-        <KenBurns src="/images/creatives/hero-flatlay.jpg" className="w-full h-full" />
+      {/* Creative: cinematic loop, drifting slowly, melting into the canvas.
+          Desktop only — mobile gets the lightweight still below. */}
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[46%] overflow-hidden" aria-hidden>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover"
+          style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
+        >
+          <source src="/Videos/dna-skincare-web720.mp4" type="video/mp4" />
+        </video>
+        {/* Same canvas-melt gradients as before — the video has no visible edge */}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.72) 30%, rgba(255,255,255,0.08) 72%)" }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 22%)" }} />
       </div>
