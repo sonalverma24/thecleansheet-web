@@ -10,7 +10,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ReviewResult from "@/components/review/ReviewResult";
+import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
+import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
 import type { VerifiedProduct } from "@/lib/types";
 
@@ -254,12 +255,15 @@ export default function ReviewPage() {
         </div>
       )}
 
-      {/* ═══ Results — brand-product page format ═══ */}
-      {review && verdict && !loading && (
-        <div ref={resultsRef}>
-          <ReviewResult review={review} verdict={verdict} />
-        </div>
-      )}
+      {/* ═══ Results — THE one product-page format ═══ */}
+      {review && verdict && !loading && (() => {
+        const mapped = reviewToScorecard(review, verdict);
+        return (
+          <div ref={resultsRef}>
+            <ProductScorecardView product={mapped.product} brand={mapped.brand} brandSlug={mapped.brandSlug} />
+          </div>
+        );
+      })()}
     </div>
   );
 }

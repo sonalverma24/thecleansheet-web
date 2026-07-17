@@ -95,6 +95,9 @@ export type ProductScorecard = {
   freshReview?: boolean;
   /** True verdict tier for repository products (claim-gated, not score-only). */
   reviewTier?: "approved" | "mostly-clean" | "needs-proof" | "misleading";
+  /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
+      live-reviewed products — rendered as its own section in the product view. */
+  regulatoryFlags?: { claim: string; note: string }[];
 };
 
 export type Brand = {

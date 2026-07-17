@@ -1,0 +1,162 @@
+{
+  "rubric": "r4",
+  "ranAt": "2026-07-17T07:26:15.995Z",
+  "summary": {
+    "misleading": 47,
+    "approved": 20,
+    "mostly-clean": 20,
+    "needs-proof": 5
+  },
+  "issues": [
+    {
+      "query": "Minimalist Salicylic Acid 2% Face Serum",
+      "type": "exception: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [503 Service Unavailable] This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later."
+    },
+    {
+      "query": "Dot & Key Vitamin C + E & Hyaluronic Acid Sunscreen SPF 50+ PA++++",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Dot And Key Ceramide And Hyaluronic Acid Moisturizer",
+        "Dot & Key Sunscreen",
+        "Dot & Key Sunscreen Stick",
+        "Dot & Key Tinted Sunscreen",
+        "Dot and key Tinted Sunscreen"
+      ]
+    },
+    {
+      "query": "Dot & Key Vitamin C + E Sorbet Moisturizer",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Dot And Key Ceramide And Hyaluronic Acid Moisturizer",
+        "Dot & Key Moisturizer",
+        "Dot & Key Glow Revealing Vitamin C Serum Concentrate",
+        "Dot & Key Vitamin C Serum",
+        "Dot & Key 20% Vitamin C Serum"
+      ]
+    },
+    {
+      "query": "Dot & Key Barrier Repair & Restore Moisturizer with Ceramides",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Barrier Repair Cream",
+        "Dot & Key Barrier Repair Facewash",
+        "Dot & Key Barrier Repair Moisturiser"
+      ]
+    },
+    {
+      "query": "Dot & Key 10% Vitamin C + E & Hyaluronic Acid Face Serum",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Dot And Key Ceramide And Hyaluronic Acid Moisturizer",
+        "Dot & Key Glow Revealing Vitamin C Serum Concentrate",
+        "Dot & Key Salicylic Acid Serum",
+        "Dot & Key 10% Niacinamide Serum",
+        "Dot & Key Vitamin C Serum"
+      ]
+    },
+    {
+      "query": "Dot & Key Barrier Repair & Restore Face Wash",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Barrier Repair Cream",
+        "Dot & Key Barrier Repair Facewash",
+        "Dot & Key Gentle Face Wash",
+        "Dot & Key Barrier Repair Moisturiser"
+      ]
+    },
+    {
+      "query": "Dot & Key Strawberry Dew Tinted Sunscreen SPF 50+ PA++++",
+      "type": "disambiguation",
+      "options": [
+        "Dot & Key Tinted Sunscreen",
+        "Dot and key Tinted Sunscreen",
+        "Dot & Key Sunscreen",
+        "Dot & Key Sunscreen Stick",
+        "Dot & Key Swim + Sports Sunscreen"
+      ]
+    },
+    {
+      "query": "Hyphen 0.1% Retinal Reset Serum Pro",
+      "type": "out_of_scope"
+    },
+    {
+      "query": "Plum 10% Niacinamide & Rice Water Brightening Serum",
+      "type": "disambiguation",
+      "options": [
+        "PLUM 10% Niacinamide Brightening Face Serum With Rice Water & Ferment - Fades Blemishes & Acne Marks",
+        "PLUM 10% Niacinamide Face Serum With Rice Water"
+      ]
+    },
+    {
+      "query": "Plum Green Tea & Zinc Super-Matte SPF 50 PA++++",
+      "type": "disambiguation",
+      "options": [
+        "PLUM Green Tea & Zinc Super Matte Sunscreen Gel",
+        "PLUM Green Tea & Peptide Sheer-tinted Sunscreen Serum With SPF 50 & Pa++++ |",
+        "PLUM Green Tea Day-Light Sunscreen Gel Spf 35 Pa+++"
+      ]
+    },
+    {
+      "query": "Plum Bulgarian Rose & 2% Hyaluronic Acid Serum",
+      "type": "disambiguation",
+      "options": [
+        "PLUM 2% Hyaluronic Acid Serum With Bulgarian Rose",
+        "PLUM 1% Hyaluronic Acid & Bulgarian Rose ​dew-it-light Gel Cream​",
+        "PLUM Bulgarian Valley Rose Water Toner"
+      ]
+    },
+    {
+      "query": "Simple Skincare Kind to Skin Micellar Cleansing Water",
+      "type": "disambiguation",
+      "options": [
+        "La Roche-Posay Eau Thermale Thermal Spring Water",
+        "Mixsoon Glacier Water",
+        "Vichy Mineralizing Thermal Water",
+        "Vichy Volcanic Water"
+      ]
+    },
+    {
+      "query": "Deconstruct Oil-Free Hydrating Serum - Hyaluronic Acid 2% + Niacinamide 1%",
+      "type": "disambiguation",
+      "options": [
+        "Honest Glow Niacinamide Serum",
+        "100% Pure Niacinamide Boost",
+        "Advance purity niacinamide"
+      ]
+    },
+    {
+      "query": "Foxtale Oil & Acne Control Face Wash",
+      "type": "disambiguation",
+      "options": [
+        "Foxtale Oil And Acne Control Facewash",
+        "Foxtale Oil + Acne Control Cleanser With Salicylic Acid",
+        "Foxtale Essentials Soothing Green Tea Oil Free Face Moisturizer"
+      ]
+    },
+    {
+      "query": "Foxtale Glow Sunscreen SPF 50 PA++++",
+      "type": "disambiguation",
+      "options": [
+        "Foxtale Glow Sunscreen SPF 50, In-vivo Tested With Pa++++",
+        "Foxtale Glow Sunscreen SPF 50 Pa++++ Lightweight With Vitamin C And Niacinamide"
+      ]
+    },
+    {
+      "query": "The Derma Co 2% Sali-Cinamide Anti-Acne Face Wash",
+      "type": "disambiguation",
+      "options": [
+        "The derma CO Sali-cinamide Anti-acne Face Wash With 2% Salicylic Acid & 2% Niacinamide",
+        "DermaCo The Derma Co Sali-cinamide Anti-acne Face Wash|with 2% Salicylic Acid & 2% Niacinamide"
+      ]
+    },
+    {
+      "query": "Lotus Herbals Matte Magic Face Wash with Salicylic Acid",
+      "type": "disambiguation",
+      "options": [
+        "Mystic moment Salicylic Acid Powder",
+        "The Ordinary Salicylic Acid 2% Solution (2025)",
+        "Canixa Life Sciences Pvt Zitcare-s Gel"
+      ]
+    }
+  ]
+}

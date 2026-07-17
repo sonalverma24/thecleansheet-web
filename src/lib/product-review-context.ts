@@ -105,7 +105,7 @@ Step 2 — Rate the RESIDUAL risk after the evidence you found:
 | medium | Evidence is roughly one tier short, or is finished-product but not clinical for a clinical-tier claim. Reasonable, not fully proven. |
 | high | A performance/clinical claim resting only on borrowed ingredient evidence (Level 2-3). Ambition clearly outruns proof. |
 | very-high | A clinical or quantified claim with little to no finished-product evidence (Level 1-2). |
-| red-flag | ONLY for (a) unlawful/absolute drug-claim language regardless of evidence, or (b) a claim the product's OWN verified INCI affirmatively contradicts. |
+| red-flag | ONLY for (a) explicit drug/treatment promises ("cures acne", "treats melasma", "whitens skin"), or (b) a claim the product's OWN verified INCI affirmatively contradicts. NOT for aspirational marketing puffery: "no more blemishes!", "goodbye dullness", "your best skin ever" are puffery — rate them high/very-high by their evidence gap, never red-flag. |
 
 Hard rule: a claim backed by a Level 6-7 study is LOW (or at most MEDIUM) residual risk even when the wording is ambitious. Do NOT mark a clinically proven claim "very-high" or "red-flag".
 
@@ -177,8 +177,9 @@ STRICT LIMITS on drugBoundaryRisk (it hard-blocks approval, so flag ONLY clear c
   - If your reasoning contains "borders on", "could be seen as", or "arguably": that is NOT a crossing. Set drugBoundaryRisk=false and put the caution in evidenceNote.
 
 SPF claims:
-  → All SPF claims require CDSCO registration as a "cosmeceutical". Flag if no registration mentioned.
-  → Always flag SPF claims without ISO 24444-compliant test evidence.
+  → Standard SPF/PA labelling ("SPF 50", "PA++++", "broad spectrum") on a licensed cosmetic is NORMAL product labelling — do NOT flag it as a drug-boundary crossing. Sunscreens are sold as cosmetics in India under a manufacturing licence.
+  → Flag drugBoundaryRisk only when a sunscreen makes THERAPEUTIC claims ("treats sun allergy", "cures pigmentation", "medicine-grade protection").
+  → If no ISO 24444 / registration evidence is visible, that is an EVIDENCE gap: grade the SPF claim's evidenceLevel low and note it — it is not unlawful labelling.
 
 Anti-bacterial / anti-microbial claims WITH triclosan or similar actives:
   → Drug-cosmetic boundary. Flag for CDSCO check.
@@ -386,7 +387,7 @@ Section 7 — Platform Consistency (10 pts):
   1-3: Significant claim differences across platforms; marketplace titles make claims the brand website does not
   0: Claims actively contradictory or product described differently on different platforms
 
-Total Score Bands (75+ is the Clean Sheet approval bar — a product at 75+ has earned its claims):
+Total Score Bands (85+ is the Clean Sheet approval bar — the top tier is strict and rare; a product at 85+ has fully earned its claims):
   85-100 → "Clean Sheet Strong": credible, evidence-supported claims with strong transparency
   75-84 → "Mostly Transparent": claims substantially earned; specific, minor gaps in evidence or transparency
   55-74 → "Needs More Clarity": claims are stronger than the proof visible; transparency incomplete

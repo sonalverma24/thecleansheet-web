@@ -69,7 +69,7 @@ function Hero() {
             href="/brands"
             className="mt-6 md:mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
           >
-            View scored products <span aria-hidden>›</span>
+            Browse reviewed products <span aria-hidden>›</span>
           </Link>
         </HeroReveal>
 

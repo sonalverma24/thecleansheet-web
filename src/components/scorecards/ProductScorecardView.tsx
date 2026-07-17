@@ -1,52 +1,17 @@
+/* ────────────────────────────────────────────────────────────────
+   THE CLEAN SHEET™ · Product scorecard view
+   THE one review format (extracted from the brand product page).
+   Renders a ProductScorecard + Brand — used by static catalogue pages,
+   stored repository reviews (/reviews/[slug]) and live /review results.
+──────────────────────────────────────────────────────────────── */
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import type { ProductScorecard, ScorePillar } from "@/data/brands/types";
+import Image from "next/image";
+import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
+import { scoreColors } from "@/data/brands";
+import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Metadata
-// ─────────────────────────────────────────────────────────────────────────────
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const db = await createClient();
-  const { data } = await db
-    .from("scorecard_cache")
-    .select("product_name, brand_name, scorecard")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (!data) return {};
-  const sc = data.scorecard as any;
-
-  return {
-    title: `${data.product_name} Review, Clean Sheet Score ${sc.score ?? 0}/100`,
-    description: `Is ${data.product_name} safe? AI-analyzed ingredient scorecard: ${sc.score ?? 0}/100 (${sc.scoreLabel ?? "Fair"}). Full INCI review, regulatory compliance, and India-specific skin context.`,
-    keywords: [
-      `${data.product_name} review`,
-      `${data.product_name} India`,
-      `is ${data.product_name} safe`,
-      `${data.brand_name} ingredients safe`,
-      "clean beauty India",
-      "ingredient checker India",
-    ],
-    alternates: {
-      canonical: `https://thecleansheet.in/analyzed/${slug}`,
-    },
-    openGraph: {
-      title: `${data.product_name}, Score ${sc.score ?? 0}/100 | The Clean Sheet`,
-      description: `${sc.scoreLabel ?? "Fair"} rating. ${(sc.summary ?? "").slice(0, 150)}...`,
-      url: `https://thecleansheet.in/analyzed/${slug}`,
-      type: "article",
-    },
-  };
-}
+import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -131,11 +96,13 @@ function PillarDots({ score, max }: { score: number; max: number }) {
 
 function simplifyPillarName(name: string): string {
   const n = name.toLowerCase();
+  // New 5-pillar names
   if (n.includes("inci safety") || n.includes("public inci")) return "Ingredient Safety";
   if (n.includes("formula logic") || n.includes("formula inference")) return "Formula Logic";
   if (n.includes("claim support") || n.includes("public claim")) return "Claims Evidence";
   if (n.includes("test result") || n.includes("transparency")) return "Test Transparency";
   if (n.includes("consumer clarity") || n.includes("clarity")) return "Consumer Clarity";
+  // Legacy 4-pillar names
   if (n.includes("ingredient") || n.includes("safety") || n.includes("toxicity")) return "Ingredient Safety";
   if (n.includes("formula") || n.includes("formulation") || n.includes("quality")) return "Formula Design";
   if (n.includes("claims") || n.includes("disclosure")) return "Claims Evidence";
@@ -150,6 +117,7 @@ function getPillarOneLiner(note: string): string {
     : sentence + ".";
 }
 
+/** Consumer-friendly one-liner per pillar, derived from product context. */
 function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): string {
   const displayName = simplifyPillarName(pillar.name);
   const pass = product.pass_badges.map((b) => b.toLowerCase());
@@ -173,6 +141,18 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
   }
 
   if (displayName === "Formula Design") {
+    const isAnhydrous =
+      product.productType === "sunscreen" &&
+      product.ingredients.length > 0 &&
+      product.ingredients[0].name.toLowerCase().includes("dimethicone");
+    const isMineral = pass.some(
+      (b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("zinc"))
+    );
+    if (isAnhydrous && isMineral) return "Water free silicone gel base designed for a lighter, matte finish.";
+    if (isAnhydrous) return "Anhydrous silicone gel base for a smooth, non-greasy wear.";
+    if (product.productType === "sunscreen" && pass.some((b) => b.includes("filter"))) {
+      return "Multi-filter formula designed for broad-spectrum coverage and photostability.";
+    }
     return getPillarOneLiner(pillar.note);
   }
 
@@ -180,6 +160,12 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
     const hasSPFEvidence = pass.some(
       (b) => b.includes("published spf") || (b.includes("spf") && b.includes("test"))
     );
+    const hasMultipleReports = pass.filter(
+      (b) => b.includes("published") || b.includes("test report") || b.includes("dermatologist")
+    ).length >= 2;
+    if (hasSPFEvidence && hasMultipleReports && pct >= 80) {
+      return "Strong public evidence compared with most sunscreen product pages.";
+    }
     if (hasSPFEvidence && pct >= 65) return "Published SPF test report available. Some claims need more context.";
     if (hasSPFEvidence) return "SPF test report available, but some supporting claims are weaker.";
     if (pct >= 75) return "Good evidence for stated claims based on public information.";
@@ -216,9 +202,11 @@ function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
 }
 
 function buildProofCards(product: ProductScorecard): ProofCard[] {
+  // Prefer per-product claimsCheck when available - it is accurate and product-specific
   const fromData = claimsCheckToProofCards(product);
   if (fromData.length > 0) return fromData;
 
+  // Fallback: generate from badges for products without claimsCheck
   const pass = product.pass_badges.map((b) => b.toLowerCase());
   const warn = product.warn_badges.map((b) => b.toLowerCase());
   const cards: ProofCard[] = [];
@@ -244,6 +232,31 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
         status: "supported",
         explanation: "SPF is stated on packaging. No independently published test report found.",
         evidenceType: "Brand claim",
+      });
+    }
+
+    cards.push({
+      claim: "UVA / PA Protection",
+      status: "supported",
+      explanation: "PA rating is stated on packaging. The brand's pattern of publishing test reports supports this claim.",
+      evidenceType: "Brand claim + test report pattern",
+    });
+
+    if (pass.some((b) => b.includes("100% mineral") || (b.includes("mineral") && (b.includes("zinc") || b.includes("only"))))) {
+      cards.push({
+        claim: "100% Mineral Formula",
+        status: "verified",
+        explanation: "Zinc Oxide is the only UV filter in the ingredient list. No chemical filters present. Confirmed directly from the INCI.",
+        evidenceType: "INCI check",
+      });
+    }
+
+    if (pass.some((b) => b.includes("water resist"))) {
+      cards.push({
+        claim: "Water Resistant",
+        status: "supported",
+        explanation: "A published water resistance test report is available from the brand.",
+        evidenceType: "Published test report",
       });
     }
   }
@@ -279,7 +292,7 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
       claim: "Non-Comedogenic",
       status: hasWarn ? "needs-context" : "supported",
       explanation: hasWarn
-        ? "A published non-comedogenic test report exists, but some ingredients may have comedogenic potential."
+        ? "A published non-comedogenic test report exists, but Isostearic Acid is in the formula and has comedogenic potential on some rating scales."
         : "A published non-comedogenic test report is available from the brand.",
       evidenceType: "Published test report",
     });
@@ -293,9 +306,9 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
       claim: "Vegan",
       status: hasVeganContradiction ? "not-verified" : "supported",
       explanation: hasVeganContradiction
-        ? "Brand claims vegan, but animal-derived ingredients appear in the ingredient list."
-        : "Vegan claim is consistent with the INCI. No animal-derived ingredients found.",
-      evidenceType: hasVeganContradiction ? "INCI check vs brand claim" : "INCI check",
+        ? "Brand claims vegan, but Whey Protein (dairy-derived) appears in the ingredient list. This is a direct public evidence contradiction."
+        : "A published vegan test report is available. No animal-derived ingredients found in the INCI.",
+      evidenceType: hasVeganContradiction ? "INCI check vs brand claim" : "Published test report",
     });
   }
 
@@ -316,6 +329,7 @@ function buildAtAGlance(product: ProductScorecard): { label: string; value: bool
   const warn = product.warn_badges.map((b) => b.toLowerCase());
   const items: { label: string; value: boolean }[] = [];
 
+  // Fragrance free
   const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
   const hasFragAllergen = warn.some((b) =>
     b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
@@ -324,9 +338,11 @@ function buildAtAGlance(product: ProductScorecard): { label: string; value: bool
   if (fragFree) items.push({ label: "Fragrance free", value: true });
   else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
 
+  // Essential oil free
   const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
   if (eoFree) items.push({ label: "Essential oil free", value: true });
 
+  // Alcohol free (check ingredient list)
   const hasAlcohol = product.ingredients.some((i) => {
     const n = i.name.toLowerCase();
     return n === "alcohol" || n.includes("alcohol denat");
@@ -335,92 +351,55 @@ function buildAtAGlance(product: ProductScorecard): { label: string; value: bool
   if (hasAlcohol || alcoholWarn) items.push({ label: "Alcohol free", value: false });
   else items.push({ label: "Alcohol free", value: true });
 
+  // Paraben free
   const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
   items.push({ label: "Paraben free", value: !hasParaben });
 
+  // Non-comedogenic
   if (pass.some((b) => b.includes("non-comedogenic"))) {
     items.push({ label: "Non-comedogenic", value: true });
   }
 
+  // Dermatologist tested
   if (pass.some((b) => b.includes("dermatologist"))) {
     items.push({ label: "Dermatologist tested", value: true });
   }
 
+  // Vegan
   const isVegan = pass.some((b) => b.includes("vegan"));
   const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
   if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
   else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
 
+  // Sunscreen-specific
   if (product.productType === "sunscreen") {
     const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
     items.push({ label: "SPF verified", value: spfVerified });
+
+    const reefSafe = pass.some((b) => b.includes("reef-safe") || b.includes("reef safe"));
+    if (reefSafe) items.push({ label: "Reef safe", value: true });
   }
 
   return items.slice(0, 8);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main page
+
+// ─────────────────────────────────────────────────────────────────────────────
+// View
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default async function AnalyzedProductPage({
-  params,
+export function ProductScorecardView({
+  product,
+  brand,
+  brandSlug,
+  relatedProducts = [],
 }: {
-  params: Promise<{ slug: string }>;
+  product: ProductScorecard;
+  brand: Brand;
+  brandSlug: string;
+  relatedProducts?: ProductScorecard[];
 }) {
-  const { slug } = await params;
-
-  const db = await createClient();
-  const { data } = await db
-    .from("scorecard_cache")
-    .select("scorecard, brand_name, product_name")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (!data) notFound();
-
-  const sc = data.scorecard as any;
-
-  const product: ProductScorecard = {
-    productName: sc.productName ?? "Unknown Product",
-    slug,
-    brand: sc.brand ?? "Unknown Brand",
-    brandSlug: "analyzed",
-    priceRange: sc.priceRange ?? "Price not available",
-    productType: (sc.productType ?? "leave-on") as ProductScorecard["productType"],
-    concern: sc.concern ?? "",
-    summary: sc.summary ?? "",
-    score: sc.score ?? 0,
-    scoreLabel: (sc.scoreLabel ?? "Fair") as ProductScorecard["scoreLabel"],
-    publicDecisionLabel: sc.publicDecisionLabel,
-    image: sc.image ?? "",
-    pillars: sc.pillars ?? [],
-    keyActives: sc.keyActives ?? [],
-    ingredients: sc.ingredients ?? [],
-    globalScreen: sc.globalScreen,
-    inciCompleteness: sc.inciCompleteness,
-    claimsCheck: sc.claimsCheck,
-    missingProof: sc.missingProof ?? [],
-    pass_badges: sc.pass_badges ?? [],
-    warn_badges: sc.warn_badges ?? [],
-    info_badges: sc.info_badges ?? [],
-    indiaContext: sc.indiaContext ?? "",
-    analyzedAt: sc.analyzedAt ?? new Date().toISOString().split("T")[0],
-    cleanSheetNote: sc.cleanSheetNote,
-    targetUser: sc.targetUser,
-    skinTypeTags: sc.skinTypeTags ?? [],
-    concernTags: sc.concernTags ?? [],
-    suitabilityTags: sc.suitabilityTags ?? [],
-    cautionTags: sc.cautionTags ?? [],
-    fragranceStatus: sc.fragranceStatus,
-    alcoholStatus: sc.alcoholStatus,
-    retailerLinks: sc.retailerLinks ?? [],
-    availabilitySources: sc.availabilitySources ?? [],
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const brand = { name: sc.brand ?? "Unknown Brand", slug: "analyzed" } as any;
-
   const okCount = product.ingredients.filter((i) => i.flag === "ok").length;
   const warnCount = product.ingredients.filter((i) => i.flag === "warn").length;
   const infoCount = product.ingredients.filter((i) => i.flag === "info").length;
@@ -430,6 +409,7 @@ export default async function AnalyzedProductPage({
 
   return (
     <div className="bg-white min-h-screen">
+
       {/* ── Hero ── */}
       <ProductHero
         product={product}
@@ -437,18 +417,8 @@ export default async function AnalyzedProductPage({
         okCount={okCount}
         warnCount={warnCount}
         infoCount={infoCount}
-        brandSlug="analyzed"
+        brandSlug={brandSlug}
       />
-
-      {/* ── AI Banner ── */}
-      <div className="bg-[#f7f7f5] border-b border-[#efe9e0] px-5 py-2.5 text-center">
-        <span className="text-[11px] text-[#b0a8a4]">
-          AI-analyzed from public data · Not a certification ·{" "}
-          <Link href="/methodology" className="underline hover:text-[#248179]">
-            Learn about our methodology
-          </Link>
-        </span>
-      </div>
 
       {/* ── Body ── */}
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
@@ -531,7 +501,7 @@ export default async function AnalyzedProductPage({
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2.5">
                 <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Score breakdown</h2>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>The breakdown</h2>
               </div>
               {product.publicDecisionLabel && (
                 <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#248179]/10 text-[#248179] border border-[#248179]/20">
@@ -542,7 +512,7 @@ export default async function AnalyzedProductPage({
             <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
               {product.publicDecisionLabel
                 ? `Public Evidence Score across ${product.pillars.length} pillars. Open any row for the full rationale.`
-                : `How this product was rated across ${product.pillars.length} areas. Open any row for the full rationale.`}
+                : `How this product was rated across four areas. Open any row for the full rationale.`}
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
@@ -569,7 +539,6 @@ export default async function AnalyzedProductPage({
                           </span>
                         )}
                         <span className="text-xs" style={{ color, fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{ratingLabel}</span>
-                        <span className="text-[10px] text-[#b0a8a4]">{pillar.score}/{pillar.max}</span>
                         <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
                       </div>
                     </div>
@@ -584,7 +553,7 @@ export default async function AnalyzedProductPage({
           </div>
         </section>
 
-        {/* 4. Full ingredient list */}
+        {/* 4. Full ingredient list - show 8, expand */}
         <section id="ingredients">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
@@ -682,19 +651,19 @@ export default async function AnalyzedProductPage({
             <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
               {(
                 [
-                  { key: "eu_1223_2009",        label: "EU 1223/2009",          desc: "EU Cosmetics Regulation - Annexes II–VI" },
-                  { key: "india_cr_2020",        label: "India CR 2020",         desc: "India Cosmetics Rules, CDSCO" },
-                  { key: "health_canada_hotlist", label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
-                  { key: "us_fda_21cfr",         label: "US FDA 21 CFR",         desc: "US FDA Parts 700–740" },
-                  { key: "korea_mfds",           label: "MFDS Korea",            desc: "Korea Cosmetics Act" },
-                  { key: "echa_svhc",            label: "ECHA SVHC",             desc: "Substances of Very High Concern" },
-                  { key: "iarc",                 label: "IARC",                  desc: "Carcinogen classifications Groups 1/2A/2B" },
-                  { key: "aicis_australia",      label: "AICIS Australia",       desc: "Australian industrial chemical safety" },
-                  { key: "tga_australia",        label: "TGA Australia",         desc: "Therapeutic claims (if applicable)" },
-                  { key: "canada_nhpid",         label: "Canada NHPID",          desc: "Natural health product ingredients" },
+                  { key: "eu_1223_2009",        label: "EU 1223/2009",         desc: "EU Cosmetics Regulation - Annexes II–VI" },
+                  { key: "india_cr_2020",        label: "India CR 2020",        desc: "India Cosmetics Rules, CDSCO" },
+                  { key: "health_canada_hotlist",label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
+                  { key: "us_fda_21cfr",         label: "US FDA 21 CFR",        desc: "US FDA Parts 700–740" },
+                  { key: "korea_mfds",           label: "MFDS Korea",           desc: "Korea Cosmetics Act" },
+                  { key: "echa_svhc",            label: "ECHA SVHC",            desc: "Substances of Very High Concern" },
+                  { key: "iarc",                 label: "IARC",                 desc: "Carcinogen classifications Groups 1/2A/2B" },
+                  { key: "aicis_australia",      label: "AICIS Australia",      desc: "Australian industrial chemical safety" },
+                  { key: "tga_australia",        label: "TGA Australia",        desc: "Therapeutic claims (if applicable)" },
+                  { key: "canada_nhpid",         label: "Canada NHPID",         desc: "Natural health product ingredients" },
                 ] as const
               ).map(({ key, label, desc }) => {
-                const val = (product.globalScreen as any)[key] ?? "";
+                const val = product.globalScreen![key as keyof typeof product.globalScreen] ?? "";
                 const isClear = val.toLowerCase().includes("no obvious") || val.toLowerCase().includes("not triggered");
                 return (
                   <div key={key} className="flex items-start gap-3 px-4 py-3">
@@ -713,6 +682,30 @@ export default async function AnalyzedProductPage({
               })}
             </div>
             <p className="text-[10px] text-[#b0a8a4] mt-2">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+          </section>
+        )}
+
+        {/* 5b. Regulatory screen — claim level (ASCI + India drug-cosmetic boundary) */}
+        {product.regulatoryFlags && product.regulatoryFlags.length > 0 && (
+          <section id="regulatory-claims">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <div>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Regulatory screen</h2>
+                <p className="text-xs text-[#b0a8a4] mt-0.5">ASCI advertising code and the India drug-cosmetic boundary.</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
+              {product.regulatoryFlags.map((f, i) => (
+                <div key={i} className="flex items-start gap-3 px-4 py-3.5">
+                  <span className="mt-1.5 block w-1.5 h-1.5 rounded-full bg-[#fd6158] flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[#282828]">&ldquo;{f.claim}&rdquo;</p>
+                    {f.note && <p className="text-xs text-[#282828]/55 leading-relaxed mt-0.5">{f.note}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -776,7 +769,7 @@ export default async function AnalyzedProductPage({
           </section>
         )}
 
-        {/* 8. About this review */}
+        {/* 9. About this review - absorbs methodology + India context */}
         <section id="methodology">
           <div className="bg-[#282828] rounded-2xl p-5 sm:p-6">
             <div className="flex items-start gap-4">
@@ -785,10 +778,10 @@ export default async function AnalyzedProductPage({
                 <div className="text-white mb-2">About this review</div>
                 <p className="text-white/60 text-sm leading-relaxed mb-1.5">
                   {product.cleanSheetNote ??
-                    "This is an AI-generated web evidence review. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis."}
+                    "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
-                  {["AI-powered analysis", "Public evidence only", "Not a certification"].map((m) => (
+                  {["Independent review", "Public evidence only"].map((m) => (
                     <span key={m} className="text-[11px] text-white/35">{m}</span>
                   ))}
                 </div>
@@ -807,23 +800,62 @@ export default async function AnalyzedProductPage({
                     <li>What the brand is claiming vs what evidence supports</li>
                   </ul>
                 </details>
-                {product.indiaContext && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex items-start gap-2.5">
-                    <span className="text-base flex-shrink-0 leading-none mt-0.5">🇮🇳</span>
-                    <p className="text-xs text-white/50 leading-relaxed">{product.indiaContext}</p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </section>
 
+        {/* 7. More from brand - horizontal scrollable strip */}
+        {relatedProducts.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>More from {brand.name}</h2>
+              </div>
+              <Link href={`/brands/${brandSlug}`} className="text-xs text-[#248179] hover:underline flex items-center gap-1">
+                See all <ArrowRight size={11} />
+              </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2">
+              {relatedProducts.map((p) => {
+                const c = scoreColors(p.score);
+                return (
+                  <Link
+                    key={p.slug}
+                    href={`/brands/${brandSlug}/${p.slug}`}
+                    className="group flex-shrink-0 flex items-center gap-2.5 p-3 rounded-xl border border-[#efe9e0] hover:border-[#248179]/30 hover:shadow-sm transition-all bg-white w-[200px] sm:w-auto"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#faf7f2] overflow-hidden flex-shrink-0">
+                      <Image
+                        src={p.image}
+                        alt={p.productName}
+                        width={40}
+                        height={40}
+                        className="object-contain p-1 w-full h-full"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-[#282828] group-hover:text-[#248179] transition-colors line-clamp-2 leading-snug">
+                        {p.productName}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <TierBadge tier={scoreToTier(p.score)} size="sm" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* Back link */}
         <Link
-          href="/analyzer"
+          href={`/brands/${brandSlug}`}
           className="inline-flex items-center gap-2 text-sm text-[#b0a8a4] hover:text-[#282828] transition-colors"
         >
-          <ArrowLeft size={14} /> Back to Analyser
+          <ArrowLeft size={14} /> Back to {brand.name}
         </Link>
       </div>
     </div>

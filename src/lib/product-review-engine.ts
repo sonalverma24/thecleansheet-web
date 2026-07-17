@@ -54,14 +54,29 @@ export const APPROVAL_BAR = 85;
 const CLAIM_EVIDENCE_BAR = 15; // out of 20 — headline claims carry finished-product / clinical proof
 
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
-  const drugBoundary = r.claimSummary?.drugBoundaryCount ?? 0;
   const evidencePts = r.scores?.claimEvidence ?? 0;      // out of 20
   const formulaPts = r.scores?.formulaLogic ?? 0;        // out of 15
   const total = r.scores?.total ?? 0;                    // out of 100
   const overreach = r.formulaLogic?.claimOverreach === true;
 
+  /* HARD flags, judged claim by claim, because the model historically
+     over-flags two harmless patterns: standard SPF/PA labelling (sunscreens
+     are licensed cosmetics in India) and aspirational puffery ("no more
+     blemishes!"). Only count:
+       - drug-boundary claims that are NOT plain SPF/UV labelling
+       - red-flags that are explicit treatment promises, prohibited fairness
+         language, or contradicted by the product's own INCI. */
+  const SPF_LABEL_RE = /spf|pa\+|uva|uvb|broad.?spectrum|sun.?protection|blue light/i;
+  const HARD_RED_RE = /\b(cures?|treats?|heals?|whitens?|whitening|fairness|lightens?\s+skin|permanent(?:ly)?|guaranteed?)\b|contradict|not listed in|inci lists|own ingredient/i;
+  const hardFlags = (r.claimMap ?? []).filter((c) => {
+    const ctx = `${c.text} ${c.evidenceNote ?? ""} ${c.asciNote ?? ""} ${c.drugBoundaryNote ?? ""}`;
+    if (c.drugBoundaryRisk && !SPF_LABEL_RE.test(c.text)) return true;
+    if (c.riskLevel === "red-flag" && HARD_RED_RE.test(ctx)) return true;
+    return false;
+  }).length;
+
   // Gates are informational; only `lawful` can block on its own.
-  const lawful = drugBoundary === 0;
+  const lawful = hardFlags === 0;
   const honest = evidencePts >= 10;                      // ≥ half the evidence points
   // Material overreach = flagged AND the formula score itself is mediocre.
   // A strong formula (11+/15) with one ambitious claim noted passes with a caveat.
@@ -75,7 +90,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       passed: lawful,
       detail: lawful
         ? "No drug-boundary or unlawful claims found"
-        : `${drugBoundary} claim(s) cross the India drug-cosmetic boundary`,
+        : `${hardFlags} claim(s) cross the India drug-cosmetic boundary or are contradicted`,
     },
     {
       id: "evidence",
@@ -108,10 +123,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
      - mostly-clean: a well-made, transparent product whose claims lean on
        ingredient evidence rather than finished-product proof.
      - needs-proof: claims may be honest but the proof isn't publicly visible. */
-  const redFlags = r.claimSummary?.byRisk?.redFlag ?? 0;
   const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
   const tier: DerivedVerdict["tier"] =
-    drugBoundary > 0 || redFlags > 0
+    hardFlags > 0
       ? "misleading"
       : total >= APPROVAL_BAR && claimsHoldUp
         ? "approved"
