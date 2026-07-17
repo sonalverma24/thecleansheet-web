@@ -98,6 +98,8 @@ export type ProductScorecard = {
   /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
       live-reviewed products — rendered as its own section in the product view. */
   regulatoryFlags?: { claim: string; note: string }[];
+  /** NEW tile badge — only the latest few repository arrivals carry it. */
+  newArrival?: boolean;
 };
 
 export type Brand = {

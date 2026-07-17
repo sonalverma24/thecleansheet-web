@@ -274,13 +274,17 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       return m ? parseFloat(m[1]) : undefined;
     };
 
-    return (data ?? []).flatMap((row) => {
+    // Rows arrive newest-first: only the latest 5 arrivals (still within 30
+    // days) wear the NEW badge.
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    return (data ?? []).flatMap((row, idx) => {
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
       const rv = res?.review;
       if (!rv?.productName) return [];
       // Re-derive the tier from current logic so approval-rule changes apply
       // to already-stored reviews without re-running the batch.
       const tier = deriveVerdict(rv).tier;
+      const newArrival = idx < 5 && Date.now() - new Date(String(row.reviewed_at ?? 0)).getTime() < THIRTY_DAYS;
       return [{
         productName: rv.productName,
         slug: String(row.product_slug),
@@ -309,6 +313,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         claimsMade: (rv.claimMap ?? []).slice(0, 8).map((c) => c.text),
         freshReview: true,
         reviewTier: tier,
+        newArrival,
       }];
     });
   } catch {

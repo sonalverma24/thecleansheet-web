@@ -34,11 +34,9 @@ export function ScorecardResultCard({
   const displayPrice = getDisplayPrice(product);
   const isPending = categoryLabel === "Category Pending";
 
-  // Live-repository products link to their stored review and wear a NEW badge
-  // for their first 30 days in the catalogue.
-  const isNew =
-    product.freshReview === true &&
-    Date.now() - new Date(product.analyzedAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+  // Live-repository products link to their stored review. Only the latest few
+  // arrivals (flagged server-side) wear the NEW badge.
+  const isNew = product.newArrival === true;
   const href = product.freshReview
     ? `/reviews/${product.slug}`
     : `/brands/${product.brandSlug}/${product.slug}`;
