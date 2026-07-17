@@ -93,6 +93,8 @@ export type ProductScorecard = {
   /** Product entered the catalogue via the live review repository (no static
       detail page — tiles link to the stored review; shows a NEW badge for 30 days). */
   freshReview?: boolean;
+  /** True verdict tier for repository products (claim-gated, not score-only). */
+  reviewTier?: "approved" | "mostly-clean" | "needs-proof" | "misleading";
 };
 
 export type Brand = {

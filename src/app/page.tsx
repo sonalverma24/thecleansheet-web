@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Sparkles, ArrowRight, Shield, FlaskConical, Eye, Leaf,
+  Sparkles, ArrowRight,
   CheckCircle2, XCircle, ChevronRight, Microscope, Award,
   Users, Star,
 } from "lucide-react";
 import { Reveal, TitleReveal, KenBurns, HeroReveal } from "@/components/motion/Motion";
 import OpenFormButton from "@/components/OpenFormButton";
+import { ApprovedStamp } from "@/components/scorecards/pillar-ui";
 
 /* ─────────────────────────────────────────────
    HERO
@@ -282,26 +283,16 @@ function GraphicCertification() {
         </div>
       </div>
 
-      {/* Score card */}
-      <div className="relative z-10 flex flex-col gap-2">
-        <div className="bg-white rounded-2xl shadow-lg border border-ink-100 px-4 py-3 min-w-[110px]">
-          <div className="text-[9px] font-normal text-ink-400 uppercase tracking-widest mb-1">Clean Sheet Score</div>
-          <div className="flex items-end gap-1">
-            <span className="text-3xl font-semibold text-teal-600 leading-none">87</span>
-            <span className="text-ink-300 text-sm mb-0.5">/100</span>
-          </div>
-          <div className="mt-1.5 h-1.5 rounded-full bg-ink-100 overflow-hidden">
-            <div className="h-full rounded-full bg-teal-500" style={{ width: "87%" }} />
-          </div>
-          <div className="mt-1.5 text-[9px] font-medium text-teal-600 uppercase tracking-wide">Good ✓</div>
-        </div>
+      {/* Tier seal — the standing, not a number */}
+      <div className="relative z-10 flex flex-col items-center gap-2">
+        <ApprovedStamp size={96} />
         <div className="bg-teal-600 text-white rounded-xl px-3 py-1.5 text-center">
-          <div className="text-[9px] font-medium uppercase tracking-widest">Verified Certified</div>
+          <div className="text-[9px] font-medium uppercase tracking-widest">Public review page</div>
         </div>
       </div>
 
       {/* Tag */}
-      <span className="absolute bottom-4 left-4 text-xs font-medium text-ink-950 bg-yellow-400 px-3 py-1 rounded-full uppercase tracking-wide z-10">Real certification</span>
+      <span className="absolute bottom-4 left-4 text-xs font-medium text-ink-950 bg-yellow-400 px-3 py-1 rounded-full uppercase tracking-wide z-10">Real proof</span>
     </div>
   );
 }
@@ -310,18 +301,18 @@ function VisualProof() {
   const cards = [
     {
       graphic: <GraphicDatabase />,
-      heading: "25,000+ ingredients. Every one scored.",
-      body: "Our database covers carcinogens, endocrine disruptors, sensitizers, and formaldehyde releasers, cross-referenced against EU, India, US & Korean standards.",
+      heading: "25,000+ ingredients. Read, not marketed.",
+      body: "We pull the product's real INCI and read it against 25,000+ ingredients cross-referenced to EU, India, US & Korea, so 'fragrance-free' and 'contains actives' claims are checked against fact.",
     },
     {
       graphic: <GraphicNaturalSynthetic />,
       heading: "Not all natural is safe. Not all synthetic is harmful.",
-      body: "We cut through the marketing noise. The analysis is based on the actual chemistry, not buzzwords like 'clean', 'green', or 'pure'.",
+      body: "We cut through the marketing noise. Every claim is judged on the actual chemistry and the evidence behind it, not buzzwords like 'clean', 'green', or 'pure'.",
     },
     {
       graphic: <GraphicCertification />,
-      heading: "A QR code that links to real proof.",
-      body: "Every certified product gets a public scorecard. Scan the QR on the pack, see the score, the breakdown, the ingredients. Instantly.",
+      heading: "One clear standing. Backed by proof.",
+      body: "Every reviewed product gets a public page: its Clean Sheet standing, the claims, and the evidence behind each one. Approved means the claims genuinely hold up.",
     },
   ];
 
@@ -457,18 +448,12 @@ function AnalyzerPreview() {
    FOUR PILLARS
 ───────────────────────────────────────────── */
 function FourPillars() {
-  const pillars = [
-    { icon: Shield,      name: "Safety & Toxicity",     weight: "50%", color: "text-coral-500",    bg: "bg-coral-50"   },
-    { icon: FlaskConical,name: "Efficacy & Formulation", weight: "20%", color: "text-teal-600",     bg: "bg-teal-50"    },
-    { icon: Eye,         name: "Transparency",           weight: "20%", color: "text-gold-600",     bg: "bg-gold-50"    },
-    { icon: Leaf,        name: "Sustainability & Ethics",weight: "10%", color: "text-safe-600",     bg: "bg-safe-100"   },
+  const tiers = [
+    { name: "Clean Sheet Approved", dot: "#84cc16", ring: "border-lime-300",  desc: "Every headline claim holds up: proven on the finished product, with clinical or lab evidence. The claims match the science." },
+    { name: "Mostly Clean",         dot: "#248179", ring: "border-teal-300",  desc: "A well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof." },
+    { name: "Needs Proof",          dot: "#c9a227", ring: "border-amber-300", desc: "The claims may well be honest, but the proof isn't publicly visible. Brands can submit their reports to earn a higher standing." },
+    { name: "Misleading Claims",    dot: "#fd6158", ring: "border-coral-300", desc: "The product makes claims that aren't permitted in India, or that its own ingredient list contradicts." },
   ];
-  const desc: Record<string,string> = {
-    "Safety & Toxicity": "Carcinogenicity, endocrine disruption, reproductive toxicity, sensitization. The most weight, because safety is non-negotiable.",
-    "Efficacy & Formulation": "Does the product do what it claims? Stability data, active ingredient concentrations, and performance testing.",
-    "Transparency": "Complete INCI disclosure, no misleading marketing terms, fragrance allergen disclosure, honest labeling.",
-    "Sustainability & Ethics": "Biodegradability, aquatic toxicity, ethical mica & palm oil sourcing, cruelty-free, packaging recyclability.",
-  };
 
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -485,25 +470,25 @@ function FourPillars() {
           <div className="absolute inset-0 flex items-center px-10 lg:px-16">
             <div>
               <div className="inline-flex items-center gap-2 text-yellow-500 text-sm font-medium mb-3 uppercase tracking-wide">
-                <Microscope size={14} /> The Scoring Framework
+                <Microscope size={14} /> The Clean Sheet Standing
               </div>
               <h2 className="text-3xl lg:text-5xl font-medium tracking-tight max-w-lg leading-tight">
-                <span className="text-white">Four pillars. </span><span className="text-yellow-400">One honest score.</span>
+                <span className="text-white">Every claim, weighed </span><span className="text-yellow-400">against its proof.</span>
               </h2>
+              <p className="text-teal-200/80 text-sm mt-3 max-w-md leading-relaxed">
+                We find every marketing claim, grade each on a 1-7 evidence ladder, read the real ingredient list, then hand you one clear standing.
+              </p>
             </div>
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {pillars.map(({ icon: Icon, name, weight, color, bg }) => (
+          {tiers.map(({ name, dot, ring, desc }) => (
             <div key={name}
-              className="group bg-white rounded-3xl p-7 border border-ink-100 hover:border-teal-200 hover:shadow-xl hover:shadow-teal-100/50 transition-all duration-300 hover:-translate-y-1">
-              <div className={`w-12 h-12 rounded-2xl ${bg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                <Icon size={22} className={color} />
-              </div>
-              <div className={`text-3xl font-medium mb-1 ${color}`}>{weight}</div>
-              <h3 className="font-normal text-ink-900 mb-2">{name}</h3>
-              <p className="text-ink-500 text-sm leading-relaxed">{desc[name]}</p>
+              className={`group bg-white rounded-3xl p-7 border ${ring} hover:shadow-xl hover:shadow-teal-100/50 transition-all duration-300 hover:-translate-y-1`}>
+              <span className="inline-block w-3.5 h-3.5 rounded-full mb-5" style={{ background: dot }} />
+              <h3 className="font-medium text-ink-900 mb-2 leading-snug">{name}</h3>
+              <p className="text-ink-500 text-sm leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -611,30 +596,24 @@ function ForBrands() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-teal-950/50 via-transparent to-transparent" />
             </div>
-            {/* Floating scorecard */}
+            {/* Floating standing card */}
             <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl border border-ink-100 shadow-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Clean Sheet Score</div>
-                  <div className="text-4xl font-medium text-ink-900 leading-none">84</div>
-                  <div className="text-xs font-medium text-teal-600 mt-1 uppercase tracking-wide">Good ✓</div>
+                  <div className="text-xs text-ink-400 uppercase tracking-wider mb-1">Clean Sheet Standing</div>
+                  <div className="text-2xl font-medium text-ink-900 leading-tight" style={{ fontFamily: "'Cooper BT', serif" }}>Clean Sheet<br />Approved</div>
                 </div>
-                <svg width="72" height="72" viewBox="0 0 72 72">
-                  <circle cx="36" cy="36" r="28" fill="none" stroke="#D4F2EF" strokeWidth="7" />
-                  <circle cx="36" cy="36" r="28" fill="none" stroke="#248179" strokeWidth="7"
-                    strokeDasharray={`${(84/100)*176} 176`} strokeLinecap="round" transform="rotate(-90 36 36)" />
-                  <text x="36" y="40" textAnchor="middle" fontSize="13" fontWeight="700" fill="#262525" fontFamily="serif">84</text>
-                </svg>
+                <ApprovedStamp size={64} />
               </div>
               <div className="space-y-2">
-                {[["Safety & Toxicity","bg-teal-500",84],["Efficacy","bg-teal-400",80],["Transparency","bg-gold-400",95]].map(([l,c,p])=>(
+                {[["Claims Evidence","bg-teal-500","Strong"],["Formula Logic","bg-teal-400","Strong"],["Transparency","bg-gold-400","Excellent"]].map(([l,c,label])=>(
                   <div key={l as string}>
                     <div className="flex justify-between text-xs mb-0.5">
                       <span className="text-ink-500">{l as string}</span>
-                      <span className="text-ink-700 font-normal">{p as number}%</span>
+                      <span className="text-ink-700 font-normal">{label as string}</span>
                     </div>
                     <div className="h-1 bg-ink-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${c as string}`} style={{width:`${p as number}%`}} />
+                      <div className={`h-full rounded-full ${c as string}`} style={{width:"88%"}} />
                     </div>
                   </div>
                 ))}
@@ -881,18 +860,9 @@ function StepGraphicPublish() {
         </div>
         <div className="mt-1.5 text-center text-[7px] font-medium text-teal-700 tracking-wider">SCAN TO VERIFY</div>
       </div>
-      {/* Score card */}
-      <div className="relative z-10 flex flex-col gap-2">
-        <div className="bg-white rounded-xl shadow-md border border-teal-100 px-3.5 py-2.5 min-w-[110px]">
-          <div className="text-[8px] font-medium uppercase tracking-widest text-ink-400 mb-0.5">Clean Sheet Score</div>
-          <div className="text-3xl font-semibold text-teal-700 leading-none">91</div>
-          <div className="flex items-center gap-1 mt-1">
-            <div className="h-1 flex-1 rounded-full bg-ink-100 overflow-hidden">
-              <div className="h-full w-[91%] rounded-full bg-teal-500" />
-            </div>
-            <span className="text-[8px] font-medium text-teal-600">Excellent</span>
-          </div>
-        </div>
+      {/* Standing card */}
+      <div className="relative z-10 flex flex-col items-center gap-2">
+        <ApprovedStamp size={72} />
         <div className="bg-teal-700 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
             <circle cx="6" cy="6" r="5" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="0.8"/>
@@ -909,7 +879,7 @@ function HowItWorks() {
   const steps = [
     { n:"01", title:"Submit your formulation",    body:"Complete INCI lists, TDS, MSDS, COA, and independent lab results through our verification portal.", graphic: <StepGraphicSubmit /> },
     { n:"02", title:"We analyze every ingredient", body:"Each ingredient evaluated for toxicity, exposure risk, sensitization, and regulatory compliance across EU, India, US & Korean standards.", graphic: <StepGraphicAnalysis /> },
-    { n:"03", title:"Score. Certify. Publish.",    body:"Products receive a Clean Sheet Score and tier. A QR code links to the public scorecard for real-time consumer verification.", graphic: <StepGraphicPublish /> },
+    { n:"03", title:"Rate. Certify. Publish.",    body:"Products earn a Clean Sheet standing and, if they clear the bar, certification. A QR code links to the public review page for real-time consumer verification.", graphic: <StepGraphicPublish /> },
   ];
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -992,12 +962,12 @@ const HOME_FAQS = [
     a: "Yes. The Product Review tool is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full review: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet standing.",
   },
   {
-    q: "What does the Clean Sheet Score mean?",
-    a: "The Clean Sheet Score is a 0-100 rating based on five pillars: ingredient safety & toxicity, legal compliance with Indian regulations, manufacturing standards, evidence-based claims, and ethical sourcing. A score above 80 is considered 'Good', 90+ is 'Excellent'.",
+    q: "What does the Clean Sheet standing mean?",
+    a: "Every reviewed product gets one of four standings. Clean Sheet Approved: every headline claim holds up, proven on the finished product. Mostly Clean: a well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof. Needs Proof: the claims may be honest, but the evidence isn't publicly visible yet. Misleading Claims: the product makes claims that aren't permitted in India or that its own ingredient list contradicts.",
   },
   {
-    q: "Which beauty products are certified by The Clean Sheet in India?",
-    a: "You can browse all certified products at thecleansheet.in/certified. Each certified product has a public scorecard showing its Clean Sheet Score, ingredient analysis, and verified claims. Brands can apply for certification at thecleansheet.in/brands.",
+    q: "Which beauty products are reviewed by The Clean Sheet in India?",
+    a: "You can browse every reviewed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet standing, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
   },
   {
     q: "Is niacinamide safe for Indian skin?",

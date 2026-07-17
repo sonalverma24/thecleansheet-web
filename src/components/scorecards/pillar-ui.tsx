@@ -45,7 +45,7 @@ export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: st
 };
 
 export function scoreToTier(score: number): ReviewTier {
-  return score >= 75 ? "approved" : score >= 60 ? "mostly-clean" : "needs-proof";
+  return score >= 85 ? "approved" : score >= 65 ? "mostly-clean" : "needs-proof";
 }
 
 /* The TCS logo with an angled "APPROVED" rubber stamp across its lower third —

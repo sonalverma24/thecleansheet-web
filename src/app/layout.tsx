@@ -180,12 +180,12 @@ export default function RootLayout({
                 },
                 {
                   "@type": "SoftwareApplication",
-                  name: "Ask Clean, AI Beauty Ingredient Analyzer",
+                  name: "The Clean Sheet Product Review",
                   applicationCategory: "HealthApplication",
                   operatingSystem: "Web",
-                  url: "https://thecleansheet.in/analyzer",
+                  url: "https://thecleansheet.in/review",
                   description:
-                    "Paste any product URL or ingredient list to instantly check ingredient safety, regulatory compliance, and get a science-backed Clean Sheet Score.",
+                    "Paste any product name or URL to check every marketing claim against real evidence and the actual ingredient list, and get one clear Clean Sheet standing.",
                   publisher: { "@id": "https://thecleansheet.in/#organization" },
                   offers: {
                     "@type": "Offer",

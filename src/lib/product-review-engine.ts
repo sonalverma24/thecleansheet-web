@@ -47,11 +47,11 @@ function isValidProductReview(p: unknown): p is ProductReview {
 }
 
 /* ═══════════════ Derived approved / not-approved verdict ═══════════════
-   Deterministic and simple: score >= APPROVAL_BAR approves, with ONE hard
-   block — a genuine India drug-boundary / unlawful claim. Red-flag counts
-   and evidence gaps already shape the score itself; they do not double-
-   penalise here. (75 matches the analyser's FORMULA_BAR.) */
-export const APPROVAL_BAR = 75;
+   "Clean Sheet Approved" must mean the CLAIMS themselves hold up — not just a
+   good blended score. The whole product is "proof, not promises", so the top
+   tier is gated on the claim-evidence dimension, not the average of seven. */
+export const APPROVAL_BAR = 85;
+const CLAIM_EVIDENCE_BAR = 15; // out of 20 — headline claims carry finished-product / clinical proof
 
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const drugBoundary = r.claimSummary?.drugBoundaryCount ?? 0;
@@ -99,22 +99,29 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     },
   ];
 
-  /* 4-tier ladder. "Misleading" fires ONLY on hard triggers: a genuine India
-     drug-boundary claim, or a red-flag (unlawful language / claim contradicted
-     by the brand's own INCI). Missing proof is NEVER "misleading". */
+  /* 4-tier ladder.
+     - misleading: hard triggers only (drug-boundary, or a red-flag = unlawful
+       language / claim contradicted by the brand's own INCI). Missing proof is
+       NEVER misleading.
+     - approved: high overall score AND the claims themselves are well evidenced,
+       so the badge never sits above a claim list full of "outruns proof".
+     - mostly-clean: a well-made, transparent product whose claims lean on
+       ingredient evidence rather than finished-product proof.
+     - needs-proof: claims may be honest but the proof isn't publicly visible. */
   const redFlags = r.claimSummary?.byRisk?.redFlag ?? 0;
+  const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
   const tier: DerivedVerdict["tier"] =
     drugBoundary > 0 || redFlags > 0
       ? "misleading"
-      : total >= APPROVAL_BAR
+      : total >= APPROVAL_BAR && claimsHoldUp
         ? "approved"
-        : total >= 60
+        : total >= 65
           ? "mostly-clean"
           : "needs-proof";
 
   const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
     "approved":     { label: "Clean Sheet Approved", headline: "Claims hold up to the evidence." },
-    "mostly-clean": { label: "Mostly Clean",         headline: "A solid product with specific gaps between claims and visible proof." },
+    "mostly-clean": { label: "Mostly Clean",         headline: "A well-made product, but some claims rest on ingredient evidence, not finished-product proof." },
     "needs-proof":  { label: "Needs Proof",          headline: "The claims may be honest, but the proof isn't publicly visible yet." },
     "misleading":   { label: "Misleading Claims",    headline: "Makes claims that aren't permitted or are contradicted by its own ingredient list." },
   };
@@ -257,7 +264,9 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
       const rv = res?.review;
       if (!rv?.productName) return [];
-      const tier = res?.verdict?.tier ?? "needs-proof";
+      // Re-derive the tier from current logic so approval-rule changes apply
+      // to already-stored reviews without re-running the batch.
+      const tier = deriveVerdict(rv).tier;
       return [{
         productName: rv.productName,
         slug: String(row.product_slug),
@@ -285,6 +294,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         sizeUnit: "ml",
         claimsMade: (rv.claimMap ?? []).slice(0, 8).map((c) => c.text),
         freshReview: true,
+        reviewTier: tier,
       }];
     });
   } catch {

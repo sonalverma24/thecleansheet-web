@@ -449,7 +449,14 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       // best_match already sorted above; default keeps order
     }
 
-    return sorted;
+    // Pin freshly-reviewed products (last 30 days) to the top, regardless of sort,
+    // so the lime NEW badge is actually seen. Stable within each group.
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const isFresh = (p: ProductScorecard) =>
+      p.freshReview === true && Date.now() - new Date(p.analyzedAt).getTime() < THIRTY_DAYS;
+    const fresh = sorted.filter(isFresh);
+    const rest = sorted.filter((p) => !isFresh(p));
+    return [...fresh, ...rest];
   }, [products, debouncedQuery, filters, sortBy]);
 
   // ── Pagination ─────────────────────────────────────────────────────────────

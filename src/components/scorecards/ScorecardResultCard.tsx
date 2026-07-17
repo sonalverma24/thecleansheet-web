@@ -69,7 +69,7 @@ export function ScorecardResultCard({
 
           {/* Tier mark - top right (Approved = branded seal) */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
-            <TileTierMark tier={scoreToTier(product.score)} />
+            <TileTierMark tier={product.reviewTier ?? scoreToTier(product.score)} />
           </div>
 
           {/* NEW badge - top left, lime, first 30 days only */}
