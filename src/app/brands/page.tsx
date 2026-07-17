@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Microscope } from "lucide-react";
 import { getAllBrandSummaries, ALL_BRANDS, scoreColors } from "@/data/brands";
 import BackButton from "@/components/BackButton";

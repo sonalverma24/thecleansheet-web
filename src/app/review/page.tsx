@@ -176,6 +176,9 @@ export default function ReviewPage() {
                 </button>
               ))}
             </div>
+            <Link href="/brands" className="mt-6 inline-flex items-center gap-2 text-[15px]" style={{ color: TEAL }}>
+              Or browse every product we&apos;ve reviewed <span aria-hidden>→</span>
+            </Link>
           </motion.div>
         </div>
       </section>

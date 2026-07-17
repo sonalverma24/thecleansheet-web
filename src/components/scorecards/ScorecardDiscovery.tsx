@@ -217,7 +217,7 @@ function filtersToParams(filters: ActiveFilters, query: string, sort: SortOption
   const p = new URLSearchParams();
   if (view === "brands") p.set("view", "brands");
   if (query) p.set("q", query);
-  if (sort !== "score_desc") p.set("sort", sort);
+  if (sort !== "value_desc") p.set("sort", sort);
   if (filters.categories.length) p.set("category", filters.categories.join(","));
   if (filters.productTypes.length) p.set("type", filters.productTypes.join(","));
   if (filters.scoreRanges.length) p.set("score", filters.scoreRanges.join(","));
@@ -363,7 +363,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
     paramsToFilters(searchParams)
   );
   const [sortBy, setSortBy] = useState<SortOption>(
-    (searchParams.get("sort") as SortOption) ?? "score_desc"
+    (searchParams.get("sort") as SortOption) ?? "value_desc"
   );
   const [page, setPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -430,7 +430,11 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
         sorted.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
         break;
       case "value_desc":
-        sorted.sort((a, b) => (a.pricePerUnit ?? 99999) - (b.pricePerUnit ?? 99999));
+        // Best value per ml first; products without per-ml data fall to the end, ordered by score.
+        sorted.sort((a, b) => {
+          const pa = a.pricePerUnit ?? Infinity, pb = b.pricePerUnit ?? Infinity;
+          return pa !== pb ? pa - pb : b.score - a.score;
+        });
         break;
       case "fewest_cautions":
         sorted.sort(

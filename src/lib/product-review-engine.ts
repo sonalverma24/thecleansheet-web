@@ -166,6 +166,12 @@ async function getStored(slug: string): Promise<ProductReviewResult | null> {
   return null;
 }
 
+/** Public: fetch a stored review by canonical slug WITHOUT re-running the engine.
+    Powers the permanent /reviews/[slug] product page for repository products. */
+export async function getStoredReview(slug: string): Promise<ProductReviewResult | null> {
+  return getStored(slug);
+}
+
 async function store(slug: string, result: ProductReviewResult): Promise<void> {
   REVIEW_CACHE.set(slug, result);
   if (result.type !== "product-review") return;
@@ -242,6 +248,10 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
 
     const tierToLegacy: Record<string, "Excellent" | "Good" | "Fair" | "Concern"> =
       { "approved": "Excellent", "mostly-clean": "Good", "needs-proof": "Fair", "misleading": "Concern" };
+    const num = (s: string | undefined): number | undefined => {
+      const m = String(s ?? "").replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+      return m ? parseFloat(m[1]) : undefined;
+    };
 
     return (data ?? []).flatMap((row) => {
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
@@ -270,6 +280,9 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         indiaContext: "",
         analyzedAt: rv.reviewedAt ?? String(row.reviewed_at ?? ""),
         category: rv.category,
+        price: num(rv.lowestPrice) ?? num(rv.priceRange),
+        pricePerUnit: num(rv.pricePerMl),
+        sizeUnit: "ml",
         claimsMade: (rv.claimMap ?? []).slice(0, 8).map((c) => c.text),
         freshReview: true,
       }];

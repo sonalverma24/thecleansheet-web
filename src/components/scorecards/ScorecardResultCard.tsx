@@ -40,7 +40,7 @@ export function ScorecardResultCard({
     product.freshReview === true &&
     Date.now() - new Date(product.analyzedAt).getTime() < 30 * 24 * 60 * 60 * 1000;
   const href = product.freshReview
-    ? `/review?q=${encodeURIComponent(product.productName)}`
+    ? `/reviews/${product.slug}`
     : `/brands/${product.brandSlug}/${product.slug}`;
 
   return (
