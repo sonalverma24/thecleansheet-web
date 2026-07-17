@@ -86,9 +86,14 @@ export default async function BrandsPage() {
   const brands = getAllBrandSummaries();
   const staticProducts = ALL_BRANDS.flatMap((b) => b.products);
   const known = new Set(staticProducts.map((p) => `${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()));
-  const freshProducts = repoProducts.filter(
-    (p) => !known.has(`${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()),
-  );
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const freshProducts = repoProducts
+    .filter((p) => !known.has(`${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()))
+    // NEW badge: only the latest 5 arrivals actually visible in the grid (30-day cap)
+    .map((p, idx) => ({
+      ...p,
+      newArrival: idx < 5 && Date.now() - new Date(p.analyzedAt).getTime() < THIRTY_DAYS,
+    }));
   const allProducts = [...freshProducts, ...staticProducts];
   const heroScore = [...brands].sort((a, b) => b.avgScore - a.avgScore)[0]?.avgScore ?? 86;
   const totalProducts = brands.reduce((s, b) => s + b.productCount, 0);
