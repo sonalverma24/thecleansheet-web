@@ -135,7 +135,7 @@ export default function ReviewPage() {
             className="w-full h-full object-cover"
             style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
           >
-            <source src="/Videos/skincare-slow-web540.mp4" type="video/mp4" />
+            <source src="/Videos/review-hero-web.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0" style={{ background: `linear-gradient(to right, ${CREAM} 0%, rgba(252,249,248,0.78) 34%, rgba(252,249,248,0.12) 80%)` }} />
           <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${CREAM} 0%, rgba(252,249,248,0) 22%)` }} />
