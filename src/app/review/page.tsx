@@ -123,10 +123,20 @@ export default function ReviewPage() {
     <div className="min-h-screen" style={{ background: CREAM }}>
       {/* ═══ Hero + input ═══ */}
       <section className="relative overflow-hidden">
-        {/* Creative, dropper fading seamlessly into the canvas (static, no scale) */}
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%]" aria-hidden>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/creatives/dropper-drop.jpg" alt="" className="w-full h-full object-cover" />
+        {/* Creative: slow skincare loop melting seamlessly into the cream canvas */}
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[40%] overflow-hidden" aria-hidden>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/images/creatives/dropper-drop.jpg"
+            className="w-full h-full object-cover"
+            style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
+          >
+            <source src="/Videos/skincare-slow-web540.mp4" type="video/mp4" />
+          </video>
           <div className="absolute inset-0" style={{ background: `linear-gradient(to right, ${CREAM} 0%, rgba(252,249,248,0.78) 34%, rgba(252,249,248,0.12) 80%)` }} />
           <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${CREAM} 0%, rgba(252,249,248,0) 22%)` }} />
         </div>
