@@ -2,7 +2,39 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
+
+/* Reading-progress sweep across the bottom edge of the sticky header */
+function ScrollProgress() {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        setPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+  }, []);
+  return (
+    <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-transparent" aria-hidden>
+      <div
+        className="h-full"
+        style={{
+          width: `${pct}%`,
+          background: 'linear-gradient(90deg, #248179 0%, #80d5cc 60%, #d2ff34 100%)',
+          transition: 'width 80ms linear',
+          borderRadius: '0 2px 2px 0',
+        }}
+      />
+    </div>
+  );
+}
 
 export function Navigation() {
   const pathname = usePathname();
@@ -15,7 +47,8 @@ export function Navigation() {
   return (
     <>
       {/* Desktop Top Nav — sticky, blurs over content when scrolling */}
-      <nav className="hidden md:block sticky top-0 z-50 border-b border-[var(--color-surface-subtle)] bg-white/90 backdrop-blur-md">
+      <nav className="hidden md:block sticky top-0 z-50 border-b border-[var(--color-surface-subtle)] bg-white/90 backdrop-blur-md relative">
+        <ScrollProgress />
         <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-3 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex-shrink-0">

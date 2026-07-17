@@ -2,6 +2,7 @@ import Link from "next/link";
 import FormModal from "@/components/FormModal";
 import OpenFormButton from "@/components/OpenFormButton";
 import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
+import { IngredientLattice } from "@/components/graphics/HeroArt";
 
 /* ────────────────────────────────────────────────────────────────
    ABOUT — Evidence-First Editorial.
@@ -39,7 +40,11 @@ export default function AboutPage() {
       <FormModal />
 
       {/* ═══ Hero ═══ */}
-      <section className="max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-16 md:pb-20">
+      <section className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-16 md:pb-20">
+        {/* Hero art: floating ingredient lattice — desktop only */}
+        <div className="hidden lg:block absolute right-16 top-20 w-[380px] h-[250px] rotate-2" aria-hidden>
+          <IngredientLattice className="w-full h-full shadow-2xl" />
+        </div>
         <Reveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             Our mission

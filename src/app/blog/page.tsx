@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { BLOG_POSTS, BlogPost } from "@/lib/blog-posts";
 import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
+import { IngredientLattice } from "@/components/graphics/HeroArt";
 
 /* ────────────────────────────────────────────────────────────────
    READS — the journal. Evidence-First Editorial.
@@ -61,7 +62,11 @@ export default function BlogPage() {
   return (
     <div className="bg-white">
       {/* ═══ Masthead ═══ */}
-      <section className="max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-12 md:pb-16">
+      <section className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-12 md:pb-16">
+        {/* Hero art: floating ingredient lattice — desktop only */}
+        <div className="hidden lg:block absolute right-16 top-16 w-[400px] h-[240px]" aria-hidden>
+          <IngredientLattice className="w-full h-full shadow-2xl" />
+        </div>
         <Reveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             The Clean Sheet · Journal

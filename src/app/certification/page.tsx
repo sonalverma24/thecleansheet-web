@@ -2,6 +2,7 @@ import Link from "next/link";
 import FormModal from "@/components/FormModal";
 import OpenFormButton from "@/components/OpenFormButton";
 import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
+import { ProofSealArt } from "@/components/graphics/HeroArt";
 
 /* ────────────────────────────────────────────────────────────────
    CERTIFICATION — Evidence-First Editorial.
@@ -77,7 +78,11 @@ export default function CertificationPage() {
       <FormModal />
 
       {/* ═══ Hero ═══ */}
-      <section className="max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-16 md:pb-24">
+      <section className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-16 md:pb-24 overflow-visible">
+        {/* Hero art: the proof seal, floating — desktop only */}
+        <div className="hidden lg:block absolute right-4 top-16 w-[380px] h-[380px]" aria-hidden>
+          <ProofSealArt className="w-full h-full" />
+        </div>
         <Reveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             Science-backed · Independently assessed · Publicly documented
