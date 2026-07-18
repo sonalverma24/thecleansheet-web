@@ -93,6 +93,44 @@ export function ApprovedStamp({ size = 54, animate = false }: { size?: number; a
   );
 }
 
+/* The rubber-stamp band on its own — same ink-stamp language as the "APPROVED"
+   mark, but without the TCS logo disc. Used for Mostly Clean / Needs Proof /
+   Misleading so every tier reads as one consistent stamp family. */
+export function TierStamp({ tier, size = 116, animate = false }: { tier: Exclude<ReviewTier, "approved">; size?: number; animate?: boolean }) {
+  const t = TIER_STYLES[tier];
+  const s = size / 116;
+  const words = t.label.replace(/^Clean Sheet\s+/i, "").toUpperCase().split(" ");
+  return (
+    <span
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size, ...(animate ? { animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" } : {}) }}
+      aria-label={t.label}
+    >
+      <span
+        className="uppercase text-center select-none"
+        style={{
+          transform: "rotate(-8deg)",
+          color: t.fg,
+          background: "rgba(255,255,255,0.94)",
+          border: `${Math.max(3 * s, 2)}px solid ${t.fg}`,
+          borderRadius: 9 * s,
+          padding: `${9 * s}px ${15 * s}px`,
+          fontSize: 18 * s,
+          fontWeight: 800,
+          letterSpacing: "0.06em",
+          lineHeight: 1.04,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.13)",
+          fontFamily: "Helvetica, Arial, sans-serif",
+        }}
+      >
+        {words.map((w) => (
+          <span key={w} className="block">{w}</span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
 /* Tile corner mark: Approved products carry the stamped logo;
    other tiers show the compact pill so cautions stay visible. */
 export function TileTierMark({ tier }: { tier: ReviewTier }) {

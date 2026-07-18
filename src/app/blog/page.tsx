@@ -3,7 +3,6 @@ import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
 import { BLOG_POSTS, BlogPost } from "@/lib/blog-posts";
 import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
-import { IngredientLattice } from "@/components/graphics/HeroArt";
 
 /* ────────────────────────────────────────────────────────────────
    READS — the journal. Evidence-First Editorial.
@@ -61,12 +60,14 @@ export default function BlogPage() {
 
   return (
     <div className="bg-white">
-      {/* ═══ Masthead ═══ */}
-      <section className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-12 md:pb-16">
-        {/* Hero art: floating ingredient lattice — desktop only */}
-        <div className="hidden lg:block absolute right-16 top-16 w-[400px] h-[240px]" aria-hidden>
-          <IngredientLattice className="w-full h-full shadow-2xl" />
-        </div>
+      {/* ═══ Masthead + Featured — one merged editorial hero ═══ */}
+      <section className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-16 md:pt-24 pb-20 md:pb-28 overflow-hidden">
+        {/* Editorial graphic: soft lime wash behind the lead story (distinct from the About lattice) */}
+        <div
+          className="hidden lg:block absolute -top-10 right-0 w-[520px] h-[520px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(210,255,52,0.20) 0%, rgba(210,255,52,0) 68%)" }}
+          aria-hidden
+        />
         <Reveal>
           <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
             The Clean Sheet · Journal
@@ -75,41 +76,57 @@ export default function BlogPage() {
         <h1 className="font-display mt-6 text-[44px] md:text-[64px] leading-[1.05] tracking-[-0.02em] text-[var(--color-charcoal)]">
           <TitleReveal lines={["Reads."]} />
         </h1>
-        <Reveal delay={0.25}>
+        <Reveal delay={0.2}>
           <p className="mt-5 text-[17px] leading-[1.7] text-[var(--color-warm-gray)] max-w-xl">
             Science, regulation, and transparency in beauty. No press releases,
             no sponsored posts, no marketing dressed up as advice.
           </p>
         </Reveal>
-      </section>
 
-      {/* ═══ Featured ═══ */}
-      {featured && (
-        <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-20 md:pb-28">
-          <Reveal>
-            <Link href={`/blog/${featured.slug}`} className="group grid lg:grid-cols-2 gap-10 items-center pt-10" style={{ borderTop: `1px solid ${INK}` }}>
-              <PostImage post={featured} className="aspect-[4/3] w-full" />
-              <div>
+        {/* The lead story, merged straight into the hero */}
+        {featured && (
+          <Reveal delay={0.32}>
+            <Link
+              href={`/blog/${featured.slug}`}
+              className="group relative mt-12 md:mt-16 grid lg:grid-cols-[1fr_1fr] gap-8 lg:gap-14 items-center pt-10"
+              style={{ borderTop: `1px solid ${INK}` }}
+            >
+              {/* Left: editorial text */}
+              <div className="order-2 lg:order-1">
                 <div className="flex items-center gap-4">
                   <CategoryTag category={featured.category} />
                   <span className="text-[12px] uppercase text-[var(--color-warm-gray)]" style={{ letterSpacing: "0.1em" }}>
                     Featured · {featured.readTime}
                   </span>
                 </div>
-                <h2 className="font-display mt-6 text-[30px] md:text-[40px] leading-[1.15] text-[var(--color-charcoal)] group-hover:text-[var(--color-primary)] transition-colors">
+                <h2 className="font-display mt-6 text-[32px] md:text-[46px] leading-[1.1] text-[var(--color-charcoal)] group-hover:text-[var(--color-primary)] transition-colors">
                   {featured.title}
                 </h2>
                 <p className="mt-5 text-[16px] leading-[1.7] text-[var(--color-warm-gray)] max-w-lg">
                   {featured.subtitle}
                 </p>
-                <p className="mt-6 text-[12px] uppercase text-[var(--color-warm-gray)]" style={{ letterSpacing: "0.1em" }}>
+                <p className="mt-7 text-[12px] uppercase text-[var(--color-warm-gray)]" style={{ letterSpacing: "0.1em" }}>
                   {featured.date} · {featured.author}
                 </p>
+                <span className="mt-6 inline-flex items-center gap-2 text-[14px] text-[var(--color-primary)] group-hover:gap-3 transition-all">
+                  Read the story <span aria-hidden>→</span>
+                </span>
+              </div>
+              {/* Right: lead image with an offset editorial frame + issue mark */}
+              <div className="order-1 lg:order-2 relative">
+                <div className="absolute -top-3 -right-3 w-full h-full rounded-[2px] border-2 border-[var(--color-lime)] hidden sm:block" aria-hidden />
+                <span
+                  className="absolute z-10 -top-3 left-4 bg-[var(--color-charcoal)] text-white text-[10px] uppercase px-3 py-1.5"
+                  style={{ letterSpacing: "0.14em" }}
+                >
+                  Latest read
+                </span>
+                <PostImage post={featured} className="relative aspect-[4/3] w-full shadow-2xl" />
               </div>
             </Link>
           </Reveal>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* ═══ All posts — thin-rule rows ═══ */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-24 md:pb-32">

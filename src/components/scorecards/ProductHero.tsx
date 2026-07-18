@@ -13,7 +13,7 @@ import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { scoreColors } from "@/data/brands";
-import { scoreToTier, TIER_STYLES, TierBadge, ApprovedStamp } from "@/components/scorecards/pillar-ui";
+import { scoreToTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
 import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -662,43 +662,10 @@ function ScoreBadge({ score }: { score: number }) {
     );
   }
 
-  // Other tiers: self-contained SVG seal with the tier word.
-  const t = TIER_STYLES[tier];
-  const words = t.label.replace(/^Clean Sheet\s+/i, "").toUpperCase().split(" ");
+  // Other tiers: the rubber-stamp band (same ink-stamp language, no logo disc).
   return (
-    <div className="relative flex-shrink-0" style={{ width: 120, height: 120 }} aria-label={t.label}>
-      <svg width="120" height="120" viewBox="0 0 120 120">
-        {/* Stamp rings */}
-        <circle cx="60" cy="60" r="57" fill="#fff" stroke={t.fg} strokeWidth="2" />
-        <circle cx="60" cy="60" r="49" fill="none" stroke={t.fg} strokeWidth="0.75" strokeDasharray="2.5 2.5" />
-        {/* Arc text paths */}
-        <defs>
-          <path id="sealTop" d="M 60,60 m -40,0 a 40,40 0 1,1 80,0" />
-          <path id="sealBottom" d="M 60,60 m -40,0 a 40,40 0 1,0 80,0" />
-        </defs>
-        <text fontSize="9.5" letterSpacing="2.2" fill={t.fg} fontFamily="Helvetica, Arial, sans-serif">
-          <textPath href="#sealTop" startOffset="50%" textAnchor="middle">THE CLEAN SHEET</textPath>
-        </text>
-        <text fontSize="7.5" letterSpacing="3" fill={t.fg} opacity="0.7" fontFamily="Helvetica, Arial, sans-serif">
-          <textPath href="#sealBottom" startOffset="50%" textAnchor="middle">EST 2025 · INDIA</textPath>
-        </text>
-        {/* Tier word(s), centred */}
-        {words.map((w, i) => (
-          <text
-            key={w}
-            x="60"
-            y={words.length === 1 ? 65 : 58 + i * 15}
-            textAnchor="middle"
-            fontSize={w.length > 8 ? 12 : 15}
-            fontWeight="700"
-            letterSpacing="0.5"
-            fill={t.fg}
-            fontFamily="'Cooper BT', Georgia, serif"
-          >
-            {w}
-          </text>
-        ))}
-      </svg>
+    <div className="flex-shrink-0">
+      <TierStamp tier={tier} size={116} animate />
     </div>
   );
 }

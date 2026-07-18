@@ -54,29 +54,23 @@ export function IngredientLattice({ className = "" }: { className?: string }) {
   );
 }
 
-/** The approved-stamp proof motif (the "REAL PROOF" card language). */
+/** The certified-seal proof motif (the "REAL PROOF" card language) — the
+    official Clean Sheet Certified stamp, not a mock. */
 export function ProofSealArt({ className = "" }: { className?: string }) {
   return (
     <div className={`relative flex items-center justify-center ${className}`} aria-hidden>
       {/* halo */}
       <div className="absolute w-72 h-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(36,129,121,0.12) 0%, transparent 70%)" }} />
-      {/* logo + stamp, oversized */}
-      <span className="relative inline-block" style={{ width: 190, height: 190, animation: "heroart-float 7s ease-in-out infinite alternate" }}>
+      {/* the real certified seal, oversized */}
+      <span className="relative inline-block" style={{ width: 210, height: 210, animation: "heroart-float 7s ease-in-out infinite alternate" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo.png" alt="" width={190} height={190} className="w-full h-full object-cover rounded-full shadow-xl bg-white" />
-        <span
-          className="absolute uppercase select-none"
-          style={{
-            bottom: 26, left: -30, transform: "rotate(-9deg)",
-            fontSize: 27, fontWeight: 800, letterSpacing: "0.12em", lineHeight: 1,
-            color: "#1d6a5f", background: "rgba(255,255,255,0.95)",
-            border: "5px solid #1d6a5f", borderRadius: 10, padding: "9px 17px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.16)",
-            fontFamily: "Helvetica, Arial, sans-serif",
-          }}
-        >
-          Approved
-        </span>
+        <img
+          src="/certified-seal.png"
+          alt="The Clean Sheet Certified"
+          width={210}
+          height={210}
+          className="w-full h-full object-contain drop-shadow-xl"
+        />
       </span>
       {/* orbiting check chips */}
       {["Claims checked", "INCI read", "Evidence graded"].map((t, i) => (
