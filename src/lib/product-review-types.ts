@@ -209,6 +209,8 @@ export interface ProductReview {
   keyActivesRead?: KeyActiveRead[];
   regulatoryScreen?: RegulatoryScreen;
   inciSourceUrl?: string;
+  /** India-specific read (climate, price positioning, ASCI/CDSCO posture). */
+  indiaContext?: string;
   /** Canonical product key for the review repository. */
   productSlug?: string;
 }

@@ -200,6 +200,8 @@ KEY ACTIVES (keyActivesRead): the 1-4 hero ingredients the product is built arou
 
 REGULATORY SCREEN (regulatoryScreen): for each of the 10 authorities, check the retrieved INCI against that authority's restricted/prohibited lists. Default each to "No prohibited or restricted ingredients identified" and ONLY name a specific ingredient when it genuinely triggers that authority (e.g. a banned colorant under EU Annex II). Do NOT flag common safe ingredients. Never write a false positive — when in doubt, report clear.
 
+INDIA CONTEXT (indiaContext): a 2-3 sentence read written for an Indian buyer. Ground every sentence in this product's real data — do NOT write a generic paragraph. Cover, where relevant: (a) how the formula behaves in Indian conditions (heat, humidity, high UV, pollution) for THIS product type; (b) price positioning in the Indian market at the stated ₹ price; (c) the ASCI / CDSCO posture given the actual claims (only mention scrutiny when a claim genuinely warrants it). Keep it factual and useful, never promotional.
+
 INGREDIENT TRANSPARENCY SCORING SYSTEM:
 
 Score 1 to 5 for ingredient transparency:
@@ -557,6 +559,8 @@ OUTPUT JSON STRUCTURE:
     "echa_svhc": "string",
     "iarc": "string"
   },
+
+  "indiaContext": "string — 2-3 sentences for an Indian buyer, grounded in this product's real data (Indian-climate behaviour, ₹ price positioning, ASCI/CDSCO posture from the actual claims)",
 
   "formulaLogic": {
     "heroIngredientsMatchClaim": false,
