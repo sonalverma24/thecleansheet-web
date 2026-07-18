@@ -36,6 +36,35 @@ export interface PlatformPrice {
   note: string | null;
 }
 
+/** Per-ingredient read, engine-authored from the real INCI (Plum-page depth). */
+export interface IngredientRead {
+  name: string;
+  role: string;                 // "Solvent", "Active", "Preservative", "Emollient", "Fragrance", …
+  note: string;                 // one-line consumer explanation of what it does / why noted
+  flag: "ok" | "info" | "warn"; // green / worth-noting / caution
+}
+
+/** A hero active the product is built around, with a plausibility read. */
+export interface KeyActiveRead {
+  name: string;
+  function: string;             // what it does for the user ("Brightening / pore refining")
+  concentrationConfidence: "High" | "Medium" | "Low"; // how confident we are it's at a working level
+}
+
+/** Regulatory screen across the 10 authorities the curated pages use. */
+export interface RegulatoryScreen {
+  eu_1223_2009: string;
+  india_cr_2020: string;
+  us_fda_21cfr: string;
+  korea_mfds: string;
+  health_canada_hotlist: string;
+  canada_nhpid: string;
+  tga_australia: string;
+  aicis_australia: string;
+  echa_svhc: string;
+  iarc: string;
+}
+
 export interface IngredientTransparencyReview {
   score: 1 | 2 | 3 | 4 | 5;
   label:
@@ -175,6 +204,10 @@ export interface ProductReview {
   reviewedAt?: string;
   /** Resolved INCI (ground truth used for grading), for display. */
   inciIngredients?: string[];
+  /** Plum-depth detail authored by the engine from the real INCI. */
+  ingredientReads?: IngredientRead[];
+  keyActivesRead?: KeyActiveRead[];
+  regulatoryScreen?: RegulatoryScreen;
   inciSourceUrl?: string;
   /** Canonical product key for the review repository. */
   productSlug?: string;

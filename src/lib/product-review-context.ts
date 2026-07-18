@@ -186,6 +186,20 @@ Anti-bacterial / anti-microbial claims WITH triclosan or similar actives:
 
 ---
 
+PER-INGREDIENT READ (ingredientReads) — authored ONLY from the retrieved ground-truth INCI:
+  - One entry per ingredient, in the SAME order as the retrieved list. Use the exact INCI name.
+  - role: classify by cosmetic function (Solvent, Humectant, Active, Emollient, Occlusive, Surfactant, Preservative, Emulsifier, Fragrance, Chelator, pH adjuster, Thickener, Antioxidant, Colorant).
+  - note: ONE plain sentence. What it does in this product, or why a user might care. No marketing language.
+  - flag:
+      • "warn" ONLY for a genuine, well-established concern present here (a fragrance allergen, a formaldehyde-releaser, a known sensitiser, a drying/denatured alcohol high in the list). Do NOT warn on ubiquitous safe ingredients (water, glycerin, niacinamide, hyaluronic acid, panthenol).
+      • "info" for fragrance/parfum, essential oils, actives that are potent-but-fine, or anything worth a neutral heads-up.
+      • "ok" for everything else (the default — most ingredients are "ok").
+  - NEVER invent a safety concern. If unsure, use "ok" or "info", never "warn". If you did not retrieve the INCI, return an empty ingredientReads array.
+
+KEY ACTIVES (keyActivesRead): the 1-4 hero ingredients the product is built around. Map marketing name to what it does. Set concentrationConfidence using the 1% line: High if a % is disclosed or it sits high in the INCI; Low if it sits after the preservatives (below ~1%); Medium otherwise.
+
+REGULATORY SCREEN (regulatoryScreen): for each of the 10 authorities, check the retrieved INCI against that authority's restricted/prohibited lists. Default each to "No prohibited or restricted ingredients identified" and ONLY name a specific ingredient when it genuinely triggers that authority (e.g. a banned colorant under EU Annex II). Do NOT flag common safe ingredients. Never write a false positive — when in doubt, report clear.
+
 INGREDIENT TRANSPARENCY SCORING SYSTEM:
 
 Score 1 to 5 for ingredient transparency:
@@ -512,6 +526,36 @@ OUTPUT JSON STRUCTURE:
     "phDisclosedWhereRelevant": false,
     "usageWarningsClear": false,
     "issues": ["string"]
+  },
+
+  "ingredientReads": [
+    {
+      "name": "string — INCI name exactly as it appears in the retrieved ingredient list, in order",
+      "role": "string — Solvent | Humectant | Active | Emollient | Occlusive | Surfactant | Preservative | Emulsifier | Fragrance | Chelator | pH adjuster | Thickener | Antioxidant | Colorant",
+      "note": "string — ONE plain sentence: what it does here, or why it is worth noting. No hype.",
+      "flag": "ok | info | warn"
+    }
+  ],
+
+  "keyActivesRead": [
+    {
+      "name": "string — the hero active by its common name",
+      "function": "string — what it does for the user, e.g. 'Brightening and pore refining'",
+      "concentrationConfidence": "High | Medium | Low — High only if % disclosed or it sits high in the INCI; Low if it sits below the 1% line (after phenoxyethanol)"
+    }
+  ],
+
+  "regulatoryScreen": {
+    "eu_1223_2009": "string — 'No prohibited or restricted ingredients identified' OR name the specific concern",
+    "india_cr_2020": "string",
+    "us_fda_21cfr": "string",
+    "korea_mfds": "string",
+    "health_canada_hotlist": "string",
+    "canada_nhpid": "string",
+    "tga_australia": "string",
+    "aicis_australia": "string",
+    "echa_svhc": "string",
+    "iarc": "string"
   },
 
   "formulaLogic": {

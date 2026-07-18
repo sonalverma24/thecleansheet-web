@@ -6,8 +6,10 @@
 ──────────────────────────────────────────────────────────────── */
 
 import type { ProductReview, DerivedVerdict, ClaimAnalysis } from "@/lib/product-review-types";
-import type { ProductScorecard, Brand, ClaimsCheckItem, ScorePillar, IngredientEntry } from "@/data/brands/types";
+import type { ProductScorecard, Brand, ClaimsCheckItem, ScorePillar } from "@/data/brands/types";
 import { slugify } from "@/lib/verified-store";
+import { enrichIngredients, keyActivesFrom, buildGlobalScreen } from "@/lib/inci-enrich";
+import type { GlobalScreen, IngredientEntry, KeyActive } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
@@ -31,14 +33,6 @@ function guessProductType(category: string): ProductScorecard["productType"] {
   if (/serum|treatment|peel/.test(c)) return "treatment";
   if (/hair|conditioner/.test(c)) return "hair";
   return "leave-on";
-}
-
-function ingredientEntry(name: string): IngredientEntry {
-  if (FRAGRANCE_RE.test(name.trim()))
-    return { name, note: "Fragrance — a potential sensitizer for some users", flag: "info" };
-  if (DRYING_ALCOHOL_RE.test(name.trim()))
-    return { name, note: "Drying alcohol — can be sensitizing in higher positions", flag: "info" };
-  return { name, note: "", flag: "ok" };
 }
 
 const num = (s: string | undefined): number | undefined => {
@@ -85,6 +79,32 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     .slice(0, 6)
     .map((c) => `Finished-product evidence for "${c.text.slice(0, 80)}${c.text.length > 80 ? "…" : ""}"`);
 
+  /* Plum-depth detail. Prefer the engine's own reads (authored from the real
+     INCI). The ingredient DB is only a fallback, and only for a clean, safe
+     confirmation note — never the sole source of a warn flag. */
+  const ingredients: IngredientEntry[] =
+    (review.ingredientReads && review.ingredientReads.length > 0)
+      ? review.ingredientReads.map((r) => ({
+          name: r.name,
+          note: [r.role, r.note].filter(Boolean).join(" · "),
+          flag: r.flag === "warn" ? "warn" : r.flag === "info" ? "info" : "ok",
+        }))
+      : enrichIngredients(inci);
+
+  const keyActives: KeyActive[] =
+    (review.keyActivesRead && review.keyActivesRead.length > 0)
+      ? review.keyActivesRead.map((k) => ({ name: k.name, function: k.function, concentrationConfidence: k.concentrationConfidence }))
+      : keyActivesFrom(inci);
+
+  const rs = review.regulatoryScreen;
+  const globalScreen: GlobalScreen | undefined = rs
+    ? {
+        eu_1223_2009: rs.eu_1223_2009, india_cr_2020: rs.india_cr_2020, us_fda_21cfr: rs.us_fda_21cfr,
+        korea_mfds: rs.korea_mfds, health_canada_hotlist: rs.health_canada_hotlist, canada_nhpid: rs.canada_nhpid,
+        tga_australia: rs.tga_australia, aicis_australia: rs.aicis_australia, echa_svhc: rs.echa_svhc, iarc: rs.iarc,
+      }
+    : (inci.length >= 3 ? buildGlobalScreen(inci) : undefined);
+
   const product: ProductScorecard = {
     productName: review.productName,
     slug: review.productSlug ?? slugify(review.productName, review.brand),
@@ -99,8 +119,9 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     targetUser: review.targetUser ?? "",
     image: review.imageUrl ?? "",
     pillars,
-    keyActives: [],
-    ingredients: inci.map(ingredientEntry),
+    keyActives,
+    ingredients,
+    globalScreen,
     claimsCheck: claims.slice(0, 10).map(claimToCheckItem),
     missingProof,
     cleanSheetNote: review.cleanSheetNote,

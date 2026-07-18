@@ -163,7 +163,7 @@ export type ProductReviewResult =
    review. L1 = in-memory; L2 = Supabase public.product_reviews. Defensive. */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
-export const RUBRIC_REV = "r4";
+export const RUBRIC_REV = "r5";
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
    review — verdict rule changes then apply without re-running the model. */
