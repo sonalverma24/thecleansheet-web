@@ -8,7 +8,7 @@
 
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilient } from "@/lib/gemini";
-import { resolveProductImage, searchProductImage } from "@/lib/product-image";
+import { resolveProductImage, searchProductImage, findProductImageKeyless } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
@@ -395,10 +395,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const review = parsed as ProductReview;
 
-  // Image pulling: INCIDecoder product photo first (reliable, no API key),
-  // then page scrape (URLs), then Google CSE if configured.
+  // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
+  // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
   let imageUrl: string | null = inci?.imageUrl ?? null;
   if (!imageUrl && isURL(q)) imageUrl = await resolveProductImage(q);
+  if (!imageUrl) imageUrl = await findProductImageKeyless(review.brand, review.productName);
   if (!imageUrl) {
     const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
     imageUrl = await searchProductImage(imgQuery || q);

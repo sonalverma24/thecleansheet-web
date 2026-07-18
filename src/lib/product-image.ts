@@ -158,3 +158,93 @@ export function imageFromMarkdown(markdown: string): string | null {
   // Prefer URLs with an explicit raster-image extension; otherwise first survivor
   return urls.find((u) => /\.(jpe?g|png|webp)([?#]|$)/i.test(u)) ?? urls[0] ?? null;
 }
+
+/* ─── Keyless product-image search (no Google CSE) ───
+   Scrapes retailer search results via the Jina reader and lifts the first
+   real product photo. Amazon.in is the primary source (its search page is
+   server-rendered enough for the /images/I/ product images to survive). */
+
+const JINA = "https://r.jina.ai/";
+
+async function jinaText(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(JINA + url, {
+      headers: { Accept: "text/plain", "X-Return-Format": "markdown" },
+      signal: AbortSignal.timeout(20000),
+    });
+    return res.ok ? await res.text() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Amazon thumbnails carry size modifiers (…._AC_SR250,250_QL65_.jpg). Strip
+    them back to the base id for a full-resolution image. */
+function amazonFullRes(url: string): string {
+  return url.replace(/(\/images\/I\/[A-Za-z0-9%+_-]+)\.[^/]*(\.(?:jpe?g|png|webp))(?:$|[?#])/i, "$1$2");
+}
+
+/** Confirm a URL really is a servable image (guards against stale/404 links). */
+async function isLiveImage(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: "GET", headers: { "User-Agent": UA, Range: "bytes=0-2048" }, signal: AbortSignal.timeout(8000) });
+    if (!res.ok && res.status !== 206) return false;
+    return (res.headers.get("content-type") || "").startsWith("image/");
+  } catch {
+    return false;
+  }
+}
+
+/** Build a clean search query, avoiding "Brand Brand Product" duplication. */
+function imageQuery(brand: string, productName: string): string {
+  const b = (brand || "").trim();
+  const n = (productName || "").trim();
+  if (!b) return n;
+  return n.toLowerCase().startsWith(b.toLowerCase()) ? n : `${b} ${n}`;
+}
+
+const STOP = new Set(["the", "and", "with", "for", "of", "ml", "gm", "gr", "pack", "oz", "face", "skin", "kind", "to"]);
+function tokens(s: string): string[] {
+  return (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1 && !STOP.has(t));
+}
+
+/** From Amazon search markdown, pick the ![alt](image) whose ALT best matches
+    the query — never the first image (Amazon injects sponsored items there). */
+function bestAmazonMatch(md: string, query: string): string | null {
+  const qTok = tokens(query);
+  if (!qTok.length) return null;
+  let best: { url: string; score: number } | null = null;
+  for (const m of md.matchAll(/!\[[^\]]*?:?\s*([^\]]{4,120})\]\((https:\/\/m\.media-amazon\.com\/images\/I\/[^)\s]+\.(?:jpe?g|png|webp))\)/gi)) {
+    const alt = m[1];
+    const url = amazonFullRes(m[2]);
+    if (IMAGE_URL_BLOCKLIST.test(url)) continue;
+    const aTok = new Set(tokens(alt));
+    const overlap = qTok.filter((t) => aTok.has(t)).length / qTok.length;
+    if (overlap >= 0.5 && (!best || overlap > best.score)) best = { url, score: overlap };
+  }
+  return best?.url ?? null;
+}
+
+export async function findProductImageKeyless(brand: string, productName: string): Promise<string | null> {
+  const q = imageQuery(brand, productName);
+  if (!q) return null;
+  const enc = encodeURIComponent(q);
+
+  // 1 — Amazon.in search: match the image whose alt-title matches the product.
+  const amazon = await jinaText(`https://www.amazon.in/s?k=${enc}`);
+  if (amazon) {
+    const url = bestAmazonMatch(amazon, q);
+    if (url && (await isLiveImage(url))) return url;
+  }
+
+  // 2 — Nykaa search (fallback; sometimes exposes CDN images)
+  const nykaa = await jinaText(`https://www.nykaa.com/search/result/?q=${enc}`);
+  if (nykaa) {
+    const img = clean(imageFromMarkdown(nykaa));
+    if (img && /nykaa|adn-static|images-static/i.test(img) && !IMAGE_URL_BLOCKLIST.test(img) && (await isLiveImage(img))) {
+      return img;
+    }
+  }
+
+  return null;
+}
