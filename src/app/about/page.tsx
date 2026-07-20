@@ -236,11 +236,15 @@ export default function AboutPage() {
                 including cosmetic scientists, toxicologists, and dermatologists.
               </p>
               <p>
-                Panel members are named here because transparency about who evaluates is
-                part of what makes the standard credible. No commercial relationships
-                with certified brands. Conflicts of interest are declared and managed.
+                We deliberately keep the panel confidential. Anonymity shields each
+                evaluation from lobbying, brand pressure and personal bias, so a verdict
+                rests on the evidence and nothing else.
               </p>
-              <p>Panel member profiles will be published as the panel is confirmed.</p>
+              <p>
+                No panel member holds a commercial relationship with the brands under
+                review. Conflicts of interest are declared and managed, and evaluators
+                never deal with a brand directly.
+              </p>
             </div>
           </Reveal>
           <Reveal delay={0.15}>
@@ -255,7 +259,7 @@ export default function AboutPage() {
                 {[
                   "No brand affiliation required",
                   "Conflict of interest protocols in place",
-                  "Named publicly on the platform",
+                  "Your identity kept strictly confidential",
                 ].map((t) => (
                   <p key={t} className="flex items-center gap-3 text-[14px] text-[var(--color-charcoal)]">
                     <span className="inline-block w-[6px] h-[6px] rounded-full bg-[var(--color-primary)] flex-shrink-0" />

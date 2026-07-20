@@ -25,6 +25,338 @@ export type BlogBlock =
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug: "last-week-in-beauty-july-12-17-2026",
+    category: "Industry",
+    readTime: "14 min read",
+    date: "July 17, 2026",
+    title: "Beauty Got Bigger Last Week. Did It Get Better?",
+    subtitle: "The Clean Sheet weekly briefing. 12 to 17 July 2026. More shelves, more screens, more investment portfolios, and a widening gap between choice and proof.",
+    excerpt: "Luxury fragrance moved deeper into Indian ecommerce. AI entered the beauty mirror. Costco became a serious beauty destination. Investors prepared to bet on K beauty. Every expansion created a matching proof gap.",
+    author: "The Clean Sheet Team",
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Sephora_Store_at_Toronto_Eaton_Centre.jpg/1280px-Sephora_Store_at_Toronto_Eaton_Centre.jpg",
+    content: [
+      {
+        type: "paragraph",
+        text: "Last week, beauty expanded into more shelves, more screens and even more investment portfolios.",
+      },
+      {
+        type: "paragraph",
+        text: "Luxury fragrance moved deeper into Indian ecommerce. Artificial intelligence entered the beauty mirror. Costco became a serious beauty destination. Investors prepared to bet on K beauty as a financial category.",
+      },
+      {
+        type: "paragraph",
+        text: "Meanwhile, 15 July was celebrated as National Clean Beauty Day.",
+      },
+      {
+        type: "paragraph",
+        text: "Which feels like the right moment to ask an uncomfortable question.",
+      },
+      {
+        type: "callout",
+        text: "Do consumers have more beauty choices today, or simply more claims to investigate?",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "India's fragrance market moves further upmarket",
+      },
+      {
+        type: "image",
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Perfume_Bottles.JPG/1280px-Perfume_Bottles.JPG",
+        alt: "A row of luxury perfume bottles",
+        caption: "Premium fragrance is moving from the specialist counter into mainstream Indian ecommerce. Image: Angela Andriot / Vetiver Aromatics, CC BY-SA 3.0.",
+      },
+      {
+        type: "paragraph",
+        text: "Myntra Beauty added French fragrance house Chloe to its Luxe storefront, with products including Chloe Eau de Parfum, Nomade and Lumineuse starting at approximately Rs. 9,000.",
+      },
+      {
+        type: "paragraph",
+        text: "The interesting part is not simply that another international brand has entered an Indian marketplace. It is where Myntra expects the demand to come from.",
+      },
+      {
+        type: "paragraph",
+        text: "The platform says premium beauty interest is growing across metropolitan and emerging Indian markets. Luxury fragrance is moving from a specialist counter purchase to something consumers can discover beside fashion, makeup and everyday shopping online.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "The Clean Sheet read",
+      },
+      {
+        type: "paragraph",
+        text: "Access is improving quickly. Guidance is not.",
+      },
+      {
+        type: "paragraph",
+        text: "Fragrance remains one of beauty's least transparent categories. Consumers are often given notes, moods and longevity promises, while the complete fragrance composition stays protected under the umbrella term \"parfum.\"",
+      },
+      {
+        type: "paragraph",
+        text: "As premium fragrance reaches a wider Indian audience, allergen disclosure and counterfeit protection will become increasingly important trust signals.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Costco is quietly becoming a beauty retailer",
+      },
+      {
+        type: "image",
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Costco_Wholesale_Store_%2834635636926%29.jpg/1280px-Costco_Wholesale_Store_%2834635636926%29.jpg",
+        alt: "A Costco Wholesale storefront",
+        caption: "Costco reaches a large, loyal base through a tightly edited beauty assortment. Image: Tony Webster / Flickr, CC BY-SA 2.0.",
+      },
+      {
+        type: "paragraph",
+        text: "Brands including Mixsoon, Goodal and Vacation are using Costco to reach a large, loyal customer base through a tightly edited beauty assortment.",
+      },
+      {
+        type: "paragraph",
+        text: "Costco's advantage is curation. It does not need hundreds of similar serums. It selects a limited number of products that appear to offer strong value, recognisable performance or cultural momentum. For a brand, getting selected can mean immediate scale. It also requires the inventory, packaging and operational capacity to survive that scale.",
+      },
+      {
+        type: "paragraph",
+        text: "In the same week, skincare brand Covey reportedly closed.",
+      },
+      {
+        type: "paragraph",
+        text: "Covey launched around a simple three product routine and arrived at the right cultural moment for \"skinimalism.\" But once simplified skincare became common, simplicity stopped being a meaningful differentiator.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "The Clean Sheet read",
+      },
+      {
+        type: "paragraph",
+        text: "These stories belong together.",
+      },
+      {
+        type: "paragraph",
+        text: "Consumers say they are overwhelmed by choice. Retailers are responding with stronger curation. Brands that cannot explain why their product deserves one of those limited positions will struggle.",
+      },
+      {
+        type: "paragraph",
+        text: "A good founder story may earn attention. A clear routine may earn the first purchase. Repeat demand still depends on performance, proof and a reason to remain relevant.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The beauty mirror is beginning to analyse you",
+      },
+      {
+        type: "image",
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/HK_Admiralty_Pacific_Place_shop_Shu_Uemura_Aug-2012.JPG/1280px-HK_Admiralty_Pacific_Place_shop_Shu_Uemura_Aug-2012.JPG",
+        alt: "A Shu Uemura retail counter",
+        caption: "A Shu Uemura counter. The brand has introduced an AI powered mirror at its Tokyo flagship. Image: Kaifung3wangfai / Wikimedia Commons, CC BY-SA 3.0.",
+      },
+      {
+        type: "paragraph",
+        text: "Shu Uemura introduced an artificial intelligence powered mirror at its Tokyo flagship store.",
+      },
+      {
+        type: "paragraph",
+        text: "The mirror uses three dimensional facial scanning to assess face shape, proportions and feature balance. Makeup artists can then use the analysis to personalise consultations and product recommendations. Future updates are expected to allow customers to receive their analysis through a QR code.",
+      },
+      {
+        type: "paragraph",
+        text: "It is an impressive retail experience. It also raises questions beauty companies will need to answer.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "What exactly is being measured?",
+          "What data is stored?",
+          "How are recommendations generated?",
+          "Can a consumer challenge an inaccurate assessment?",
+          "Does the technology identify a genuine need, or create a new insecurity that a product can conveniently solve?",
+        ],
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "The Clean Sheet read",
+      },
+      {
+        type: "paragraph",
+        text: "Personalisation is useful when it reduces confusion. It becomes problematic when an opaque system evaluates someone's face and presents the result as objective truth.",
+      },
+      {
+        type: "paragraph",
+        text: "Beauty technology should disclose what it measures, how recommendations are produced and what happens to facial data after the consultation. A polished mirror should not become a black box.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "K beauty is becoming an investment category",
+      },
+      {
+        type: "paragraph",
+        text: "Guinness Atkinson filed plans for what is reported to be the first United States listed exchange traded fund dedicated exclusively to the K beauty sector.",
+      },
+      {
+        type: "paragraph",
+        text: "The proposal would allow investors to gain targeted exposure to South Korean cosmetics and personal care companies as a category, rather than investing in individual businesses.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "Why this matters",
+      },
+      {
+        type: "paragraph",
+        text: "K beauty is no longer being treated only as a consumer trend. It is increasingly being viewed as an export system built on formulation speed, manufacturing capability, distinctive formats, cultural influence and international distribution.",
+      },
+      {
+        type: "paragraph",
+        text: "But an investment label can flatten important differences between companies. Some businesses own strong intellectual property and manufacturing systems. Others are highly dependent on short product cycles and social media demand.",
+      },
+      {
+        type: "callout",
+        text: "The K beauty label may attract capital. Evidence will determine which companies deserve it.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "A meaningful sustainability claim, with an important boundary",
+      },
+      {
+        type: "image",
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/LOGO_LOREAL_GROUPE_NOIR.jpg/1280px-LOGO_LOREAL_GROUPE_NOIR.jpg",
+        alt: "L'Oreal Groupe logo",
+        caption: "L'Oreal says it reached 100 percent renewable electricity across its operated sites, five years early. Logo: L'Oreal Groupe (public domain).",
+      },
+      {
+        type: "paragraph",
+        text: "L'Oreal announced that it has reached 100 percent renewable electricity across the global sites and stores it operates where the company holds the electricity subscription.",
+      },
+      {
+        type: "paragraph",
+        text: "The achievement covers manufacturing facilities, research centres, distribution centres, offices and eligible stores. L'Oreal says it reached the target five years ahead of its 2030 goal.",
+      },
+      {
+        type: "paragraph",
+        text: "This is a significant operational milestone. It is also a good example of why the scope of a sustainability claim matters.",
+      },
+      {
+        type: "paragraph",
+        text: "\"100 percent renewable electricity across global operations\" does not automatically mean that every supplier, ingredient producer, logistics partner or outsourced manufacturer operates on renewable electricity. That does not weaken the achievement. It makes the wording important.",
+      },
+      {
+        type: "heading",
+        level: 3,
+        text: "The Clean Sheet rule",
+      },
+      {
+        type: "paragraph",
+        text: "A credible sustainability claim should tell consumers:",
+      },
+      {
+        type: "bullets",
+        items: [
+          "What part of the business was measured.",
+          "Which facilities were included.",
+          "Which emissions or energy sources were excluded.",
+          "Who verified the data.",
+          "What still needs to change.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "Specificity makes a strong achievement stronger.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The product launch worth watching",
+      },
+      {
+        type: "image",
+        src: "https://www.kaybeauty.com/cdn/shop/files/1_5166d4d0-c818-4c8b-9c1d-fee2664604f9.jpg?v=1781186850&width=1946",
+        alt: "Kay Beauty Cashmere Lip Blur",
+        caption: "Kay Beauty's Cashmere Lip Blur joins the move away from flat matte towards soft, diffused colour. Image: Kay Beauty.",
+      },
+      {
+        type: "paragraph",
+        text: "Kay Beauty introduced its Cashmere Lip Blur, joining the growing move away from flat, drying matte lipstick towards softer, diffused colour.",
+      },
+      {
+        type: "paragraph",
+        text: "The formula is promoted as having a lightweight whipped texture and includes avocado oil to support a more comfortable feel.",
+      },
+      {
+        type: "paragraph",
+        text: "The format is timely. Blurred lips are visually forgiving, easy to wear and highly compatible with social media tutorials. But avocado oil on an ingredient list does not prove hydration throughout the day.",
+      },
+      {
+        type: "paragraph",
+        text: "For claims around comfort, hydration or extended wear, the useful evidence would include instrumental hydration measurements, controlled wear testing and consumer studies conducted on the finished product.",
+      },
+      {
+        type: "callout",
+        text: "Ingredient presence explains the formulation story. Finished product testing supports the product promise.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The regulation brands should be watching now",
+      },
+      {
+        type: "paragraph",
+        text: "A major European fragrance allergen labelling deadline arrives on 31 July 2026.",
+      },
+      {
+        type: "paragraph",
+        text: "Under Commission Regulation (EU) 2023/1545, cosmetic products containing newly covered fragrance allergens that do not comply with the updated restrictions may only be placed on the European Union market until that date. Existing compliant stock receives a longer transition period for remaining available on the market.",
+      },
+      {
+        type: "paragraph",
+        text: "This matters beyond Europe. Indian brands planning to export will need more detailed fragrance documentation from suppliers, including allergen breakdowns that may currently sit behind a generic parfum declaration.",
+      },
+      {
+        type: "paragraph",
+        text: "It will also become harder for brands to treat essential oils as naturally exempt. Allergens such as limonene, linalool, citral and eugenol can enter a formula through botanical oils and still require calculation and disclosure.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "The week, on one clean sheet",
+      },
+      {
+        type: "paragraph",
+        text: "Beauty is becoming easier to discover. Prestige products are entering mass reach retailers. Technology is making consultations more personalised. Investment markets are turning cultural movements into financial categories. Product launches are becoming faster and more format driven.",
+      },
+      {
+        type: "paragraph",
+        text: "But every expansion creates a corresponding proof gap.",
+      },
+      {
+        type: "bullets",
+        items: [
+          "More fragrance requires clearer allergen information.",
+          "More artificial intelligence requires transparent data practices.",
+          "More sustainability language requires defined boundaries.",
+          "More launches require finished product evidence.",
+          "More choice requires better curation.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "This is the gap The Clean Sheet exists to close, from two directions. Our public product reviews let any shopper see how a claim holds up against the evidence. Clean Sheet Certification lets a brand prove it on the public record, with a QR coded proof page, before a consumer ever has to ask.",
+      },
+      {
+        type: "callout",
+        text: "The beauty industry grew outward last week. The next question is whether trust can keep up.",
+      },
+      {
+        type: "cta",
+        text: "Certification is the new competitive advantage. The Clean Sheet founding cohort is open now.",
+        href: "/certification",
+        label: "Apply for Certification",
+      },
+    ],
+  },
+  {
     slug: "beauty-boom-cooling-india-mckinsey-2025",
     category: "Industry",
     readTime: "10 min read",
