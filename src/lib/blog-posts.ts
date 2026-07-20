@@ -365,7 +365,7 @@ export const BLOG_POSTS: BlogPost[] = [
     subtitle: "What McKinsey's State of Beauty 2025 report means for a market that's about to become the industry's main character — and why \"does it actually work\" is the only question left that matters.",
     excerpt: "The global beauty industry's golden era is slowing to a crawl. McKinsey projects growth dropping from 7% to 5% annually through 2030. Two shifts explain why India is the exception — and why both point in exactly the direction we've argued for all along.",
     author: "The Clean Sheet Team",
-    image: "/images/New%20images/1.png",
+    image: "/images/skincare-haul-india.jpg",
     content: [
       {
         type: "paragraph",
@@ -496,7 +496,7 @@ export const BLOG_POSTS: BlogPost[] = [
     subtitle: "May 30 to June 5, 2026. The global signals that matter for India.",
     excerpt: "Beauty news often looks global on the surface. But if you read the signals closely, most of these stories matter for India too. Here is what mattered this week.",
     author: "The Clean Sheet Team",
-    image: "/images/last-week-in-beauty-june-5.jpg",
+    image: "/images/skincare-haul-nykaa.jpg",
     content: [
       {
         type: "paragraph",
