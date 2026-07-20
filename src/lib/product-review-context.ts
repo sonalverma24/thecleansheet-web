@@ -202,6 +202,12 @@ REGULATORY SCREEN (regulatoryScreen): for each of the 10 authorities, check the 
 
 INDIA CONTEXT (indiaContext): a 2-3 sentence read written for an Indian buyer. Ground every sentence in this product's real data — do NOT write a generic paragraph. Cover, where relevant: (a) how the formula behaves in Indian conditions (heat, humidity, high UV, pollution) for THIS product type; (b) price positioning in the Indian market at the stated ₹ price; (c) the ASCI / CDSCO posture given the actual claims (only mention scrutiny when a claim genuinely warrants it). Keep it factual and useful, never promotional.
 
+BEST FOR / AVOID IF (consumerSuitability.bestFor and consumerSuitability.avoidIf): these are short, concrete, product-SPECIFIC phrases (each ≤ 6 words) that help a shopper self-select. They must follow from THIS product's actual type, format and ingredients — never generic filler.
+- bestFor: who genuinely benefits (e.g. for a gentle cleanser: "Sensitive or reactive skin", "Daily morning cleanse", "Removing sweat and sunscreen").
+- avoidIf: a real, honest LIMITATION or trade-off of the product — a reason a specific shopper would be disappointed — NOT a vague safety warning. Think about what this product does NOT do well. For a gentle low-foam face wash, good avoidIf items are things like "You want a rich, foamy lather", "You wear heavy or waterproof makeup" (needs a dedicated remover), or "You want active treatment from a cleanser". For an exfoliating acid, "You have compromised or eczema-prone skin". For a fragranced product, "You react to fragrance".
+- Do NOT output boilerplate like "patch-test sensitive to new actives", "results vary", or "consult a dermatologist" unless it is genuinely the single most relevant caution for THIS product.
+- If the product has no honest downside worth flagging, return an EMPTY avoidIf array rather than inventing one. An empty avoidIf is correct and expected for simple, well-formulated basics.
+
 INGREDIENT TRANSPARENCY SCORING SYSTEM:
 
 Score 1 to 5 for ingredient transparency:

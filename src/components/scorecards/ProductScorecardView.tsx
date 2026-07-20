@@ -503,52 +503,55 @@ export function ProductScorecardView({
           </section>
         )}
 
-        {/* 2. What was checked */}
-        <section id="proof">
-          <div className="mb-4">
-            <div className="flex items-center gap-2.5 mb-1">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What was checked</h2>
-            </div>
-            <p className="text-xs text-[#b0a8a4] pl-[19px]">
-              Each claim checked against publicly available evidence: published test reports, the ingredient list, and regulatory data.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {proofCards.map((card) => {
-              const s = proofStatusStyles(card.status);
-              return (
-                <div key={card.claim} className="relative rounded-xl border border-[#efe9e0] bg-white p-4 pl-5 overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ backgroundColor: s.accent }} />
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-[#282828]">{card.claim}</span>
-                    <span className={`text-[10px] flex-shrink-0 ml-3 ${s.labelCls}`}>{s.label}</span>
-                  </div>
-                  <p className="text-xs text-[#282828]/70 leading-relaxed mb-2">{card.explanation}</p>
-                  <div className="flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
-                    <span className="text-[10px] text-[#b0a8a4]">{card.evidenceType}</span>
-                  </div>
+        {/* 2. What was checked — collapsible */}
+        {proofCards.length > 0 && (() => {
+          const claimPillar = findPillar(product.pillars, /claim/i);
+          return (
+            <CollapsibleSection
+              id="proof"
+              title="What was checked"
+              subtitle={`${proofCards.length} claims checked against public evidence`}
+              headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}
+            >
+              <div className="p-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {proofCards.map((card) => {
+                    const s = proofStatusStyles(card.status);
+                    return (
+                      <div key={card.claim} className="relative rounded-xl border border-[#efe9e0] bg-white p-4 pl-5 overflow-hidden">
+                        <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ backgroundColor: s.accent }} />
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-[#282828]">{card.claim}</span>
+                          <span className={`text-[10px] flex-shrink-0 ml-3 ${s.labelCls}`}>{s.label}</span>
+                        </div>
+                        <p className="text-xs text-[#282828]/70 leading-relaxed mb-2">{card.explanation}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                          <span className="text-[10px] text-[#b0a8a4]">{card.evidenceType}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
-            {(
-              [
-                { dot: "bg-[#248179]", label: "Verified: confirmed from public evidence" },
-                { dot: "bg-blue-500", label: "Supported: consistent with available evidence" },
-                { dot: "bg-amber-500", label: "Needs context: relevant for some users" },
-                { dot: "bg-[#fd6158]", label: "Not verified: could not be confirmed" },
-              ] as const
-            ).map(({ dot, label }) => (
-              <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
-                {label}
-              </span>
-            ))}
-          </div>
-        </section>
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+                  {(
+                    [
+                      { dot: "bg-[#248179]", label: "Verified: confirmed from public evidence" },
+                      { dot: "bg-blue-500", label: "Supported: consistent with available evidence" },
+                      { dot: "bg-amber-500", label: "Needs context: relevant for some users" },
+                      { dot: "bg-[#fd6158]", label: "Not verified: could not be confirmed" },
+                    ] as const
+                  ).map(({ dot, label }) => (
+                    <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dot}`} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </CollapsibleSection>
+          );
+        })()}
 
         {/* 3. Score breakdown */}
         <section id="score-rationale">
@@ -824,9 +827,19 @@ export function ProductScorecardView({
               <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="text-white mb-2">About this review</div>
-                <p className="text-white/60 text-sm leading-relaxed mb-1.5">
+                <p className="text-white/60 text-sm leading-relaxed mb-3">
                   {product.cleanSheetNote ??
                     "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
+                </p>
+                <p className="text-white/45 text-xs leading-relaxed mb-4">
+                  Are you the brand? If you have published test data or want to request a re-review, write to us at{" "}
+                  <a
+                    href={`mailto:hello@thecleansheet.in?subject=${encodeURIComponent(`Re-review request · ${product.brand} ${product.productName}`)}`}
+                    className="text-[#248179] hover:underline"
+                  >
+                    hello@thecleansheet.in
+                  </a>
+                  .
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
                   {["Independent review", "Public evidence only"].map((m) => (

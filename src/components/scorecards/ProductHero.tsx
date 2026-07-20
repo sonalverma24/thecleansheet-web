@@ -499,6 +499,14 @@ interface QuickDecision {
   cautionIf: string[];
 }
 
+/** Keep the engine's own phrasing when it doesn't map to a canned skin-type
+    label — trimmed, sentence-cased, and only if it's a sane short phrase. */
+function cleanTag(s: string): string {
+  const t = s.trim().replace(/\s+/g, " ");
+  if (t.length < 2 || t.length > 64) return "";
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 function getQuickDecision(product: ProductScorecard): QuickDecision {
   const bestFor: string[] = [];
   const cautionIf: string[] = [];
@@ -517,6 +525,8 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("beginner")) { bestFor.push("Skincare beginners"); continue; }
       if (t.includes("pregnan")) { bestFor.push("Pregnancy-safe use"); continue; }
       if (t.includes("baby")) { bestFor.push("Baby and infant skin"); continue; }
+      // No canned match — keep the engine's own product-specific phrasing.
+      const c = cleanTag(tag); if (c) bestFor.push(c);
     }
   }
 
@@ -568,6 +578,8 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("ph not disclosed")) { cautionIf.push("Your skin barrier is already compromised or irritated"); continue; }
       if (t.includes("dual-acid") || t.includes("strong exfoliant")) { cautionIf.push("You have sensitive or eczema-prone skin"); continue; }
       if (t.includes("high irritation")) { cautionIf.push("You are new to active skincare - patch test first"); continue; }
+      // No canned match — keep the engine's own product-specific caution.
+      const c = cleanTag(tag); if (c) cautionIf.push(c);
     }
   }
 
@@ -589,15 +601,8 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
     }
   }
 
-  if (cautionIf.length === 0) {
-    if (product.productType === "sunscreen") cautionIf.push("Want no white cast at all");
-    else if (product.productType === "treatment") cautionIf.push("Combining with other active treatments");
-    else if (concern.includes("retinol") || concern.includes("retinoid")) cautionIf.push("Pregnant or trying to conceive");
-    else if (concern.includes("acid") || concern.includes("exfoliat") || concern.includes("peel")) cautionIf.push("You have sensitive or barrier-compromised skin");
-    else if (concern.includes("niacinamide") || concern.includes("pore")) cautionIf.push("Expecting results without consistent daily use");
-    else if (concern.includes("vitamin c") || concern.includes("brightening")) cautionIf.push("Your skin is highly reactive to antioxidant formulas");
-    else cautionIf.push("Your skin is patch-test sensitive to new actives");
-  }
+  // No genuine caution found — show nothing rather than inventing a generic one.
+  // (The "Avoid if" column hides itself when this stays empty.)
 
   return { bestFor: bestFor.slice(0, 3), cautionIf: cautionIf.slice(0, 3) };
 }
@@ -788,7 +793,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
             {/* Verdict / summary */}
             <p className="text-sm text-[#282828]/65 leading-relaxed mb-5 max-w-xl">
-              {product.cleanSheetNote ?? generateVerdict(product)}
+              {product.summary || generateVerdict(product)}
             </p>
 
             {/* Mobile only: image + badge */}
