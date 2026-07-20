@@ -20,6 +20,13 @@ function tokens(s: string): string[] {
   return (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1);
 }
 
+/* Confidence guards for resolveINCI — precision over coverage. Anchoring the
+   review to the wrong product is worse than an honest "couldn't retrieve the
+   INCI" (which the engine turns into a clearly limited review). */
+const MIN_OVERLAP = 0.2;
+// Leading words that are not brands (so the "brand slot" heuristic skips them).
+const BRAND_SKIP = new Set(["the", "and", "for", "with", "new", "pro", "our"]);
+
 /** Parse one INCIDecoder product page (Jina markdown) into its ingredient list. */
 function parseProductPage(page: string, slug: string): INCIResult | null {
   const idx = page.indexOf("## Ingredients overview");
@@ -118,6 +125,20 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
 
   // One clear product: pull ITS ingredients (most complete among its own duplicate entries).
   const top = exact ?? ranked[0];
+
+  // Confidence + brand guard: if the best match is weak, or does not carry the
+  // query's brand (its first distinctive token), do NOT anchor to it — return
+  // unresolved so the engine runs an honest limited-INCI review instead of, say,
+  // reviewing a Dot & Key product for a "Uriage …" query.
+  if (!exact) {
+    const qWords = q.toLowerCase().match(/[a-z0-9]+/g) || [];
+    const brandTok = qWords.find((t) => t.length >= 3 && !BRAND_SKIP.has(t)) || "";
+    const topTokens = new Set([...tokens(top.name), ...top.slugs[0].split("-")]);
+    const hasBrand = !brandTok || topTokens.has(brandTok);
+    if (top.overlap < MIN_OVERLAP || !hasBrand) {
+      return { chosen: null, distinct, ambiguous: false };
+    }
+  }
   let chosen: INCIResult | null = null;
   for (const slug of top.slugs.slice(0, 2)) {
     const page = await fetchMarkdown(`https://incidecoder.com/products/${slug}`);

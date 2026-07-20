@@ -1,5 +1,5 @@
 "use client";
-import { scoreToTier, TileTierMark } from "@/components/scorecards/pillar-ui";
+import { resolveTier, TileTierMark } from "@/components/scorecards/pillar-ui";
 import Image from "next/image";
 import Link from "next/link";
 import { TileChip } from "./TileChip";
@@ -67,7 +67,7 @@ export function ScorecardResultCard({
 
           {/* Tier mark - top right (Approved = branded seal) */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
-            <TileTierMark tier={product.reviewTier ?? scoreToTier(product.score)} />
+            <TileTierMark tier={resolveTier(product)} />
           </div>
 
           {/* NEW badge - top left, lime, first 30 days only */}

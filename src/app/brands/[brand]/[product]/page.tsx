@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getBrandBySlug, getProductBySlug, getAllBrandSummaries } from "@/data/brands";
-import { scoreToTier, TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { resolveTier, TIER_STYLES } from "@/components/scorecards/pillar-ui";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ export async function generateMetadata({
   const brand = getBrandBySlug(brandSlug);
   if (!product || !brand) return {};
 
-  const tierLabel = TIER_STYLES[scoreToTier(product.score)].label;
+  const tierLabel = TIER_STYLES[resolveTier(product)].label;
   return {
     title: `${product.productName} Review · ${tierLabel}`,
     description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,

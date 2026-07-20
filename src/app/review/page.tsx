@@ -260,7 +260,7 @@ export default function ReviewPage() {
           <p className="text-[16px]" style={{ color: INK }}>
             {error === "busy" ? "The engine is at capacity. Please try again in a minute."
               : error === "scope" ? "That doesn't look like a beauty or personal-care product."
-              : "Couldn't complete the review. Please try again."}
+              : "Couldn't complete the review. Please try again, or paste the product page link for a more reliable read."}
           </p>
         </div>
       )}

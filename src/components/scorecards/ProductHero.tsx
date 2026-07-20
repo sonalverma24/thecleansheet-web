@@ -13,7 +13,8 @@ import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { scoreColors } from "@/data/brands";
-import { scoreToTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
+import { resolveTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
+import type { ReviewTier } from "@/lib/product-review-types";
 import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -650,9 +651,7 @@ function formatAnalysedDate(isoDate: string): string {
 // Sub-component: Circular Score Badge
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ScoreBadge({ score }: { score: number }) {
-  const tier = scoreToTier(score);
-
+function ScoreBadge({ tier }: { tier: ReviewTier }) {
   // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
   if (tier === "approved") {
     return (
@@ -810,8 +809,8 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                   )}
                 </div>
                 <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                  <ScoreBadge score={product.score} />
-                  <TierBadge tier={scoreToTier(product.score)} size="sm" />
+                  <ScoreBadge tier={resolveTier(product)} />
+                  <TierBadge tier={resolveTier(product)} size="sm" />
                 </div>
               </div>
             </div>
@@ -932,7 +931,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               )}
               {/* Score badge - overlapping bottom-right */}
               <div className="absolute -bottom-8 -right-6 z-10">
-                <ScoreBadge score={product.score} />
+                <ScoreBadge tier={resolveTier(product)} />
               </div>
             </div>
 

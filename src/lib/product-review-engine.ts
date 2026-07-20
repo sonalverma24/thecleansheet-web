@@ -402,7 +402,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (!imageUrl) imageUrl = await findProductImageKeyless(review.brand, review.productName);
   if (!imageUrl) {
     const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
-    imageUrl = await searchProductImage(imgQuery || q);
+    imageUrl = await searchProductImage(imgQuery || q, review.brand);
   }
   review.imageUrl = imageUrl;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;

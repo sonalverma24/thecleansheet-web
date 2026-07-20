@@ -48,6 +48,15 @@ export function scoreToTier(score: number): ReviewTier {
   return score >= 85 ? "approved" : score >= 65 ? "mostly-clean" : "needs-proof";
 }
 
+/* The single source of truth for a product's displayed tier. Prefer the
+   pre-computed claim-integrity verdict (`reviewTier`, which can be "misleading");
+   fall back to the score only for products with no verdict (static catalogue).
+   Every badge/seal/label/title must use this so the tile and the detail page
+   never disagree. */
+export function resolveTier(product: { reviewTier?: ReviewTier; score: number }): ReviewTier {
+  return product.reviewTier ?? scoreToTier(product.score);
+}
+
 /* The TCS logo with an angled "APPROVED" rubber stamp across its lower third —
    overflowing the edge, never hiding the wordmark. Scales from tile corners
    (54px) to the product-page hero (120px+). */

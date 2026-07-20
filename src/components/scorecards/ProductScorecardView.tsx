@@ -5,13 +5,14 @@
    stored repository reviews (/reviews/[slug]) and live /review results.
 ──────────────────────────────────────────────────────────────── */
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
 import { scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
-import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
+import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -90,9 +91,63 @@ function PillarDots({ score, max }: { score: number; max: number }) {
   );
 }
 
+/** Dots + rating word, the shared "standing" mark shown in every section header
+    (no numbers — honours the tier-not-scores design). */
+function SectionRating({ score, max }: { score: number; max: number }) {
+  const pct = Math.round((score / Math.max(max, 1)) * 100);
+  return (
+    <span className="flex items-center gap-2.5">
+      <PillarDots score={score} max={max} />
+      <span className="text-xs" style={{ color: pillarColor(pct), fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+        {pillarRatingLabel(pct)}
+      </span>
+    </span>
+  );
+}
+
+/** A collapsed analysis section: the header shows the title + a standing mark
+    (dots + rating word); the detailed breakdown is revealed on click. Native
+    <details> so it stays interactive inside this server component. */
+function CollapsibleSection({
+  id, title, subtitle, headerRight, children,
+}: {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  headerRight?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section id={id}>
+      <details className="group bg-white rounded-2xl border border-[#efe9e0] overflow-hidden">
+        <summary className="flex items-center justify-between gap-3 px-4 py-3.5 cursor-pointer list-none select-none">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>{title}</h2>
+              {subtitle && <p className="text-xs text-[#b0a8a4] mt-0.5 hidden sm:block">{subtitle}</p>}
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            {headerRight}
+            <ChevronDown size={13} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
+          </div>
+        </summary>
+        <div className="border-t border-[#efe9e0]">{children}</div>
+      </details>
+    </section>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Data helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** Find the pillar whose name matches, to borrow its standing for a related
+    section header (e.g. the ingredient list borrows Ingredient Transparency). */
+function findPillar(pillars: ScorePillar[], re: RegExp): ScorePillar | undefined {
+  return pillars.find((p) => re.test(p.name));
+}
 
 function simplifyPillarName(name: string): string {
   const n = name.toLowerCase();
@@ -527,7 +582,7 @@ export function ProductScorecardView({
               return (
                 <details key={pillar.name} className="group">
                   <summary className="px-4 py-3.5 cursor-pointer list-none select-none">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
                         <PillarDots score={pillar.score} max={pillar.max} />
                         <span className="text-sm" style={{ color: nameColor, fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
@@ -542,10 +597,10 @@ export function ProductScorecardView({
                         <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
                       </div>
                     </div>
-                    <p className="text-xs text-[#282828]/60 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>
                   </summary>
                   <div className="px-4 pb-4 pt-0 bg-[#f7f7f5] border-t border-[#efe9e0]">
-                    <p className="text-xs text-[#282828]/65 leading-relaxed pt-4 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{pillar.note}</p>
+                    <p className="text-xs text-[#282828]/80 leading-relaxed pt-4 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>
+                    <p className="text-xs text-[#282828]/65 leading-relaxed pt-2 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{pillar.note}</p>
                   </div>
                 </details>
               );
@@ -553,149 +608,140 @@ export function ProductScorecardView({
           </div>
         </section>
 
-        {/* 4. Full ingredient list - show 8, expand */}
-        <section id="ingredients">
-          <div className="flex items-center gap-2.5 mb-3">
-            <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-            <div>
-              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Ingredient list</h2>
-              <p className="text-xs text-[#b0a8a4] mt-0.5">
-                {product.ingredients.length} ingredients · INCI order
-              </p>
-            </div>
-          </div>
+        {/* 4. Full ingredient list — collapsible */}
+        {(() => {
+          const inciPillar = findPillar(product.pillars, /inci|transparency/i);
+          return (
+            <CollapsibleSection
+              id="ingredients"
+              title="Ingredient list"
+              subtitle={`${product.ingredients.length} ingredients · INCI order`}
+              headerRight={inciPillar ? <SectionRating score={inciPillar.score} max={inciPillar.max} /> : undefined}
+            >
+              <div className="p-4">
+                <div className="flex items-center gap-4 mb-2.5">
+                  {(
+                    [
+                      { dot: "bg-[#248179]", label: "Safe" },
+                      { dot: "bg-blue-400", label: "Note" },
+                      { dot: "bg-[#fd6158]", label: "Caution" },
+                    ] as const
+                  ).map(({ dot, label }) => (
+                    <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <div className="rounded-xl border border-[#efe9e0] overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#faf7f2] border-b border-[#efe9e0]">
+                        <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider w-[52%] sm:w-auto">Ingredient</th>
+                        <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider hidden sm:table-cell">What it does</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {product.ingredients.map((ing) => {
+                        const s = ingredientFlagStyles(ing.flag);
+                        return (
+                          <tr key={ing.name} className={`${s.rowBg} border-b border-[#efe9e0] last:border-0`}>
+                            <td className="py-1.5 px-3 sm:px-4">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+                                <span className="text-xs sm:text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-1.5 px-3 sm:px-4 text-xs text-[#b0a8a4] leading-relaxed hidden sm:table-cell">{ing.note}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-[#b0a8a4] mt-2">
+                  INCI order as declared on packaging. Position reflects approximate concentration (high to low).
+                </p>
+              </div>
+            </CollapsibleSection>
+          );
+        })()}
 
-          <div className="flex items-center gap-4 mb-2.5">
-            {(
-              [
-                { dot: "bg-[#248179]", label: "Safe" },
-                { dot: "bg-blue-400", label: "Note" },
-                { dot: "bg-[#fd6158]", label: "Caution" },
-              ] as const
-            ).map(({ dot, label }) => (
-              <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
-                {label}
-              </span>
-            ))}
-          </div>
-
-          <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-[#faf7f2] border-b border-[#efe9e0]">
-                  <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider w-[52%] sm:w-auto">Ingredient</th>
-                  <th className="py-2 px-3 sm:px-4 text-[10px] font-medium text-[#b0a8a4] uppercase tracking-wider hidden sm:table-cell">What it does</th>
-                </tr>
-              </thead>
-              <tbody>
-                {product.ingredients.slice(0, 8).map((ing) => {
-                  const s = ingredientFlagStyles(ing.flag);
+        {/* 5. Regulatory screen — collapsible */}
+        {product.globalScreen && (() => {
+          const authorities = [
+            { key: "eu_1223_2009",        label: "EU 1223/2009",         desc: "EU Cosmetics Regulation - Annexes II–VI" },
+            { key: "india_cr_2020",        label: "India CR 2020",        desc: "India Cosmetics Rules, CDSCO" },
+            { key: "health_canada_hotlist",label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
+            { key: "us_fda_21cfr",         label: "US FDA 21 CFR",        desc: "US FDA Parts 700–740" },
+            { key: "korea_mfds",           label: "MFDS Korea",           desc: "Korea Cosmetics Act" },
+            { key: "echa_svhc",            label: "ECHA SVHC",            desc: "Substances of Very High Concern" },
+            { key: "iarc",                 label: "IARC",                 desc: "Carcinogen classifications Groups 1/2A/2B" },
+            { key: "aicis_australia",      label: "AICIS Australia",      desc: "Australian industrial chemical safety" },
+            { key: "tga_australia",        label: "TGA Australia",        desc: "Therapeutic claims (if applicable)" },
+            { key: "canada_nhpid",         label: "Canada NHPID",         desc: "Natural health product ingredients" },
+          ] as const;
+          const regClear = (v: string) => {
+            const t = v.toLowerCase().trim();
+            return t === "" || /^no\b/.test(t) || t.includes("no obvious") || t.includes("not triggered");
+          };
+          const flagged = authorities.filter(({ key }) => !regClear(product.globalScreen![key as keyof typeof product.globalScreen] ?? "")).length;
+          const allClear = flagged === 0;
+          return (
+            <CollapsibleSection
+              id="regulatory-screen"
+              title="Regulatory screen"
+              subtitle="Each ingredient mapped against 10 global regulatory authorities"
+              headerRight={
+                <span className="flex items-center gap-2.5">
+                  <PillarDots score={10 - flagged} max={10} />
+                  <span className="text-xs" style={{ color: allClear ? "#248179" : "#b45309", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+                    {allClear ? "Clear" : "Review"}
+                  </span>
+                </span>
+              }
+            >
+              <div className="divide-y divide-[#efe9e0]">
+                {authorities.map(({ key, label, desc }) => {
+                  const val = product.globalScreen![key as keyof typeof product.globalScreen] ?? "";
+                  const isClear = regClear(val);
                   return (
-                    <tr key={ing.name} className={`${s.rowBg} border-b border-[#efe9e0]`}>
-                      <td className="py-1.5 px-3 sm:px-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-                          <span className="text-xs sm:text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                    <div key={key} className="flex items-start gap-3 px-4 py-3">
+                      <span className={`mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full ${isClear ? "bg-[#248179]/15 text-[#248179]" : "bg-[#fd6158]/15 text-[#fd6158]"}`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span className={`block w-1.5 h-1.5 rounded-full ${isClear ? "bg-[#248179]" : "bg-[#fd6158]"}`} />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs text-[#282828]">{label}</span>
+                          <span className="text-[10px] text-[#b0a8a4]">{desc}</span>
                         </div>
-                      </td>
-                      <td className="py-1.5 px-3 sm:px-4 text-xs text-[#b0a8a4] leading-relaxed hidden sm:table-cell">{ing.note}</td>
-                    </tr>
+                        <p className="text-xs text-[#282828]/60 mt-0.5">{val}</p>
+                      </div>
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-            {product.ingredients.length > 8 && (
-              <details className="group">
-                <summary className="flex items-center justify-center gap-1.5 px-4 py-2.5 cursor-pointer list-none text-xs font-medium text-[#248179] hover:bg-[#faf7f2] border-t border-[#efe9e0] transition-colors select-none">
-                  <span className="group-open:hidden">Show all {product.ingredients.length} ingredients</span>
-                  <span className="hidden group-open:inline">Show fewer</span>
-                  <ChevronDown size={12} className="transition-transform group-open:rotate-180 flex-shrink-0" />
-                </summary>
-                <table className="w-full text-left border-t border-[#efe9e0]">
-                  <tbody>
-                    {product.ingredients.slice(8).map((ing) => {
-                      const s = ingredientFlagStyles(ing.flag);
-                      return (
-                        <tr key={ing.name} className={`${s.rowBg} border-b border-[#efe9e0] last:border-0`}>
-                          <td className="py-1.5 px-3 sm:px-4">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-                              <span className="text-xs sm:text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
-                            </div>
-                          </td>
-                          <td className="py-1.5 px-3 sm:px-4 text-xs text-[#b0a8a4] leading-relaxed hidden sm:table-cell">{ing.note}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </details>
-            )}
-          </div>
-          <p className="text-[10px] text-[#b0a8a4] mt-2">
-            INCI order as declared on packaging. Position reflects approximate concentration (high to low).
-          </p>
-        </section>
-
-        {/* 5. Regulatory screen */}
-        {product.globalScreen && (
-          <section id="regulatory-screen">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <div>
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Regulatory screen</h2>
-                <p className="text-xs text-[#b0a8a4] mt-0.5">Each ingredient mapped against 10 global regulatory authorities</p>
               </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
-              {(
-                [
-                  { key: "eu_1223_2009",        label: "EU 1223/2009",         desc: "EU Cosmetics Regulation - Annexes II–VI" },
-                  { key: "india_cr_2020",        label: "India CR 2020",        desc: "India Cosmetics Rules, CDSCO" },
-                  { key: "health_canada_hotlist",label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
-                  { key: "us_fda_21cfr",         label: "US FDA 21 CFR",        desc: "US FDA Parts 700–740" },
-                  { key: "korea_mfds",           label: "MFDS Korea",           desc: "Korea Cosmetics Act" },
-                  { key: "echa_svhc",            label: "ECHA SVHC",            desc: "Substances of Very High Concern" },
-                  { key: "iarc",                 label: "IARC",                 desc: "Carcinogen classifications Groups 1/2A/2B" },
-                  { key: "aicis_australia",      label: "AICIS Australia",      desc: "Australian industrial chemical safety" },
-                  { key: "tga_australia",        label: "TGA Australia",        desc: "Therapeutic claims (if applicable)" },
-                  { key: "canada_nhpid",         label: "Canada NHPID",         desc: "Natural health product ingredients" },
-                ] as const
-              ).map(({ key, label, desc }) => {
-                const val = product.globalScreen![key as keyof typeof product.globalScreen] ?? "";
-                const isClear = val.toLowerCase().includes("no obvious") || val.toLowerCase().includes("not triggered");
-                return (
-                  <div key={key} className="flex items-start gap-3 px-4 py-3">
-                    <span className={`mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full ${isClear ? "bg-[#248179]/15 text-[#248179]" : "bg-[#fd6158]/15 text-[#fd6158]"}`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span className={`block w-1.5 h-1.5 rounded-full ${isClear ? "bg-[#248179]" : "bg-[#fd6158]"}`} />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xs text-[#282828]">{label}</span>
-                        <span className="text-[10px] text-[#b0a8a4]">{desc}</span>
-                      </div>
-                      <p className="text-xs text-[#282828]/60 mt-0.5">{val}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-[#b0a8a4] mt-2">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
-          </section>
-        )}
+              <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+            </CollapsibleSection>
+          );
+        })()}
 
-        {/* 5b. Regulatory screen — claim level (ASCI + India drug-cosmetic boundary) */}
+        {/* 5b. Regulatory screen — claim level (ASCI + India drug-cosmetic boundary) — collapsible */}
         {product.regulatoryFlags && product.regulatoryFlags.length > 0 && (
-          <section id="regulatory-claims">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <div>
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Regulatory screen</h2>
-                <p className="text-xs text-[#b0a8a4] mt-0.5">ASCI advertising code and the India drug-cosmetic boundary.</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
+          <CollapsibleSection
+            id="regulatory-claims"
+            title="Regulatory screen — claims"
+            subtitle="ASCI advertising code and the India drug-cosmetic boundary."
+            headerRight={
+              <span className="flex items-center gap-2.5">
+                <PillarDots score={0} max={4} />
+                <span className="text-xs" style={{ color: "#c2362f", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+                  {product.regulatoryFlags.length} flag{product.regulatoryFlags.length > 1 ? "s" : ""}
+                </span>
+              </span>
+            }
+          >
+            <div className="divide-y divide-[#efe9e0]">
               {product.regulatoryFlags.map((f, i) => (
                 <div key={i} className="flex items-start gap-3 px-4 py-3.5">
                   <span className="mt-1.5 block w-1.5 h-1.5 rounded-full bg-[#fd6158] flex-shrink-0" />
@@ -706,45 +752,47 @@ export function ProductScorecardView({
                 </div>
               ))}
             </div>
-          </section>
+          </CollapsibleSection>
         )}
 
-        {/* 6. Claims check */}
-        {product.claimsCheck && product.claimsCheck.length > 0 && (
-          <section id="claims-check">
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-              <div>
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Claims check</h2>
-                <p className="text-xs text-[#b0a8a4] mt-0.5">Each marketing claim assessed against publicly available evidence</p>
-              </div>
-            </div>
-            <div className="space-y-2.5">
-              {product.claimsCheck.map((c) => {
-                const isSupported  = c.decision === "Publicly supported";
-                const isNeedsProof = c.decision === "Needs proof";
-                const accent  = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
-                const bgClass = isSupported ? "bg-[#248179]/[0.04]" : isNeedsProof ? "bg-amber-50/60" : "bg-[#fd6158]/[0.04]";
-                const Icon    = isSupported ? CheckCircle2 : isNeedsProof ? HelpCircle : AlertCircle;
-                return (
-                  <div key={c.claim} className={`rounded-xl border border-[#efe9e0] p-4 ${bgClass}`}>
-                    <div className="flex items-start gap-3">
-                      <Icon size={15} className="flex-shrink-0 mt-0.5" style={{ color: accent }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
-                          <span className="text-xs text-[#282828]">{c.claim}</span>
-                          <span className="text-[10px]" style={{ color: accent }}>{c.decision}</span>
+        {/* 6. Claims check — collapsible */}
+        {product.claimsCheck && product.claimsCheck.length > 0 && (() => {
+          const claimPillar = findPillar(product.pillars, /claim/i);
+          const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
+          return (
+            <CollapsibleSection
+              id="claims-check"
+              title="Claims checked"
+              subtitle={`${supported} of ${product.claimsCheck.length} publicly supported`}
+              headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}
+            >
+              <div className="p-4 space-y-2.5">
+                {product.claimsCheck.map((c) => {
+                  const isSupported  = c.decision === "Publicly supported";
+                  const isNeedsProof = c.decision === "Needs proof";
+                  const accent  = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
+                  const bgClass = isSupported ? "bg-[#248179]/[0.04]" : isNeedsProof ? "bg-amber-50/60" : "bg-[#fd6158]/[0.04]";
+                  const Icon    = isSupported ? CheckCircle2 : isNeedsProof ? HelpCircle : AlertCircle;
+                  return (
+                    <div key={c.claim} className={`rounded-xl border border-[#efe9e0] p-4 ${bgClass}`}>
+                      <div className="flex items-start gap-3">
+                        <Icon size={15} className="flex-shrink-0 mt-0.5" style={{ color: accent }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
+                            <span className="text-xs text-[#282828]">{c.claim}</span>
+                            <span className="text-[10px]" style={{ color: accent }}>{c.decision}</span>
+                          </div>
+                          <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
+                          <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
                         </div>
-                        <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
-                        <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                  );
+                })}
+              </div>
+            </CollapsibleSection>
+          );
+        })()}
 
         {/* 7. Missing proof */}
         {product.missingProof && product.missingProof.length > 0 && (
@@ -841,7 +889,7 @@ export function ProductScorecardView({
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <TierBadge tier={scoreToTier(p.score)} size="sm" />
+                      <TierBadge tier={resolveTier(p)} size="sm" />
                     </div>
                   </Link>
                 );

@@ -112,10 +112,11 @@ const TRUSTED_IMAGE_DOMAINS = [
 interface CseItem {
   link?: string;
   displayLink?: string;
+  title?: string;
   image?: { contextLink?: string };
 }
 
-export async function searchProductImage(query: string): Promise<string | null> {
+export async function searchProductImage(query: string, brand = ""): Promise<string | null> {
   const key = process.env.GOOGLE_CSE_API_KEY;
   const cx = process.env.GOOGLE_CSE_CX;
   if (!key || !cx || !query.trim()) return null;
@@ -136,9 +137,20 @@ export async function searchProductImage(query: string): Promise<string | null> 
     const data = await res.json();
     const items: CseItem[] = Array.isArray(data?.items) ? data.items : [];
 
-    const candidates = items
-      .map((it) => ({ url: clean(it.link), context: `${it.displayLink ?? ""} ${it.image?.contextLink ?? ""}`.toLowerCase() }))
+    let candidates = items
+      .map((it) => ({
+        url: clean(it.link),
+        context: `${it.displayLink ?? ""} ${it.image?.contextLink ?? ""} ${it.title ?? ""}`.toLowerCase(),
+      }))
       .filter((c): c is { url: string; context: string } => !!c.url);
+
+    // Brand gate: when we know the brand, keep only results whose context mentions it.
+    const brandTok = tokens(brand);
+    if (brandTok.length) {
+      const branded = candidates.filter((c) => brandTok.some((t) => c.context.includes(t)));
+      if (!branded.length) return null; // no brand-matching image is better than a wrong one
+      candidates = branded;
+    }
 
     // 1. Image hosted on / found via a trusted marketplace listing
     const trusted = candidates.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d)));
@@ -203,22 +215,27 @@ function imageQuery(brand: string, productName: string): string {
   return n.toLowerCase().startsWith(b.toLowerCase()) ? n : `${b} ${n}`;
 }
 
-const STOP = new Set(["the", "and", "with", "for", "of", "ml", "gm", "gr", "pack", "oz", "face", "skin", "kind", "to"]);
+const STOP = new Set(["the", "and", "with", "for", "of", "ml", "gm", "gr", "pack", "oz", "kind", "to"]);
 function tokens(s: string): string[] {
   return (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1 && !STOP.has(t));
 }
 
 /** From Amazon search markdown, pick the ![alt](image) whose ALT best matches
-    the query — never the first image (Amazon injects sponsored items there). */
-function bestAmazonMatch(md: string, query: string): string | null {
+    the query — never the first image (Amazon injects sponsored items there).
+    A wrong-brand photo (e.g. Dot & Key for a Uriage query) is worse than none,
+    so the alt text MUST contain the brand before token overlap is even scored. */
+export function bestAmazonMatch(md: string, query: string, brand: string): string | null {
   const qTok = tokens(query);
   if (!qTok.length) return null;
+  const brandTok = tokens(brand);
   let best: { url: string; score: number } | null = null;
   for (const m of md.matchAll(/!\[[^\]]*?:?\s*([^\]]{4,120})\]\((https:\/\/m\.media-amazon\.com\/images\/I\/[^)\s]+\.(?:jpe?g|png|webp))\)/gi)) {
     const alt = m[1];
     const url = amazonFullRes(m[2]);
     if (IMAGE_URL_BLOCKLIST.test(url)) continue;
     const aTok = new Set(tokens(alt));
+    // Brand gate: when we know the brand, at least one brand token must appear.
+    if (brandTok.length && !brandTok.some((t) => aTok.has(t))) continue;
     const overlap = qTok.filter((t) => aTok.has(t)).length / qTok.length;
     if (overlap >= 0.5 && (!best || overlap > best.score)) best = { url, score: overlap };
   }
@@ -230,18 +247,22 @@ export async function findProductImageKeyless(brand: string, productName: string
   if (!q) return null;
   const enc = encodeURIComponent(q);
 
-  // 1 — Amazon.in search: match the image whose alt-title matches the product.
+  // 1 — Amazon.in search: match the image whose alt-title matches the product
+  //     AND carries the brand (guards against same-category, wrong-brand photos).
   const amazon = await jinaText(`https://www.amazon.in/s?k=${enc}`);
   if (amazon) {
-    const url = bestAmazonMatch(amazon, q);
+    const url = bestAmazonMatch(amazon, q, brand);
     if (url && (await isLiveImage(url))) return url;
   }
 
-  // 2 — Nykaa search (fallback; sometimes exposes CDN images)
+  // 2 — Nykaa search (fallback; sometimes exposes CDN images). Only trust it when
+  //     the brand appears on the results page, so we don't grab a neighbour's image.
   const nykaa = await jinaText(`https://www.nykaa.com/search/result/?q=${enc}`);
   if (nykaa) {
+    const brandTok = tokens(brand);
+    const brandPresent = !brandTok.length || brandTok.some((t) => nykaa.toLowerCase().includes(t));
     const img = clean(imageFromMarkdown(nykaa));
-    if (img && /nykaa|adn-static|images-static/i.test(img) && !IMAGE_URL_BLOCKLIST.test(img) && (await isLiveImage(img))) {
+    if (brandPresent && img && /nykaa|adn-static|images-static/i.test(img) && !IMAGE_URL_BLOCKLIST.test(img) && (await isLiveImage(img))) {
       return img;
     }
   }

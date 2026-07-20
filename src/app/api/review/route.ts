@@ -26,6 +26,9 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     console.error("[review]", err instanceof Error ? err.message : err);
     if (err instanceof TransientModelError) return busyResponse();
-    return Response.json({ type: "out_of_scope" });
+    // A real engine/scrape/parse failure is NOT "out of scope" — surface it as an
+    // honest error so the UI can invite a retry / URL paste, not claim the product
+    // isn't a beauty product. (Genuine out-of-scope is a normal engine return above.)
+    return Response.json({ type: "error" }, { status: 500 });
   }
 }
