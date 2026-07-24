@@ -1,14 +1,12 @@
 /* ────────────────────────────────────────────────────────────────
-   Verified Products registry (Clean Sheet Approved)
-   Products scoring >= VERIFIED_THRESHOLD are recommended by
-   The Clean Sheet and listed with usage guidance.
-
-   Storage: Supabase table public.verified_products (durable across
-   serverless cold starts). All calls are defensive: if the table or
-   connection is unavailable, reads return [] and writes are skipped,
-   so the app never breaks.
+   Evidence Reviews store.
+   Reviews are read from Supabase (public.verified_products) and merged
+   with the seed file data/verified-products.json, so the library is
+   never empty even before the database is populated. All calls are
+   defensive: if Supabase is unavailable, the seed is used on its own.
 ──────────────────────────────────────────────────────────────── */
 
+import seedData from "../../data/verified-products.json";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { VerifiedProduct } from "@/lib/types";
 
@@ -70,7 +68,26 @@ export async function upsertVerifiedProduct(p: VerifiedProduct): Promise<void> {
   }
 }
 
+/* Seed reviews shipped in the repo (data/verified-products.json), used to
+   populate the library before or alongside the database. */
+function seedProducts(): VerifiedProduct[] {
+  return (seedData as Partial<VerifiedProduct>[]).map((p) => ({
+    slug: String(p.slug ?? slugify(p.productName ?? "", p.brand ?? "")),
+    productName: String(p.productName ?? ""),
+    brand: String(p.brand ?? ""),
+    score: Number(p.score ?? 0),
+    scoreLabel: String(p.scoreLabel ?? ""),
+    integrityScore: p.integrityScore ?? null,
+    imageUrl: p.imageUrl ?? null,
+    summary: String(p.summary ?? ""),
+    usageGuidance: p.usageGuidance ?? null,
+    verifiedAt: String(p.verifiedAt ?? "2026-06-01T00:00:00.000Z"),
+    methodologyVersion: String(p.methodologyVersion ?? ""),
+  }));
+}
+
 export async function listVerifiedProducts(): Promise<VerifiedProduct[]> {
+  let dbRows: VerifiedProduct[] = [];
   try {
     const db = createAdminClient();
     const { data } = await db
@@ -78,8 +95,13 @@ export async function listVerifiedProducts(): Promise<VerifiedProduct[]> {
       .select("*")
       .order("verified_at", { ascending: false })
       .limit(200);
-    return Array.isArray(data) ? data.map(rowToProduct) : [];
+    dbRows = Array.isArray(data) ? data.map(rowToProduct) : [];
   } catch {
-    return [];
+    dbRows = [];
   }
+  // Merge seed + database, deduped by slug; database records win.
+  const bySlug = new Map<string, VerifiedProduct>();
+  for (const p of seedProducts()) bySlug.set(p.slug, p);
+  for (const p of dbRows) bySlug.set(p.slug, p);
+  return [...bySlug.values()].sort((a, b) => (a.verifiedAt < b.verifiedAt ? 1 : -1));
 }

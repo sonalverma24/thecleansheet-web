@@ -123,7 +123,7 @@ export default function EvidencePage() {
                   className="inline-flex items-center gap-2 border rounded-full px-3 py-1"
                   style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}
                 >
-                  <Image src="/images/tcs-certified-badge.png" alt="" width={10} height={10} className="object-contain opacity-80" />
+                  <Image src="/images/certified-badge.png" alt="" width={10} height={10} className="object-contain opacity-80" />
                   <span className="text-teal-300 text-[9px] tracking-[0.15em] uppercase">Independently Certified by The Clean Sheet</span>
                 </span>
               </div>
@@ -173,7 +173,7 @@ export default function EvidencePage() {
                     fill className="object-contain p-6" unoptimized
                   />
                   <div className="absolute bottom-3 right-3 drop-shadow-xl">
-                    <Image src="/images/tcs-certified-badge.png" alt="TCS Certified" width={28} height={28} className="object-contain" />
+                    <Image src="/images/certified-badge.png" alt="TCS Certified" width={28} height={28} className="object-contain" />
                   </div>
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function EvidencePage() {
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-9 h-9 rounded-full bg-teal-900/60 flex items-center justify-center flex-shrink-0">
-                    <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={22} height={22} className="object-contain" />
+                    <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={22} height={22} className="object-contain" />
                   </div>
                   <div>
                     <p className="text-white text-sm font-medium">The Clean Sheet</p>
@@ -416,7 +416,7 @@ export default function EvidencePage() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
-              <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={11} height={11} className="object-contain" />
+              <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={11} height={11} className="object-contain" />
               <span className="text-white text-xs font-medium">The Clean Sheet</span>
             </div>
             <p className="text-teal-800 text-[10px]">

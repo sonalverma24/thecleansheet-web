@@ -141,5 +141,31 @@
     },
     "verifiedAt": "2026-07-14T12:11:04.825Z",
     "methodologyVersion": "TCS v3.1"
+  },
+  {
+    "slug": "minimalist-minimalist-2-salicylic-acid-lha-face-cleanser-with-zinc-for-reducing-",
+    "productName": "Minimalist 2% Salicylic Acid + LHA Face Cleanser with Zinc for Reducing Sebum & Acne",
+    "brand": "Minimalist",
+    "score": 98,
+    "scoreLabel": "Clean Sheet Strong",
+    "integrityScore": null,
+    "imageUrl": null,
+    "summary": "Minimalist sets a high standard for transparency and evidence, backing its core claims with finished product clinical data and a well-formulated, active-rich cleanser that delivers on its promises for acne-prone skin.",
+    "usageGuidance": null,
+    "verifiedAt": "2026-07-15T17:56:11.351Z",
+    "methodologyVersion": "TCS v3.0"
+  },
+  {
+    "slug": "la-roche-posay-la-roche-posay-mela-b3-serum",
+    "productName": "La Roche-Posay Mela B3 Serum",
+    "brand": "La Roche-Posay",
+    "score": 88,
+    "scoreLabel": "Clean Sheet Strong",
+    "integrityScore": null,
+    "imageUrl": "https://incidecoder-content.storage.googleapis.com/9b6a40d6-7c77-4444-bfa6-19bb4d959666/products/la-roche-posay-mela-b3-serum/la-roche-posay-mela-b3-serum_front_photo_original.jpeg",
+    "summary": "La Roche-Posay Mela B3 Serum is a powerful, evidence-backed solution for pigmentation, but consumers should be aware of the conflicting information regarding its fragrance content.",
+    "usageGuidance": null,
+    "verifiedAt": "2026-07-16T04:57:34.771Z",
+    "methodologyVersion": "TCS v3.0"
   }
 ]

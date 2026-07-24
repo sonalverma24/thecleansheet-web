@@ -2,10 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Sparkles, ArrowRight,
-  CheckCircle2, XCircle, ChevronRight, Microscope, Award,
+  CheckCircle2, XCircle, ChevronRight,
   Users, Star,
 } from "lucide-react";
-import { Reveal, TitleReveal, KenBurns, HeroReveal } from "@/components/motion/Motion";
+import { Reveal, TitleReveal, HeroReveal } from "@/components/motion/Motion";
 import OpenFormButton from "@/components/OpenFormButton";
 import { ApprovedStamp } from "@/components/scorecards/pillar-ui";
 
@@ -13,94 +13,167 @@ import { ApprovedStamp } from "@/components/scorecards/pillar-ui";
    HERO
 ───────────────────────────────────────────── */
 function Hero() {
+  const scorecard = (
+    <div className="rounded-2xl bg-white/90 backdrop-blur-md border border-white/70 shadow-2xl shadow-ink-900/15 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[9.5px] uppercase tracking-[0.14em] text-ink-400">Clean Sheet standing</span>
+        <span className="text-[9.5px] font-medium text-teal-700 inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-teal-500" />Verified</span>
+      </div>
+      <div className="flex items-center gap-2 mb-3.5">
+        <ApprovedStamp size={32} />
+        <span className="font-display text-[17px] text-ink-900 leading-[1.1]">Clean Sheet Approved</span>
+      </div>
+      <div className="space-y-2.5">
+        {[["Claims evidence", "Excellent", "95%"], ["Formula logic", "Strong", "88%"], ["Transparency", "Strong", "92%"]].map(([l, rating, w]) => (
+          <div key={l}>
+            <div className="flex justify-between items-center text-[10px] mb-1">
+              <span className="text-ink-500">{l}</span>
+              <span className="text-ink-700 font-medium">{rating}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-ink-100 overflow-hidden"><div className="h-full rounded-full bg-teal-500" style={{ width: w }} /></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const molecule = (
+    <svg width="102" height="86" viewBox="0 0 102 86" fill="none" aria-hidden>
+      <path d="M22 30 L52 44 M52 44 L42 74 M52 44 L82 27" stroke="#3f8f86" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="22" cy="30" r="12" fill="#fd6158" />
+      <circle cx="52" cy="44" r="15" fill="#248179" />
+      <circle cx="42" cy="74" r="10" fill="#f2a94e" />
+      <circle cx="82" cy="27" r="11" fill="#80d5cc" />
+    </svg>
+  );
+
   return (
-    <header className="relative overflow-hidden bg-white">
-      {/* Creative: cinematic loop, drifting slowly, melting into the canvas.
-          Desktop only — mobile gets the lightweight still below. */}
-      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[46%] overflow-hidden" aria-hidden>
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover"
-          style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
-        >
+    <header className="relative overflow-hidden grain-overlay md:-mt-[80px]" style={{ background: "linear-gradient(158deg, #fbf7f4 0%, #ffffff 52%, #f4faf8 100%)" }}>
+      <div className="pointer-events-none absolute -top-40 -left-32 w-[520px] h-[520px] rounded-full opacity-50 animate-blob" style={{ background: "radial-gradient(circle at 42% 42%, #d4f2ef, transparent 70%)" }} aria-hidden />
+
+      {/* DESKTOP · DNA video, bleeding to the right edge and melting into the canvas */}
+      <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-[47%] overflow-hidden" aria-hidden>
+        <video autoPlay muted loop playsInline preload="metadata" poster="/images/creatives/dna-skincare-poster.jpg" className="w-full h-full object-cover" style={{ animation: "hero-drift 26s ease-in-out infinite alternate" }}>
           <source src="/Videos/dna-skincare-web720.mp4" type="video/mp4" />
         </video>
-        {/* Same canvas-melt gradients as before — the video has no visible edge */}
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0.72) 30%, rgba(255,255,255,0.08) 72%)" }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #ffffff 0%, rgba(255,255,255,0) 22%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, #fbf7f4 0%, rgba(251,247,244,0.5) 26%, rgba(251,247,244,0) 58%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 74%, rgba(251,247,244,0.85) 100%)" }} />
       </div>
 
-      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-14 md:pt-20 pb-14 md:pb-20">
-        <HeroReveal>
-          <p className="text-[12px] uppercase text-[var(--color-primary)]" style={{ letterSpacing: "0.14em" }}>
-            India&apos;s first independent beauty certification
-          </p>
-        </HeroReveal>
-        <h1 className="font-display mt-6 md:mt-8 text-[40px] md:text-[64px] leading-[1.08] tracking-[-0.02em] text-[var(--color-charcoal)] max-w-3xl">
-          <TitleReveal lines={["Proof,", "not promises."]} />
-        </h1>
-        <HeroReveal delay={0.15}>
-          <p className="mt-6 text-[17px] md:text-[18px] leading-[26px] md:leading-[28px] text-[var(--color-warm-gray)] max-w-xl">
-            The Clean Sheet checks what beauty products claim against what they can
-            actually prove. Built on science, not marketing.
-          </p>
-        </HeroReveal>
+      <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-10 md:pt-[120px] pb-12 lg:pb-20 lg:min-h-[600px]">
+        {/* LEFT · copy */}
+        <div className="lg:max-w-[50%]">
+          <HeroReveal>
+            <p className="text-[12px] uppercase text-[var(--color-primary)] leading-[1.7]" style={{ letterSpacing: "0.14em" }}>
+              Independent standard &amp; verification platform<br />for beauty and personal care
+            </p>
+          </HeroReveal>
+          <h1 className="font-display mt-5 md:mt-6 text-[46px] md:text-[60px] xl:text-[68px] leading-[1.0] tracking-[-0.025em] text-[var(--color-charcoal)]">
+            <TitleReveal lines={["Proof,", "not promises."]} />
+          </h1>
+          <HeroReveal delay={0.15}>
+            <p className="mt-6 text-[17px] md:text-[18px] leading-[1.6] text-[var(--color-warm-gray)] max-w-md">
+              We help <strong className="text-[var(--color-charcoal)] font-normal">brands</strong> prove their quality with
+              independent verification, and help <strong className="text-[var(--color-charcoal)] font-normal">consumers</strong> see
+              the evidence behind a product, not just the marketing.
+            </p>
+          </HeroReveal>
 
-        {/* CTAs, pill shapes */}
-        <HeroReveal delay={0.3}>
-          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <HeroReveal delay={0.3}>
+            <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3">
+              <Link
+                href="/review"
+                className="group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-full px-6 py-3.5 text-[15px] whitespace-nowrap text-white bg-[var(--color-coral)] hover:opacity-95 transition-all hover:shadow-xl hover:shadow-coral-500/25 active:scale-[0.99]"
+              >
+                Review a product for free
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </Link>
+              <OpenFormButton
+                className="group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-full px-6 py-3.5 text-[15px] whitespace-nowrap text-[var(--color-charcoal)] border border-[var(--color-charcoal)]/15 bg-white/70 backdrop-blur-sm hover:border-[var(--color-charcoal)]/40 transition-colors"
+              >
+                Get your claims verified
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+              </OpenFormButton>
+            </div>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-[var(--color-warm-gray)]">
+              {["Independent", "No paid placements", "Free for shoppers"].map((t) => (
+                <span key={t} className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />{t}
+                </span>
+              ))}
+            </div>
             <Link
-              href="/review"
-              className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-coral)] hover:opacity-90 transition-opacity"
+              href="/brands"
+              className="mt-6 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
             >
-              Review a product for free <span aria-hidden>→</span>
+              Browse reviewed products <span aria-hidden>›</span>
             </Link>
-            <OpenFormButton
-              className="inline-flex items-center justify-center gap-3 rounded-full px-9 py-4 text-[16px] text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
-            >
-              Get your claims verified today <span aria-hidden>→</span>
-            </OpenFormButton>
-          </div>
-          <Link
-            href="/brands"
-            className="mt-6 md:mt-8 inline-flex items-center gap-2 text-[15px] text-[var(--color-charcoal)] hover:text-[var(--color-primary)] transition-colors w-fit"
-          >
-            Browse reviewed products <span aria-hidden>›</span>
-          </Link>
-        </HeroReveal>
+          </HeroReveal>
+        </div>
 
-        {/* Mobile creative */}
-        <HeroReveal delay={0.4} className="lg:hidden mt-10 -mx-4">
-          <img src="/images/creatives/hero-flatlay.jpg" alt="" className="w-full h-52 object-cover" />
+        {/* DESKTOP · graphics composed over the video */}
+        <HeroReveal delay={0.2}>
+          <div className="hidden lg:block absolute z-10 top-[124px] right-3 xl:right-1 w-[124px] xl:w-[138px]" style={{ filter: "drop-shadow(0 14px 32px rgba(36,129,121,0.28))" }}>
+            <Image src="/images/certified-badge.png" alt="The Clean Sheet Certified seal" width={140} height={140} className="w-full h-auto" />
+          </div>
         </HeroReveal>
+        <div className="hidden lg:block absolute z-10 top-[46%] right-[34%]">{molecule}</div>
+        <HeroReveal delay={0.35}>
+          <div className="hidden lg:block absolute z-10 bottom-12 right-2 w-[266px]">{scorecard}</div>
+        </HeroReveal>
+      </div>
+
+      {/* MOBILE · video with the seal and standing card */}
+      <div className="lg:hidden px-4 pb-9">
+        <div className="relative">
+          <div className="relative aspect-[16/13] rounded-3xl overflow-hidden shadow-xl shadow-ink-900/10 ring-1 ring-black/[0.06]">
+            <video autoPlay muted loop playsInline preload="metadata" poster="/images/creatives/dna-skincare-poster.jpg" className="absolute inset-0 w-full h-full object-cover">
+              <source src="/Videos/dna-skincare-web720.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 58%, rgba(40,40,40,0.14) 100%)" }} />
+          </div>
+          <div className="absolute -top-4 right-4 w-[76px]" style={{ filter: "drop-shadow(0 10px 22px rgba(36,129,121,0.28))" }}>
+            <Image src="/images/certified-badge.png" alt="" width={90} height={90} className="w-full h-auto" />
+          </div>
+          <div className="absolute -bottom-5 left-4 right-4">{scorecard}</div>
+        </div>
       </div>
     </header>
   );
 }
 
 /* ─────────────────────────────────────────────
-   STATS BAR
+   CREDIBILITY BAND · real testing, real standard
 ───────────────────────────────────────────── */
-function StatsBar() {
+function CredibilityBand() {
+  const marks = ["EU 1223/2009", "US MoCRA", "India BIS & CDSCO", "Korea MFDS", "ISO 22716 GMP"];
   return (
-    <section className="bg-teal-600 py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { v: "25k+", l: "Ingredients in database" },
-            { v: "4",    l: "Certification tiers"     },
-            { v: "6",    l: "Product categories"      },
-            { v: "0",    l: "Paid placements. Ever."  },
-          ].map(({ v, l }) => (
-            <div key={l} className="text-center">
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-medium text-white mb-1">{v}</div>
-              <div className="text-teal-200 text-xs sm:text-sm">{l}</div>
-            </div>
-          ))}
+    <section className="relative overflow-hidden grain-overlay">
+      <div className="absolute inset-0">
+        <Image
+          src="/images/creatives/dropper-drop/3.png"
+          alt="Formulation scientists assessing product samples and data in a laboratory"
+          fill
+          className="object-cover"
+          style={{ objectPosition: "82% center" }}
+          sizes="100vw"
+        />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(8,25,24,0.95) 0%, rgba(8,25,24,0.82) 40%, rgba(8,25,24,0.42) 72%, rgba(8,25,24,0.12) 100%)" }} />
+      </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+        <div className="max-w-xl">
+          <p className="text-teal-300 text-[12px] uppercase" style={{ letterSpacing: "0.16em" }}>The standard</p>
+          <h2 className="font-display text-white text-3xl sm:text-4xl lg:text-[44px] leading-[1.12] mt-4">
+            A real standard, backed<br className="hidden sm:block" /> by real testing.
+          </h2>
+          <p className="text-teal-50/85 text-[15px] sm:text-base leading-relaxed mt-5 max-w-lg">
+            Every claim is judged on finished-product evidence, read against the real ingredient list, and benchmarked to the regulations that govern beauty worldwide. Not marketing language. Documented proof.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-2.5">
+            {marks.map((s) => (
+              <span key={s} className="text-[12px] text-white/90 border border-white/25 bg-white/[0.06] backdrop-blur-sm rounded-full px-3.5 py-1.5">{s}</span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -111,34 +184,38 @@ function StatsBar() {
    THE PROBLEM
 ───────────────────────────────────────────── */
 function TheProblem() {
+  const rows = [
+    { claim: '"Clinically proven"', reality: 'No study on file', bad: true },
+    { claim: '"Dermatologist tested"', reality: 'No panel, no protocol', bad: true },
+    { claim: '"100% natural"', reality: 'No origin verification', bad: true },
+    { claim: 'Clean Sheet Approved', reality: 'Independent review. Public proof.', bad: false },
+  ];
   return (
-    <section className="py-12 sm:py-16 bg-ink-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+    <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 grain-overlay" style={{ background: "linear-gradient(155deg, #131315 0%, #0b0b0c 52%, #0d211f 100%)" }}>
+      <div className="pointer-events-none absolute -top-20 right-4 w-[420px] h-[420px] rounded-full opacity-20 animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #2E9E96, transparent 70%)" }} aria-hidden />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 w-[360px] h-[360px] rounded-full opacity-[0.12] animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #fd6158, transparent 70%)", animationDelay: "3s" }} aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight text-white mb-6">
+            <p className="text-teal-300 text-[12px] uppercase mb-5" style={{ letterSpacing: "0.16em" }}>The gap</p>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.08] text-white mb-6">
               Clean claims are easy.
               <br />
               <span className="text-yellow-400">Clean proof isn&apos;t.</span>
             </h2>
-            <p className="text-teal-200 text-lg leading-relaxed">
-              Every brand in India says their product is &ldquo;clinically proven&rdquo;, &ldquo;dermatologist tested&rdquo;, &ldquo;100% natural&rdquo;, or &ldquo;clean&rdquo;. None of these claims are independently verified.
+            <p className="text-teal-100/80 text-lg leading-relaxed max-w-md">
+              Every brand says its product is &ldquo;clinically proven&rdquo;, &ldquo;dermatologist tested&rdquo;, or &ldquo;100% natural&rdquo;. Almost none of it is independently verified.
             </p>
             <p className="text-teal-300/70 text-lg leading-relaxed mt-4">Until now.</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { claim: '"Clinically proven"', reality: 'No study on file', bad: true },
-              { claim: '"Dermatologist tested"', reality: 'No panel, no protocol', bad: true },
-              { claim: '"100% natural"', reality: 'No origin verification', bad: true },
-              { claim: 'Clean Sheet Certified', reality: 'Independent panel. Public score.', bad: false },
-            ].map(({ claim, reality, bad }) => (
-              <div key={claim} className={`rounded-2xl p-5 border ${bad ? 'border-coral-500/30 bg-coral-500/5' : 'border-teal-400/40 bg-teal-500/10'}`}>
-                <div className={`text-xs font-medium uppercase tracking-wide mb-2 ${bad ? 'text-coral-400' : 'text-teal-400'}`}>
+          <div className="grid grid-cols-2 gap-3.5">
+            {rows.map(({ claim, reality, bad }) => (
+              <div key={claim} className={`rounded-2xl p-5 border backdrop-blur-sm transition-transform duration-300 hover:-translate-y-1 ${bad ? 'border-coral-500/25 bg-coral-500/[0.06]' : 'border-teal-400/40 bg-teal-500/[0.12] shadow-lg shadow-teal-900/40'}`}>
+                <div className={`text-[11px] font-medium uppercase tracking-wide mb-2 ${bad ? 'text-coral-400' : 'text-teal-300'}`}>
                   {bad ? '✗ Unverified' : '✓ Verified'}
                 </div>
                 <div className="text-white font-normal text-sm mb-1">{claim}</div>
-                <div className={`text-xs leading-snug ${bad ? 'text-coral-300/60' : 'text-teal-300'}`}>{reality}</div>
+                <div className={`text-xs leading-snug ${bad ? 'text-coral-300/60' : 'text-teal-200'}`}>{reality}</div>
               </div>
             ))}
           </div>
@@ -317,20 +394,21 @@ function VisualProof() {
   ];
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24" style={{ background: "linear-gradient(180deg, #ffffff 0%, #f7faf9 100%)" }}>
+      <div className="pointer-events-none absolute top-10 -right-24 w-[380px] h-[380px] rounded-full opacity-40 animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #d4f2ef, transparent 70%)" }} aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mb-14">
-          <div className="text-coral-500 text-sm font-normal uppercase tracking-wider mb-3">Why it matters</div>
-          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight leading-tight">
-            The beauty industry runs on claims.
+          <div className="text-coral-500 text-sm font-normal uppercase tracking-wider mb-3">Under the hood</div>
+          <h2 className="font-display text-4xl lg:text-5xl tracking-tight leading-[1.08]">
+            What the review
             <br />
-            <span className="text-teal-600">We run on proof.</span>
+            <span className="text-teal-600">actually checks.</span>
           </h2>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {cards.map(({ graphic, heading, body }) => (
-            <div key={heading} className="group rounded-3xl overflow-hidden border border-ink-100 hover:shadow-2xl hover:shadow-ink-900/8 transition-all duration-500 hover:-translate-y-1 bg-white">
+            <div key={heading} className="group rounded-3xl overflow-hidden border border-ink-100 ring-1 ring-black/[0.02] hover:shadow-2xl hover:shadow-teal-900/10 transition-all duration-500 hover:-translate-y-1.5 bg-white">
               {graphic}
               <div className="p-6">
                 <h3 className="font-medium text-ink-900 text-lg mb-2 leading-snug">{heading}</h3>
@@ -349,15 +427,16 @@ function VisualProof() {
 ───────────────────────────────────────────── */
 function AnalyzerPreview() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24" style={{ background: "linear-gradient(180deg, #f7faf9 0%, #ffffff 60%)" }}>
+      <div className="pointer-events-none absolute -bottom-24 -left-24 w-[420px] h-[420px] rounded-full opacity-40 animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #fee3e1, transparent 70%)" }} aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* Left copy */}
           <div>
             <div className="inline-flex items-center gap-2 text-coral-500 text-sm font-normal mb-4 sm:mb-5 uppercase tracking-wide">
               <Sparkles size={14} /> The Clean Sheet Review Engine
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-4 sm:mb-6">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.06] mb-4 sm:mb-6">
               Paste a link.
               <br />Get the truth.
             </h2>
@@ -385,10 +464,11 @@ function AnalyzerPreview() {
             </Link>
           </div>
 
-          {/* Right mock UI — the review engine result */}
+          {/* Right mock UI, the review engine result */}
           <div className="relative">
+            <div className="pointer-events-none absolute -inset-6 rounded-[2.5rem] opacity-70 blur-2xl" style={{ background: "radial-gradient(60% 60% at 62% 38%, rgba(45,158,150,0.20), transparent 70%)" }} aria-hidden />
             <div className="absolute -top-5 -right-5 z-20 bg-yellow-500 text-ink-950 text-xs font-medium px-4 py-2 rounded-full shadow-lg">LIVE ✦</div>
-            <div className="bg-white rounded-[2rem] border border-ink-100 shadow-2xl shadow-ink-900/8 overflow-hidden">
+            <div className="relative bg-white rounded-[2rem] border border-ink-100 shadow-2xl shadow-teal-900/10 overflow-hidden">
               <div className="flex items-center gap-3 px-5 py-4 bg-teal-50 border-b border-teal-100">
                 <div className="w-8 h-8 rounded-xl bg-teal-600 flex items-center justify-center">
                   <Sparkles size={14} className="text-white" />
@@ -420,11 +500,11 @@ function AnalyzerPreview() {
                   </div>
                   <div className="flex items-start gap-2 text-xs text-teal-800 bg-white border border-teal-100 rounded-xl px-3 py-2.5 mb-2">
                     <CheckCircle2 size={13} className="flex-shrink-0 mt-0.5 text-teal-600" />
-                    <span><strong>&ldquo;Corrects dark spots&rdquo;</strong> — clinical study, 41 women, 8 weeks. Well supported.</span>
+                    <span><strong>&ldquo;Corrects dark spots&rdquo;</strong>: clinical study, 41 women, 8 weeks. Well supported.</span>
                   </div>
                   <div className="flex items-start gap-2 text-xs text-coral-700 bg-coral-50 border border-coral-100 rounded-xl px-3 py-2.5">
                     <XCircle size={13} className="flex-shrink-0 mt-0.5" />
-                    <span><strong>&ldquo;Fragrance-free&rdquo;</strong> on a marketplace listing — contradicted by the INCI.</span>
+                    <span><strong>&ldquo;Fragrance-free&rdquo;</strong> on a marketplace listing, contradicted by the INCI.</span>
                   </div>
                 </div>
               </div>
@@ -445,59 +525,6 @@ function AnalyzerPreview() {
 }
 
 /* ─────────────────────────────────────────────
-   FOUR PILLARS
-───────────────────────────────────────────── */
-function FourPillars() {
-  const tiers = [
-    { name: "Clean Sheet Approved", dot: "#84cc16", ring: "border-lime-300",  desc: "Every headline claim holds up: proven on the finished product, with clinical or lab evidence. The claims match the science." },
-    { name: "Mostly Clean",         dot: "#248179", ring: "border-teal-300",  desc: "A well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof." },
-    { name: "Needs Proof",          dot: "#c9a227", ring: "border-amber-300", desc: "The claims may well be honest, but the proof isn't publicly visible. Brands can submit their reports to earn a higher standing." },
-    { name: "Misleading Claims",    dot: "#fd6158", ring: "border-coral-300", desc: "The product makes claims that aren't permitted in India, or that its own ingredient list contradicts." },
-  ];
-
-  return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section image banner */}
-        <div className="relative h-56 lg:h-72 rounded-3xl overflow-hidden mb-16">
-          <Image
-            src="/images/cierra-henderson-LWIQp-0_b98-unsplash.jpg"
-            alt="Clean beauty product"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-teal-950/90" />
-          <div className="absolute inset-0 flex items-center px-10 lg:px-16">
-            <div>
-              <div className="inline-flex items-center gap-2 text-yellow-500 text-sm font-medium mb-3 uppercase tracking-wide">
-                <Microscope size={14} /> The Clean Sheet Standing
-              </div>
-              <h2 className="text-3xl lg:text-5xl font-medium tracking-tight max-w-lg leading-tight">
-                <span className="text-white">Every claim, weighed </span><span className="text-yellow-400">against its proof.</span>
-              </h2>
-              <p className="text-teal-200/80 text-sm mt-3 max-w-md leading-relaxed">
-                We find every marketing claim, grade each on a 1-7 evidence ladder, read the real ingredient list, then hand you one clear standing.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {tiers.map(({ name, dot, ring, desc }) => (
-            <div key={name}
-              className={`group bg-white rounded-3xl p-7 border ${ring} hover:shadow-xl hover:shadow-teal-100/50 transition-all duration-300 hover:-translate-y-1`}>
-              <span className="inline-block w-3.5 h-3.5 rounded-full mb-5" style={{ background: dot }} />
-              <h3 className="font-medium text-ink-900 mb-2 leading-snug">{name}</h3>
-              <p className="text-ink-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────
    INGREDIENT MARQUEE
 ───────────────────────────────────────────── */
 function IngredientStrip() {
@@ -508,7 +535,7 @@ function IngredientStrip() {
     "Centella Asiatica","Fragrance / Parfum","Bakuchiol","SLS",
   ];
   return (
-    <div className="overflow-hidden bg-yellow-500 py-4 select-none">
+    <div className="relative overflow-hidden bg-yellow-500 py-4 select-none" style={{ WebkitMaskImage: "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)", maskImage: "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)" }}>
       <div className="flex gap-10 whitespace-nowrap" style={{ animation: "marquee 30s linear infinite" }}>
         {[...terms,...terms].map((t,i)=>(
           <span key={i} className="text-ink-950 text-sm font-medium flex-shrink-0">
@@ -522,77 +549,23 @@ function IngredientStrip() {
 }
 
 /* ─────────────────────────────────────────────
-   CERTIFICATION OUTCOMES
-───────────────────────────────────────────── */
-function CertificationTiers() {
-  return (
-    <section className="relative py-12 sm:py-16 lg:py-20 overflow-hidden">
-      {/* Full-bleed image */}
-      <div className="absolute inset-0">
-        <Image
-          src="/images/kitera-dent-hHsn1Pjrw58-unsplash.jpg"
-          alt="Premium face serum"
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-teal-950/92" />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 text-yellow-500 text-sm font-medium mb-4 uppercase tracking-wide">
-            <Award size={14} /> The Verdict
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4" style={{ color: "#ffffff" }}>No middle ground.</h2>
-          <p className="text-teal-300 text-lg max-w-lg mx-auto">Products earn their clean claim, or they don&apos;t.</p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-          {/* Certified */}
-          <div className="rounded-3xl p-8 border border-teal-400/40 bg-teal-500/10 backdrop-blur-sm hover:scale-[1.02] transition-transform cursor-default text-center">
-            <div className="text-5xl mb-4 text-teal-300">✓</div>
-            <div className="text-2xl font-medium text-teal-200 mb-3">Certified</div>
-            <p className="text-teal-300/70 text-sm leading-relaxed">
-              Meets The Clean Sheet standard. Safe, compliant, honest claims, and adequate manufacturing quality. Earns the badge.
-            </p>
-          </div>
-          {/* Not Certified */}
-          <div className="rounded-3xl p-8 border border-coral-400/40 bg-coral-500/10 backdrop-blur-sm hover:scale-[1.02] transition-transform cursor-default text-center">
-            <div className="text-5xl mb-4 text-coral-300">✗</div>
-            <div className="text-2xl font-medium text-coral-200 mb-3">Not Certified</div>
-            <p className="text-coral-200/60 text-sm leading-relaxed">
-              Did not meet the standard. We tell brands exactly why, and exactly what needs to change. The door stays open.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-10 text-center">
-          <p className="text-teal-400 text-sm mb-5">Auto-fail if product contains banned substances, undisclosed allergens, or formaldehyde releasers.</p>
-          <Link href="/certification" className="inline-flex items-center gap-2 text-teal-300 hover:text-white text-sm font-medium transition-colors">
-            Learn how we evaluate <ArrowRight size={14} />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────
    FOR BRANDS
 ───────────────────────────────────────────── */
 function ForBrands() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24" style={{ background: "linear-gradient(180deg, #ffffff 0%, #faf7f4 100%)" }}>
+      <div className="pointer-events-none absolute -top-20 -left-24 w-[400px] h-[400px] rounded-full opacity-40 animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #d4f2ef, transparent 70%)" }} aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left, image with overlay card */}
           <div className="relative order-2 lg:order-1">
-            <div className="relative h-[500px] rounded-3xl overflow-hidden">
+            <div className="relative h-[360px] sm:h-[460px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl shadow-ink-900/15 ring-1 ring-black/[0.06]">
               <Image
                 src="/images/reuben-mansell-nwOip8AOZz0-unsplash.jpg"
                 alt="Premium certified skincare product lineup"
                 fill
                 className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 600px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-teal-950/50 via-transparent to-transparent" />
             </div>
@@ -626,7 +599,7 @@ function ForBrands() {
             <div className="inline-flex items-center gap-2 text-teal-600 text-sm font-normal mb-5 uppercase tracking-wide">
               <Users size={14} /> For Brands & Manufacturers
             </div>
-            <h2 className="text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-6">
+            <h2 className="font-display text-4xl lg:text-5xl tracking-tight leading-[1.08] mb-6">
               Certification is the new
               <br />competitive advantage.
             </h2>
@@ -646,107 +619,21 @@ function ForBrands() {
                 </div>
               ))}
             </div>
+            <div className="flex items-center gap-6 mb-10">
+              <div>
+                <div className="font-display text-3xl text-teal-700 leading-none">30%</div>
+                <div className="text-ink-500 text-xs mt-1.5 max-w-[9rem] leading-snug">higher revenue for products with independent trust badges</div>
+              </div>
+              <div className="w-px h-12 bg-ink-100" />
+              <div>
+                <div className="font-display text-3xl text-teal-700 leading-none">80%</div>
+                <div className="text-ink-500 text-xs mt-1.5 max-w-[9rem] leading-snug">of shoppers will pay more for verified products</div>
+              </div>
+            </div>
             <a href="#get-certified"
               className="inline-flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl hover:shadow-coral-500/25 active:scale-[0.98]">
               Apply for Certification <ArrowRight size={16} />
             </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   FOR CONSUMERS
-───────────────────────────────────────────── */
-function ForConsumers() {
-  return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-ink-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 text-teal-400 text-sm font-normal mb-5 uppercase tracking-wide">
-              For Consumers
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-6 text-white">
-              Know what&apos;s actually
-              <br />in your skincare.
-            </h2>
-            <p className="text-teal-200 text-lg leading-relaxed mb-8">
-              Scan the QR code on any Clean Sheet certified product to see its full assessment: ingredient safety overview, verified claims, manufacturing standard, and sustainability score. No brand spin. Just the evidence.
-            </p>
-            <div className="space-y-4 mb-10">
-              {[
-                { label: "Score & tier", desc: "Gold means exceptional. Silver means strong. Certified means it meets our standard." },
-                { label: "Verified claims only", desc: "If it says 'clinically proven', there's a clinical study behind it." },
-                { label: "Manufacturing quality", desc: "GMP certification status and quality documentation reviewed." },
-                { label: "Ethics & sustainability", desc: "Cruelty-free, vegan, and sustainability commitments independently assessed." },
-              ].map(({ label, desc }) => (
-                <div key={label} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <CheckCircle2 size={12} className="text-teal-400" />
-                  </div>
-                  <div>
-                    <span className="text-white font-normal text-sm">{label}: </span>
-                    <span className="text-teal-300/70 text-sm">{desc}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/certified"
-                className="inline-flex items-center gap-2.5 bg-teal-600 hover:bg-teal-500 text-white font-normal px-6 py-3.5 rounded-2xl transition-all hover:shadow-xl active:scale-[0.98]">
-                Verify a product <ArrowRight size={16} />
-              </Link>
-              <a
-                href="https://chat.whatsapp.com/BUvEDcUj9Dh14dwSVRVvu4"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 border border-teal-400/50 text-teal-300 hover:bg-teal-500/10 font-normal px-5 py-3 rounded-full transition-all text-sm"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
-                Join our WhatsApp community
-              </a>
-            </div>
-          </div>
-
-          {/* Right: proof page mock */}
-          <div className="relative">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <div className="text-xs text-teal-400 font-normal uppercase tracking-wider mb-1">Clean Sheet Certified</div>
-                  <div className="text-white font-medium text-lg">Example Serum · Brand Name</div>
-                  <div className="text-teal-300/60 text-xs">Certificate · TCS-2025-00142</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-medium text-yellow-400">91</div>
-                  <div className="text-xs text-yellow-400/70 font-medium uppercase tracking-wide">Gold ✦</div>
-                </div>
-              </div>
-              <div className="space-y-2.5 mb-5">
-                {[
-                  { layer: "Ingredient Safety", score: "46/50" },
-                  { layer: "Manufacturing & Quality", score: "18/20" },
-                  { layer: "Claims", score: "17/20" },
-                  { layer: "Ethics & Sustainability", score: "10/10" },
-                ].map(({ layer, score }) => (
-                  <div key={layer} className="flex justify-between items-center py-2 border-b border-white/5">
-                    <span className="text-teal-200/80 text-sm">{layer}</span>
-                    <span className="text-white font-medium text-sm">{score}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-4">
-                <div className="text-teal-400 text-xs font-medium uppercase tracking-wide mb-2">Verified Claims</div>
-                <div className="flex flex-wrap gap-2">
-                  {["SPF 50 verified", "Fragrance-free", "Cruelty-free", "Non-comedogenic"].map(c => (
-                    <span key={c} className="text-xs bg-teal-600/20 text-teal-300 border border-teal-500/20 px-2.5 py-1 rounded-full">{c}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -888,8 +775,8 @@ function HowItWorks() {
           <div className="inline-flex items-center gap-2 text-teal-600 text-sm font-normal mb-4 uppercase tracking-wide">
             <Star size={14} /> The Certification Process
           </div>
-          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4">Proof, not promises.</h2>
-          <p className="text-ink-600 text-lg max-w-lg mx-auto">Every certification is backed by verified documents. No exceptions.</p>
+          <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4">How certification works.</h2>
+          <p className="text-ink-600 text-lg max-w-lg mx-auto">Three steps, every one backed by verified documents. No exceptions.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
           {steps.map(({n,title,body,graphic})=>(
@@ -900,45 +787,10 @@ function HowItWorks() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   CTA BANNER
-───────────────────────────────────────────── */
-function CTABanner() {
-  return (
-    <section className="relative py-28 overflow-hidden">
-      <div className="absolute inset-0"
-        style={{ background: "linear-gradient(135deg, #f0fdf9 0%, #ccfbf1 40%, #fef9ee 100%)" }}>
-        {/* Dot grid texture */}
-        <div className="absolute inset-0 opacity-[0.15]"
-          style={{ backgroundImage: "radial-gradient(#0d9488 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        {/* Radial glow center */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-[600px] h-[600px] rounded-full opacity-30"
-            style={{ background: "radial-gradient(circle, #5eead4 0%, transparent 70%)" }} />
-        </div>
-      </div>
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        <h2 className="text-4xl lg:text-6xl font-medium tracking-tight mb-5 leading-tight">
-          Ready to show
-          <br /><span className="text-gradient-coral">your work?</span>
-        </h2>
-        <p className="text-ink-600 text-xl mb-12 max-w-lg mx-auto">
-          Brands that certify with The Clean Sheet join a growing registry of products that stand behind their claims.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/brands"
-            className="flex items-center gap-2.5 bg-coral-500 hover:bg-coral-600 text-white font-normal px-8 py-4 rounded-2xl transition-all hover:shadow-2xl hover:shadow-coral-500/30 active:scale-[0.98] text-lg">
-            Start the certification process →
-          </Link>
-          <Link href="/certified"
-            className="flex items-center gap-2 text-ink-700 hover:text-ink-950 font-medium text-base transition-colors">
-            Verify a product →
-          </Link>
+        <div className="mt-12 max-w-3xl mx-auto text-center rounded-2xl border border-ink-100 bg-ink-50 px-6 py-5">
+          <p className="text-ink-600 text-sm leading-relaxed">
+            No middle ground: a product is Certified or it is not. Banned substances, undisclosed allergens, or formaldehyde releasers are an automatic fail, whatever else the formula gets right.
+          </p>
         </div>
       </div>
     </section>
@@ -1018,6 +870,86 @@ const homeFaqJsonLd = {
 /* ─────────────────────────────────────────────
    PAGE
 ───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────
+   CONSUMER HAS CHANGED · the proof-demand data
+───────────────────────────────────────────── */
+function ConsumerHasChanged() {
+  const stats = [
+    { persona: "The researcher", value: "~72%", body: "of Indian consumers actively research ingredients and reviews before they buy." },
+    { persona: "The value-driven buyer", value: ">65%", body: "will pay a premium for products with verified safe or transparent claims." },
+    { persona: "The skeptic", value: "8 in 10", body: "say they feel confused or skeptical about clean and natural marketing." },
+  ];
+  return (
+    <section className="relative overflow-hidden bg-teal-600 py-16 sm:py-24 grain-overlay">
+      {/* soft depth: floating light forms */}
+      <div className="pointer-events-none absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full opacity-20 animate-blob" style={{ background: "radial-gradient(circle at 30% 30%, #d6ff3e, transparent 70%)" }} aria-hidden />
+      <div className="pointer-events-none absolute -bottom-32 -left-20 w-[360px] h-[360px] rounded-full opacity-[0.12] animate-blob" style={{ background: "radial-gradient(circle at 50% 50%, #ffffff, transparent 70%)", animationDelay: "3s" }} aria-hidden />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <p className="text-teal-100 text-[12px] uppercase" style={{ letterSpacing: "0.16em" }}>The shift</p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-[1.1] mt-4 max-w-2xl">
+            Your consumer has changed.
+            <br />
+            <span className="text-yellow-400">They now demand proof.</span>
+          </h2>
+        </Reveal>
+        <div className="mt-12 sm:mt-16 grid md:grid-cols-3 gap-10 lg:gap-14">
+          {stats.map(({ persona, value, body }, i) => (
+            <Reveal key={persona} delay={0.1 + i * 0.12}>
+              <div className="pt-6 border-t" style={{ borderColor: "rgba(255,255,255,0.22)" }}>
+                <p className="text-teal-100 text-[12px] uppercase" style={{ letterSpacing: "0.12em" }}>{persona}</p>
+                <p className="font-display text-white leading-none mt-3" style={{ fontSize: "clamp(52px, 7.5vw, 84px)" }}>{value}</p>
+                <p className="text-teal-50/90 text-[15px] leading-relaxed mt-4 max-w-xs">{body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal delay={0.2}>
+          <p className="mt-14 sm:mt-16 font-display text-2xl sm:text-[32px] text-white leading-[1.2] max-w-3xl">
+            When every brand claims quality, only <span className="text-yellow-400">verified</span> products win.
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   SENSORY VIDEO BAND · serum drop
+───────────────────────────────────────────── */
+function SensoryBand() {
+  return (
+    <section className="relative overflow-hidden grain-overlay h-[60vh] min-h-[420px] max-h-[600px]">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster="/images/creatives/serum-drop-poster.jpg"
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/Videos/serum-drop-web.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0" style={{ background: "linear-gradient(96deg, rgba(26,20,16,0.78) 0%, rgba(26,20,16,0.45) 44%, rgba(26,20,16,0.06) 78%)" }} />
+      <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
+        <Reveal>
+          <div className="max-w-lg">
+            <p className="text-white/70 text-[12px] uppercase" style={{ letterSpacing: "0.18em" }}>Down to the last drop</p>
+            <h2 className="font-display text-white text-4xl sm:text-5xl lg:text-[56px] leading-[1.04] mt-4">
+              Every drop, held
+              <br />to the standard.
+            </h2>
+            <p className="text-white/80 text-[15px] sm:text-base leading-relaxed mt-5 max-w-md">
+              The serum in the bottle should match the story on the label. We read the evidence, so the two always line up.
+            </p>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
   return (
     <>
@@ -1026,18 +958,15 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqJsonLd) }}
       />
       <Hero />
-      <StatsBar />
+      <CredibilityBand />
       <TheProblem />
-      <VisualProof />
+      <ConsumerHasChanged />
+      <SensoryBand />
       <AnalyzerPreview />
-      <FourPillars />
+      <VisualProof />
       <IngredientStrip />
-      <CertificationTiers />
       <ForBrands />
-      <ForConsumers />
-      <HowItWorks />
       <HomeFAQ />
-      <CTABanner />
     </>
   );
 }

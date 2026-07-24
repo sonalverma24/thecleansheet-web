@@ -689,8 +689,9 @@ function PillarDotsRow({
 }) {
   const pct = score / max;
   const filled = Math.round(pct * 4);
+  const p = pct * 100;
   const dotColor =
-    pct >= 0.80 ? "#248179" : pct >= 0.55 ? "#D4A843" : "#fd6158";
+    p >= 90 ? "#248179" : p >= 75 ? "#4C9E6A" : p >= 60 ? "#C99A2E" : p >= 45 ? "#E08A3C" : "#fd6158";
 
   return (
     <div className="flex items-center justify-between gap-2">

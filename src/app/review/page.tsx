@@ -194,33 +194,7 @@ export default function ReviewPage() {
         </div>
       </section>
 
-      {/* ═══ Approved products showcase ═══ */}
-      {approvedProducts.length > 0 && !review && !loading && (
-        <section className="max-w-[1100px] mx-auto px-4 md:px-16 pb-14">
-          <div className="flex items-baseline justify-between gap-4 mb-6">
-            <h2 className="font-display text-[26px] md:text-[34px]" style={{ color: INK }}>Clean Sheet Approved</h2>
-            <div className="flex items-baseline gap-5 flex-shrink-0">
-              <Link href="/verified" className="text-[13px] uppercase" style={{ letterSpacing: "0.08em", color: TEAL }}>
-                View all approved →
-              </Link>
-              <Link href="/brands" className="text-[13px] uppercase" style={{ letterSpacing: "0.08em", color: TEAL }}>
-                Browse all reviewed →
-              </Link>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-4 gap-y-6">
-            {approvedProducts.slice(0, 12).map((p) => (
-              <Link key={p.slug} href="/verified" className="group block">
-                <div className="aspect-square rounded-xl overflow-hidden" style={{ border: `1px solid ${HAIR_LIGHT}` }}>
-                  <ProductImage src={p.imageUrl} brand={p.brand} />
-                </div>
-                <p className="mt-2 text-[12px] leading-tight line-clamp-2" style={{ color: INK }}>{p.productName}</p>
-                <p className="mt-0.5 text-[10px] uppercase" style={{ letterSpacing: "0.05em", color: TEAL }}>Clean Sheet Approved</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Approved products showcase removed per request. */}
 
       {/* ═══ Loading ═══ */}
       {loading && (

@@ -1,0 +1,3 @@
+{
+  "/api/reviews/export/route": "app/api/reviews/export/route.js"
+}

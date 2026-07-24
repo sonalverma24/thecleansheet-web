@@ -5,26 +5,28 @@ import { Globe } from "lucide-react";
 import Image from "next/image";
 
 const LINKS = {
-  Platform: [
-    { href: "/review",        label: "Review a Product"    },
-    { href: "/certified",     label: "Certified Products"  },
-    { href: "/brands",        label: "For Brands"          },
-    { href: "/certification", label: "Certification"       },
-    { href: "/learn",         label: "Learn"               },
+  Standard: [
+    { href: "/standard",          label: "The Standard"        },
+    { href: "/standard/claims",   label: "Claims Library"      },
+    { href: "/standard/register", label: "Standards Register"  },
   ],
-  Learn: [
-    { href: "/ingredients",         label: "Ingredient Glossary"  },
-    { href: "/learn#scoring",       label: "How We Score"         },
-    { href: "/learn#inci",          label: "Understanding INCI"   },
-    { href: "/learn#india",         label: "India Regulations"    },
+  Verify: [
+    { href: "/review",   label: "Check a Product"           },
+    { href: "/verified", label: "Evidence Reviews"          },
+    { href: "/verify",   label: "Certified Registry (soon)" },
   ],
-  Company: [
-    { href: "/about",         label: "About Us"            },
-    { href: "/about",         label: "Our Mission"         },
-    { href: "/contact",       label: "Contact"             },
-    { href: "/privacy-policy",label: "Privacy Policy"      },
-    { href: "/terms-of-use",  label: "Terms of Use"        },
-    { href: "/disclaimer",    label: "Disclaimer"          },
+  Education: [
+    { href: "/learn",        label: "Learn"               },
+    { href: "/blog",         label: "Reads"               },
+    { href: "/ingredients",  label: "Ingredient Glossary" },
+  ],
+  About: [
+    { href: "/about",          label: "About"          },
+    { href: "/for-brands",     label: "For Brands"     },
+    { href: "/contact",        label: "Contact"        },
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/terms-of-use",   label: "Terms of Use"   },
+    { href: "/disclaimer",     label: "Disclaimer"     },
   ],
 };
 
@@ -33,7 +35,7 @@ export default function Footer() {
     <footer className="bg-teal-950 text-teal-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
 
-        {/* Brand mark — the sheet, signed */}
+        {/* Brand mark · the sheet, signed */}
         <div className="mb-14 pb-12 border-b border-white/10 overflow-hidden">
           <p
             className="font-display leading-[0.95] tracking-[-0.02em] text-white select-none"
@@ -47,7 +49,7 @@ export default function Footer() {
         </div>
 
         {/* Top */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-12 sm:mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 sm:gap-12 mb-12 sm:mb-16">
 
           {/* Brand */}
           <div className="lg:col-span-2">
@@ -68,8 +70,8 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-teal-400 text-sm leading-relaxed max-w-xs mb-6">
-              India&apos;s first science-backed certification standard for beauty and personal care products.
-              Evidence over marketing. Always.
+              Building independent evidence infrastructure for beauty and personal care.
+              Evidence over marketing, always.
             </p>
 
             {/* Social icons */}
@@ -127,38 +129,24 @@ export default function Footer() {
               </div>
             ))}
 
-            {/* Apply CTA column */}
-            <div>
-              <h3 className="font-normal text-xs uppercase tracking-widest mb-4" style={{ color: "#ffffff" }}>
-                Certification
-              </h3>
-              <ul className="space-y-2.5">
-                <li>
-                  <button
-                    onClick={() => window.dispatchEvent(new Event("openCertifyForm"))}
-                    className="text-teal-400 hover:text-teal-200 text-sm transition-colors text-left"
-                  >
-                    Apply for Certification
-                  </button>
-                </li>
-                <li>
-                  <Link href="/certification" className="text-teal-400 hover:text-teal-200 text-sm transition-colors">
-                    How it Works
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-teal-800 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-teal-600 text-xs text-center sm:text-left">
-            © {new Date().getFullYear()} The Clean Sheet™. All rights reserved. Est. 2025, India.
+        <div className="border-t border-teal-800 pt-8">
+          <p className="text-teal-500 text-xs leading-relaxed max-w-3xl mb-6">
+            Private certification framework. Not currently accredited. The Clean Sheet is an
+            independent private certification scheme being designed in alignment with ISO/IEC 17065
+            and ISO/IEC 17067. The certification framework is currently under independent expert validation.
           </p>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
-            <Link href="/contact" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">Contact</Link>
-            <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">hello@thecleansheet.in</a>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-teal-600 text-xs text-center sm:text-left">
+              © {new Date().getFullYear()} The Clean Sheet™. All rights reserved. Est. 2025, India.
+            </p>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
+              <Link href="/contact" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">Contact</Link>
+              <a href="mailto:hello@thecleansheet.in" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">hello@thecleansheet.in</a>
+            </div>
           </div>
         </div>
       </div>

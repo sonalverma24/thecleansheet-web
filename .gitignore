@@ -49,3 +49,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 public/Videos/*.mov
+
+# Content library dropped inside repo (nested app copy + node_modules). Keep out of git and tooling.
+The Clean Sheet/

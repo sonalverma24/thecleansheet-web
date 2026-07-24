@@ -146,7 +146,7 @@ export default function CertifiedPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                 <div className="relative w-28 h-28 drop-shadow-2xl">
                   <Image
-                    src="/images/tcs-certified-badge.png"
+                    src="/images/certified-badge.png"
                     alt="The Clean Sheet™ Certified"
                     fill
                     className="object-contain"
@@ -257,7 +257,7 @@ export default function CertifiedPage() {
               <div className="bg-white/92 backdrop-blur-md border border-teal-100 rounded-3xl px-10 py-10 text-center shadow-2xl shadow-teal-900/10 max-w-sm mx-4">
                 <div className="relative w-24 h-24 mx-auto mb-5">
                   <Image
-                    src="/images/tcs-certified-badge.png"
+                    src="/images/certified-badge.png"
                     alt="The Clean Sheet™ Certified"
                     fill
                     className="object-contain drop-shadow-lg"

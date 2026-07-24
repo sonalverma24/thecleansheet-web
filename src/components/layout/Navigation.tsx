@@ -39,6 +39,13 @@ function ScrollProgress() {
 export function Navigation() {
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   if (pathname?.startsWith('/app')) {
     return null;
@@ -46,24 +53,23 @@ export function Navigation() {
 
   return (
     <>
-      {/* Desktop Top Nav — sticky, blurs over content when scrolling */}
-      <nav className="hidden md:block sticky top-0 z-50 border-b border-[var(--color-surface-subtle)] bg-white/90 backdrop-blur-md relative">
+      {/* Desktop Top Nav · transparent at the top so the page gradient flows through, frosts on scroll */}
+      <nav className={`hidden md:block sticky top-0 z-50 relative transition-all duration-300 ${scrolled ? "bg-white/85 backdrop-blur-md border-b border-[var(--color-surface-subtle)] shadow-[0_1px_2px_rgba(40,40,40,0.05)]" : "bg-transparent"}`}>
         <ScrollProgress />
-        <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-3 flex items-center justify-between">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-2 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex-shrink-0">
             <img src="/images/logo.png" alt="The Clean Sheet" className="w-16 h-16 object-contain" />
           </Link>
           <div className="flex items-center gap-6 text-[var(--color-charcoal)] text-[14px] tracking-[0.05em] uppercase">
-            <Link href="/review" className="hover:text-[var(--color-primary)] transition-colors">Product Review</Link>
-            <Link href="/certification" className="hover:text-[var(--color-primary)] transition-colors">Certification</Link>
-            <Link href="/learn" className="hover:text-[var(--color-primary)] transition-colors">Learn</Link>
-            <Link href="/blog" className="hover:text-[var(--color-primary)] transition-colors">Reads</Link>
+            <Link href="/standard" className="hover:text-[var(--color-primary)] transition-colors">Standard</Link>
+            <Link href="/education" className="hover:text-[var(--color-primary)] transition-colors">Education</Link>
+            <Link href="/verify" className="hover:text-[var(--color-primary)] transition-colors">Verify</Link>
             <Link href="/about" className="hover:text-[var(--color-primary)] transition-colors">About</Link>
           </div>
         </div>
         <div className="flex items-center gap-4 text-[14px] tracking-[0.05em] uppercase">
-          <Link href="/for-brands" className="py-2 px-5 border border-[var(--color-charcoal)] rounded-full hover:bg-[var(--color-charcoal)] hover:text-white transition-colors">Get Certified</Link>
+          <Link href="/for-brands" className="py-2 px-5 border border-[var(--color-charcoal)] rounded-full hover:bg-[var(--color-charcoal)] hover:text-white transition-colors">For brands</Link>
           {!loading && (
             user ? (
               <button
@@ -91,17 +97,17 @@ export function Navigation() {
         <Link href="/" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
           <span>Home</span>
         </Link>
-        <Link href="/review" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Review</span>
+        <Link href="/standard" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
+          <span>Standard</span>
         </Link>
-        <Link href="/certification" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Certify</span>
+        <Link href="/education" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
+          <span>Education</span>
         </Link>
-        <Link href="/learn" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Learn</span>
+        <Link href="/verify" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
+          <span>Verify</span>
         </Link>
-        <Link href="/blog" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Reads</span>
+        <Link href="/about" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
+          <span>About</span>
         </Link>
       </nav>
     </>

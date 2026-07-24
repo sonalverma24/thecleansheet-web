@@ -1,17 +1,13 @@
 {
-  "rubric": "r4",
-  "ranAt": "2026-07-17T07:26:15.995Z",
+  "rubric": "r5",
+  "ranAt": "2026-07-18T19:26:08.709Z",
   "summary": {
-    "misleading": 47,
-    "approved": 20,
-    "mostly-clean": 20,
-    "needs-proof": 5
+    "approved": 8,
+    "mostly-clean": 44,
+    "needs-proof": 18,
+    "misleading": 22
   },
   "issues": [
-    {
-      "query": "Minimalist Salicylic Acid 2% Face Serum",
-      "type": "exception: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [503 Service Unavailable] This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later."
-    },
     {
       "query": "Dot & Key Vitamin C + E & Hyaluronic Acid Sunscreen SPF 50+ PA++++",
       "type": "disambiguation",
@@ -76,8 +72,8 @@
       ]
     },
     {
-      "query": "Hyphen 0.1% Retinal Reset Serum Pro",
-      "type": "out_of_scope"
+      "query": "Hyphen Golden Hour Glow Face Serum",
+      "type": "exception: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [503 Service Unavailable] This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later."
     },
     {
       "query": "Plum 10% Niacinamide & Rice Water Brightening Serum",
@@ -122,6 +118,16 @@
         "Honest Glow Niacinamide Serum",
         "100% Pure Niacinamide Boost",
         "Advance purity niacinamide"
+      ]
+    },
+    {
+      "query": "Deconstruct Fluid Brightening Sunscreen SPF 50 PA++++ with Niacinamide 5%",
+      "type": "disambiguation",
+      "options": [
+        "Ps... Cosmetics Niacinamide Powder",
+        "The Ordinary Niacinamide Powder",
+        "Axis-Y Dark Spot Correcting Glow Serum",
+        "mukka Moisturizer"
       ]
     },
     {

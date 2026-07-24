@@ -62,22 +62,25 @@ function ingredientFlagStyles(flag: "ok" | "warn" | "info") {
   }
 }
 
-function pillarColor(pct: number) {
-  return pct >= 90 ? "#248179" : pct >= 75 ? "#3b82f6" : pct >= 60 ? "#f59e0b" : "#fd6158";
+/** Single source of truth for the pillar standing scale, so the bar colour,
+    the name colour, the rating word and the dots always agree. The ramp runs
+    teal (top) to green to gold to amber, with coral reserved for genuine
+    concern, so "Fair" no longer reads as a failure. */
+function pillarTone(pct: number) {
+  if (pct >= 90) return { color: "#248179", name: "#0f766e", label: "Excellent" };
+  if (pct >= 75) return { color: "#4C9E6A", name: "#3B7A50", label: "Strong" };
+  if (pct >= 60) return { color: "#C99A2E", name: "#8A6A16", label: "Good" };
+  if (pct >= 45) return { color: "#E08A3C", name: "#A85D1C", label: "Fair" };
+  return { color: "#fd6158", name: "#C2453D", label: "Concern" };
 }
-
-function pillarNameColor(pct: number) {
-  return pct >= 90 ? "#0f766e" : pct >= 75 ? "#1d4ed8" : pct >= 60 ? "#b45309" : "#dc2626";
-}
-
-function pillarRatingLabel(pct: number) {
-  return pct >= 90 ? "Excellent" : pct >= 75 ? "Strong" : pct >= 60 ? "Good" : pct >= 45 ? "Fair" : "Concern";
-}
+function pillarColor(pct: number) { return pillarTone(pct).color; }
+function pillarNameColor(pct: number) { return pillarTone(pct).name; }
+function pillarRatingLabel(pct: number) { return pillarTone(pct).label; }
 
 function PillarDots({ score, max }: { score: number; max: number }) {
-  const pct = score / max;
-  const filled = Math.round(pct * 4);
-  const dotColor = pct >= 0.80 ? "#248179" : pct >= 0.55 ? "#D4A843" : "#fd6158";
+  const frac = max > 0 ? score / max : 0;
+  const filled = Math.round(frac * 4);
+  const dotColor = pillarTone(Math.round(frac * 100)).color;
   return (
     <div className="flex items-center gap-[6px] flex-shrink-0">
       {[0, 1, 2, 3].map((i) => (
@@ -170,6 +173,28 @@ function getPillarOneLiner(note: string): string {
   return sentence.length > 180
     ? sentence.slice(0, 180).replace(/\s+\S+$/, "") + "..."
     : sentence + ".";
+}
+
+/** The 1-to-7 public-evidence ladder in plain shopper language. */
+const EVIDENCE_LADDER_PLAIN: Record<number, string> = {
+  1: "no supporting proof is publicly visible",
+  2: "general ingredient research, not a test of this product",
+  3: "the ingredient percentage is disclosed",
+  4: "the brand states the finished formula was tested",
+  5: "a named third-party lab tested the finished product",
+  6: "a clinical study with sample size, duration and method",
+  7: "a published or registered study you can look up",
+};
+
+/** Rewrite raw "level N of 7" phrasing into plain language so shoppers read
+    what the level means, not a bare number. Applied at render time, so it also
+    fixes cards that were reviewed before this change. */
+function translateLadder(text: string): string {
+  if (!text) return text;
+  return text.replace(/level\s+(\d)\s+of\s+7/gi, (m, n) => {
+    const plain = EVIDENCE_LADDER_PLAIN[Number(n)];
+    return plain ? `${plain} (evidence level ${n} of 7)` : m;
+  });
 }
 
 /** Consumer-friendly one-liner per pillar, derived from product context. */
@@ -580,7 +605,13 @@ export function ProductScorecardView({
               const color = pillarColor(pct);
               const nameColor = pillarNameColor(pct);
               const ratingLabel = pillarRatingLabel(pct);
-              const summary = generatePillarSummary(pillar, product);
+              const rawSummary = translateLadder(generatePillarSummary(pillar, product));
+              const detail = translateLadder(pillar.note ?? "");
+              // Drop the summary when it is just the opening of the detailed note (the old duplication).
+              const summaryIsPrefix = !!detail && !!rawSummary && detail.toLowerCase().startsWith(rawSummary.replace(/\.$/, "").toLowerCase());
+              const summary = summaryIsPrefix ? "" : rawSummary;
+              const showDetail = !!detail && detail !== rawSummary;
+              const claimRows = displayName === "Claims Evidence" ? (product.claimsCheck ?? []).slice(0, 3) : [];
 
               return (
                 <details key={pillar.name} className="group">
@@ -601,9 +632,27 @@ export function ProductScorecardView({
                       </div>
                     </div>
                   </summary>
-                  <div className="px-4 pb-4 pt-0 bg-[#f7f7f5] border-t border-[#efe9e0]">
-                    <p className="text-xs text-[#282828]/80 leading-relaxed pt-4 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>
-                    <p className="text-xs text-[#282828]/65 leading-relaxed pt-2 pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{pillar.note}</p>
+                  <div className="px-4 pb-4 pt-4 bg-[#f7f7f5] border-t border-[#efe9e0] space-y-2">
+                    {summary && <p className="text-xs text-[#282828]/80 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>}
+                    {showDetail && <p className="text-xs text-[#282828]/65 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{detail}</p>}
+                    {claimRows.length > 0 && (
+                      <div className="pl-[46px] pt-1 space-y-1.5">
+                        {claimRows.map((c, i) => {
+                          const ok = c.decision === "Publicly supported";
+                          const needs = c.decision === "Needs proof";
+                          const dot = ok ? "#248179" : needs ? "#E08A3C" : "#fd6158";
+                          return (
+                            <div key={i} className="flex items-start gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: dot }} />
+                              <p className="text-xs text-[#282828]/70 leading-relaxed" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+                                <span className="text-[#282828]">&ldquo;{c.claim}&rdquo;</span>{" "}
+                                {translateLadder(c.note || (ok ? "Supported by public evidence." : needs ? "Needs more public proof." : "Not verified from public evidence."))}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </details>
               );

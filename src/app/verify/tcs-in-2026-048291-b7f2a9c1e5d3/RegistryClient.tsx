@@ -188,7 +188,7 @@ export default function RegistryClient() {
       <div className="bg-teal-950 border-b border-teal-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={24} height={24} className="object-contain" />
+            <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={24} height={24} className="object-contain" />
             <span className="text-teal-200 text-xs font-medium tracking-wide">THE CLEAN SHEET REGISTRY</span>
             <span className="hidden sm:block text-teal-700 text-xs">|</span>
             <span className="hidden sm:inline-flex items-center gap-2 text-teal-400 text-xs font-mono">
@@ -229,7 +229,7 @@ export default function RegistryClient() {
                   unoptimized
                 />
                 <div className="absolute top-2.5 right-2.5">
-                  <Image src="/images/tcs-certified-badge.png" alt="Certified" width={32} height={32} className="object-contain drop-shadow-lg" />
+                  <Image src="/images/certified-badge.png" alt="Certified" width={32} height={32} className="object-contain drop-shadow-lg" />
                 </div>
               </div>
               <div className="w-48 flex items-center gap-2 bg-white/8 border border-teal-800/40 rounded-xl px-3 py-2.5">
@@ -838,7 +838,7 @@ export default function RegistryClient() {
             {/* ─ Footer ─ */}
             <div className="text-center pt-8 border-t border-teal-100">
               <div className="flex items-center justify-center gap-2.5 mb-3">
-                <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={36} height={36} className="object-contain" />
+                <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={36} height={36} className="object-contain" />
                 <span className="text-base font-medium text-ink-800">The Clean Sheet</span>
               </div>
               <p className="text-sm text-ink-400 max-w-md mx-auto leading-relaxed mb-5">

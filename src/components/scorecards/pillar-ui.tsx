@@ -4,22 +4,25 @@
    the exact same visual language. Qualitative only — no numerics.
 ──────────────────────────────────────────────────────────────── */
 
-export function pillarColor(pct: number) {
-  return pct >= 90 ? "#248179" : pct >= 75 ? "#3b82f6" : pct >= 60 ? "#f59e0b" : "#fd6158";
+/** Shared standing scale so bar colour, name colour, rating word and dots all
+    agree. Ramp: teal (top) to green to gold to amber, with coral reserved for
+    genuine concern, so "Fair" no longer reads as a failure. */
+export function pillarTone(pct: number) {
+  if (pct >= 90) return { color: "#248179", name: "#0f766e", label: "Excellent" };
+  if (pct >= 75) return { color: "#4C9E6A", name: "#3B7A50", label: "Strong" };
+  if (pct >= 60) return { color: "#C99A2E", name: "#8A6A16", label: "Good" };
+  if (pct >= 45) return { color: "#E08A3C", name: "#A85D1C", label: "Fair" };
+  return { color: "#fd6158", name: "#C2453D", label: "Concern" };
 }
 
-export function pillarNameColor(pct: number) {
-  return pct >= 90 ? "#0f766e" : pct >= 75 ? "#1d4ed8" : pct >= 60 ? "#b45309" : "#dc2626";
-}
-
-export function pillarRatingLabel(pct: number) {
-  return pct >= 90 ? "Excellent" : pct >= 75 ? "Strong" : pct >= 60 ? "Good" : pct >= 45 ? "Fair" : "Concern";
-}
+export function pillarColor(pct: number) { return pillarTone(pct).color; }
+export function pillarNameColor(pct: number) { return pillarTone(pct).name; }
+export function pillarRatingLabel(pct: number) { return pillarTone(pct).label; }
 
 export function PillarDots({ score, max }: { score: number; max: number }) {
-  const pct = score / max;
-  const filled = Math.round(pct * 4);
-  const dotColor = pct >= 0.8 ? "#248179" : pct >= 0.55 ? "#D4A843" : "#fd6158";
+  const frac = max > 0 ? score / max : 0;
+  const filled = Math.round(frac * 4);
+  const dotColor = pillarTone(Math.round(frac * 100)).color;
   return (
     <div className="flex items-center gap-[6px] flex-shrink-0">
       {[0, 1, 2, 3].map((i) => (

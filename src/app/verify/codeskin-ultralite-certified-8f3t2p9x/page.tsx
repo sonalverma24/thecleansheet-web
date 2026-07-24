@@ -35,7 +35,7 @@ export default function ConsumerCertPage() {
           <div className="mb-6 animate-fade-in">
             <span className="inline-flex items-center gap-2 border rounded-full px-3 py-1"
               style={{ borderColor: "rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-              <Image src="/images/tcs-certified-badge.png" alt="" width={10} height={10} className="object-contain opacity-80" />
+              <Image src="/images/certified-badge.png" alt="" width={10} height={10} className="object-contain opacity-80" />
               <span className="text-teal-300 text-[9px] tracking-[0.15em] uppercase">Independently Certified by The Clean Sheet</span>
             </span>
           </div>
@@ -115,7 +115,7 @@ export default function ConsumerCertPage() {
                   />
                 </div>
                 <div className="absolute -bottom-2.5 -right-2.5 drop-shadow-xl">
-                  <Image src="/images/tcs-certified-badge.png" alt="TCS Certified" width={30} height={30} className="object-contain" />
+                  <Image src="/images/certified-badge.png" alt="TCS Certified" width={30} height={30} className="object-contain" />
                 </div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function ConsumerCertPage() {
               <div className="relative w-10 h-10 mb-3">
                 <div className="absolute inset-0 rounded-full ring-1 ring-teal-200 ring-offset-2" />
                 <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center">
-                  <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={28} height={28} className="object-contain" />
+                  <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={28} height={28} className="object-contain" />
                 </div>
               </div>
               <p className="text-sm font-medium text-ink-900 tracking-tight">The Clean Sheet</p>
@@ -315,7 +315,7 @@ export default function ConsumerCertPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
-                <Image src="/images/tcs-certified-badge.png" alt="The Clean Sheet" width={12} height={12} className="object-contain" />
+                <Image src="/images/certified-badge.png" alt="The Clean Sheet" width={12} height={12} className="object-contain" />
                 <span className="text-white text-xs font-medium">The Clean Sheet</span>
               </div>
               <p className="text-teal-800 text-[10px] truncate">TCS-IN-2026-048291 [SAMPLE] · Valid 15 May 2026 to 14 May 2027 [SAMPLE]</p>
