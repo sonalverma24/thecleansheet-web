@@ -52,3 +52,13 @@ public/Videos/*.mov
 
 # Content library dropped inside repo (nested app copy + node_modules). Keep out of git and tooling.
 The Clean Sheet/
+
+# Build output written outside .next (NEXT_DIST_DIR)
+/tmp/
+tmp/
+
+# Large unused source videos — the web-optimised versions are what the site uses
+/public/Videos/Skincare slow.mp4
+/public/Videos/DNA skincare video.mp4
+/public/Videos/Review page.mp4
+/public/Videos/Serum dropping.mp4
