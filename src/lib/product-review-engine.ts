@@ -165,6 +165,10 @@ const REVIEW_CACHE = new Map<string, ProductReviewResult>();
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
 export const RUBRIC_REV = "r5";
 
+/* Reviews temporarily pulled from the site (known-wrong source data) until they
+   are re-reviewed. Suppressed on every read path; the stored row is left intact. */
+const RETRACTED_SLUGS = new Set<string>(["la-roche-posay-cicaplast-balm"]);
+
 /* Verdict logic lives in code, so always re-derive it when serving a stored
    review — verdict rule changes then apply without re-running the model. */
 function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
@@ -172,6 +176,7 @@ function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
 }
 
 async function getStored(slug: string): Promise<ProductReviewResult | null> {
+  if (RETRACTED_SLUGS.has(slug)) return null;
   const mem = REVIEW_CACHE.get(slug);
   if (mem) return withFreshVerdict(mem);
   try {
@@ -215,6 +220,7 @@ async function store(slug: string, result: ProductReviewResult): Promise<void> {
 
 /** Public lookup for pages that overlay tiers (e.g. /brands). */
 export async function getStoredReviewTier(slug: string): Promise<string | null> {
+  if (RETRACTED_SLUGS.has(slug)) return null;
   try {
     const { data } = await createAdminClient()
       .from("product_reviews").select("tier, rubric_rev").eq("product_slug", slug).maybeSingle();
@@ -242,7 +248,7 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
       .eq("rubric_rev", RUBRIC_REV)
       .order("reviewed_at", { ascending: false })
       .limit(limit);
-    return (data ?? []).map((r) => ({
+    return (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug))).map((r) => ({
       productSlug: String(r.product_slug),
       productName: String(r.product_name ?? ""),
       brand: String(r.brand ?? ""),
@@ -278,6 +284,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
     // days) wear the NEW badge.
     const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
     return (data ?? []).flatMap((row, idx) => {
+      if (RETRACTED_SLUGS.has(String(row.product_slug))) return [];
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
       const rv = res?.review;
       if (!rv?.productName) return [];
