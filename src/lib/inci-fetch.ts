@@ -16,8 +16,54 @@ export interface INCIResult {
   imageUrl: string | null; // product front photo hosted by INCIDecoder (no API key needed)
 }
 
+/* Same product word, different spelling. Without this, the real "Cicaplast
+   Baume B5" does not group with a "Cicaplast Balm" query. */
+const VARIANT_WORDS: Record<string, string> = {
+  baume: "balm", baum: "balm",
+  creme: "cream", crema: "cream", krem: "cream",
+  gelee: "gel", lait: "lotion", leche: "lotion",
+  serum: "serum", sérum: "serum",
+  huile: "oil", aceite: "oil",
+};
+
+function canonWord(t: string): string {
+  return VARIANT_WORDS[t] ?? t;
+}
+
 function tokens(s: string): string[] {
-  return (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1);
+  return (s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").match(/[a-z0-9]+/g) || [])
+    .filter((t) => t.length > 1)
+    .map(canonWord);
+}
+
+/* What the product NAME promises must actually appear in the ingredient list.
+   INCIDecoder is user-editable, so a mislabelled duplicate can string-match a
+   query exactly; checking the actives the name implies is what catches it
+   (e.g. a "Cicaplast B5" entry with no Panthenol and no Madecassoside is the
+   wrong entry, however well its title matches). */
+const NAME_MARKERS: { test: RegExp; anyOf: string[] }[] = [
+  { test: /\bb5\b|panthenol|pro[\s-]?vitamin\s*b\s*5/i, anyOf: ["panthenol"] },
+  { test: /\bcica|centella|madecass/i, anyOf: ["madecassoside", "centella asiatica", "asiaticoside", "madecassic"] },
+  { test: /\bb3\b|niacinamide/i, anyOf: ["niacinamide"] },
+  { test: /hyaluronic/i, anyOf: ["hyaluronic acid", "hyaluronate"] },
+  { test: /vitamin\s*c\b|ascorbic/i, anyOf: ["ascorbic", "ascorbyl", "ascorbate"] },
+  { test: /\bretinol\b/i, anyOf: ["retinol"] },
+  { test: /salicylic|\bbha\b/i, anyOf: ["salicylic acid"] },
+  { test: /\bcaffeine\b/i, anyOf: ["caffeine"] },
+];
+
+/** 0..1: of the actives this product's name promises, how many the list actually has.
+    1 when the name promises nothing checkable (so it stays neutral). */
+function markerScore(text: string, ingredients: string[]): number {
+  const inci = ingredients.join(" | ").toLowerCase();
+  let expected = 0;
+  let met = 0;
+  for (const m of NAME_MARKERS) {
+    if (!m.test.test(text)) continue;
+    expected++;
+    if (m.anyOf.some((a) => inci.includes(a))) met++;
+  }
+  return expected === 0 ? 1 : met / expected;
 }
 
 /* Confidence guards for resolveINCI — precision over coverage. Anchoring the
@@ -139,12 +185,34 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
       return { chosen: null, distinct, ambiguous: false };
     }
   }
+  // Inspect the leading entry AND any near-equal rival, then let the ingredient
+  // lists decide. A title match alone is not proof of identity: INCIDecoder is
+  // user-editable, so a mislabelled duplicate ("Cicaplast Balm") can match a
+  // query exactly while the real product sits under another name ("Cicaplast
+  // Baume B5"). Whichever entry actually carries the actives the name promises
+  // wins.
+  const inspect: { name: string; slug: string; overlap: number }[] = [];
+  for (const slug of top.slugs.slice(0, 2)) inspect.push({ name: top.name, slug, overlap: top.overlap });
+  for (const g of ranked) {
+    if (inspect.length >= 3) break;
+    if (g === top) continue;
+    if (top.overlap - g.overlap > 0.34) continue;
+    inspect.push({ name: g.name, slug: g.slugs[0], overlap: g.overlap });
+  }
+
   let chosen: INCIResult | null = null;
-  for (const slug of top.slugs.slice(0, 2)) {
-    const page = await fetchMarkdown(`https://incidecoder.com/products/${slug}`);
+  let bestScore = -1;
+  for (const cand of inspect) {
+    const page = await fetchMarkdown(`https://incidecoder.com/products/${cand.slug}`);
     if (!page) continue;
-    const parsed = parseProductPage(page, slug);
-    if (parsed && (!chosen || parsed.ingredients.length > chosen.ingredients.length)) chosen = parsed;
+    const parsed = parseProductPage(page, cand.slug);
+    if (!parsed) continue;
+    // Promised actives dominate, then query overlap, then list completeness.
+    const score =
+      markerScore(`${q} ${cand.name}`, parsed.ingredients) * 100 +
+      cand.overlap * 10 +
+      Math.min(parsed.ingredients.length, 40) / 100;
+    if (score > bestScore) { bestScore = score; chosen = parsed; }
   }
   return { chosen, distinct, ambiguous: false };
 }
@@ -164,5 +232,6 @@ export function inciGroundTruthBlock(inci: INCIResult | null): string {
 - "Free-from X" claim: if X is NOT in this list, the claim is SUPPORTED. Only flag a conflict if you can QUOTE X in this list.
 - "Contains active X" claim: FIRST map the marketing name to its INCI name, THEN check. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid or Sodium Ascorbyl Phosphate or Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.
 - If a claimed active is genuinely absent AFTER name-mapping, mark it UNVERIFIED (could not confirm from the retrieved list), NOT contradicted and NOT "misleading". This list can be for a different size or variant, truncated, or outdated, so absence here is not proof of absence. Never accuse the brand of misleading advertising or an ASCI violation on the basis of this list alone.
+- CRITICAL, absence is a RETRIEVAL limitation, not a brand failing: when a claimed active is missing from this list, do NOT lower Ingredient Safety, Transparency, Consumer Clarity or Platform Consistency for it, do NOT call it a "transparency gap" or "discrepancy", and do NOT let it drive the overall standing down. Say only that the ingredient could not be confirmed from the public list, and note that the brand may be selling a variant whose INCI is not the one retrieved. If SEVERAL headline actives are all absent at once, treat that as a sign this list may belong to a different variant entirely and say so, rather than concluding the product lacks them.
 INGREDIENTS: ${inci.ingredients.join(", ")}${inci.tags.length ? `\nINCIDecoder labels this product: ${inci.tags.join("; ")}.` : ""}`;
 }
