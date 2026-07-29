@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Microscope } from "lucide-react";
-import { getAllBrandSummaries, ALL_BRANDS, scoreColors } from "@/data/brands";
+import { getAllBrandSummaries, ALL_BRANDS } from "@/data/brands";
 import BackButton from "@/components/BackButton";
 import { ScorecardDiscovery } from "@/components/scorecards/ScorecardDiscovery";
+import { HeroReviewBar } from "@/components/scorecards/HeroReviewBar";
 import { listRepositoryCatalogueProducts } from "@/lib/product-review-engine";
 
 /* The live-review repository grows continuously — refresh the page every 5 min. */
@@ -34,51 +35,6 @@ const pageJsonLd = {
   publisher: { "@type": "Organization", name: "The Clean Sheet", url: "https://thecleansheet.in" },
 };
 
-// Score ring for hero (decorative, server-rendered)
-function HeroRing({ score, size }: { score: number; size: number }) {
-  const sw = 10;
-  const r = (size - sw) / 2;
-  const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
-  const c = scoreColors(score);
-  const logoSize = Math.round((r - sw / 2) * 2) - 2;
-  const bx = +(size / 2 + r * Math.cos(-Math.PI / 4)).toFixed(1);
-  const by = +(size / 2 + r * Math.sin(-Math.PI / 4)).toFixed(1);
-  const br = Math.round(size * 0.1);
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 1 }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={sw} />
-      </svg>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 2 }}>
-        <img src="/logo.png" alt="The Clean Sheet" width={logoSize} height={logoSize} className="rounded-full" />
-      </div>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" style={{ zIndex: 3 }}>
-        <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke={c.ring} strokeWidth={sw}
-          strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          style={{ animation: "drawArc 1.4s cubic-bezier(0.4,0,0.2,1) forwards" }}
-        />
-        <circle cx={bx} cy={by} r={br} fill={c.ring} />
-        <text x={bx} y={by + br * 0.34} textAnchor="middle" fontSize={br * 0.9} fontWeight={700} fill="#fff"
-          fontFamily="Helvetica Neue, Helvetica, Arial, sans-serif">
-          ✓
-        </text>
-      </svg>
-    </div>
-  );
-}
-
-const TIER_LEGEND = [
-  { label: "Clean Sheet Approved", note: "claims proven",        color: "bg-lime-400"  },
-  { label: "Mostly Clean",         note: "minor gaps",           color: "bg-teal-400"  },
-  { label: "Needs Proof",          note: "evidence not visible", color: "bg-amber-400" },
-  { label: "Misleading",           note: "claims contradicted",  color: "bg-red-400"   },
-];
-
 export default async function BrandsPage() {
   // Live repository products join the catalogue in the same tile format,
   // newest first, skipping any product the curated catalogue already covers.
@@ -95,8 +51,6 @@ export default async function BrandsPage() {
       newArrival: idx < 5 && Date.now() - new Date(p.analyzedAt).getTime() < THIRTY_DAYS,
     }));
   const allProducts = [...freshProducts, ...staticProducts];
-  const heroScore = [...brands].sort((a, b) => b.avgScore - a.avgScore)[0]?.avgScore ?? 86;
-  const totalProducts = brands.reduce((s, b) => s + b.productCount, 0);
 
   return (
     <div className="bg-white min-h-screen">
@@ -127,71 +81,51 @@ export default async function BrandsPage() {
       />
 
       {/* ── Hero (server-rendered) ── */}
-      <div className="bg-teal-950 pt-14 pb-10 relative overflow-hidden">
+      <div className="bg-teal-950 pt-6 pb-5 relative overflow-hidden">
         <div
           className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px" }}
         />
-        <div className="absolute -right-16 -top-16 opacity-[0.06] pointer-events-none">
-          <svg width={340} height={340} viewBox="0 0 340 340">
-            <circle cx={170} cy={170} r={158} fill="none" stroke="#fff" strokeWidth={20} />
-          </svg>
-        </div>
         <div className="absolute -left-24 bottom-0 opacity-[0.04] pointer-events-none">
           <svg width={280} height={280} viewBox="0 0 280 280">
             <circle cx={140} cy={140} r={128} fill="none" stroke="#fff" strokeWidth={16} />
           </svg>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="anim-fade-up" style={{ animationDelay: "0.05s" }}>
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-teal-300 text-xs px-3 py-1.5 rounded-full mb-6">
-                <Microscope size={12} /> India&apos;s Independent Product Review Registry
-              </div>
-              <h1 className="text-4xl sm:text-5xl font-medium text-white tracking-tight mb-5 leading-[1.1]">
-                Every claim.<br />
-                Every ingredient.<br />
-                <span className="text-teal-400">Checked against proof.</span>
-              </h1>
-              <p className="text-teal-300/75 text-lg leading-relaxed mb-8 max-w-lg">
-                Independent reviews of India&apos;s beauty products. Marketing claims graded against real
-                evidence, formulas read ingredient by ingredient, and one clear Clean Sheet standing for each.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {TIER_LEGEND.map(({ label, note, color }) => (
-                  <div key={label} className="flex items-center gap-1.5 bg-white/8 border border-white/10 rounded-full px-3 py-1.5">
-                    <span className={`w-2 h-2 rounded-full ${color}`} />
-                    <span className="text-white/70 text-xs">{label}</span>
-                    <span className="text-white/35 text-xs font-sans">{note}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Skincare loop bleeding in from the right, fading into the teal canvas */}
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[42%] overflow-hidden" aria-hidden>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/images/creatives/dropper-drop.jpg"
+            className="w-full h-full object-cover"
+            style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
+          >
+            <source src="/Videos/review-hero-web.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #081918 0%, rgba(8,25,24,0.82) 38%, rgba(8,25,24,0.15) 82%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #081918 0%, rgba(8,25,24,0) 24%)" }} />
+        </div>
 
-            <div className="hidden lg:flex justify-center items-center anim-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="relative">
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: "radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)", transform: "scale(1.4)" }}
-                />
-                <HeroRing score={heroScore} size={220} />
-                <div
-                  className="absolute -top-3 -left-8 bg-white/10 border border-white/15 backdrop-blur-sm rounded-2xl px-3 py-2 text-center"
-                  style={{ animation: "fadeUp 0.7s 0.6s ease-out both" }}
-                >
-                  <div className="text-teal-300 text-[10px] uppercase tracking-wider mb-0.5">Products</div>
-                  <div className="text-white text-lg font-medium font-sans">{totalProducts}</div>
-                </div>
-                <div
-                  className="absolute -bottom-2 -right-6 bg-white/10 border border-white/15 backdrop-blur-sm rounded-2xl px-3 py-2 text-center"
-                  style={{ animation: "fadeUp 0.7s 0.8s ease-out both" }}
-                >
-                  <div className="text-teal-300 text-[10px] uppercase tracking-wider mb-0.5">Brands</div>
-                  <div className="text-white text-lg font-medium font-sans">{brands.length}</div>
-                </div>
-              </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
+          <div className="relative max-w-xl anim-fade-up" style={{ animationDelay: "0.05s" }}>
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-teal-300 text-xs px-3 py-1.5 rounded-full mb-4">
+              <Microscope size={12} /> India&apos;s Independent Product Review Registry
             </div>
+            <h1 className="text-3xl sm:text-4xl font-medium text-white tracking-tight mb-3 leading-[1.1]">
+              Every claim.<br />
+              Every ingredient.<br />
+              <span className="text-teal-400">Checked against proof.</span>
+            </h1>
+            <p className="text-teal-300/75 text-[15px] leading-relaxed mb-4 max-w-md">
+              Independent reviews of India&apos;s beauty products: every marketing claim graded against
+              real evidence, formulas read ingredient by ingredient.
+            </p>
+
+            <HeroReviewBar />
           </div>
         </div>
       </div>

@@ -332,15 +332,15 @@ export default function CertificationPage() {
             </p>
             <p className="mt-4 text-[15px] leading-[1.7] text-[var(--color-warm-gray)] max-w-lg">
               We are currently evaluating our founding cohort of brands. Certified products
-              will appear as the first certifications are issued. Meanwhile, products that
-              pass our public review sit in the Verified Products registry.
+              will appear as the first certifications are issued. Meanwhile, every product that
+              passes our public review is published in our reviews.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
-                href="/verified"
+                href="/brands"
                 className="inline-flex items-center justify-center gap-3 rounded-full px-8 py-4 text-[15px] text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
               >
-                View verified products <span aria-hidden>→</span>
+                Browse product reviews <span aria-hidden>→</span>
               </Link>
             </div>
           </Reveal>

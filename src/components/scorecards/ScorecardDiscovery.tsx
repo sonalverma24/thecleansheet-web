@@ -531,13 +531,13 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   return (
     <>
       {/* ── Stats strip ── */}
-      <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-4 mb-5 grid grid-cols-3 divide-x divide-ink-100">
+      <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-3 mb-4 grid grid-cols-3 divide-x divide-ink-100">
         {[
           { label: "Brands scored",       value: brands.length.toString() },
           { label: "Products analysed",   value: totalProducts.toString()  },
           { label: "Ingredients checked", value: "25,000+"                 },
         ].map(({ label, value }) => (
-          <div key={label} className="px-4 sm:px-8 py-4 text-center">
+          <div key={label} className="px-4 sm:px-8 py-3 text-center">
             <div className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight">{value}</div>
             <div className="text-xs text-ink-400 mt-1">{label}</div>
           </div>
@@ -545,7 +545,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       </div>
 
       {/* ── Tab switcher ── */}
-      <div className="flex items-center gap-1 bg-ink-50 border border-ink-100 rounded-2xl p-1 w-full sm:w-fit mb-5">
+      <div className="flex items-center gap-1 bg-ink-50 border border-ink-100 rounded-2xl p-1 w-full sm:w-fit mb-3">
         {(["products", "brands"] as const).map((tab) => (
           <button
             key={tab}

@@ -41,12 +41,25 @@ const STEPS = [
   "Writing your verdict",
 ];
 
-/* ─── Branded monogram fallback (no image key / not found) ─── */
+/* ─── Branded monogram fallback (no image found, or the image fails to load) ───
+   Retailer CDNs often block hotlinking or expire URLs, so a src that resolved at
+   review time can still 404 in the browser. Fall back rather than show a broken
+   image icon. */
 function ProductImage({ src, brand }: { src?: string | null; brand: string }) {
+  const [failed, setFailed] = useState(false);
   const initial = (brand || "?").trim().charAt(0).toUpperCase();
-  if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={brand} className="w-full h-full object-cover" />;
+  if (src && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={brand}
+        referrerPolicy="no-referrer"
+        loading="lazy"
+        className="w-full h-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    );
   }
   return (
     <div className="w-full h-full flex items-center justify-center" style={{ background: INK }}>

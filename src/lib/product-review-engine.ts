@@ -8,7 +8,7 @@
 
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilient } from "@/lib/gemini";
-import { resolveProductImage, searchProductImage, findProductImageKeyless } from "@/lib/product-image";
+import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiveImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
@@ -404,7 +404,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
   // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
-  let imageUrl: string | null = inci?.imageUrl ?? null;
+  // Every candidate is checked for liveness before it is stored: a 404 or
+  // hotlink-blocked URL renders as a broken image on the product page forever.
+  let imageUrl: string | null = null;
+  if (inci?.imageUrl && (await isLiveImage(inci.imageUrl))) imageUrl = inci.imageUrl;
   if (!imageUrl && isURL(q)) imageUrl = await resolveProductImage(q);
   if (!imageUrl) imageUrl = await findProductImageKeyless(review.brand, review.productName);
   if (!imageUrl) {
@@ -422,7 +425,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const verdict = deriveVerdict(review);
 
-  // Approved products join the registry (shown as tiles on /review and /verified).
+  // Approved products join the registry (shown as tiles on /review and /brands).
   if (verdict.status === "approved") {
     await upsertVerifiedProduct({
       slug: slugify(review.productName, review.brand),

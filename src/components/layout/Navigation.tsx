@@ -62,6 +62,7 @@ export function Navigation() {
             <img src="/images/logo.png" alt="The Clean Sheet" className="w-16 h-16 object-contain" />
           </Link>
           <div className="flex items-center gap-6 text-[var(--color-charcoal)] text-[14px] tracking-[0.05em] uppercase">
+            <Link href="/brands" className="hover:text-[var(--color-primary)] transition-colors">Reviews</Link>
             <Link href="/standard" className="hover:text-[var(--color-primary)] transition-colors">Standard</Link>
             <Link href="/education" className="hover:text-[var(--color-primary)] transition-colors">Education</Link>
             <Link href="/verify" className="hover:text-[var(--color-primary)] transition-colors">Verify</Link>
@@ -96,6 +97,9 @@ export function Navigation() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[var(--color-surface-subtle)] z-50 flex items-center justify-around p-4 text-[12px] tracking-[0.08em] uppercase">
         <Link href="/" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
           <span>Home</span>
+        </Link>
+        <Link href="/brands" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
+          <span>Reviews</span>
         </Link>
         <Link href="/standard" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
           <span>Standard</span>

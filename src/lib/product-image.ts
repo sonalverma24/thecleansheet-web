@@ -197,7 +197,7 @@ function amazonFullRes(url: string): string {
 }
 
 /** Confirm a URL really is a servable image (guards against stale/404 links). */
-async function isLiveImage(url: string): Promise<boolean> {
+export async function isLiveImage(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, { method: "GET", headers: { "User-Agent": UA, Range: "bytes=0-2048" }, signal: AbortSignal.timeout(8000) });
     if (!res.ok && res.status !== 206) return false;

@@ -12,7 +12,6 @@ const LINKS = {
   ],
   Verify: [
     { href: "/review",   label: "Check a Product"           },
-    { href: "/verified", label: "Evidence Reviews"          },
     { href: "/verify",   label: "Certified Registry (soon)" },
   ],
   Education: [
