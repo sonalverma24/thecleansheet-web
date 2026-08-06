@@ -9,6 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/courses/skincare-101/welcome-9x4k2mq7/",
           "/learn/guides/*/print/",
+          "/preview/",
         ],
       },
     ],
