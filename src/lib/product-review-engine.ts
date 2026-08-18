@@ -165,9 +165,15 @@ const REVIEW_CACHE = new Map<string, ProductReviewResult>();
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
 export const RUBRIC_REV = "r5";
 
-/* Reviews temporarily pulled from the site (known-wrong source data) until they
-   are re-reviewed. Suppressed on every read path; the stored row is left intact. */
-const RETRACTED_SLUGS = new Set<string>(["la-roche-posay-cicaplast-balm"]);
+/* Reviews pulled from the site. Suppressed on every read path (getStored,
+   listings, catalogue); the stored row is left intact so it can be restored or
+   hard-deleted later. Used for known-wrong source data pending re-review, and for
+   removing duplicates (e.g. a second review of the same product created because
+   the product couldn't be resolved to a canonical slug — see runProductReview). */
+const RETRACTED_SLUGS = new Set<string>([
+  "la-roche-posay-cicaplast-balm",
+  "moxie-curly-hair-shampoo", // duplicate Moxie shampoo review (AI-generated imagery); other Moxie review kept
+]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
    review — verdict rule changes then apply without re-running the model. */

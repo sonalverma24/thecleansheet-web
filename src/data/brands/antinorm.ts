@@ -323,7 +323,7 @@ const products: ProductScorecard[] = [
     score: 63,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    image: "https://antinorm.co/cdn/shop/files/26.png?v=1768287023",
+    image: "https://cdn.shopify.com/s/files/1/0672/9983/6042/files/FIAF_PDP.png?v=1781701513",
     pillars: [
       {
         name: "Public INCI Safety Screen",

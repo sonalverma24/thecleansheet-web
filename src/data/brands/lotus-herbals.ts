@@ -423,7 +423,7 @@ const products: ProductScorecard[] = [
     score: 44,
     scoreLabel: "Concern",
     publicDecisionLabel: "Weak public evidence",
-    image: "https://www.lotus.in/cdn/shop/products/uv-screen-mattegel-spf-50-pa-648526_d5d81f8f-34c4-469d-9b81-c6e7e57bea70.jpg",
+    image: "https://cdn.shopify.com/s/files/1/0428/8063/0937/files/01_926dbcf2-5857-4e09-b887-2736f9fb5d76.jpg?v=1746681140",
     pillars: [
       {
         name: "Public INCI Safety Screen",

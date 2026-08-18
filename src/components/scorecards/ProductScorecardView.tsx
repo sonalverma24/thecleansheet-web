@@ -8,7 +8,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin } from "lucide-react";
 import { scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
@@ -469,6 +469,43 @@ function buildAtAGlance(product: ProductScorecard): { label: string; value: bool
 // View
 // ─────────────────────────────────────────────────────────────────────────────
 
+/* A product from a brand not sold in India. The review engine has no ₹ price to
+   show and sets priceRange to a "Not found in India" style string. When that's
+   the case we can't run India-specific checks (price parity, platform claims,
+   CDSCO/ASCI posture), so the detailed body is masked. */
+export function isUnavailableInIndia(product: ProductScorecard): boolean {
+  const pr = (product.priceRange ?? "").toLowerCase();
+  if (!pr.includes("india")) return false;
+  return /\bnot\b|unavailable|\bn\/?a\b|no listing|not listed/.test(pr);
+}
+
+/* Replaces the full analysis for products not sold in India: keeps the hero
+   (verdict, best/avoid, ingredient list, India context) and masks the rest. */
+function IndiaUnavailableBody({ product }: { product: ProductScorecard }) {
+  const brandName = product.brand?.trim() || "This brand";
+  return (
+    <div className="max-w-5xl mx-auto px-5 sm:px-8 py-10">
+      <div className="rounded-2xl border border-[#efe9e0] bg-[#faf7f2] p-7 sm:p-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-[#248179]/10 flex items-center justify-center mx-auto mb-5">
+          <MapPin size={22} className="text-[#248179]" />
+        </div>
+        <h2 className="text-lg sm:text-xl text-[#282828] mb-2.5" style={{ fontFamily: "'Cooper BT', Georgia, serif" }}>
+          Not on sale in India yet
+        </h2>
+        <p className="text-sm text-[#282828]/70 leading-relaxed max-w-lg mx-auto">
+          {brandName}{" "}isn&apos;t available on Indian platforms, so a full India-specific review
+          (price parity across Nykaa, Amazon and Flipkart, platform claim checks, and the
+          CDSCO / ASCI read) isn&apos;t possible. The verdict above is based on the brand&apos;s
+          published ingredient list and its global claims.
+        </p>
+        <p className="text-xs text-[#b0a8a4] mt-5 max-w-md mx-auto leading-relaxed">
+          We&apos;ll run the complete Clean Sheet review the day it lands in the Indian market.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function ProductScorecardView({
   product,
   brand,
@@ -500,7 +537,10 @@ export function ProductScorecardView({
         brandSlug={brandSlug}
       />
 
-      {/* ── Body ── */}
+      {/* ── Body ── (masked when the product isn't sold in India) */}
+      {isUnavailableInIndia(product) ? (
+        <IndiaUnavailableBody product={product} />
+      ) : (
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
 
         {/* 1. At a glance */}
@@ -968,6 +1008,7 @@ export function ProductScorecardView({
           <ArrowLeft size={14} /> Back to {brand.name}
         </Link>
       </div>
+      )}
     </div>
   );
 }

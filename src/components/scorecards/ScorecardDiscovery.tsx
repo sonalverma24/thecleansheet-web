@@ -514,14 +514,18 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   const hasPriceData = products.some((p) => !!p.price);
   const hasActiveFilters = Object.values(filters).some((a) => a.length > 0);
 
-  const totalProducts = brands.reduce((s, b) => s + b.productCount, 0);
+  // Stats reflect the full merged catalogue actually shown (curated + live
+  // repository), so both counts grow as the repository does — not just the
+  // static curated list.
+  const totalProducts = products.length;
+  const brandsScored = new Set(products.map((p) => p.brandSlug)).size;
 
   return (
     <>
       {/* ── Stats strip ── */}
       <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-3 mb-4 grid grid-cols-3 divide-x divide-ink-100">
         {[
-          { label: "Brands scored",       value: brands.length.toString() },
+          { label: "Brands scored",       value: brandsScored.toString()   },
           { label: "Products analysed",   value: totalProducts.toString()  },
           { label: "Ingredients checked", value: "25,000+"                 },
         ].map(({ label, value }) => (

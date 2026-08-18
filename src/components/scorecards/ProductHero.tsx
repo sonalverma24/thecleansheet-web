@@ -750,17 +750,21 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
     <div className="bg-white relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-8 pb-0 relative z-10">
 
-        {/* Breadcrumb */}
+        {/* Breadcrumb — brand crumb is plain text (no brand page for live reviews). */}
         <nav className="flex items-center gap-1.5 text-[11px] text-[#b0a8a4] mb-6 flex-wrap">
           {[
-            { label: "Home", href: "/" },
-            { label: "Brands", href: "/brands" },
-            { label: brand.name, href: `/brands/${brand.slug}` },
+            { label: "Home", href: "/" as string | null },
+            { label: "Brands", href: "/brands" as string | null },
+            { label: brand.name, href: null },
           ].map(({ label, href }) => (
-            <span key={href} className="flex items-center gap-1.5">
-              <Link href={href} className="hover:text-[#248179] transition-colors">
-                {label}
-              </Link>
+            <span key={label} className="flex items-center gap-1.5">
+              {href ? (
+                <Link href={href} className="hover:text-[#248179] transition-colors">
+                  {label}
+                </Link>
+              ) : (
+                <span>{label}</span>
+              )}
               <span>/</span>
             </span>
           ))}
@@ -772,14 +776,12 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
           {/* ── LEFT COLUMN ── */}
           <div>
-            {/* Brand + category */}
+            {/* Brand + category — brand is intentionally NOT a link (brand pages
+                don't exist for live-reviewed products). */}
             <div className="flex items-center gap-2 mb-2">
-              <Link
-                href={`/brands/${brand.slug}`}
-                className="text-[11px] font-medium text-[#248179] uppercase tracking-widest hover:underline"
-              >
+              <span className="text-[11px] font-medium text-[#248179] uppercase tracking-widest">
                 {brand.name.toUpperCase()}
-              </Link>
+              </span>
               <span className="w-1 h-1 rounded-full bg-[#b0a8a4] flex-shrink-0" />
               <span className="text-[11px] text-[#b0a8a4]">{categoryLabel}</span>
             </div>
