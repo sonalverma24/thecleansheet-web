@@ -51,13 +51,28 @@ function Hero() {
     <header className="relative overflow-hidden grain-overlay md:-mt-[80px]" style={{ background: "linear-gradient(158deg, #fbf7f4 0%, #ffffff 52%, #f4faf8 100%)" }}>
       <div className="pointer-events-none absolute -top-40 -left-32 w-[520px] h-[520px] rounded-full opacity-50 animate-blob" style={{ background: "radial-gradient(circle at 42% 42%, #d4f2ef, transparent 70%)" }} aria-hidden />
 
-      {/* DESKTOP · DNA video, bleeding to the right edge and melting into the canvas */}
-      <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-[47%] overflow-hidden" aria-hidden>
-        <video autoPlay muted loop playsInline preload="metadata" poster="/images/creatives/dna-skincare-poster.jpg" className="w-full h-full object-cover" style={{ animation: "hero-drift 26s ease-in-out infinite alternate" }}>
+      {/* DESKTOP · DNA video, bleeding to the right edge and melting into the canvas.
+         The video is masked (not overlaid) so its left and bottom edges fade to
+         transparent and the real page background shows through — this dissolves
+         seamlessly into the diagonal canvas gradient, with no visible seam
+         from a mismatched fade colour. */}
+      <div className="hidden lg:block absolute top-0 bottom-0 right-0 w-[52%] overflow-hidden" aria-hidden>
+        <video
+          autoPlay muted loop playsInline preload="metadata"
+          poster="/images/creatives/dna-skincare-poster.jpg"
+          className="w-full h-full object-cover"
+          style={{
+            animation: "hero-drift 26s ease-in-out infinite alternate",
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.35) 34%, #000 62%), linear-gradient(to top, transparent 0%, #000 26%)",
+            maskImage:
+              "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.35) 34%, #000 62%), linear-gradient(to top, transparent 0%, #000 26%)",
+            WebkitMaskComposite: "source-in",
+            maskComposite: "intersect",
+          }}
+        >
           <source src="/Videos/dna-skincare-web720.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, #fbf7f4 0%, rgba(251,247,244,0.5) 26%, rgba(251,247,244,0) 58%)" }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, transparent 74%, rgba(251,247,244,0.85) 100%)" }} />
       </div>
 
       <div className="relative max-w-[1200px] mx-auto px-4 md:px-16 pt-10 md:pt-[120px] pb-12 lg:pb-20 lg:min-h-[600px]">

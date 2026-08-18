@@ -14,6 +14,7 @@ import { ProductScorecardView } from "@/components/scorecards/ProductScorecardVi
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
 import type { VerifiedProduct } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
@@ -100,6 +101,9 @@ export default function ReviewPage() {
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
     if (!text || loading) return;
+    // Single capture point for every review-engine search: the hero bar on
+    // /brands, direct /review searches, and the suggestion chips all land here.
+    track("review_search_submitted", { query: text });
     setLoading(true); setError(null); setDisambig(null); setReview(null); setVerdict(null); setStepIdx(0);
 
     const ticker = setInterval(() => setStepIdx((i) => Math.min(i + 1, STEPS.length - 1)), 6000);

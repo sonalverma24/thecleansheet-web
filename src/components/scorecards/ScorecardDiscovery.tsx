@@ -9,24 +9,16 @@ import {
   Suspense,
 } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import {
-  ArrowRight,
   ArrowUpDown,
-  FlaskConical,
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  Shield,
-  CheckCircle2,
   X,
 } from "lucide-react";
 
 import type { ProductScorecard } from "@/data/brands/types";
 import type { BrandSummary } from "@/data/brands";
-import { scoreColors } from "@/data/brands";
-import { scoreToTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import { expandQuery } from "@/lib/search-synonyms";
 import { buildControlledFilterOptions } from "@/data/taxonomy";
 import { track } from "@/lib/analytics";
@@ -354,9 +346,10 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   const pathname = usePathname();
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [view, setView] = useState<"brands" | "products">(
-    searchParams.get("view") === "brands" ? "brands" : "products"
-  );
+  /* /brands is product search only. Brand browsing and its tab switcher have
+     been removed; `view` is a constant so the legacy ?view=brands deep link is
+     inert and just shows the product search. */
+  const view = "products";
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [filters, setFilters] = useState<ActiveFilters>(() =>
@@ -521,11 +514,6 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   const hasPriceData = products.some((p) => !!p.price);
   const hasActiveFilters = Object.values(filters).some((a) => a.length > 0);
 
-  // ── Tab switch ─────────────────────────────────────────────────────────────
-  const brandsSorted = useMemo(
-    () => [...brands].sort((a, b) => b.avgScore - a.avgScore),
-    [brands]
-  );
   const totalProducts = brands.reduce((s, b) => s + b.productCount, 0);
 
   return (
@@ -544,191 +532,7 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
         ))}
       </div>
 
-      {/* ── Tab switcher ── */}
-      <div className="flex items-center gap-1 bg-ink-50 border border-ink-100 rounded-2xl p-1 w-full sm:w-fit mb-3">
-        {(["products", "brands"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setView(tab);
-              setPage(1);
-            }}
-            className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-medium transition-all text-center ${
-              view === tab
-                ? "bg-white text-ink-900 shadow-sm border border-ink-100"
-                : "text-ink-500 hover:text-ink-700"
-            }`}
-          >
-            {tab === "brands" ? "Browse by brand" : "Search all products"}
-          </button>
-        ))}
-      </div>
-
-      {/* ── BRANDS VIEW ── */}
-      {view === "brands" && (
-        <>
-          <div className="flex items-center justify-between mb-7">
-            <div>
-              <h2 className="text-xl font-medium text-ink-950">Scored Brands</h2>
-              <p className="text-xs text-ink-400 mt-0.5">Ranked by average Clean Sheet Score</p>
-            </div>
-            <div className="text-xs text-ink-400 border border-ink-200 rounded-full px-3 py-1 font-sans">
-              Updated May 2026
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {brandsSorted.map((brand, i) => {
-              const c = scoreColors(brand.avgScore);
-              return (
-                <Link
-                  key={brand.slug}
-                  href={`/brands/${brand.slug}`}
-                  className="group"
-                >
-                  <article className="border border-ink-100 hover:border-teal-200 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-teal-900/10 transition-all duration-300 hover:-translate-y-1.5 bg-white h-full flex flex-col">
-                    <div className="p-6 flex flex-col flex-1">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="w-14 h-14 rounded-2xl bg-ink-50 border border-ink-100 flex items-center justify-center overflow-hidden p-2 flex-shrink-0">
-                          <Image
-                            src={brand.logo}
-                            alt={`${brand.name} logo`}
-                            width={48}
-                            height={48}
-                            className="object-contain max-h-full"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-sans text-[9px] text-ink-400 bg-ink-100 px-1.5 py-0.5 rounded">
-                              #{i + 1}
-                            </span>
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${c.bg} ${c.text} ${c.border}`}>
-                              {brand.verdict}
-                            </span>
-                          </div>
-                          <h3 className="text-base font-medium text-ink-950 group-hover:text-teal-700 transition-colors leading-snug">
-                            {brand.name}
-                          </h3>
-                          <span className="text-xs text-ink-400">{brand.headquarters}</span>
-                        </div>
-                      </div>
-                      <p className="text-ink-500 text-sm leading-relaxed flex-1 mb-4 line-clamp-2">
-                        {brand.tagline}
-                      </p>
-                      <div className="w-full mt-4 flex justify-center"><TierBadge tier={scoreToTier(brand.avgScore)} size="sm" /></div>
-                      <div className="flex items-center pt-4 mt-4 border-t border-ink-50">
-                        <div className="flex items-center gap-1.5 text-xs text-ink-400">
-                          <FlaskConical size={12} />
-                          {brand.productCount} products scored
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                </Link>
-              );
-            })}
-
-            {/* Coming soon */}
-            <div className="border border-dashed border-ink-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center min-h-[280px]">
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center mb-4">
-                <FlaskConical size={20} className="text-teal-400" />
-              </div>
-              <p className="text-ink-700 text-sm font-medium mb-1.5">More brands coming soon</p>
-              <p className="text-ink-400 text-xs leading-relaxed mb-5">
-                Cetaphil · WOW · Neutrogena<br />L&apos;Oréal · Biotique · Himalaya
-              </p>
-              <Link
-                href="/analyzer"
-                className="inline-flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 border border-teal-200 hover:border-teal-400 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-full transition-all"
-              >
-                Analyse a brand now <ArrowRight size={10} />
-              </Link>
-            </div>
-          </div>
-
-          {/* Methodology */}
-          <div className="mt-14 mb-12 grid sm:grid-cols-3 gap-4">
-            {[
-              { icon: "🔬", title: "4 Scored Pillars", desc: "Safety & Toxicity · Formulation Quality · Claims & Transparency · Ethics & Sustainability" },
-              { icon: "📋", title: "INCI-First Analysis", desc: "Every ingredient verified against the declared INCI list from the brand's own website" },
-              { icon: "🇮🇳", title: "India Context", desc: "Scores account for Indian climate, skin concerns, and CDSCO regulatory framework" },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-ink-50 border border-ink-100 rounded-2xl p-5">
-                <div className="text-2xl mb-3">{icon}</div>
-                <div className="text-sm font-medium text-ink-900 mb-1">{title}</div>
-                <div className="text-xs text-ink-500 leading-relaxed">{desc}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* CTAs */}
-          <div className="grid lg:grid-cols-2 gap-6 mb-20">
-            <div className="bg-teal-950 rounded-3xl p-8 relative overflow-hidden">
-              <div className="absolute -right-8 -bottom-8 opacity-[0.07] pointer-events-none">
-                <svg width={160} height={160} viewBox="0 0 160 160">
-                  <circle cx={80} cy={80} r={70} fill="none" stroke="#fff" strokeWidth={14} />
-                </svg>
-              </div>
-              <div className="relative">
-                <div className="inline-flex items-center gap-1.5 bg-white/10 text-teal-300 text-xs px-2.5 py-1 rounded-full mb-4">
-                  <Shield size={11} /> For Brands
-                </div>
-                <h2 className="text-2xl font-medium text-white mb-3">Get your products scored.</h2>
-                <p className="text-teal-300/75 text-sm leading-relaxed mb-6">
-                  Join India's growing registry of independently verified beauty products. A Clean Sheet Score is proof you stand behind your ingredients.
-                </p>
-                <div className="space-y-2 mb-6">
-                  {[
-                    "Full ingredient safety evaluation",
-                    "Compliance checked across India, EU, US, Korea & Japan",
-                    "Public scorecard published on this directory",
-                  ].map((pt) => (
-                    <div key={pt} className="flex items-center gap-2 text-teal-200 text-sm">
-                      <CheckCircle2 size={14} className="text-teal-400 flex-shrink-0" />
-                      {pt}
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  href="/certification"
-                  className="inline-flex items-center gap-2 bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-coral-500/30"
-                >
-                  Get certified <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
-
-            <div className="bg-ink-50 border border-ink-100 rounded-3xl p-8">
-              <div className="inline-flex items-center gap-1.5 bg-teal-100 text-teal-700 text-xs px-2.5 py-1 rounded-full mb-4">
-                <FlaskConical size={11} /> For Consumers
-              </div>
-              <h2 className="text-2xl font-medium text-ink-950 mb-3">Don&apos;t see your product?</h2>
-              <p className="text-ink-600 text-sm leading-relaxed mb-6">
-                Paste any product URL from Nykaa, Amazon, Myntra, or the brand website. Ask Clean analyses every ingredient and returns a full scorecard in under 30 seconds.
-              </p>
-              <div className="space-y-2 mb-6">
-                {[
-                  "Works with any Nykaa or Amazon URL",
-                  "Checks every ingredient against India regulations",
-                  "Free, instant, no sign-up",
-                ].map((pt) => (
-                  <div key={pt} className="flex items-center gap-2 text-ink-600 text-sm">
-                    <CheckCircle2 size={14} className="text-teal-500 flex-shrink-0" />
-                    {pt}
-                  </div>
-                ))}
-              </div>
-              <Link
-                href="/analyzer"
-                className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
-              >
-                Analyse any product <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Brands-browsing view and its tab switcher deleted — this page is product search only. */}
 
       {/* ── PRODUCTS SEARCH VIEW ── */}
       {view === "products" && (
