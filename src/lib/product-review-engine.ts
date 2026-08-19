@@ -204,6 +204,13 @@ export async function getStoredReview(slug: string): Promise<ProductReviewResult
   return getStored(slug);
 }
 
+/** Drop a slug from the in-memory L1 cache so the next read re-fetches from the
+    DB. Called after an admin edits/removes a review so the change shows without a
+    redeploy (within the same server instance). */
+export function invalidateReviewCache(slug: string): void {
+  REVIEW_CACHE.delete(slug);
+}
+
 async function store(slug: string, result: ProductReviewResult): Promise<void> {
   REVIEW_CACHE.set(slug, result);
   if (result.type !== "product-review") return;
@@ -408,6 +415,19 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const review = parsed as ProductReview;
 
+  /* Canonical identity + de-dupe. If the product resolved on INCIDecoder, `slug`
+     is already canonical. Otherwise it was slugified from the raw query TEXT,
+     which (a) makes ugly URLs and (b) lets two differently-worded searches for the
+     same product create two separate rows. Now that the model has returned a clean
+     brand + product name, recompute a canonical slug and de-dupe against it before
+     doing any more work — a second search for the same product now serves the
+     existing review instead of creating a duplicate. */
+  const canonicalSlug = inci?.slug ?? slugify(review.productName, review.brand);
+  if (canonicalSlug !== slug) {
+    const existing = await getStored(canonicalSlug);
+    if (existing) return existing;
+  }
+
   // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
   // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
   // Every candidate is checked for liveness before it is stored: a 404 or
@@ -423,7 +443,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.imageUrl = imageUrl;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
-  review.productSlug = slug;
+  review.productSlug = canonicalSlug;
   if (inci) {
     review.inciIngredients = inci.ingredients;
     review.inciSourceUrl = inci.source;
@@ -449,6 +469,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   const result: ProductReviewResult = { type: "product-review", review, verdict };
-  await store(slug, result);
+  await store(canonicalSlug, result);
   return result;
 }
