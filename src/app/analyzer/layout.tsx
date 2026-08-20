@@ -16,14 +16,14 @@ export const metadata: Metadata = {
       "Instantly check if any skincare product is safe. Paste a URL or ingredient list, our AI scans every ingredient and gives you a Clean Sheet Score.",
     url: "https://thecleansheet.in/analyzer",
     type: "website",
-    images: [{ url: "/images/hero-illustration.jpg", width: 1200, height: 630, alt: "Ask Clean AI Ingredient Analyzer" }],
+    // Inherits the generated share image from src/app/opengraph-image.tsx
   },
   twitter: {
     card: "summary_large_image",
     title: "Ask Clean, AI Beauty Ingredient Analyzer",
     description:
       "Instantly check if any skincare product is safe. Paste a URL or ingredient list, our AI scans every ingredient.",
-    images: ["/images/hero-illustration.jpg"],
+    // Inherits the generated share image from src/app/twitter-image.tsx
   },
 };
 
