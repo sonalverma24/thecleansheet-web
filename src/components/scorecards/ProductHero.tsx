@@ -496,7 +496,7 @@ export function generateScoreRationale(product: ProductScorecard): string {
 
 interface QuickDecision {
   bestFor: string[];
-  cautionIf: string[];
+  cautionIf: Array<{ label: string; reason?: string }>;
 }
 
 /** Keep the engine's own phrasing when it doesn't map to a canned skin-type
@@ -505,6 +505,73 @@ function cleanTag(s: string): string {
   const t = s.trim().replace(/\s+/g, " ");
   if (t.length < 2 || t.length > 64) return "";
   return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/** Remove near-duplicate phrases: when a fuller phrase already covers a shorter
+    one (e.g. "Post-acne marks" alongside "Post-acne marks and dark spots"),
+    keep only the more descriptive wording. Order is preserved. */
+function dedupePhrases(list: string[]): string[] {
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const out: string[] = [];
+  for (const item of list) {
+    const ni = norm(item);
+    if (!ni) continue;
+    if (out.some((o) => norm(o) === ni)) continue; // exact duplicate
+    if (out.some((o) => norm(o).includes(ni))) continue; // already covered by a fuller phrase
+    const subsetIdx = out.findIndex((o) => ni.includes(norm(o)));
+    if (subsetIdx >= 0) {
+      out[subsetIdx] = item; // this phrase is the fuller one — upgrade the kept entry
+      continue;
+    }
+    out.push(item);
+  }
+  return out;
+}
+
+/** Ground an "Avoid if" flag in a concrete reason so it never reads as an
+    unexplained warning. Prefers the reviewer's own stated reason carried in the
+    raw caution text (e.g. "...(due to Retinyl Palmitate)"), then falls back to
+    the actual INCI. Returns undefined when the tidy label already stands on its
+    own (a preference, say). Never invents a reason. */
+function getCautionReason(product: ProductScorecard, label: string): string | undefined {
+  const l = label.toLowerCase();
+
+  // The keyword the tidy label and its raw source string share.
+  const keyword =
+    /pregnan|conceive|breastfeed/.test(l) ? /pregnan|conceive|breastfeed/ :
+    /fragrance|parfum|scent/.test(l) ? /fragrance|parfum|scent/ :
+    /retino/.test(l) ? /retino/ :
+    /spf/.test(l) ? /spf/ :
+    /alcohol/.test(l) ? /alcohol/ :
+    null;
+
+  // 1) Preserve the reviewer's own reason from the raw caution / warning text.
+  if (keyword) {
+    const raw = [...(product.cautionTags ?? []), ...(product.warn_badges ?? [])].find(
+      (s) => keyword.test(s.toLowerCase())
+    );
+    if (raw) {
+      const paren = raw.match(/\(([^)]+)\)/)?.[1];
+      if (paren) return paren.trim();
+      const clause = raw.match(/\b(?:due to|because of|owing to)\b[^.,;()]+/i)?.[0];
+      if (clause) return clause.trim();
+    }
+  }
+
+  // 2) Fall back to grounding the flag in the actual INCI.
+  const inci = (product.ingredients ?? []).map((i) => i.name);
+  const find = (re: RegExp) => inci.find((n) => re.test(n.toLowerCase()));
+  if (/pregnan|conceive|breastfeed/.test(l)) {
+    const retinoid = find(/retinol|retinal|retinyl|retino(ic|ate)|tretinoin|adapalene/);
+    if (retinoid) return `contains ${retinoid}`;
+    const salicylate = find(/salicylic/);
+    if (salicylate) return `contains ${salicylate}`;
+  } else if (/fragrance|parfum|scent/.test(l)) {
+    if (find(/\b(fragrance|parfum)\b/)) return "contains fragrance";
+  }
+
+  return undefined;
 }
 
 function getQuickDecision(product: ProductScorecard): QuickDecision {
@@ -604,7 +671,12 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
   // No genuine caution found — show nothing rather than inventing a generic one.
   // (The "Avoid if" column hides itself when this stays empty.)
 
-  return { bestFor: bestFor.slice(0, 3), cautionIf: cautionIf.slice(0, 3) };
+  return {
+    bestFor: dedupePhrases(bestFor).slice(0, 3),
+    cautionIf: dedupePhrases(cautionIf)
+      .slice(0, 3)
+      .map((label) => ({ label, reason: getCautionReason(product, label) })),
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -612,11 +684,32 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getKeyIngredients(product: ProductScorecard): string[] {
-  const skip = new Set(["aqua", "water", "purified water", "deionized water"]);
-  return product.ingredients
-    .filter((i) => !skip.has(i.name.toLowerCase()))
-    .slice(0, 3)
-    .map((i) => i.name);
+  // Prefer the engine-authored hero actives. These are the ingredients the
+  // product is actually built around, not whatever sits at the top of the INCI
+  // (which is almost always water and a silicone slip agent like Dimethicone).
+  if (product.keyActives?.length) {
+    const actives = dedupePhrases(
+      product.keyActives.map((a) => a.name.trim()).filter(Boolean)
+    );
+    if (actives.length) return actives.slice(0, 3);
+  }
+
+  // Fallback: walk the INCI but skip solvents, bulking agents and silicones so
+  // we never lead with "Aqua/Water/Eau" or "Dimethicone".
+  const isBase = (raw: string): boolean => {
+    const n = raw.toLowerCase();
+    return (
+      /\b(aqua|water|eau)\b/.test(n) ||
+      n.startsWith("dimethicone") ||
+      n.includes("siloxane") ||
+      n.includes("silsesquioxane") ||
+      n === "glycerin" ||
+      n.startsWith("alcohol")
+    );
+  };
+  const featured = product.ingredients.filter((i) => !isBase(i.name)).map((i) => i.name);
+  const pool = featured.length >= 2 ? featured : product.ingredients.map((i) => i.name);
+  return dedupePhrases(pool).slice(0, 3);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -656,12 +749,12 @@ function formatAnalysedDate(isoDate: string): string {
 // Sub-component: Circular Score Badge
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ScoreBadge({ tier }: { tier: ReviewTier }) {
+function ScoreBadge({ tier, size = 116, animate = true }: { tier: ReviewTier; size?: number; animate?: boolean }) {
   // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
   if (tier === "approved") {
     return (
       <div className="flex-shrink-0">
-        <ApprovedStamp size={116} animate />
+        <ApprovedStamp size={size} animate={animate} />
       </div>
     );
   }
@@ -669,7 +762,7 @@ function ScoreBadge({ tier }: { tier: ReviewTier }) {
   // Other tiers: the rubber-stamp band (same ink-stamp language, no logo disc).
   return (
     <div className="flex-shrink-0">
-      <TierStamp tier={tier} size={116} animate />
+      <TierStamp tier={tier} size={size} animate={animate} />
     </div>
   );
 }
@@ -799,25 +892,27 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               {product.summary || generateVerdict(product)}
             </p>
 
-            {/* Mobile only: image + badge */}
+            {/* Mobile only: image + badge.
+                The image uses `fill` over an emoji placeholder, so a missing,
+                slow or failed src never leaves an empty white box. The score
+                stamp sits in a fixed-width, non-animating column so its entrance
+                can never scale past the viewport's right edge. */}
             <div className="lg:hidden mb-5">
-              <div className="flex items-start gap-4">
-                <div className="flex-1 rounded-2xl bg-white border border-[#efe9e0] flex items-center justify-center overflow-hidden" style={{ height: 160 }}>
-                  {product.image ? (
+              <div className="flex items-stretch gap-4">
+                <div className="relative flex-1 min-w-0 rounded-2xl bg-white border border-[#efe9e0] overflow-hidden" style={{ height: 160 }}>
+                  <span aria-hidden className="absolute inset-0 flex items-center justify-center text-3xl text-[#d8d2cc] select-none">🧴</span>
+                  {product.image && (
                     <Image
                       src={product.image}
                       alt={product.productName}
-                      width={220}
-                      height={160}
+                      fill
+                      sizes="(max-width: 1024px) 60vw, 220px"
                       className="object-contain p-3"
-                      style={{ maxHeight: 148 }}
                     />
-                  ) : (
-                    <span className="text-3xl text-[#b0a8a4]">🧴</span>
                   )}
                 </div>
-                <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                  <ScoreBadge tier={resolveTier(product)} />
+                <div className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center gap-3">
+                  <ScoreBadge tier={resolveTier(product)} size={92} animate={false} />
                   <TierBadge tier={resolveTier(product)} size="sm" />
                 </div>
               </div>
@@ -850,14 +945,19 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                   <div className="text-sm text-[#fd6158] mb-2.5" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Avoid if</div>
                   <ul className="space-y-2">
                     {cautionIf.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
+                      <li key={item.label} className="flex items-start gap-2">
                         <span className="w-4 h-4 rounded-full bg-[#fd6158]/10 border border-[#fd6158]/25 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                             <circle cx="4" cy="4" r="3.25" stroke="#fd6158" strokeWidth="1.25" />
                             <path d="M2.5 4h3" stroke="#fd6158" strokeWidth="1.25" strokeLinecap="round" />
                           </svg>
                         </span>
-                        <span className="text-xs text-[#282828]/70 leading-snug">{item}</span>
+                        <span className="text-xs text-[#282828]/70 leading-snug">
+                          {item.label}
+                          {item.reason && (
+                            <span className="text-[#282828]/45"> ({item.reason})</span>
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>
