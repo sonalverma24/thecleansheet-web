@@ -79,6 +79,10 @@ export default function ReviewPage() {
   const [disambig, setDisambig] = useState<{ query: string; options: { name: string }[] } | null>(null);
   const [approvedProducts, setApprovedProducts] = useState<VerifiedProduct[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
+  // Synchronous in-flight guard. `loading` state is set asynchronously, so two
+  // fast triggers (a suggestion chip plus the button, or a double-click) could
+  // both pass a `loading` check and fire duplicate POST /api/review calls.
+  const inFlight = useRef(false);
 
   // Load the approved registry (reloads after a review, in case one just joined).
   useEffect(() => {
@@ -86,7 +90,7 @@ export default function ReviewPage() {
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d?.products)) setApprovedProducts(d.products); })
       .catch(() => { /* section stays hidden */ });
-  }, [review]);
+  }, []); // static list — fetch once on mount, not on every review
 
   // Deep link: /review?q=<product> runs the review on arrival (repository hits return instantly).
   const autoRan = useRef(false);
@@ -100,7 +104,8 @@ export default function ReviewPage() {
 
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
-    if (!text || loading) return;
+    if (!text || inFlight.current) return;
+    inFlight.current = true;
     // Single capture point for every review-engine search: the hero bar on
     // /brands, direct /review searches, and the suggestion chips all land here.
     track("review_search_submitted", { query: text });
@@ -131,8 +136,9 @@ export default function ReviewPage() {
     } finally {
       clearInterval(ticker);
       setLoading(false);
+      inFlight.current = false;
     }
-  }, [query, loading]);
+  }, [query]);
 
   const approved = verdict?.status === "approved";
 
