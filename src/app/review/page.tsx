@@ -110,6 +110,11 @@ export default function ReviewPage() {
     // /brands, direct /review searches, and the suggestion chips all land here.
     track("review_search_submitted", { query: text });
     setLoading(true); setError(null); setDisambig(null); setReview(null); setVerdict(null); setStepIdx(0);
+    // Reset the address bar while a fresh search runs; success restores it to
+    // the permanent /reviews/[slug] URL below.
+    if (window.location.pathname.startsWith("/reviews/")) {
+      window.history.replaceState(null, "", "/review");
+    }
 
     const ticker = setInterval(() => setStepIdx((i) => Math.min(i + 1, STEPS.length - 1)), 6000);
     try {
@@ -121,8 +126,15 @@ export default function ReviewPage() {
       const data = await res.json();
       if (res.status === 503 || data?.error === "busy") { setError("busy"); return; }
       if (data?.type === "product-review" && data.review) {
-        setReview(data.review as ProductReview);
+        const reviewData = data.review as ProductReview;
+        setReview(reviewData);
         setVerdict((data.verdict as DerivedVerdict) ?? null);
+        // Point the address bar at the permanent, server-rendered page for this
+        // review so it can be shared, bookmarked and reloaded. The route
+        // (/reviews/[slug]) reads the same stored review this request persisted.
+        if (reviewData.productSlug) {
+          window.history.replaceState(null, "", `/reviews/${reviewData.productSlug}`);
+        }
         setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
       } else if (data?.type === "disambiguation" && Array.isArray(data.options) && data.options.length) {
         setDisambig({ query: data.query ?? text, options: data.options });
