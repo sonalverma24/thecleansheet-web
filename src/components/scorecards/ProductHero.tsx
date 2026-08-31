@@ -16,6 +16,7 @@ import { scoreColors } from "@/data/brands";
 import { resolveTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
 import type { ReviewTier } from "@/lib/product-review-types";
 import { HeroActions } from "./HeroActions";
+import { simplifyPillarName } from "@/lib/pillar-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Consumer Fit Statement
@@ -712,18 +713,8 @@ function getKeyIngredients(product: ProductScorecard): string[] {
   return dedupePhrases(pool).slice(0, 3);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: Pillar display name
-// ─────────────────────────────────────────────────────────────────────────────
-
-function pillarDisplayName(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("ingredient") || n.includes("safety")) return "Ingredient & Safety";
-  if (n.includes("formula")) return "Formula Logic";
-  if (n.includes("claims")) return "Claims Evidence";
-  if (n.includes("transparency")) return "Transparency";
-  return name;
-}
+// Pillar display names come from the shared simplifyPillarName so the radar
+// dots match the score breakdown exactly.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Format price
@@ -1099,7 +1090,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               {product.pillars.map((pillar) => (
                 <PillarDotsRow
                   key={pillar.name}
-                  name={pillarDisplayName(pillar.name)}
+                  name={simplifyPillarName(pillar.name)}
                   score={pillar.score}
                   max={pillar.max}
                 />

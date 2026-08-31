@@ -4,6 +4,7 @@ import { ArrowLeft, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCir
 import { createClient } from "@/lib/supabase/server";
 import type { ProductScorecard, ScorePillar } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
+import { simplifyPillarName } from "@/lib/pillar-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata
@@ -129,19 +130,6 @@ function PillarDots({ score, max }: { score: number; max: number }) {
 // Data helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function simplifyPillarName(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("inci safety") || n.includes("public inci")) return "Ingredient Safety";
-  if (n.includes("formula logic") || n.includes("formula inference")) return "Formula Logic";
-  if (n.includes("claim support") || n.includes("public claim")) return "Claims Evidence";
-  if (n.includes("test result") || n.includes("transparency")) return "Test Transparency";
-  if (n.includes("consumer clarity") || n.includes("clarity")) return "Consumer Clarity";
-  if (n.includes("ingredient") || n.includes("safety") || n.includes("toxicity")) return "Ingredient Safety";
-  if (n.includes("formula") || n.includes("formulation") || n.includes("quality")) return "Formula Design";
-  if (n.includes("claims") || n.includes("disclosure")) return "Claims Evidence";
-  if (n.includes("ethics") || n.includes("sustain")) return "Ethics";
-  return name;
-}
 
 function getPillarOneLiner(note: string): string {
   const sentence = note.split(/\.\s+/)[0];

@@ -13,6 +13,7 @@ import { scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
+import { simplifyPillarName } from "@/lib/pillar-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -150,22 +151,6 @@ function CollapsibleSection({
     section header (e.g. the ingredient list borrows Ingredient Transparency). */
 function findPillar(pillars: ScorePillar[], re: RegExp): ScorePillar | undefined {
   return pillars.find((p) => re.test(p.name));
-}
-
-function simplifyPillarName(name: string): string {
-  const n = name.toLowerCase();
-  // New 5-pillar names
-  if (n.includes("inci safety") || n.includes("public inci")) return "Ingredient Safety";
-  if (n.includes("formula logic") || n.includes("formula inference")) return "Formula Logic";
-  if (n.includes("claim support") || n.includes("public claim")) return "Claims Evidence";
-  if (n.includes("test result") || n.includes("transparency")) return "Test Transparency";
-  if (n.includes("consumer clarity") || n.includes("clarity")) return "Consumer Clarity";
-  // Legacy 4-pillar names
-  if (n.includes("ingredient") || n.includes("safety") || n.includes("toxicity")) return "Ingredient Safety";
-  if (n.includes("formula") || n.includes("formulation") || n.includes("quality")) return "Formula Design";
-  if (n.includes("claims") || n.includes("disclosure")) return "Claims Evidence";
-  if (n.includes("ethics") || n.includes("sustain")) return "Ethics";
-  return name;
 }
 
 function getPillarOneLiner(note: string): string {
@@ -575,7 +560,7 @@ export function ProductScorecardView({
             <CollapsibleSection
               id="proof"
               title="What was checked"
-              subtitle={`${proofCards.length} claims checked against public evidence`}
+              subtitle={`${product.claimsCheck?.length ?? proofCards.length} claims checked against public evidence`}
               headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}
             >
               <div className="p-4">
@@ -635,7 +620,7 @@ export function ProductScorecardView({
             <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
               {product.publicDecisionLabel
                 ? `Public Evidence Score across ${product.pillars.length} pillars. Open any row for the full rationale.`
-                : `How this product was rated across four areas. Open any row for the full rationale.`}
+                : `How this product was rated across ${product.pillars.length} areas. Open any row for the full rationale.`}
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
