@@ -15,6 +15,9 @@ import LoginModal from "./LoginModal";
 interface LoginModalOptions {
   returnPath?: string;
   openReviewOnReturn?: boolean;
+  /** Override the modal heading + subtext for the action being gated. */
+  title?: string;
+  subtitle?: string;
 }
 
 interface AuthContextType {
@@ -79,6 +82,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           onClose={closeLoginModal}
           returnPath={modalOptions.returnPath}
           openReviewOnReturn={modalOptions.openReviewOnReturn}
+          title={modalOptions.title}
+          subtitle={modalOptions.subtitle}
         />
       )}
     </AuthContext.Provider>

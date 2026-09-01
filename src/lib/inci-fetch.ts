@@ -1,11 +1,12 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — INCI ground-truth fetcher
+   THE CLEAN SHEET™ - INCI ground-truth fetcher
    Pulls a product's real ingredient list from INCIDecoder (via the
    keyless Jina reader) so the review engine grades "free-from" and
    ingredient-presence claims against fact, not the model's recall.
 ──────────────────────────────────────────────────────────────── */
 
 import { fetchPageMarkdown as fetchMarkdown } from "@/lib/scrape";
+import { promisedActivesMet } from "@/lib/ingredient-intel";
 
 export interface INCIResult {
   productName: string;
@@ -40,33 +41,12 @@ function tokens(s: string): string[] {
    INCIDecoder is user-editable, so a mislabelled duplicate can string-match a
    query exactly; checking the actives the name implies is what catches it
    (e.g. a "Cicaplast B5" entry with no Panthenol and no Madecassoside is the
-   wrong entry, however well its title matches). */
-const NAME_MARKERS: { test: RegExp; anyOf: string[] }[] = [
-  { test: /\bb5\b|panthenol|pro[\s-]?vitamin\s*b\s*5/i, anyOf: ["panthenol"] },
-  { test: /\bcica|centella|madecass/i, anyOf: ["madecassoside", "centella asiatica", "asiaticoside", "madecassic"] },
-  { test: /\bb3\b|niacinamide/i, anyOf: ["niacinamide"] },
-  { test: /hyaluronic/i, anyOf: ["hyaluronic acid", "hyaluronate"] },
-  { test: /vitamin\s*c\b|ascorbic/i, anyOf: ["ascorbic", "ascorbyl", "ascorbate"] },
-  { test: /\bretinol\b/i, anyOf: ["retinol"] },
-  { test: /salicylic|\bbha\b/i, anyOf: ["salicylic acid"] },
-  { test: /\bcaffeine\b/i, anyOf: ["caffeine"] },
-];
+   wrong entry, however well its title matches). The active-identity knowledge
+   (B5=Panthenol, Cica=Centella/Madecassoside, HA=Sodium Hyaluronate…) lives in
+   the shared ingredient intelligence layer, not in a private list here. */
+const markerScore = (text: string, ingredients: string[]): number => promisedActivesMet(text, ingredients);
 
-/** 0..1: of the actives this product's name promises, how many the list actually has.
-    1 when the name promises nothing checkable (so it stays neutral). */
-function markerScore(text: string, ingredients: string[]): number {
-  const inci = ingredients.join(" | ").toLowerCase();
-  let expected = 0;
-  let met = 0;
-  for (const m of NAME_MARKERS) {
-    if (!m.test.test(text)) continue;
-    expected++;
-    if (m.anyOf.some((a) => inci.includes(a))) met++;
-  }
-  return expected === 0 ? 1 : met / expected;
-}
-
-/* Confidence guards for resolveINCI — precision over coverage. Anchoring the
+/* Confidence guards for resolveINCI - precision over coverage. Anchoring the
    review to the wrong product is worse than an honest "couldn't retrieve the
    INCI" (which the engine turns into a clearly limited review). */
 const MIN_OVERLAP = 0.2;
@@ -160,7 +140,7 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   const ranked = strong.length ? strong : rankedAll;
   const distinct: ProductCandidate[] = ranked.slice(0, 5).map((d) => ({ name: d.name, slug: d.slugs[0], overlap: d.overlap }));
 
-  // Exact name match wins outright — this is what a click on a "did you mean?"
+  // Exact name match wins outright - this is what a click on a "did you mean?"
   // option sends back, so it must never re-trigger the question.
   const exact = ranked.find((d) => normalizeName(d.name) === normalizeName(q));
 
@@ -173,7 +153,7 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   const top = exact ?? ranked[0];
 
   // Confidence + brand guard: if the best match is weak, or does not carry the
-  // query's brand (its first distinctive token), do NOT anchor to it — return
+  // query's brand (its first distinctive token), do NOT anchor to it - return
   // unresolved so the engine runs an honest limited-INCI review instead of, say,
   // reviewing a Dot & Key product for a "Uriage …" query.
   if (!exact) {
@@ -225,7 +205,7 @@ export async function fetchINCI(query: string): Promise<INCIResult | null> {
 /** Formats the retrieved INCI as a ground-truth block for the system prompt. */
 export function inciGroundTruthBlock(inci: INCIResult | null): string {
   if (!inci || !inci.ingredients.length) {
-    return `\n\nINGREDIENT LIST: could not be retrieved automatically. Do NOT assert which ingredients are present or absent from memory — search for the INCI, and if you still cannot confirm it, mark ingredient-dependent claims as unverified.`;
+    return `\n\nINGREDIENT LIST: could not be retrieved automatically. Do NOT assert which ingredients are present or absent from memory - search for the INCI, and if you still cannot confirm it, mark ingredient-dependent claims as unverified.`;
   }
   return `\n\nRETRIEVED INGREDIENT LIST for "${inci.productName}" (from INCIDecoder, ${inci.source}). Use it as follows:
 - Anti-fabrication: do NOT state the product contains an ingredient (e.g. Parfum, Alcohol) unless it appears in this list.

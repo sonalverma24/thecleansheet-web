@@ -12,8 +12,7 @@ import Link from "next/link";
 import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
-import { scoreColors } from "@/data/brands";
-import { resolveTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
+import { resolveTier, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
 import type { ReviewTier } from "@/lib/product-review-types";
 import { HeroActions } from "./HeroActions";
 
@@ -496,15 +495,82 @@ export function generateScoreRationale(product: ProductScorecard): string {
 
 interface QuickDecision {
   bestFor: string[];
-  cautionIf: string[];
+  cautionIf: Array<{ label: string; reason?: string }>;
 }
 
 /** Keep the engine's own phrasing when it doesn't map to a canned skin-type
-    label — trimmed, sentence-cased, and only if it's a sane short phrase. */
+    label - trimmed, sentence-cased, and only if it's a sane short phrase. */
 function cleanTag(s: string): string {
   const t = s.trim().replace(/\s+/g, " ");
   if (t.length < 2 || t.length > 64) return "";
   return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/** Remove near-duplicate phrases: when a fuller phrase already covers a shorter
+    one (e.g. "Post-acne marks" alongside "Post-acne marks and dark spots"),
+    keep only the more descriptive wording. Order is preserved. */
+function dedupePhrases(list: string[]): string[] {
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const out: string[] = [];
+  for (const item of list) {
+    const ni = norm(item);
+    if (!ni) continue;
+    if (out.some((o) => norm(o) === ni)) continue; // exact duplicate
+    if (out.some((o) => norm(o).includes(ni))) continue; // already covered by a fuller phrase
+    const subsetIdx = out.findIndex((o) => ni.includes(norm(o)));
+    if (subsetIdx >= 0) {
+      out[subsetIdx] = item; // this phrase is the fuller one - upgrade the kept entry
+      continue;
+    }
+    out.push(item);
+  }
+  return out;
+}
+
+/** Ground an "Avoid if" flag in a concrete reason so it never reads as an
+    unexplained warning. Prefers the reviewer's own stated reason carried in the
+    raw caution text (e.g. "...(due to Retinyl Palmitate)"), then falls back to
+    the actual INCI. Returns undefined when the tidy label already stands on its
+    own (a preference, say). Never invents a reason. */
+function getCautionReason(product: ProductScorecard, label: string): string | undefined {
+  const l = label.toLowerCase();
+
+  // The keyword the tidy label and its raw source string share.
+  const keyword =
+    /pregnan|conceive|breastfeed/.test(l) ? /pregnan|conceive|breastfeed/ :
+    /fragrance|parfum|scent/.test(l) ? /fragrance|parfum|scent/ :
+    /retino/.test(l) ? /retino/ :
+    /spf/.test(l) ? /spf/ :
+    /alcohol/.test(l) ? /alcohol/ :
+    null;
+
+  // 1) Preserve the reviewer's own reason from the raw caution / warning text.
+  if (keyword) {
+    const raw = [...(product.cautionTags ?? []), ...(product.warn_badges ?? [])].find(
+      (s) => keyword.test(s.toLowerCase())
+    );
+    if (raw) {
+      const paren = raw.match(/\(([^)]+)\)/)?.[1];
+      if (paren) return paren.trim();
+      const clause = raw.match(/\b(?:due to|because of|owing to)\b[^.,;()]+/i)?.[0];
+      if (clause) return clause.trim();
+    }
+  }
+
+  // 2) Fall back to grounding the flag in the actual INCI.
+  const inci = (product.ingredients ?? []).map((i) => i.name);
+  const find = (re: RegExp) => inci.find((n) => re.test(n.toLowerCase()));
+  if (/pregnan|conceive|breastfeed/.test(l)) {
+    const retinoid = find(/retinol|retinal|retinyl|retino(ic|ate)|tretinoin|adapalene/);
+    if (retinoid) return `contains ${retinoid}`;
+    const salicylate = find(/salicylic/);
+    if (salicylate) return `contains ${salicylate}`;
+  } else if (/fragrance|parfum|scent/.test(l)) {
+    if (find(/\b(fragrance|parfum)\b/)) return "contains fragrance";
+  }
+
+  return undefined;
 }
 
 function getQuickDecision(product: ProductScorecard): QuickDecision {
@@ -525,7 +591,7 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("beginner")) { bestFor.push("Skincare beginners"); continue; }
       if (t.includes("pregnan")) { bestFor.push("Pregnancy-safe use"); continue; }
       if (t.includes("baby")) { bestFor.push("Baby and infant skin"); continue; }
-      // No canned match — keep the engine's own product-specific phrasing.
+      // No canned match - keep the engine's own product-specific phrasing.
       const c = cleanTag(tag); if (c) bestFor.push(c);
     }
   }
@@ -578,7 +644,7 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("ph not disclosed")) { cautionIf.push("Your skin barrier is already compromised or irritated"); continue; }
       if (t.includes("dual-acid") || t.includes("strong exfoliant")) { cautionIf.push("You have sensitive or eczema-prone skin"); continue; }
       if (t.includes("high irritation")) { cautionIf.push("You are new to active skincare - patch test first"); continue; }
-      // No canned match — keep the engine's own product-specific caution.
+      // No canned match - keep the engine's own product-specific caution.
       const c = cleanTag(tag); if (c) cautionIf.push(c);
     }
   }
@@ -601,10 +667,15 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
     }
   }
 
-  // No genuine caution found — show nothing rather than inventing a generic one.
+  // No genuine caution found - show nothing rather than inventing a generic one.
   // (The "Avoid if" column hides itself when this stays empty.)
 
-  return { bestFor: bestFor.slice(0, 3), cautionIf: cautionIf.slice(0, 3) };
+  return {
+    bestFor: dedupePhrases(bestFor).slice(0, 3),
+    cautionIf: dedupePhrases(cautionIf)
+      .slice(0, 3)
+      .map((label) => ({ label, reason: getCautionReason(product, label) })),
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -612,25 +683,36 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function getKeyIngredients(product: ProductScorecard): string[] {
-  const skip = new Set(["aqua", "water", "purified water", "deionized water"]);
-  return product.ingredients
-    .filter((i) => !skip.has(i.name.toLowerCase()))
-    .slice(0, 3)
-    .map((i) => i.name);
+  // Prefer the engine-authored hero actives. These are the ingredients the
+  // product is actually built around, not whatever sits at the top of the INCI
+  // (which is almost always water and a silicone slip agent like Dimethicone).
+  if (product.keyActives?.length) {
+    const actives = dedupePhrases(
+      product.keyActives.map((a) => a.name.trim()).filter(Boolean)
+    );
+    if (actives.length) return actives.slice(0, 3);
+  }
+
+  // Fallback: walk the INCI but skip solvents, bulking agents and silicones so
+  // we never lead with "Aqua/Water/Eau" or "Dimethicone".
+  const isBase = (raw: string): boolean => {
+    const n = raw.toLowerCase();
+    return (
+      /\b(aqua|water|eau)\b/.test(n) ||
+      n.startsWith("dimethicone") ||
+      n.includes("siloxane") ||
+      n.includes("silsesquioxane") ||
+      n === "glycerin" ||
+      n.startsWith("alcohol")
+    );
+  };
+  const featured = product.ingredients.filter((i) => !isBase(i.name)).map((i) => i.name);
+  const pool = featured.length >= 2 ? featured : product.ingredients.map((i) => i.name);
+  return dedupePhrases(pool).slice(0, 3);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: Pillar display name
-// ─────────────────────────────────────────────────────────────────────────────
-
-function pillarDisplayName(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("ingredient") || n.includes("safety")) return "Ingredient & Safety";
-  if (n.includes("formula")) return "Formula Logic";
-  if (n.includes("claims")) return "Claims Evidence";
-  if (n.includes("transparency")) return "Transparency";
-  return name;
-}
+// Pillar display names come from the shared simplifyPillarName so the radar
+// dots match the score breakdown exactly.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Format price
@@ -656,12 +738,12 @@ function formatAnalysedDate(isoDate: string): string {
 // Sub-component: Circular Score Badge
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ScoreBadge({ tier }: { tier: ReviewTier }) {
+function ScoreBadge({ tier, size = 116, animate = true }: { tier: ReviewTier; size?: number; animate?: boolean }) {
   // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
   if (tier === "approved") {
     return (
       <div className="flex-shrink-0">
-        <ApprovedStamp size={116} animate />
+        <ApprovedStamp size={size} animate={animate} />
       </div>
     );
   }
@@ -669,7 +751,7 @@ function ScoreBadge({ tier }: { tier: ReviewTier }) {
   // Other tiers: the rubber-stamp band (same ink-stamp language, no logo disc).
   return (
     <div className="flex-shrink-0">
-      <TierStamp tier={tier} size={116} animate />
+      <TierStamp tier={tier} size={size} animate={animate} />
     </div>
   );
 }
@@ -677,37 +759,6 @@ function ScoreBadge({ tier }: { tier: ReviewTier }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-component: Pillar dots row
 // ─────────────────────────────────────────────────────────────────────────────
-
-function PillarDotsRow({
-  name,
-  score,
-  max,
-}: {
-  name: string;
-  score: number;
-  max: number;
-}) {
-  const pct = score / max;
-  const filled = Math.round(pct * 4);
-  const p = pct * 100;
-  const dotColor =
-    p >= 90 ? "#248179" : p >= 75 ? "#4C9E6A" : p >= 60 ? "#C99A2E" : p >= 45 ? "#E08A3C" : "#fd6158";
-
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-[#248179] leading-none">{name}</span>
-      <div className="flex items-center gap-[5px] flex-shrink-0">
-        {[0, 1, 2, 3].map((i) => (
-          <span
-            key={i}
-            className="block w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: i < filled ? dotColor : "#e8e2da" }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
@@ -726,7 +777,7 @@ export interface ProductHeroProps {
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function ProductHero({ product, brand, okCount, warnCount, infoCount, brandSlug }: ProductHeroProps) {
+export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
   const { bestFor, cautionIf } = getQuickDecision(product);
   const priceDisplay = formatPrice(product);
   const analysedDisplay = formatAnalysedDate(product.analyzedAt);
@@ -750,7 +801,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
     <div className="bg-white relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-8 pb-0 relative z-10">
 
-        {/* Breadcrumb — brand crumb is plain text (no brand page for live reviews). */}
+        {/* Breadcrumb - brand crumb is plain text (no brand page for live reviews). */}
         <nav className="flex items-center gap-1.5 text-[11px] text-[#b0a8a4] mb-6 flex-wrap">
           {[
             { label: "Home", href: "/" as string | null },
@@ -776,7 +827,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
           {/* ── LEFT COLUMN ── */}
           <div>
-            {/* Brand + category — brand is intentionally NOT a link (brand pages
+            {/* Brand + category - brand is intentionally NOT a link (brand pages
                 don't exist for live-reviewed products). */}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[11px] font-medium text-[#248179] uppercase tracking-widest">
@@ -799,26 +850,27 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               {product.summary || generateVerdict(product)}
             </p>
 
-            {/* Mobile only: image + badge */}
+            {/* Mobile only: image + badge.
+                The image uses `fill` over an emoji placeholder, so a missing,
+                slow or failed src never leaves an empty white box. The score
+                stamp sits in a fixed-width, non-animating column so its entrance
+                can never scale past the viewport's right edge. */}
             <div className="lg:hidden mb-5">
-              <div className="flex items-start gap-4">
-                <div className="flex-1 rounded-2xl bg-white border border-[#efe9e0] flex items-center justify-center overflow-hidden" style={{ height: 160 }}>
-                  {product.image ? (
+              <div className="flex items-stretch gap-4">
+                <div className="relative flex-1 min-w-0 rounded-2xl bg-white border border-[#efe9e0] overflow-hidden" style={{ height: 160 }}>
+                  <span aria-hidden className="absolute inset-0 flex items-center justify-center text-3xl text-[#d8d2cc] select-none">🧴</span>
+                  {product.image && (
                     <Image
                       src={product.image}
                       alt={product.productName}
-                      width={220}
-                      height={160}
+                      fill
+                      sizes="(max-width: 1024px) 60vw, 220px"
                       className="object-contain p-3"
-                      style={{ maxHeight: 148 }}
                     />
-                  ) : (
-                    <span className="text-3xl text-[#b0a8a4]">🧴</span>
                   )}
                 </div>
-                <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                  <ScoreBadge tier={resolveTier(product)} />
-                  <TierBadge tier={resolveTier(product)} size="sm" />
+                <div className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center">
+                  <ScoreBadge tier={resolveTier(product)} size={92} animate={false} />
                 </div>
               </div>
             </div>
@@ -850,14 +902,19 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                   <div className="text-sm text-[#fd6158] mb-2.5" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Avoid if</div>
                   <ul className="space-y-2">
                     {cautionIf.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
+                      <li key={item.label} className="flex items-start gap-2">
                         <span className="w-4 h-4 rounded-full bg-[#fd6158]/10 border border-[#fd6158]/25 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                             <circle cx="4" cy="4" r="3.25" stroke="#fd6158" strokeWidth="1.25" />
                             <path d="M2.5 4h3" stroke="#fd6158" strokeWidth="1.25" strokeLinecap="round" />
                           </svg>
                         </span>
-                        <span className="text-xs text-[#282828]/70 leading-snug">{item}</span>
+                        <span className="text-xs text-[#282828]/70 leading-snug">
+                          {item.label}
+                          {item.reason && (
+                            <span className="text-[#282828]/45"> ({item.reason})</span>
+                          )}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -994,22 +1051,14 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               )}
             </div>
 
-            {/* Pillar dots */}
-            <div className="border-t border-[#efe9e0] pt-4 space-y-3">
-              {product.pillars.map((pillar) => (
-                <PillarDotsRow
-                  key={pillar.name}
-                  name={pillarDisplayName(pillar.name)}
-                  score={pillar.score}
-                  max={pillar.max}
-                />
-              ))}
+            {/* What we checked → jump to the detail (no scores) */}
+            <div className="border-t border-[#efe9e0] pt-4">
               <Link
-                href="#score-rationale"
-                className="block text-xs font-medium italic text-[#fd6158] hover:underline pt-1"
+                href="#safety-screen"
+                className="block text-xs font-medium italic text-[#fd6158] hover:underline"
                 style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
               >
-                View more
+                See what we checked
               </Link>
             </div>
           </div>
@@ -1020,7 +1069,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
       <div className="mt-8 border-t border-[#efe9e0] relative z-10">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-3">
           <p className="text-[10px] text-[#b0a8a4] leading-relaxed">
-            This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
+            <span className="text-[#248179] font-medium">Independent and free.</span> The Clean Sheet takes no money from brands to review, rank, or approve a product. This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
           </p>
         </div>
       </div>

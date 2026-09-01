@@ -1,7 +1,7 @@
 /* ────────────────────────────────────────────────────────────────
    THE CLEAN SHEET™ · Shared pillar UI primitives
    Extracted from the brand product page so live reviews render in
-   the exact same visual language. Qualitative only — no numerics.
+   the exact same visual language. Qualitative only - no numerics.
 ──────────────────────────────────────────────────────────────── */
 
 /** Shared standing scale so bar colour, name colour, rating word and dots all
@@ -41,18 +41,18 @@ export function PillarDots({ score, max }: { score: number; max: number }) {
 import type { ReviewTier } from "@/lib/product-review-types";
 
 export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: string; border: string }> = {
-  "approved":     { label: "Clean Sheet Approved", bg: "rgba(210,255,52,0.16)", fg: "#3f6212", border: "#a3c614" },
-  "mostly-clean": { label: "Mostly Clean",         bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
-  "needs-proof":  { label: "Needs Proof",          bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
-  "misleading":   { label: "Misleading Claims",    bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
+  "approved":         { label: "Clean Sheet Approved", bg: "rgba(210,255,52,0.16)", fg: "#3f6212", border: "#a3c614" },
+  "mostly-clean":     { label: "Mostly Clean",         bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
+  "can-do-better":    { label: "Can Do Better",        bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
+  "not-recommended":  { label: "Not Recommended",      bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
 };
 
 export function scoreToTier(score: number): ReviewTier {
-  return score >= 85 ? "approved" : score >= 65 ? "mostly-clean" : "needs-proof";
+  return score >= 85 ? "approved" : score >= 65 ? "mostly-clean" : "can-do-better";
 }
 
 /* The single source of truth for a product's displayed tier. Prefer the
-   pre-computed claim-integrity verdict (`reviewTier`, which can be "misleading");
+   pre-computed verdict (`reviewTier`, which can be "not-recommended");
    fall back to the score only for products with no verdict (static catalogue).
    Every badge/seal/label/title must use this so the tile and the detail page
    never disagree. */
@@ -60,7 +60,7 @@ export function resolveTier(product: { reviewTier?: ReviewTier; score: number })
   return product.reviewTier ?? scoreToTier(product.score);
 }
 
-/* The TCS logo with an angled "APPROVED" rubber stamp across its lower third —
+/* The TCS logo with an angled "APPROVED" rubber stamp across its lower third -
    overflowing the edge, never hiding the wordmark. Scales from tile corners
    (54px) to the product-page hero (120px+). */
 export function ApprovedStamp({ size = 54, animate = false }: { size?: number; animate?: boolean }) {
@@ -105,9 +105,9 @@ export function ApprovedStamp({ size = 54, animate = false }: { size?: number; a
   );
 }
 
-/* The rubber-stamp band on its own — same ink-stamp language as the "APPROVED"
-   mark, but without the TCS logo disc. Used for Mostly Clean / Needs Proof /
-   Misleading so every tier reads as one consistent stamp family. */
+/* The rubber-stamp band on its own - same ink-stamp language as the "APPROVED"
+   mark, but without the TCS logo disc. Used for Mostly Clean / Can Do Better /
+   Not Recommended so every tier reads as one consistent stamp family. */
 export function TierStamp({ tier, size = 116, animate = false }: { tier: Exclude<ReviewTier, "approved">; size?: number; animate?: boolean }) {
   const t = TIER_STYLES[tier];
   const s = size / 116;

@@ -3,10 +3,11 @@ import { BLOG_POSTS } from "@/lib/blog-posts";
 import { getAllGuideSlugs } from "@/lib/skin-guides";
 import { getAllIngredientSlugs } from "@/lib/ingredient-utils";
 import { getAllBrandSummaries, getBrandBySlug } from "@/data/brands";
+import { listStoredReviews } from "@/lib/product-review-engine";
 
 const BASE = "https://thecleansheet.in";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -68,5 +69,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }));
   });
 
-  return [...staticRoutes, ...blogRoutes, ...guideRoutes, ...ingredientRoutes, ...brandRoutes, ...productRoutes];
+  // Live-reviewed products persisted by the review tool. Each has a permanent,
+  // server-rendered page at /reviews/[slug]; without this they were crawlable
+  // by URL but undiscoverable (absent from the sitemap and internal links).
+  const storedReviews = await listStoredReviews(1000);
+  const reviewRoutes: MetadataRoute.Sitemap = storedReviews.map((r) => ({
+    url: `${BASE}/reviews/${r.productSlug}`,
+    lastModified: r.reviewedAt ? new Date(r.reviewedAt) : now,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...blogRoutes, ...guideRoutes, ...ingredientRoutes, ...brandRoutes, ...productRoutes, ...reviewRoutes];
 }

@@ -8,6 +8,8 @@ interface Props {
   onClose: () => void;
   returnPath?: string;
   openReviewOnReturn?: boolean;
+  title?: string;
+  subtitle?: string;
 }
 
 type Screen = "options" | "email_login" | "email_signup" | "email_sent";
@@ -15,7 +17,7 @@ type Screen = "options" | "email_login" | "email_signup" | "email_sent";
 const FONT_DISPLAY = "var(--font-display)";
 const FONT_SANS = "var(--font-sans)";
 
-export default function LoginModal({ onClose, returnPath, openReviewOnReturn }: Props) {
+export default function LoginModal({ onClose, returnPath, openReviewOnReturn, title, subtitle }: Props) {
   const supabase = createClient();
   const [screen, setScreen] = useState<Screen>("options");
   const [email, setEmail] = useState("");
@@ -110,13 +112,13 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn }: 
                 className="text-[22px] text-[#282828] leading-tight mb-2"
                 style={{ fontFamily: FONT_DISPLAY }}
               >
-                Sign in to write a review
+                {title ?? "Sign in to write a review"}
               </h2>
               <p
                 className="text-sm text-[#b0a8a4] mb-7 leading-snug"
                 style={{ fontFamily: FONT_SANS }}
               >
-                Your review helps other consumers make better product decisions.
+                {subtitle ?? "Your review helps other consumers make better product decisions."}
               </p>
 
               {/* Error */}

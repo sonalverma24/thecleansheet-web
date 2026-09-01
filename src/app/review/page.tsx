@@ -12,9 +12,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
+import { runAnalysis } from "@/lib/analysis-engine";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
 import type { VerifiedProduct } from "@/lib/types";
 import { track } from "@/lib/analytics";
+import { useAuth } from "@/components/auth/AuthProvider";
+
+const GATE_TITLE = "Sign in to analyse a product";
+const GATE_SUBTITLE = "Create a free account to run a Clean Sheet analysis on any product.";
 
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
@@ -70,6 +75,7 @@ function ProductImage({ src, brand }: { src?: string | null; brand: string }) {
 }
 
 export default function ReviewPage() {
+  const { user, loading: authLoading, openLoginModal } = useAuth();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -79,6 +85,10 @@ export default function ReviewPage() {
   const [disambig, setDisambig] = useState<{ query: string; options: { name: string }[] } | null>(null);
   const [approvedProducts, setApprovedProducts] = useState<VerifiedProduct[]>([]);
   const resultsRef = useRef<HTMLDivElement>(null);
+  // Synchronous in-flight guard. `loading` state is set asynchronously, so two
+  // fast triggers (a suggestion chip plus the button, or a double-click) could
+  // both pass a `loading` check and fire duplicate POST /api/review calls.
+  const inFlight = useRef(false);
 
   // Load the approved registry (reloads after a review, in case one just joined).
   useEffect(() => {
@@ -86,25 +96,44 @@ export default function ReviewPage() {
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d?.products)) setApprovedProducts(d.products); })
       .catch(() => { /* section stays hidden */ });
-  }, [review]);
+  }, []); // static list - fetch once on mount, not on every review
 
   // Deep link: /review?q=<product> runs the review on arrival (repository hits return instantly).
   const autoRan = useRef(false);
   useEffect(() => {
-    if (autoRan.current) return;
+    // Wait for auth to resolve before auto-running: a user returning from the
+    // Google/email sign-in redirect must be recognised so their analysis fires,
+    // rather than being bounced straight back to the login modal.
+    if (authLoading || autoRan.current) return;
     autoRan.current = true;
     const q = new URLSearchParams(window.location.search).get("q");
     if (q?.trim()) { setQuery(q); analyze(q); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading]);
 
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
-    if (!text || loading) return;
+    if (!text || inFlight.current) return;
+    // Analysing a product is a signed-in action. Bounce anonymous users to the
+    // login modal, preserving the query so the analysis auto-runs on return.
+    if (!user) {
+      openLoginModal({
+        returnPath: `/review?q=${encodeURIComponent(text)}`,
+        title: GATE_TITLE,
+        subtitle: GATE_SUBTITLE,
+      });
+      return;
+    }
+    inFlight.current = true;
     // Single capture point for every review-engine search: the hero bar on
     // /brands, direct /review searches, and the suggestion chips all land here.
     track("review_search_submitted", { query: text });
     setLoading(true); setError(null); setDisambig(null); setReview(null); setVerdict(null); setStepIdx(0);
+    // Reset the address bar while a fresh search runs; success restores it to
+    // the permanent /reviews/[slug] URL below.
+    if (window.location.pathname.startsWith("/reviews/")) {
+      window.history.replaceState(null, "", "/review");
+    }
 
     const ticker = setInterval(() => setStepIdx((i) => Math.min(i + 1, STEPS.length - 1)), 6000);
     try {
@@ -113,11 +142,27 @@ export default function ReviewPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: text }),
       });
+      // Session expired between page load and submit: re-prompt sign-in.
+      if (res.status === 401) {
+        openLoginModal({
+          returnPath: `/review?q=${encodeURIComponent(text)}`,
+          title: GATE_TITLE,
+          subtitle: GATE_SUBTITLE,
+        });
+        return;
+      }
       const data = await res.json();
       if (res.status === 503 || data?.error === "busy") { setError("busy"); return; }
       if (data?.type === "product-review" && data.review) {
-        setReview(data.review as ProductReview);
+        const reviewData = data.review as ProductReview;
+        setReview(reviewData);
         setVerdict((data.verdict as DerivedVerdict) ?? null);
+        // Point the address bar at the permanent, server-rendered page for this
+        // review so it can be shared, bookmarked and reloaded. The route
+        // (/reviews/[slug]) reads the same stored review this request persisted.
+        if (reviewData.productSlug) {
+          window.history.replaceState(null, "", `/reviews/${reviewData.productSlug}`);
+        }
         setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
       } else if (data?.type === "disambiguation" && Array.isArray(data.options) && data.options.length) {
         setDisambig({ query: data.query ?? text, options: data.options });
@@ -131,8 +176,9 @@ export default function ReviewPage() {
     } finally {
       clearInterval(ticker);
       setLoading(false);
+      inFlight.current = false;
     }
-  }, [query, loading]);
+  }, [query, user, openLoginModal]);
 
   const approved = verdict?.status === "approved";
 
@@ -256,12 +302,12 @@ export default function ReviewPage() {
         </div>
       )}
 
-      {/* ═══ Results — THE one product-page format ═══ */}
+      {/* ═══ Results - THE one product-page format ═══ */}
       {review && verdict && !loading && (() => {
         const mapped = reviewToScorecard(review, verdict);
         return (
           <div ref={resultsRef}>
-            <ProductScorecardView product={mapped.product} brand={mapped.brand} brandSlug={mapped.brandSlug} />
+            <ProductScorecardView product={mapped.product} brand={mapped.brand} brandSlug={mapped.brandSlug} analysis={runAnalysis(review)} />
           </div>
         );
       })()}
