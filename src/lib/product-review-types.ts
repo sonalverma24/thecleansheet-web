@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Product Review types (the original "v3.0" engine)
+   THE CLEAN SHEET™ - Product Review types (the original "v3.0" engine)
    Self-contained so it never clashes with the claim_check types in
    types.ts (which redefine EvidenceLevel as A–D). Here EvidenceLevel is
    the original 1–7 ladder.
@@ -27,6 +27,16 @@ export interface ClaimAnalysis {
   asciNote: string | null;
   drugBoundaryRisk: boolean;
   drugBoundaryNote: string | null;
+  /* ─── Engine-set guardrail fields (never authored by the LLM) ───
+     corroborated: false when the engine had a text corpus (a scraped page /
+     evidence doc) and could NOT find this claim's wording in it - i.e. the
+     claim may have been fabricated by the model and must not push a product
+     down a tier. undefined = not checked (assume made). See deriveVerdict. */
+  corroborated?: boolean;
+  /* inciFlagVoided: the model marked this claim contradicted/red-flag, but the
+     code re-checked it against the retrieved INCI (with synonym mapping) and
+     found the flag unjustified - so it is not counted as a hard flag. */
+  inciFlagVoided?: boolean;
 }
 
 export interface PlatformPrice {
@@ -218,13 +228,16 @@ export interface ProductReview {
 /* ─── Derived approved / not-approved verdict (computed in code) ─── */
 
 export interface ReviewGate {
-  id: "claims" | "evidence" | "formula";
+  id: "claims" | "evidence" | "formula" | "safety";
   label: string;
   passed: boolean;
   detail: string;
 }
 
-export type ReviewTier = "approved" | "mostly-clean" | "needs-proof" | "misleading";
+/* The four Clean Sheet standings, best → worst. "can-do-better" and
+   "not-recommended" replace the former "needs-proof" / "misleading" keys.
+   Definitions live in STAMPS.md and are enforced in deriveVerdict. */
+export type ReviewTier = "approved" | "mostly-clean" | "can-do-better" | "not-recommended";
 
 export interface DerivedVerdict {
   /** Kept for registry back-compat; derived from tier. */

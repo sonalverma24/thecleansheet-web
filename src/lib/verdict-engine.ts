@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ — Deterministic Verdict Engine
+   THE CLEAN SHEET™ - Deterministic Verdict Engine
    The LLM researches; the code decides.
    - Claim Integrity Score: computed from verdicts, never by the LLM
    - Prohibited-claim safety net: regex catches what the LLM misses
@@ -15,10 +15,10 @@ export const METHODOLOGY_VERSION = "TCS v3.1";
 /* ═══════════════ The Clean Sheet Standard ═══════════════
    ONE verdict. THREE gates. ALL required. Computed in code.
    A product is Clean Sheet Verified only when:
-     1. Formula safety   — six-pillar assessment ≥ FORMULA_BAR
-     2. Lawful claims    — zero prohibited claims on the label
-     3. Honest marketing — claim integrity ≥ HONESTY_BAR (not "Misleading")
-   If the claim layer could not run, the verdict is PROVISIONAL —
+     1. Formula safety   - six-pillar assessment ≥ FORMULA_BAR
+     2. Lawful claims    - zero prohibited claims on the label
+     3. Honest marketing - claim integrity ≥ HONESTY_BAR (not "Misleading")
+   If the claim layer could not run, the verdict is PROVISIONAL -
    nothing is ever Verified without its claims checked. */
 
 export const FORMULA_BAR = 75;
@@ -40,7 +40,7 @@ export function computeVerdict(
       passed: formulaPass,
       detail: formulaPass
         ? "Six-pillar assessment cleared The Clean Sheet bar"
-        : "Six-pillar assessment fell below the bar — the pillar notes explain where",
+        : "Six-pillar assessment fell below the bar - the pillar notes explain where",
     },
     {
       id: "lawful_claims",
@@ -77,11 +77,11 @@ export function computeVerdict(
 /* ═══════════════ Prohibited-claim safety net ═══════════════
    Even if the model grades these leniently, code overrides. */
 const PROHIBITED_PATTERNS: { pattern: RegExp; reason: string }[] = [
-  { pattern: /chemical[\s-]?free/i, reason: "\"Chemical-free\" is scientifically incoherent — every substance is a chemical. Non-compliant marketing language under TCS standards." },
-  { pattern: /toxin[\s-]?free|non[\s-]?toxic/i, reason: "\"Toxin-free\" is meaningless as stated — toxicity depends on dose and exposure." },
+  { pattern: /chemical[\s-]?free/i, reason: "\"Chemical-free\" is scientifically incoherent - every substance is a chemical. Non-compliant marketing language under TCS standards." },
+  { pattern: /toxin[\s-]?free|non[\s-]?toxic/i, reason: "\"Toxin-free\" is meaningless as stated - toxicity depends on dose and exposure." },
   { pattern: /100%\s*safe|completely\s+safe|zero\s+side[\s-]?effects/i, reason: "No cosmetic can guarantee universal safety. Individual reactions always exist." },
   { pattern: /guaranteed\s+result/i, reason: "No cosmetic can guarantee results for all consumers." },
-  { pattern: /\b(cures?|treats?|prevents?|heals?)\b.{0,40}\b(acne(?!\s*-?\s*prone)|eczema|psoriasis|dermatitis|rosacea|fungal|infection|disease|dandruff)\b/i, reason: "Drug claim — cosmetics cannot claim to treat, cure, or prevent disease under the Drugs & Cosmetics Act 1940 / CDSCO." },
+  { pattern: /\b(cures?|treats?|prevents?|heals?)\b.{0,40}\b(acne(?!\s*-?\s*prone)|eczema|psoriasis|dermatitis|rosacea|fungal|infection|disease|dandruff)\b/i, reason: "Drug claim - cosmetics cannot claim to treat, cure, or prevent disease under the Drugs & Cosmetics Act 1940 / CDSCO." },
   { pattern: /whitens?\s+(skin\s+)?permanently|permanent\s+(skin\s+)?(whitening|lightening|fairness)/i, reason: "Permanent skin-tone change claims are misleading and flagged under ASCI guidelines on fairness claims." },
 ];
 
@@ -201,7 +201,7 @@ export function validateScorecard(
     }
   }
 
-  // 3. Total is the sum of pillars — the LLM's own total is discarded
+  // 3. Total is the sum of pillars - the LLM's own total is discarded
   let total = pillars.reduce((s, p) => s + p.score, 0);
 
   // 4. Hard-rule caps, enforced in code

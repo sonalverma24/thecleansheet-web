@@ -1,11 +1,12 @@
 /* Permanent product page for a repository (live-reviewed) product.
    Renders the STORED review by canonical slug in THE one product-page
-   format (ProductScorecardView) — never re-runs the engine. */
+   format (ProductScorecardView) - never re-runs the engine. */
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStoredReview } from "@/lib/product-review-engine";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
+import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
 
@@ -35,5 +36,5 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   if (!result || result.type !== "product-review") notFound();
 
   const { product, brand, brandSlug } = reviewToScorecard(result.review, result.verdict);
-  return <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} />;
+  return <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} analysis={runAnalysis(result.review)} />;
 }

@@ -94,7 +94,7 @@ export type ProductScorecard = {
       detail page — tiles link to the stored review; shows a NEW badge for 30 days). */
   freshReview?: boolean;
   /** True verdict tier for repository products (claim-gated, not score-only). */
-  reviewTier?: "approved" | "mostly-clean" | "needs-proof" | "misleading";
+  reviewTier?: "approved" | "mostly-clean" | "can-do-better" | "not-recommended";
   /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
       live-reviewed products — rendered as its own section in the product view. */
   regulatoryFlags?: { claim: string; note: string }[];

@@ -12,11 +12,9 @@ import Link from "next/link";
 import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
-import { scoreColors } from "@/data/brands";
-import { resolveTier, TierBadge, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
+import { resolveTier, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
 import type { ReviewTier } from "@/lib/product-review-types";
 import { HeroActions } from "./HeroActions";
-import { simplifyPillarName } from "@/lib/pillar-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Consumer Fit Statement
@@ -501,7 +499,7 @@ interface QuickDecision {
 }
 
 /** Keep the engine's own phrasing when it doesn't map to a canned skin-type
-    label — trimmed, sentence-cased, and only if it's a sane short phrase. */
+    label - trimmed, sentence-cased, and only if it's a sane short phrase. */
 function cleanTag(s: string): string {
   const t = s.trim().replace(/\s+/g, " ");
   if (t.length < 2 || t.length > 64) return "";
@@ -522,7 +520,7 @@ function dedupePhrases(list: string[]): string[] {
     if (out.some((o) => norm(o).includes(ni))) continue; // already covered by a fuller phrase
     const subsetIdx = out.findIndex((o) => ni.includes(norm(o)));
     if (subsetIdx >= 0) {
-      out[subsetIdx] = item; // this phrase is the fuller one — upgrade the kept entry
+      out[subsetIdx] = item; // this phrase is the fuller one - upgrade the kept entry
       continue;
     }
     out.push(item);
@@ -593,7 +591,7 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("beginner")) { bestFor.push("Skincare beginners"); continue; }
       if (t.includes("pregnan")) { bestFor.push("Pregnancy-safe use"); continue; }
       if (t.includes("baby")) { bestFor.push("Baby and infant skin"); continue; }
-      // No canned match — keep the engine's own product-specific phrasing.
+      // No canned match - keep the engine's own product-specific phrasing.
       const c = cleanTag(tag); if (c) bestFor.push(c);
     }
   }
@@ -646,7 +644,7 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (t.includes("ph not disclosed")) { cautionIf.push("Your skin barrier is already compromised or irritated"); continue; }
       if (t.includes("dual-acid") || t.includes("strong exfoliant")) { cautionIf.push("You have sensitive or eczema-prone skin"); continue; }
       if (t.includes("high irritation")) { cautionIf.push("You are new to active skincare - patch test first"); continue; }
-      // No canned match — keep the engine's own product-specific caution.
+      // No canned match - keep the engine's own product-specific caution.
       const c = cleanTag(tag); if (c) cautionIf.push(c);
     }
   }
@@ -669,7 +667,7 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
     }
   }
 
-  // No genuine caution found — show nothing rather than inventing a generic one.
+  // No genuine caution found - show nothing rather than inventing a generic one.
   // (The "Avoid if" column hides itself when this stays empty.)
 
   return {
@@ -762,37 +760,6 @@ function ScoreBadge({ tier, size = 116, animate = true }: { tier: ReviewTier; si
 // Sub-component: Pillar dots row
 // ─────────────────────────────────────────────────────────────────────────────
 
-function PillarDotsRow({
-  name,
-  score,
-  max,
-}: {
-  name: string;
-  score: number;
-  max: number;
-}) {
-  const pct = score / max;
-  const filled = Math.round(pct * 4);
-  const p = pct * 100;
-  const dotColor =
-    p >= 90 ? "#248179" : p >= 75 ? "#4C9E6A" : p >= 60 ? "#C99A2E" : p >= 45 ? "#E08A3C" : "#fd6158";
-
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <span className="text-xs text-[#248179] leading-none">{name}</span>
-      <div className="flex items-center gap-[5px] flex-shrink-0">
-        {[0, 1, 2, 3].map((i) => (
-          <span
-            key={i}
-            className="block w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: i < filled ? dotColor : "#e8e2da" }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
@@ -810,7 +777,7 @@ export interface ProductHeroProps {
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function ProductHero({ product, brand, okCount, warnCount, infoCount, brandSlug }: ProductHeroProps) {
+export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
   const { bestFor, cautionIf } = getQuickDecision(product);
   const priceDisplay = formatPrice(product);
   const analysedDisplay = formatAnalysedDate(product.analyzedAt);
@@ -834,7 +801,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
     <div className="bg-white relative overflow-hidden">
       <div className="max-w-5xl mx-auto px-5 sm:px-8 pt-8 pb-0 relative z-10">
 
-        {/* Breadcrumb — brand crumb is plain text (no brand page for live reviews). */}
+        {/* Breadcrumb - brand crumb is plain text (no brand page for live reviews). */}
         <nav className="flex items-center gap-1.5 text-[11px] text-[#b0a8a4] mb-6 flex-wrap">
           {[
             { label: "Home", href: "/" as string | null },
@@ -860,7 +827,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
 
           {/* ── LEFT COLUMN ── */}
           <div>
-            {/* Brand + category — brand is intentionally NOT a link (brand pages
+            {/* Brand + category - brand is intentionally NOT a link (brand pages
                 don't exist for live-reviewed products). */}
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[11px] font-medium text-[#248179] uppercase tracking-widest">
@@ -902,9 +869,8 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
                     />
                   )}
                 </div>
-                <div className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center gap-3">
+                <div className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center">
                   <ScoreBadge tier={resolveTier(product)} size={92} animate={false} />
-                  <TierBadge tier={resolveTier(product)} size="sm" />
                 </div>
               </div>
             </div>
@@ -1085,22 +1051,14 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
               )}
             </div>
 
-            {/* Pillar dots */}
-            <div className="border-t border-[#efe9e0] pt-4 space-y-3">
-              {product.pillars.map((pillar) => (
-                <PillarDotsRow
-                  key={pillar.name}
-                  name={simplifyPillarName(pillar.name)}
-                  score={pillar.score}
-                  max={pillar.max}
-                />
-              ))}
+            {/* What we checked → jump to the detail (no scores) */}
+            <div className="border-t border-[#efe9e0] pt-4">
               <Link
-                href="#score-rationale"
-                className="block text-xs font-medium italic text-[#fd6158] hover:underline pt-1"
+                href="#safety-screen"
+                className="block text-xs font-medium italic text-[#fd6158] hover:underline"
                 style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
               >
-                View more
+                See what we checked
               </Link>
             </div>
           </div>
@@ -1111,7 +1069,7 @@ export function ProductHero({ product, brand, okCount, warnCount, infoCount, bra
       <div className="mt-8 border-t border-[#efe9e0] relative z-10">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-3">
           <p className="text-[10px] text-[#b0a8a4] leading-relaxed">
-            This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
+            <span className="text-[#248179] font-medium">Independent and free.</span> The Clean Sheet takes no money from brands to review, rank, or approve a product. This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
           </p>
         </div>
       </div>

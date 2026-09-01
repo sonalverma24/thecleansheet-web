@@ -42,7 +42,7 @@ const num = (s: string | undefined): number | undefined => {
 
 /* A true-for-the-category read of how this product type behaves in Indian
    conditions (heat, humidity, high year-round UV). Category-level, never a
-   fabricated product-specific fact — the engine authors the richer per-product
+   fabricated product-specific fact - the engine authors the richer per-product
    version when its indiaContext field is present. */
 function indiaClimateLine(type: ProductScorecard["productType"]): string {
   switch (type) {
@@ -61,7 +61,7 @@ function indiaClimateLine(type: ProductScorecard["productType"]): string {
   }
 }
 
-/* India Context — the whole review is already India-grounded (₹ pricing, ASCI/
+/* India Context - the whole review is already India-grounded (₹ pricing, ASCI/
    CDSCO claim analysis), so we can compose an honest, per-product read from data
    we already hold. Prefer the engine's authored field when a review carries one;
    otherwise synthesise from price positioning + the real claim analysis. Every
@@ -72,12 +72,12 @@ function buildIndiaContext(review: ProductReview): string {
 
   const bits: string[] = [];
 
-  // 1. Climate behaviour — grounded in the product TYPE (true for the category,
+  // 1. Climate behaviour - grounded in the product TYPE (true for the category,
   //    never a fabricated product-specific claim).
   const climate = indiaClimateLine(guessProductType(review.category ?? ""));
   if (climate) bits.push(climate);
 
-  // 2. Price positioning — already an Indian-market read (all prices are in ₹).
+  // 2. Price positioning - already an Indian-market read (all prices are in ₹).
   const price = review.priceInsight?.trim();
   if (price && price.length > 12) {
     bits.push(price);
@@ -86,7 +86,7 @@ function buildIndiaContext(review: ProductReview): string {
     if (p) bits.push(`Priced at ${p} in the Indian market.`);
   }
 
-  // 3. Regulatory posture — derived from this product's actual claim analysis.
+  // 3. Regulatory posture - derived from this product's actual claim analysis.
   const asci = review.claimSummary?.asciConcernCount ?? 0;
   const drug = review.claimSummary?.drugBoundaryCount ?? 0;
   if (drug > 0) {
@@ -122,7 +122,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   const inci = review.inciIngredients ?? [];
   if (inci.some((i) => FRAGRANCE_RE.test(i.trim()))) warn_badges.push("Fragrance present (parfum)");
 
-  // The 7 review dimensions as pillars (dots + label only in the view — no numerics shown).
+  // The 7 review dimensions as pillars (dots + label only in the view - no numerics shown).
   const s = review.scores;
   const pillars: ScorePillar[] = [
     { name: "Public Claim Support", score: s.claimEvidence, max: 20, note: `Strongest public evidence: level ${review.claimSummary?.highestEvidenceLevel ?? 1} of 7. ${review.verdict?.bestThing ?? ""}` },
@@ -141,7 +141,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
 
   /* Plum-depth detail. Prefer the engine's own reads (authored from the real
      INCI). The ingredient DB is only a fallback, and only for a clean, safe
-     confirmation note — never the sole source of a warn flag. */
+     confirmation note - never the sole source of a warn flag. */
   const ingredients: IngredientEntry[] =
     (review.ingredientReads && review.ingredientReads.length > 0)
       ? review.ingredientReads.map((r) => ({
@@ -175,7 +175,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     concern: review.category ?? "",
     summary: review.verdict?.cleanSheetTakeaway ?? "",
     score: s.total,
-    scoreLabel: verdict.tier === "approved" ? "Excellent" : verdict.tier === "mostly-clean" ? "Good" : verdict.tier === "misleading" ? "Concern" : "Fair",
+    scoreLabel: verdict.tier === "approved" ? "Excellent" : verdict.tier === "mostly-clean" ? "Good" : verdict.tier === "not-recommended" ? "Concern" : "Fair",
     targetUser: review.targetUser ?? "",
     image: review.imageUrl ?? "",
     pillars,

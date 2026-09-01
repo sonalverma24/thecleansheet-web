@@ -96,7 +96,7 @@ export default function ReviewPage() {
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d?.products)) setApprovedProducts(d.products); })
       .catch(() => { /* section stays hidden */ });
-  }, []); // static list — fetch once on mount, not on every review
+  }, []); // static list - fetch once on mount, not on every review
 
   // Deep link: /review?q=<product> runs the review on arrival (repository hits return instantly).
   const autoRan = useRef(false);
@@ -302,7 +302,7 @@ export default function ReviewPage() {
         </div>
       )}
 
-      {/* ═══ Results — THE one product-page format ═══ */}
+      {/* ═══ Results - THE one product-page format ═══ */}
       {review && verdict && !loading && (() => {
         const mapped = reviewToScorecard(review, verdict);
         return (

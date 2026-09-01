@@ -1,7 +1,7 @@
 /* ────────────────────────────────────────────────────────────────
    THE CLEAN SHEET™ · Product scorecard view
    THE one review format (extracted from the brand product page).
-   Renders a ProductScorecard + Brand — used by static catalogue pages,
+   Renders a ProductScorecard + Brand - used by static catalogue pages,
    stored repository reviews (/reviews/[slug]) and live /review results.
 ──────────────────────────────────────────────────────────────── */
 
@@ -9,8 +9,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin } from "lucide-react";
-import { scoreColors } from "@/data/brands";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
+import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import { simplifyPillarName } from "@/lib/pillar-display";
@@ -75,7 +75,6 @@ function pillarTone(pct: number) {
   return { color: "#fd6158", name: "#C2453D", label: "Concern" };
 }
 function pillarColor(pct: number) { return pillarTone(pct).color; }
-function pillarNameColor(pct: number) { return pillarTone(pct).name; }
 function pillarRatingLabel(pct: number) { return pillarTone(pct).label; }
 
 function PillarDots({ score, max }: { score: number; max: number }) {
@@ -96,7 +95,7 @@ function PillarDots({ score, max }: { score: number; max: number }) {
 }
 
 /** Dots + rating word, the shared "standing" mark shown in every section header
-    (no numbers — honours the tier-not-scores design). */
+    (no numbers - honours the tier-not-scores design). */
 function SectionRating({ score, max }: { score: number; max: number }) {
   const pct = Math.round((score / Math.max(max, 1)) * 100);
   return (
@@ -491,16 +490,110 @@ function IndiaUnavailableBody({ product }: { product: ProductScorecard }) {
   );
 }
 
+/* ── Category-driven qualitative screen (no scores) ── */
+const SCREEN_META: Record<string, { label: string; dot: string; fg: string }> = {
+  verified:  { label: "Clear",        dot: "#248179", fg: "#7fb0a6" },
+  disclosed: { label: "Brand-stated", dot: "#caa53a", fg: "#b79a52" },
+  adverse:   { label: "Note",         dot: "#fd6158", fg: "#d1897f" },
+};
+const SCREEN_PILLARS = [
+  "Ingredient Safety & Toxicity",
+  "Irritation & Allergen Risk",
+  "Ingredient Transparency",
+  "Standards & Compliance",
+  "Sustainability & Ethics",
+] as const;
+/* The screen shows only what we confirmed or the brand states. Adverse findings
+   are NOT repeated here - they lead the page in the "Worth knowing" callout. */
+const isShownFinding = (c: CheckResult) => c.state === "verified" || c.state === "disclosed";
+
+/** "What to know before you buy" - only real flags. Calm, not alarmist:
+    a warm hairline card, a quiet eyebrow, one clean line per flag. */
+function BeforeYouBuy({ flags }: { flags: CheckResult[] }) {
+  if (!flags.length) return null;
+  return (
+    <section id="before-you-buy">
+      <div className="rounded-[20px] border border-[#f0d9d4] bg-[#fdf6f4] px-5 py-5 sm:px-6 sm:py-6">
+        <p className="text-[10.5px] uppercase tracking-[0.16em] text-[#c2362f]/90 mb-4">Worth knowing before you buy</p>
+        <div className="space-y-4">
+          {flags.map((c) => (
+            <div key={c.id} className="flex items-start gap-3">
+              <span className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[7px] bg-[#fd6158]" />
+              <p className="text-[13.5px] sm:text-[14.5px] text-[#282828] leading-[1.55]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+                <span className="font-medium">{c.label}.</span>{" "}
+                <span className="text-[#282828]/80">{c.detail}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** The category-scoped safety & compliance screen - findings only (no scores,
+    undisclosed checks hidden). Airy rows, hairline group rules, quiet chips. */
+function SafetyScreen({ analysis }: { analysis: AnalysisReport }) {
+  const shown = analysis.checks.filter(isShownFinding);
+  if (!shown.length) return null;
+  return (
+    <section id="safety-screen">
+      <div className="flex items-center gap-2.5 mb-1.5">
+        <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+        <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Safety &amp; compliance screen</h2>
+      </div>
+      <p className="text-xs text-[#b0a8a4] pl-[19px] mb-4" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+        What we could confirm from public sources and the verified ingredient list.
+      </p>
+      <div className="bg-white rounded-[20px] border border-[#efe9e0] overflow-hidden">
+        {SCREEN_PILLARS.map((pillar) => {
+          const rows = shown.filter((c) => c.pillar === pillar);
+          if (!rows.length) return null;
+          return (
+            <div key={pillar} className="border-b border-[#f1ece4] last:border-0 px-5 sm:px-6 py-5">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-[#c3bbb2] mb-3.5">{pillar}</p>
+              <div className="space-y-4">
+                {rows.map((c) => {
+                  const m = SCREEN_META[c.state];
+                  return (
+                    <div key={c.id} className="flex items-start gap-3">
+                      <span className="w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[7px]" style={{ background: m.dot }} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="text-[13.5px] sm:text-[14.5px] text-[#282828] leading-snug" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{c.label}</span>
+                          <span className="text-[9.5px] uppercase tracking-[0.1em] flex-shrink-0" style={{ color: m.fg }}>{m.label}</span>
+                        </div>
+                        <p className="mt-1 text-[12.5px] text-[#282828]/55 leading-[1.55]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{c.detail}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-[10px] text-[#c3bbb2] leading-[1.6] pl-[1px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+        Screened against a curated reference set that we are continuing to verify and expand, so &ldquo;clear&rdquo; means no flag from that set, not a guarantee. Not a substitute for a full toxicological or clinical assessment.
+      </p>
+    </section>
+  );
+}
+
 export function ProductScorecardView({
   product,
   brand,
   brandSlug,
   relatedProducts = [],
+  analysis,
 }: {
   product: ProductScorecard;
   brand: Brand;
   brandSlug: string;
   relatedProducts?: ProductScorecard[];
+  /** Category-driven qualitative screen (live reviews only; undefined for
+      static catalogue products). Adds the safety screen + flags, no scores. */
+  analysis?: AnalysisReport;
 }) {
   const okCount = product.ingredients.filter((i) => i.flag === "ok").length;
   const warnCount = product.ingredients.filter((i) => i.flag === "warn").length;
@@ -528,6 +621,10 @@ export function ProductScorecardView({
       ) : (
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
 
+        {/* 0. What to know before you buy (live reviews only). Category already
+             lives in the hero eyebrow, so it is not repeated here. */}
+        {analysis && <BeforeYouBuy flags={analysis.redFlags} />}
+
         {/* 1. At a glance */}
         {atAGlance.length > 0 && (
           <section id="at-a-glance">
@@ -553,15 +650,13 @@ export function ProductScorecardView({
           </section>
         )}
 
-        {/* 2. What was checked — collapsible */}
+        {/* 2. What was checked - collapsible */}
         {proofCards.length > 0 && (() => {
-          const claimPillar = findPillar(product.pillars, /claim/i);
           return (
             <CollapsibleSection
               id="proof"
               title="What was checked"
               subtitle={`${product.claimsCheck?.length ?? proofCards.length} claims checked against public evidence`}
-              headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}
             >
               <div className="p-4">
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -603,33 +698,27 @@ export function ProductScorecardView({
           );
         })()}
 
-        {/* 3. Score breakdown */}
+        {/* 2b. Category-driven safety & compliance screen (live reviews) */}
+        {analysis && <SafetyScreen analysis={analysis} />}
+
+        {/* 3. The detail - per-area rationale (no scores).
+             Live reviews lead with the Safety & compliance screen above, so this
+             second audit block is shown only for static catalogue products
+             (which have no analysis) to avoid two parallel audits on one page. */}
+        {!analysis && (
         <section id="score-rationale">
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2.5">
-                <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>The breakdown</h2>
-              </div>
-              {product.publicDecisionLabel && (
-                <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#248179]/10 text-[#248179] border border-[#248179]/20">
-                  {product.publicDecisionLabel}
-                </span>
-              )}
+            <div className="flex items-center gap-2.5 mb-1">
+              <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+              <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>The detail</h2>
             </div>
             <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
-              {product.publicDecisionLabel
-                ? `Public Evidence Score across ${product.pillars.length} pillars. Open any row for the full rationale.`
-                : `How this product was rated across ${product.pillars.length} areas. Open any row for the full rationale.`}
+              How we read this product across {product.pillars.length} areas. Open any row for the full rationale.
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
             {product.pillars.map((pillar) => {
               const displayName = simplifyPillarName(pillar.name);
-              const pct = Math.round((pillar.score / pillar.max) * 100);
-              const color = pillarColor(pct);
-              const nameColor = pillarNameColor(pct);
-              const ratingLabel = pillarRatingLabel(pct);
               const rawSummary = translateLadder(generatePillarSummary(pillar, product));
               const detail = translateLadder(pillar.note ?? "");
               // Drop the summary when it is just the opening of the detailed note (the old duplication).
@@ -643,18 +732,9 @@ export function ProductScorecardView({
                   <summary className="px-4 py-3.5 cursor-pointer list-none select-none">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
-                        <PillarDots score={pillar.score} max={pillar.max} />
-                        <span className="text-sm" style={{ color: nameColor, fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
+                        <span className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0 ml-4">
-                        {pillar.evidenceGrade && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded border text-[#b0a8a4] border-[#efe9e0]">
-                            Grade {pillar.evidenceGrade}
-                          </span>
-                        )}
-                        <span className="text-xs" style={{ color, fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{ratingLabel}</span>
-                        <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0" />
-                      </div>
+                      <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
                     </div>
                   </summary>
                   <div className="px-4 pb-4 pt-4 bg-[#f7f7f5] border-t border-[#efe9e0] space-y-2">
@@ -684,16 +764,15 @@ export function ProductScorecardView({
             })}
           </div>
         </section>
+        )}
 
-        {/* 4. Full ingredient list — collapsible */}
+        {/* 4. Full ingredient list - collapsible */}
         {(() => {
-          const inciPillar = findPillar(product.pillars, /inci|transparency/i);
           return (
             <CollapsibleSection
               id="ingredients"
               title="Ingredient list"
               subtitle={`${product.ingredients.length} ingredients · INCI order`}
-              headerRight={inciPillar ? <SectionRating score={inciPillar.score} max={inciPillar.max} /> : undefined}
             >
               <div className="p-4">
                 <div className="flex items-center gap-4 mb-2.5">
@@ -744,7 +823,7 @@ export function ProductScorecardView({
           );
         })()}
 
-        {/* 5. Regulatory screen — collapsible */}
+        {/* 5. Regulatory screen - collapsible */}
         {product.globalScreen && (() => {
           const authorities = [
             { key: "eu_1223_2009",        label: "EU 1223/2009",         desc: "EU Cosmetics Regulation - Annexes II–VI" },
@@ -803,11 +882,11 @@ export function ProductScorecardView({
           );
         })()}
 
-        {/* 5b. Regulatory screen — claim level (ASCI + India drug-cosmetic boundary) — collapsible */}
+        {/* 5b. Regulatory screen - claim level (ASCI + India drug-cosmetic boundary) - collapsible */}
         {product.regulatoryFlags && product.regulatoryFlags.length > 0 && (
           <CollapsibleSection
             id="regulatory-claims"
-            title="Regulatory screen — claims"
+            title="Regulatory screen - claims"
             subtitle="ASCI advertising code and the India drug-cosmetic boundary."
             headerRight={
               <span className="flex items-center gap-2.5">
@@ -832,7 +911,7 @@ export function ProductScorecardView({
           </CollapsibleSection>
         )}
 
-        {/* 6. Claims check — collapsible */}
+        {/* 6. Claims check - collapsible */}
         {product.claimsCheck && product.claimsCheck.length > 0 && (() => {
           const claimPillar = findPillar(product.pillars, /claim/i);
           const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
@@ -954,7 +1033,6 @@ export function ProductScorecardView({
             </div>
             <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2">
               {relatedProducts.map((p) => {
-                const c = scoreColors(p.score);
                 return (
                   <Link
                     key={p.slug}

@@ -14,6 +14,8 @@ import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
+import { bannedIngredientsInInci } from "@/data/analysis/ingredient-risk";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -46,36 +48,153 @@ function isValidProductReview(p: unknown): p is ProductReview {
   return true;
 }
 
-/* ═══════════════ Derived approved / not-approved verdict ═══════════════
-   "Clean Sheet Approved" must mean the CLAIMS themselves hold up — not just a
-   good blended score. The whole product is "proof, not promises", so the top
-   tier is gated on the claim-evidence dimension, not the average of seven. */
+/* ═══════════════ Code-verified hard flags (the guardrails) ═══════════════
+   A product can only drop to "Not Recommended" on a HARD flag, and a hard flag
+   must survive two code checks, so the model can never send an honest product
+   down a tier by fabricating a claim or mis-reading the INCI:
+
+     Guardrail 1 - INCI truth: a "contains X" claim is never a contradiction
+       (an absent active is UNVERIFIED, not a lie). A "free-from X" claim only
+       counts against the brand when X is CONFIRMABLY present in the retrieved
+       INCI. If we cannot confirm the contradiction in code, we void the flag.
+     Guardrail 2 - corroboration: a claim the engine could not find in any
+       source it actually scraped (corroborated === false) is never hard-flagged
+       - it may be a model hallucination (e.g. an invented "silicone-free"). */
+
+const isFreeFromClaim = (t: string) => /\bfree\b|[- ]free\b|\bwithout\b|\bno\b\s|\bzero\b/i.test(t);
+const isContainsClaim = (t: string) => /\bwith\b|\bcontains?\b|\benriched\b|\bboosted\b|\binfused\b|\bpowered by\b|\d+\s*%/i.test(t);
+
+/** Guardrail 1. Returns true when a contradiction/red-flag on an ingredient
+    claim is CODE-CONFIRMED against the retrieved INCI, false when it should be
+    voided. It defers all ingredient-identity questions to the ingredient
+    intelligence layer, so "Hyaluronic Acid" ↔ "Sodium Hyaluronate", "sulphate"
+    ↔ SLS/SLES (but not Magnesium Sulphate), etc. are understood in one place.
+    Non-ingredient hard flags (drug-boundary treatment language) are judged
+    separately in deriveVerdict. */
+function inciConfirmsContradiction(claimText: string, inci: string[]): boolean {
+  if (!inci.length) return false; // no INCI retrieved → cannot confirm → void
+
+  // "contains X" is never a contradiction: a present active supports the claim,
+  // an absent one is merely unverified. Either way, not a hard flag.
+  if (isContainsClaim(claimText) && !isFreeFromClaim(claimText)) return false;
+
+  // "free-from X": a genuine contradiction only when the ingredient intelligence
+  // layer confirms one of the named things (across all its INCI forms) is present.
+  // resolveConcepts (plural) handles multi-target claims like "silicone & paraben free".
+  if (isFreeFromClaim(claimText)) {
+    return resolveConcepts(claimText).some((concept) => inciContainsConcept(inci, concept));
+  }
+  return false;
+}
+
+/** Is this claim an INCI-based flag (free-from / contains / percentage active)
+    rather than a drug-boundary treatment claim? Those go through guardrail 1. */
+function isIngredientClaim(t: string): boolean {
+  return isFreeFromClaim(t) || isContainsClaim(t);
+}
+
+/* Common words that don't identify what a claim is ABOUT - ignored when we test
+   whether a claim's subject actually appears in the scraped page. */
+const CLAIM_STOP = new Set([
+  "with", "without", "free", "from", "this", "that", "your", "skin", "hair",
+  "product", "formula", "helps", "help", "provides", "clinically", "tested",
+  "proven", "results", "visible", "reduces", "improves",
+]);
+
+/** Guardrail 2. When a real text corpus was scraped, mark each hard-flag
+    candidate claim as corroborated only if its distinctive subject word(s)
+    actually appear in that text. A substantial corpus that never mentions the
+    claim's subject ⇒ corroborated=false (likely fabricated). No/short corpus
+    (e.g. a name-only query) ⇒ left undefined (assumed made). Mutates in place. */
+function markClaimCorroboration(review: ProductReview, corpus: string): void {
+  const text = corpus.toLowerCase();
+  if (text.replace(/\s+/g, " ").trim().length < 400) return; // too little to judge
+
+  for (const c of review.claimMap ?? []) {
+    if (!(c.drugBoundaryRisk || c.riskLevel === "red-flag")) continue; // only hard candidates
+    const distinctive = (c.text.toLowerCase().match(/[a-z]+/g) || [])
+      .filter((t) => t.length >= 5 && !CLAIM_STOP.has(t))
+      .sort((a, b) => b.length - a.length)
+      .slice(0, 2);
+    if (!distinctive.length) continue; // nothing distinctive to test - leave as made
+    c.corroborated = distinctive.some((t) => text.includes(t));
+  }
+}
+
+/* ═══════════════ Derived standing (computed in code) ═══════════════
+   Four standings, best → worst. "Clean Sheet Approved" must mean the CLAIMS
+   themselves hold up - not just a good blended score - so the top tier is gated
+   on the claim-evidence dimension. "Not Recommended" is the ONLY negative-naming
+   tier and requires a code-verified problem. Missing proof is "Can Do Better",
+   never "Not Recommended". Full definitions in STAMPS.md. */
 export const APPROVAL_BAR = 85;
-const CLAIM_EVIDENCE_BAR = 15; // out of 20 — headline claims carry finished-product / clinical proof
+const CLAIM_EVIDENCE_BAR = 15; // out of 20 - headline claims carry finished-product / clinical proof
 
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const evidencePts = r.scores?.claimEvidence ?? 0;      // out of 20
   const formulaPts = r.scores?.formulaLogic ?? 0;        // out of 15
   const total = r.scores?.total ?? 0;                    // out of 100
   const overreach = r.formulaLogic?.claimOverreach === true;
+  const inci = r.inciIngredients ?? [];
 
-  /* HARD flags, judged claim by claim, because the model historically
-     over-flags two harmless patterns: standard SPF/PA labelling (sunscreens
-     are licensed cosmetics in India) and aspirational puffery ("no more
-     blemishes!"). Only count:
-       - drug-boundary claims that are NOT plain SPF/UV labelling
-       - red-flags that are explicit treatment promises, prohibited fairness
-         language, or contradicted by the product's own INCI. */
+  /* HARD flags, judged claim by claim. The model historically over-flags two
+     harmless patterns - standard SPF/PA labelling (sunscreens are licensed
+     cosmetics in India) and aspirational puffery - and, as seen in the wild,
+     sometimes fabricates a "free-from" claim or ignores a present active. The
+     two guardrails below turn its assertion into a code-verified fact before it
+     can count. A hard flag is only:
+       - a drug-boundary claim that is NOT plain SPF/UV labelling, OR
+       - a red-flag whose context is a treatment promise / unlawful language,
+         OR an INCI contradiction that guardrail 1 actually confirms -
+     and in every case the claim must be corroborated (guardrail 2). */
   const SPF_LABEL_RE = /spf|pa\+|uva|uvb|broad.?spectrum|sun.?protection|blue light/i;
   const HARD_RED_RE = /\b(cures?|treats?|heals?|whitens?|whitening|fairness|lightens?\s+skin|permanent(?:ly)?|guaranteed?)\b|contradict|not listed in|inci lists|own ingredient/i;
-  const hardFlags = (r.claimMap ?? []).filter((c) => {
-    const ctx = `${c.text} ${c.evidenceNote ?? ""} ${c.asciNote ?? ""} ${c.drugBoundaryNote ?? ""}`;
-    if (c.drugBoundaryRisk && !SPF_LABEL_RE.test(c.text)) return true;
-    if (c.riskLevel === "red-flag" && HARD_RED_RE.test(ctx)) return true;
-    return false;
-  }).length;
 
-  // Gates are informational; only `lawful` can block on its own.
+  const hardClaims = (r.claimMap ?? []).filter((c) => {
+    // Guardrail 2: a claim the engine could not corroborate in any scraped
+    // source is never counted - it may be a hallucination.
+    if (c.corroborated === false) return false;
+
+    const ctx = `${c.text} ${c.evidenceNote ?? ""} ${c.asciNote ?? ""} ${c.drugBoundaryNote ?? ""}`;
+    const isDrugBoundary = c.drugBoundaryRisk && !SPF_LABEL_RE.test(c.text);
+    const isRedFlag = c.riskLevel === "red-flag" && HARD_RED_RE.test(ctx);
+    if (!isDrugBoundary && !isRedFlag) return false;
+
+    // Guardrail 1: if this is an ingredient (free-from / contains) claim, the
+    // contradiction must be code-confirmed against the retrieved INCI. Absent
+    // confirmation, void it. Drug-boundary treatment claims are not INCI claims
+    // and pass through (still subject to guardrail 2 above).
+    if (isIngredientClaim(c.text) && !isDrugBoundary) {
+      // A free-from contradiction may only stand when it was corroborated in a
+      // scraped source. On a name-only query, where no page was read, we cannot
+      // confirm the brand ever made the claim, so we do NOT let it force "Not
+      // Recommended" (the conservative, defensible direction).
+      if (c.corroborated !== true) return false;
+      return inciConfirmsContradiction(c.text, inci);
+    }
+    return true;
+  });
+
+  // Mark voided claims so the UI / audit trail can show WHY a model flag was
+  // dropped (mutation is safe - deriveVerdict owns the derived view).
+  for (const c of r.claimMap ?? []) {
+    const ctx = `${c.text} ${c.evidenceNote ?? ""} ${c.asciNote ?? ""} ${c.drugBoundaryNote ?? ""}`;
+    const wasCandidate =
+      (c.drugBoundaryRisk && !SPF_LABEL_RE.test(c.text)) ||
+      (c.riskLevel === "red-flag" && HARD_RED_RE.test(ctx));
+    c.inciFlagVoided = wasCandidate && !hardClaims.includes(c);
+  }
+
+  const hardFlags = hardClaims.length;
+
+  // Hard SAFETY gate: an ingredient PROHIBITED in cosmetics (not merely
+  // concentration-restricted) can never carry a Clean Sheet approval. This is
+  // the one place ingredient safety reaches the stamp, so the badge and the
+  // safety screen can no longer contradict each other.
+  const banned = bannedIngredientsInInci(inci);
+  const hasBannedIngredient = banned.length > 0;
+
+  // Gates are informational; `lawful` or the safety gate can block on their own.
   const lawful = hardFlags === 0;
   const honest = evidencePts >= 10;                      // ≥ half the evidence points
   // Material overreach = flagged AND the formula score itself is mediocre.
@@ -85,12 +204,20 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 
   const gates: ReviewGate[] = [
     {
+      id: "safety",
+      label: "Ingredient safety",
+      passed: !hasBannedIngredient,
+      detail: hasBannedIngredient
+        ? `Contains an ingredient prohibited in cosmetics: ${banned.map((b) => b.stem).join(", ")}`
+        : "No ingredient prohibited in cosmetics found in the retrieved list",
+    },
+    {
       id: "claims",
       label: "Lawful claims",
       passed: lawful,
       detail: lawful
-        ? "No drug-boundary or unlawful claims found"
-        : `${hardFlags} claim(s) cross the India drug-cosmetic boundary or are contradicted`,
+        ? "No drug-boundary or INCI-contradicted claims confirmed"
+        : `${hardFlags} claim(s) cross the India drug-cosmetic boundary or are contradicted by the product's own INCI`,
     },
     {
       id: "evidence",
@@ -114,39 +241,43 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     },
   ];
 
-  /* 4-tier ladder.
-     - misleading: hard triggers only (drug-boundary, or a red-flag = unlawful
-       language / claim contradicted by the brand's own INCI). Missing proof is
-       NEVER misleading.
-     - approved: high overall score AND the claims themselves are well evidenced,
-       so the badge never sits above a claim list full of "outruns proof".
-     - mostly-clean: a well-made, transparent product whose claims lean on
-       ingredient evidence rather than finished-product proof.
-     - needs-proof: claims may be honest but the proof isn't publicly visible. */
+  /* 4-tier ladder (best → worst):
+     - not-recommended: a code-verified problem only - a confirmed drug-boundary
+       crossing or an INCI-contradicted claim (guardrails passed). Missing proof
+       is NEVER "not-recommended".
+     - approved: high overall score AND the claims themselves are well evidenced.
+     - mostly-clean: safe & honest, but proof leans on ingredient evidence.
+     - can-do-better: safe, no confirmed problem, but thin proof / transparency
+       or claims that outrun their evidence. */
   const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
   const tier: DerivedVerdict["tier"] =
-    hardFlags > 0
-      ? "misleading"
+    (hardFlags > 0 || hasBannedIngredient)
+      ? "not-recommended"
       : total >= APPROVAL_BAR && claimsHoldUp
         ? "approved"
         : total >= 65
           ? "mostly-clean"
-          : "needs-proof";
+          : "can-do-better";
 
   const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
-    "approved":     { label: "Clean Sheet Approved", headline: "Claims hold up to the evidence." },
-    "mostly-clean": { label: "Mostly Clean",         headline: "A well-made product, but some claims rest on ingredient evidence, not finished-product proof." },
-    "needs-proof":  { label: "Needs Proof",          headline: "The claims may be honest, but the proof isn't publicly visible yet." },
-    "misleading":   { label: "Misleading Claims",    headline: "Makes claims that aren't permitted or are contradicted by its own ingredient list." },
+    "approved":         { label: "Clean Sheet Approved", headline: "Claims hold up to the evidence." },
+    "mostly-clean":     { label: "Mostly Clean",         headline: "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof." },
+    "can-do-better":    { label: "Can Do Better",        headline: "Nothing wrong here, but the proof and transparency don't yet match the claims." },
+    "not-recommended":  { label: "Not Recommended",      headline: "Makes a claim that isn't permitted in India, or one the product's own ingredient list contradicts." },
   };
+
+  // A banned ingredient gives "Not Recommended" a safety-specific headline.
+  const headline = tier === "not-recommended" && hasBannedIngredient
+    ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].stem})` : ""}.`
+    : TIER_META[tier].headline;
 
   return {
     status: tier === "approved" ? "approved" : "not_approved",
     tier,
     tierLabel: TIER_META[tier].label,
-    headline: TIER_META[tier].headline,
+    headline,
     gates,
-    standard: `${REVIEW_METHODOLOGY_VERSION} · claims · evidence · formula`,
+    standard: `${REVIEW_METHODOLOGY_VERSION} · safety · claims · evidence · formula`,
   };
 }
 
@@ -163,20 +294,20 @@ export type ProductReviewResult =
    review. L1 = in-memory; L2 = Supabase public.product_reviews. Defensive. */
 const REVIEW_CACHE = new Map<string, ProductReviewResult>();
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
-export const RUBRIC_REV = "r5";
+export const RUBRIC_REV = "r6"; // r6: 4-tier stamp rename + code-verified hard-flag guardrails
 
 /* Reviews pulled from the site. Suppressed on every read path (getStored,
    listings, catalogue); the stored row is left intact so it can be restored or
    hard-deleted later. Used for known-wrong source data pending re-review, and for
    removing duplicates (e.g. a second review of the same product created because
-   the product couldn't be resolved to a canonical slug — see runProductReview). */
+   the product couldn't be resolved to a canonical slug - see runProductReview). */
 const RETRACTED_SLUGS = new Set<string>([
   "la-roche-posay-cicaplast-balm",
   "moxie-curly-hair-shampoo", // duplicate Moxie shampoo review (AI-generated imagery); other Moxie review kept
 ]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
-   review — verdict rule changes then apply without re-running the model. */
+   review - verdict rule changes then apply without re-running the model. */
 function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
   return r.type === "product-review" ? { ...r, verdict: deriveVerdict(r.review) } : r;
 }
@@ -265,7 +396,7 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
       productSlug: String(r.product_slug),
       productName: String(r.product_name ?? ""),
       brand: String(r.brand ?? ""),
-      tier: String(r.tier ?? "needs-proof"),
+      tier: String(r.tier ?? "can-do-better"),
       imageUrl: (r.image_url as string | null) ?? null,
       reviewedAt: String(r.reviewed_at ?? ""),
     }));
@@ -287,7 +418,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       .limit(limit);
 
     const tierToLegacy: Record<string, "Excellent" | "Good" | "Fair" | "Concern"> =
-      { "approved": "Excellent", "mostly-clean": "Good", "needs-proof": "Fair", "misleading": "Concern" };
+      { "approved": "Excellent", "mostly-clean": "Good", "can-do-better": "Fair", "not-recommended": "Concern" };
     const num = (s: string | undefined): number | undefined => {
       const m = String(s ?? "").replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
       return m ? parseFloat(m[1]) : undefined;
@@ -368,7 +499,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
         if (doc) docs.push(`SOURCE: ${link}\n${productBodyExcerpt(doc, 4000)}`);
       }
       if (docs.length) {
-        evidenceBlock = `\n\nBRAND-PUBLISHED EVIDENCE (linked from the product page — read carefully; a real test report here counts as finished-product evidence, Level 4, or Level 5 if an independent lab is named; extract sample size, method, duration, endpoint):\n${docs.join("\n---\n")}`;
+        evidenceBlock = `\n\nBRAND-PUBLISHED EVIDENCE (linked from the product page - read carefully; a real test report here counts as finished-product evidence, Level 4, or Level 5 if an independent lab is named; extract sample size, method, duration, endpoint):\n${docs.join("\n---\n")}`;
       }
     }
   } else {
@@ -392,7 +523,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     : "";
 
   const pageBlock = pageExcerpt
-    ? `\n\nPRODUCT PAGE CONTENT (scraped from the URL the user provided — treat as the primary source of the product's claims):\n${pageExcerpt}`
+    ? `\n\nPRODUCT PAGE CONTENT (scraped from the URL the user provided - treat as the primary source of the product's claims):\n${pageExcerpt}`
     : "";
 
   const userPrompt = isURL(q)
@@ -415,12 +546,22 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const review = parsed as ProductReview;
 
+  /* Guardrail 2 (corroboration): when we actually scraped a product page and/or
+     brand evidence, verify that each claim we might penalise the brand for is
+     genuinely present in that text. A red-flag / drug-boundary claim whose
+     subject never appears in what we scraped is treated as uncorroborated and
+     is NOT hard-flagged - this is what stops an invented claim (e.g. a
+     "silicone-free" the brand never made) from dropping a product a tier.
+     Name-only queries have no page corpus, so claims stay unmarked (assumed
+     made) and only guardrail 1 (INCI truth) applies. */
+  markClaimCorroboration(review, `${pageExcerpt}\n${evidenceBlock}`);
+
   /* Canonical identity + de-dupe. If the product resolved on INCIDecoder, `slug`
      is already canonical. Otherwise it was slugified from the raw query TEXT,
      which (a) makes ugly URLs and (b) lets two differently-worded searches for the
      same product create two separate rows. Now that the model has returned a clean
      brand + product name, recompute a canonical slug and de-dupe against it before
-     doing any more work — a second search for the same product now serves the
+     doing any more work - a second search for the same product now serves the
      existing review instead of creating a duplicate. */
   const canonicalSlug = inci?.slug ?? slugify(review.productName, review.brand);
   if (canonicalSlug !== slug) {
