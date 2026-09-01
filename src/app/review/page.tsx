@@ -12,9 +12,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
+import { runAnalysis } from "@/lib/analysis-engine";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
 import type { VerifiedProduct } from "@/lib/types";
 import { track } from "@/lib/analytics";
+import { useAuth } from "@/components/auth/AuthProvider";
+
+const GATE_TITLE = "Sign in to analyse a product";
+const GATE_SUBTITLE = "Create a free account to run a Clean Sheet analysis on any product.";
 
 const EASE = [0.25, 0.1, 0.25, 1] as const;
 
@@ -70,6 +75,7 @@ function ProductImage({ src, brand }: { src?: string | null; brand: string }) {
 }
 
 export default function ReviewPage() {
+  const { user, loading: authLoading, openLoginModal } = useAuth();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -95,16 +101,29 @@ export default function ReviewPage() {
   // Deep link: /review?q=<product> runs the review on arrival (repository hits return instantly).
   const autoRan = useRef(false);
   useEffect(() => {
-    if (autoRan.current) return;
+    // Wait for auth to resolve before auto-running: a user returning from the
+    // Google/email sign-in redirect must be recognised so their analysis fires,
+    // rather than being bounced straight back to the login modal.
+    if (authLoading || autoRan.current) return;
     autoRan.current = true;
     const q = new URLSearchParams(window.location.search).get("q");
     if (q?.trim()) { setQuery(q); analyze(q); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading]);
 
   const analyze = useCallback(async (q?: string) => {
     const text = (q ?? query).trim();
     if (!text || inFlight.current) return;
+    // Analysing a product is a signed-in action. Bounce anonymous users to the
+    // login modal, preserving the query so the analysis auto-runs on return.
+    if (!user) {
+      openLoginModal({
+        returnPath: `/review?q=${encodeURIComponent(text)}`,
+        title: GATE_TITLE,
+        subtitle: GATE_SUBTITLE,
+      });
+      return;
+    }
     inFlight.current = true;
     // Single capture point for every review-engine search: the hero bar on
     // /brands, direct /review searches, and the suggestion chips all land here.
@@ -123,6 +142,15 @@ export default function ReviewPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: text }),
       });
+      // Session expired between page load and submit: re-prompt sign-in.
+      if (res.status === 401) {
+        openLoginModal({
+          returnPath: `/review?q=${encodeURIComponent(text)}`,
+          title: GATE_TITLE,
+          subtitle: GATE_SUBTITLE,
+        });
+        return;
+      }
       const data = await res.json();
       if (res.status === 503 || data?.error === "busy") { setError("busy"); return; }
       if (data?.type === "product-review" && data.review) {
@@ -150,7 +178,7 @@ export default function ReviewPage() {
       setLoading(false);
       inFlight.current = false;
     }
-  }, [query]);
+  }, [query, user, openLoginModal]);
 
   const approved = verdict?.status === "approved";
 
@@ -279,7 +307,7 @@ export default function ReviewPage() {
         const mapped = reviewToScorecard(review, verdict);
         return (
           <div ref={resultsRef}>
-            <ProductScorecardView product={mapped.product} brand={mapped.brand} brandSlug={mapped.brandSlug} />
+            <ProductScorecardView product={mapped.product} brand={mapped.brand} brandSlug={mapped.brandSlug} analysis={runAnalysis(review)} />
           </div>
         );
       })()}
