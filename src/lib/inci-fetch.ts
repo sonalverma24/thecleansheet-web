@@ -207,7 +207,7 @@ export function inciGroundTruthBlock(inci: INCIResult | null): string {
   if (!inci || !inci.ingredients.length) {
     return `\n\nINGREDIENT LIST: could not be retrieved automatically. Do NOT assert which ingredients are present or absent from memory - search for the INCI, and if you still cannot confirm it, mark ingredient-dependent claims as unverified.`;
   }
-  return `\n\nRETRIEVED INGREDIENT LIST for "${inci.productName}" (from INCIDecoder, ${inci.source}). Use it as follows:
+  return `\n\nRETRIEVED INGREDIENT LIST for "${inci.productName}" (source: ${inci.source}). Use it as follows:
 - Anti-fabrication: do NOT state the product contains an ingredient (e.g. Parfum, Alcohol) unless it appears in this list.
 - "Free-from X" claim: if X is NOT in this list, the claim is SUPPORTED. Only flag a conflict if you can QUOTE X in this list.
 - "Contains active X" claim: FIRST map the marketing name to its INCI name, THEN check. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid or Sodium Ascorbyl Phosphate or Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.

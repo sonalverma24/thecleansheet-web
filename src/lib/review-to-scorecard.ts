@@ -8,6 +8,7 @@
 import type { ProductReview, DerivedVerdict, ClaimAnalysis } from "@/lib/product-review-types";
 import type { ProductScorecard, Brand, ClaimsCheckItem, ScorePillar } from "@/data/brands/types";
 import { slugify } from "@/lib/verified-store";
+import { reviewInciList } from "@/lib/review-inci";
 import { enrichIngredients, keyActivesFrom, buildGlobalScreen } from "@/lib/inci-enrich";
 import type { GlobalScreen, IngredientEntry, KeyActive } from "@/data/brands/types";
 
@@ -119,7 +120,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   if (hasLow(/essential oil/)) pass_badges.push("No Essential Oils");
 
   const warn_badges: string[] = [...(review.formulaLogic?.irritancyConcerns ?? [])];
-  const inci = review.inciIngredients ?? [];
+  const inci = reviewInciList(review);
   if (inci.some((i) => FRAGRANCE_RE.test(i.trim()))) warn_badges.push("Fragrance present (parfum)");
 
   // The 7 review dimensions as pillars (dots + label only in the view - no numerics shown).
@@ -157,13 +158,29 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
       : keyActivesFrom(inci);
 
   const rs = review.regulatoryScreen;
-  const globalScreen: GlobalScreen | undefined = rs
-    ? {
-        eu_1223_2009: rs.eu_1223_2009, india_cr_2020: rs.india_cr_2020, us_fda_21cfr: rs.us_fda_21cfr,
-        korea_mfds: rs.korea_mfds, health_canada_hotlist: rs.health_canada_hotlist, canada_nhpid: rs.canada_nhpid,
-        tga_australia: rs.tga_australia, aicis_australia: rs.aicis_australia, echa_svhc: rs.echa_svhc, iarc: rs.iarc,
-      }
-    : (inci.length >= 3 ? buildGlobalScreen(inci) : undefined);
+  // A regulatory screen the model authored WITHOUT an INCI is filled with "not
+  // applicable due to missing INCI" placeholders. Now that we've recovered the
+  // ingredient list (INCIDecoder → brand page → reads), rebuild that screen from
+  // the ingredient database instead of serving the stale "missing INCI" rows.
+  const rsStale =
+    !rs ||
+    Object.values(rs).some((v) => /missing inci|no inci\b|inci (?:not|un)available|not available.*inci/i.test(String(v)));
+  const globalScreen: GlobalScreen | undefined =
+    rs && !rsStale
+      ? {
+          eu_1223_2009: rs.eu_1223_2009, india_cr_2020: rs.india_cr_2020, us_fda_21cfr: rs.us_fda_21cfr,
+          korea_mfds: rs.korea_mfds, health_canada_hotlist: rs.health_canada_hotlist, canada_nhpid: rs.canada_nhpid,
+          tga_australia: rs.tga_australia, aicis_australia: rs.aicis_australia, echa_svhc: rs.echa_svhc, iarc: rs.iarc,
+        }
+      : inci.length >= 3
+        ? buildGlobalScreen(inci)
+        : rs
+          ? {
+              eu_1223_2009: rs.eu_1223_2009, india_cr_2020: rs.india_cr_2020, us_fda_21cfr: rs.us_fda_21cfr,
+              korea_mfds: rs.korea_mfds, health_canada_hotlist: rs.health_canada_hotlist, canada_nhpid: rs.canada_nhpid,
+              tga_australia: rs.tga_australia, aicis_australia: rs.aicis_australia, echa_svhc: rs.echa_svhc, iarc: rs.iarc,
+            }
+          : undefined;
 
   const product: ProductScorecard = {
     productName: review.productName,

@@ -12,6 +12,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import type { ProductReview } from "@/lib/product-review-types";
+import { reviewInciList } from "@/lib/review-inci";
 import type { AnalysisReport, CheckResult, CheckState, AuditPillar, CheckAxis, Obtainability } from "@/lib/analysis-types";
 import { categorise, categoryLabel } from "@/lib/product-categorise";
 import type { ProductCategory } from "@/data/analysis/categories";
@@ -118,12 +119,24 @@ const verifiedIf = (cond: boolean, yes: string, no: string): Eval =>
 const privateDoc = (what: string): Eval =>
   ({ state: "not-disclosed", detail: `${what} is not published for consumers (manufacturing/lab document).` });
 
+/* Human-readable source for the INCI verification line: names INCIDecoder, or
+   the brand/retailer host the list was read from, else the physical label. */
+function inciSourceLabel(sourceUrl?: string): string {
+  if (!sourceUrl) return "the label";
+  if (/incidecoder\.com/i.test(sourceUrl)) return "INCIDecoder";
+  try {
+    return `the product page (${new URL(sourceUrl).hostname.replace(/^www\./, "")})`;
+  } catch {
+    return "the product page";
+  }
+}
+
 /* ═══════════════ The checklist (category-scoped) ═══════════════ */
 const CHECKS: CheckDef[] = [
   // ── Ingredient Safety & Toxicity ──
   { id: "inci_verified", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "INCI verification", axis: "safety", obtainability: "public",
     evaluate: (c) => c.hasInci
-      ? { state: "verified", detail: `Full ingredient list retrieved and verified against ${c.review.inciSourceUrl ? "INCIDecoder" : "the label"}.`, source: c.review.inciSourceUrl }
+      ? { state: "verified", detail: `Full ingredient list retrieved and verified against ${inciSourceLabel(c.review.inciSourceUrl)}.`, source: c.review.inciSourceUrl }
       : { state: "not-disclosed", detail: "A verified INCI list could not be retrieved from a public source." } },
   { id: "cas_synonyms", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "CAS numbers & synonyms", axis: "proof", obtainability: "private",
     evaluate: () => ({ state: "not-disclosed", detail: "Per-ingredient CAS identity is not published on the product page (available in a full dossier)." }) },
@@ -285,7 +298,7 @@ const CHECKS: CheckDef[] = [
 /* ═══════════════ Build context ═══════════════ */
 function buildContext(review: ProductReview): Ctx {
   const category = categorise(review.category, `${review.productName} ${review.heroPromise ?? ""}`);
-  const inci = review.inciIngredients ?? [];
+  const inci = reviewInciList(review);
   const inciJoined = inci.join(" | ").toLowerCase();
   const hasInci = inci.length >= 3;
   // Only the brand's own claim text + hero promise. NOT evidenceNote (that is our

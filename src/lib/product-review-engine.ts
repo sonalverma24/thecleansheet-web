@@ -12,6 +12,8 @@ import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiv
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
+import { fetchInciFromProductPage } from "@/lib/inci-from-page";
+import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
@@ -136,7 +138,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const formulaPts = r.scores?.formulaLogic ?? 0;        // out of 15
   const total = r.scores?.total ?? 0;                    // out of 100
   const overreach = r.formulaLogic?.claimOverreach === true;
-  const inci = r.inciIngredients ?? [];
+  const inci = reviewInciList(r);
 
   /* HARD flags, judged claim by claim. The model historically over-flags two
      harmless patterns - standard SPF/PA labelling (sunscreens are licensed
@@ -481,6 +483,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // Name queries: resolve on INCIDecoder (ambiguous → ask, don't guess).
   // URLs: scrape the page, take its product name, then resolve the same way.
   let inci: INCIResult | null = null;
+  // When INCIDecoder has no entry for the product (common for Indian brands and
+  // anything launched recently), the full INCI is still usually printed on the
+  // brand's own PDP. This holds that page-scraped list so the review grades
+  // against the real ingredients instead of reporting "INCI not available".
+  let pageInci: import("@/lib/inci-from-page").PageINCI | null = null;
   let pageExcerpt = "";
   let evidenceBlock = "";
   let pageName: string | null = null;
@@ -491,6 +498,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       pageExcerpt = productBodyExcerpt(page);
       pageName = titleFromMarkdown(page);
       if (pageName) inci = (await resolveINCI(pageName)).chosen;
+      // INCIDecoder missed it → read the INCI straight off the product page.
+      if (!inci) pageInci = await fetchInciFromProductPage(q);
 
       // Brand-published evidence: follow report/study/certificate links and read them.
       const links = evidenceLinksFromMarkdown(page, q);
@@ -516,7 +525,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const stored = await getStored(slug);
   if (stored) return stored;
 
-  const inciBlock = inciGroundTruthBlock(inci);
+  // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
+  // the list read off the brand's product page.
+  const groundTruth: INCIResult | null =
+    inci ??
+    (pageInci
+      ? { productName: pageName ?? q, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null }
+      : null);
+  const inciBlock = inciGroundTruthBlock(groundTruth);
   // Anchor the review identity to the resolved product so its name never drifts from
   // the ingredient list we actually used.
   const anchor = inci
@@ -586,9 +602,18 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;
+  // Ground truth for the INCI, best source first: INCIDecoder, then the brand
+  // page we scraped, then whatever the model itself transcribed into its
+  // per-ingredient reads. Anything present means the analyser and scorecard grade
+  // against a real list rather than reporting "INCI not available".
   if (inci) {
     review.inciIngredients = inci.ingredients;
     review.inciSourceUrl = inci.source;
+  } else if (pageInci) {
+    review.inciIngredients = pageInci.ingredients;
+    review.inciSourceUrl = pageInci.source;
+  } else if (!review.inciIngredients?.length && review.ingredientReads?.length) {
+    review.inciIngredients = review.ingredientReads.map((r) => r.name).filter(Boolean);
   }
 
   // Auto-grow the ingredient directory: any ingredient of this product that is
