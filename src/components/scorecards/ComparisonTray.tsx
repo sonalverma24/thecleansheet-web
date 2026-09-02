@@ -25,7 +25,7 @@ export function ComparisonTray({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-ink-200 shadow-2xl">
+    <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-[60] bg-white border-t border-ink-200 shadow-2xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3 sm:gap-4">
         {/* Selected products */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 overflow-x-auto">

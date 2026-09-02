@@ -1,18 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const WA_LINK = "https://chat.whatsapp.com/BUvEDcUj9Dh14dwSVRVvu4";
 
 export default function WhatsAppBubble() {
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  // On mobile the bubble tucks away while the reader scrolls down through
+  // content and returns when they scroll up or reach the top, so it never
+  // permanently occludes the page. (Desktop keeps it always visible.)
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      const goingDown = y > lastY.current;
+      // Ignore tiny jitters; always show near the very top.
+      if (Math.abs(y - lastY.current) > 6) {
+        setHidden(goingDown && y > 120);
+        lastY.current = y;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   if (dismissed) return null;
 
   return (
     <div
-      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2"
+      className={`fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2 transition-all duration-300 ${
+        hidden ? "translate-y-24 opacity-0 pointer-events-none sm:translate-y-0 sm:opacity-100 sm:pointer-events-auto" : ""
+      }`}
+      style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       onMouseEnter={() => setExpanded(true)}
       onMouseLeave={() => setExpanded(false)}
     >

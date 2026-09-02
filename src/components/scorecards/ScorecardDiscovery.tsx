@@ -281,7 +281,7 @@ function MobileSortSheet({
   });
 
   return (
-    <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+    <div className="lg:hidden fixed inset-0 z-[70] flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       <div
         className="relative rounded-t-3xl flex flex-col shadow-2xl"

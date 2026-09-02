@@ -13,6 +13,7 @@ import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
+import { ScorecardTabs, type ScorecardTab } from "@/components/scorecards/ScorecardTabs";
 import { simplifyPillarName } from "@/lib/pillar-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -505,7 +506,7 @@ const SCREEN_PILLARS = [
 ] as const;
 /* The screen shows only what we confirmed or the brand states. Adverse findings
    are NOT repeated here - they lead the page in the "Worth knowing" callout. */
-const isShownFinding = (c: CheckResult) => c.state === "verified" || c.state === "disclosed";
+const isShownFinding = (c: CheckResult) => c.state === "verified" || c.state === "disclosed" || (c.state === "adverse" && !c.hard);
 
 /** "What to know before you buy" - only real flags. Calm, not alarmist:
     a warm hairline card, a quiet eyebrow, one clean line per flag. */
@@ -580,6 +581,384 @@ function SafetyScreen({ analysis }: { analysis: AnalysisReport }) {
   );
 }
 
+/* Mobile-only tab deck for the verdict page. Mirrors the desktop section stack
+   but grouped into Overview · Ingredients · Claims · Method so each is one short
+   screen. Reuses the same module-level section helpers, so data logic stays in
+   one place — only the grouping differs. IDs are `m-`-prefixed to stay unique
+   alongside the desktop stack (both live in the DOM, one hidden per breakpoint). */
+function buildMobileTabs({
+  product, brand, brandSlug, analysis, relatedProducts, proofCards, atAGlance,
+}: {
+  product: ProductScorecard;
+  brand: Brand;
+  brandSlug: string;
+  analysis?: AnalysisReport;
+  relatedProducts: ProductScorecard[];
+  proofCards: ProofCard[];
+  atAGlance: { label: string; value: boolean }[];
+}): ScorecardTab[] {
+  // ── Overview ──────────────────────────────────────────────────────────────
+  const overview: ReactNode[] = [];
+  if (analysis) overview.push(<BeforeYouBuy key="byb" flags={analysis.redFlags} />);
+  if (atAGlance.length > 0) {
+    overview.push(
+      <section key="glance" id="m-at-a-glance">
+        <div className="flex items-center gap-2.5 mb-3">
+          <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+          <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>At a glance</h2>
+        </div>
+        <div className="bg-white rounded-2xl border border-[#efe9e0] p-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            {atAGlance.map(({ label, value }) => (
+              <div key={label} className="flex items-center gap-2.5">
+                <span className="text-sm flex-shrink-0 w-4 text-center" style={{ color: value ? "#248179" : "#fd6158" }}>{value ? "✓" : "✗"}</span>
+                <span className="text-xs text-[#282828]/75">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>,
+    );
+  }
+  if (!analysis) {
+    overview.push(
+      <section key="rationale" id="m-score-rationale">
+        <div className="mb-4">
+          <div className="flex items-center gap-2.5 mb-1">
+            <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+            <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>The detail</h2>
+          </div>
+          <p className="text-xs text-[#b0a8a4] pl-[19px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+            How we read this product across {product.pillars.length} areas. Open any row for the full rationale.
+          </p>
+        </div>
+        <div className="bg-white rounded-2xl border border-[#efe9e0] overflow-hidden divide-y divide-[#efe9e0]">
+          {product.pillars.map((pillar) => {
+            const displayName = simplifyPillarName(pillar.name);
+            const rawSummary = translateLadder(generatePillarSummary(pillar, product));
+            const detail = translateLadder(pillar.note ?? "");
+            const summaryIsPrefix = !!detail && !!rawSummary && detail.toLowerCase().startsWith(rawSummary.replace(/\.$/, "").toLowerCase());
+            const summary = summaryIsPrefix ? "" : rawSummary;
+            const showDetail = !!detail && detail !== rawSummary;
+            const claimRows = displayName === "Claims Evidence" ? (product.claimsCheck ?? []).slice(0, 3) : [];
+            return (
+              <details key={pillar.name} className="group">
+                <summary className="px-4 py-3.5 cursor-pointer list-none select-none">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>{displayName}</span>
+                    </div>
+                    <ChevronDown size={12} className="text-[#b0a8a4] transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
+                  </div>
+                </summary>
+                <div className="px-4 pb-4 pt-4 bg-[#f7f7f5] border-t border-[#efe9e0] space-y-2">
+                  {summary && <p className="text-xs text-[#282828]/80 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{summary}</p>}
+                  {showDetail && <p className="text-xs text-[#282828]/65 leading-relaxed pl-[46px]" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{detail}</p>}
+                  {claimRows.length > 0 && (
+                    <div className="pl-[46px] pt-1 space-y-1.5">
+                      {claimRows.map((c, i) => {
+                        const ok = c.decision === "Publicly supported";
+                        const needs = c.decision === "Needs proof";
+                        const dot = ok ? "#248179" : needs ? "#E08A3C" : "#fd6158";
+                        return (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ background: dot }} />
+                            <p className="text-xs text-[#282828]/70 leading-relaxed" style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+                              <span className="text-[#282828]">&ldquo;{c.claim}&rdquo;</span>{" "}
+                              {translateLadder(c.note || (ok ? "Supported by public evidence." : needs ? "Needs more public proof." : "Not verified from public evidence."))}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </details>
+            );
+          })}
+        </div>
+      </section>,
+    );
+  }
+
+  // ── Ingredients ───────────────────────────────────────────────────────────
+  const ingredients: ReactNode[] = [];
+  ingredients.push(
+    <CollapsibleSection key="ing" id="m-ingredients" title="Ingredient list" subtitle={`${product.ingredients.length} ingredients · INCI order`}>
+      <div className="p-4">
+        <div className="flex items-center gap-4 mb-2.5">
+          {([
+            { dot: "bg-[#248179]", label: "Safe" },
+            { dot: "bg-blue-400", label: "Note" },
+            { dot: "bg-[#fd6158]", label: "Caution" },
+          ] as const).map(({ dot, label }) => (
+            <span key={label} className="flex items-center gap-1.5 text-[10px] text-[#b0a8a4]">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+              {label}
+            </span>
+          ))}
+        </div>
+        <div className="divide-y divide-[#efe9e0] rounded-xl border border-[#efe9e0] overflow-hidden">
+          {product.ingredients.map((ing) => {
+            const s = ingredientFlagStyles(ing.flag);
+            return (
+              <div key={ing.name} className={`${s.rowBg} px-3 py-2`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
+                  <span className="text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                </div>
+                {ing.note && <p className="text-xs text-[#b0a8a4] leading-relaxed mt-1 pl-4">{ing.note}</p>}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-[#b0a8a4] mt-2">
+          INCI order as declared on packaging. Position reflects approximate concentration (high to low).
+        </p>
+      </div>
+    </CollapsibleSection>,
+  );
+  if (analysis) ingredients.push(<SafetyScreen key="safety" analysis={analysis} />);
+
+  // ── Claims & evidence ─────────────────────────────────────────────────────
+  const claims: ReactNode[] = [];
+  if (proofCards.length > 0) {
+    claims.push(
+      <CollapsibleSection key="proof" id="m-proof" title="What was checked" subtitle={`${product.claimsCheck?.length ?? proofCards.length} claims checked against public evidence`}>
+        <div className="p-4">
+          <div className="grid gap-3">
+            {proofCards.map((card) => {
+              const s = proofStatusStyles(card.status);
+              return (
+                <div key={card.claim} className="relative rounded-xl border border-[#efe9e0] bg-white p-4 pl-5 overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ backgroundColor: s.accent }} />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-[#282828]">{card.claim}</span>
+                    <span className={`text-[10px] flex-shrink-0 ml-3 ${s.labelCls}`}>{s.label}</span>
+                  </div>
+                  <p className="text-xs text-[#282828]/70 leading-relaxed mb-2">{card.explanation}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+                    <span className="text-[10px] text-[#b0a8a4]">{card.evidenceType}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </CollapsibleSection>,
+    );
+  }
+  if (product.globalScreen) {
+    const authorities = [
+      { key: "eu_1223_2009", label: "EU 1223/2009", desc: "EU Cosmetics Regulation - Annexes II–VI" },
+      { key: "india_cr_2020", label: "India CR 2020", desc: "India Cosmetics Rules, CDSCO" },
+      { key: "health_canada_hotlist", label: "Health Canada Hotlist", desc: "Canada prohibited & restricted ingredients" },
+      { key: "us_fda_21cfr", label: "US FDA 21 CFR", desc: "US FDA Parts 700–740" },
+      { key: "korea_mfds", label: "MFDS Korea", desc: "Korea Cosmetics Act" },
+      { key: "echa_svhc", label: "ECHA SVHC", desc: "Substances of Very High Concern" },
+      { key: "iarc", label: "IARC", desc: "Carcinogen classifications Groups 1/2A/2B" },
+      { key: "aicis_australia", label: "AICIS Australia", desc: "Australian industrial chemical safety" },
+      { key: "tga_australia", label: "TGA Australia", desc: "Therapeutic claims (if applicable)" },
+      { key: "canada_nhpid", label: "Canada NHPID", desc: "Natural health product ingredients" },
+    ] as const;
+    const regClear = (v: string) => {
+      const t = v.toLowerCase().trim();
+      return t === "" || /^no\b/.test(t) || t.includes("no obvious") || t.includes("not triggered");
+    };
+    const flagged = authorities.filter(({ key }) => !regClear(product.globalScreen![key as keyof typeof product.globalScreen] ?? "")).length;
+    const allClear = flagged === 0;
+    claims.push(
+      <CollapsibleSection key="regscreen" id="m-regulatory-screen" title="Regulatory screen" subtitle="Each ingredient mapped against 10 global regulatory authorities" headerRight={
+        <span className="flex items-center gap-2.5">
+          <PillarDots score={10 - flagged} max={10} />
+          <span className="text-xs" style={{ color: allClear ? "#248179" : "#b45309", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{allClear ? "Clear" : "Review"}</span>
+        </span>
+      }>
+        <div className="divide-y divide-[#efe9e0]">
+          {authorities.map(({ key, label, desc }) => {
+            const val = product.globalScreen![key as keyof typeof product.globalScreen] ?? "";
+            const isClear = regClear(val);
+            return (
+              <div key={key} className="flex items-start gap-3 px-4 py-3">
+                <span className={`mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full ${isClear ? "bg-[#248179]/15" : "bg-[#fd6158]/15"}`} style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span className={`block w-1.5 h-1.5 rounded-full ${isClear ? "bg-[#248179]" : "bg-[#fd6158]"}`} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-xs text-[#282828]">{label}</span>
+                    <span className="text-[10px] text-[#b0a8a4]">{desc}</span>
+                  </div>
+                  <p className="text-xs text-[#282828]/60 mt-0.5">{val}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+      </CollapsibleSection>,
+    );
+  }
+  if (product.claimsCheck && product.claimsCheck.length > 0) {
+    const claimPillar = findPillar(product.pillars, /claim/i);
+    const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
+    claims.push(
+      <CollapsibleSection key="claimscheck" id="m-claims-check" title="Claims checked" subtitle={`${supported} of ${product.claimsCheck.length} publicly supported`} headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}>
+        <div className="p-4 space-y-2.5">
+          {product.claimsCheck.map((c) => {
+            const isSupported = c.decision === "Publicly supported";
+            const isNeedsProof = c.decision === "Needs proof";
+            const accent = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
+            const bgClass = isSupported ? "bg-[#248179]/[0.04]" : isNeedsProof ? "bg-amber-50/60" : "bg-[#fd6158]/[0.04]";
+            const Icon = isSupported ? CheckCircle2 : isNeedsProof ? HelpCircle : AlertCircle;
+            return (
+              <div key={c.claim} className={`rounded-xl border border-[#efe9e0] p-4 ${bgClass}`}>
+                <div className="flex items-start gap-3">
+                  <Icon size={15} className="flex-shrink-0 mt-0.5" style={{ color: accent }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
+                      <span className="text-xs text-[#282828]">{c.claim}</span>
+                      <span className="text-[10px]" style={{ color: accent }}>{c.decision}</span>
+                    </div>
+                    <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
+                    <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CollapsibleSection>,
+    );
+  }
+  if (product.regulatoryFlags && product.regulatoryFlags.length > 0) {
+    claims.push(
+      <CollapsibleSection key="regclaims" id="m-regulatory-claims" title="Regulatory screen - claims" subtitle="ASCI advertising code and the India drug-cosmetic boundary." headerRight={
+        <span className="flex items-center gap-2.5">
+          <PillarDots score={0} max={4} />
+          <span className="text-xs" style={{ color: "#c2362f", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
+            {product.regulatoryFlags.length} flag{product.regulatoryFlags.length > 1 ? "s" : ""}
+          </span>
+        </span>
+      }>
+        <div className="divide-y divide-[#efe9e0]">
+          {product.regulatoryFlags.map((f, i) => (
+            <div key={i} className="flex items-start gap-3 px-4 py-3.5">
+              <span className="mt-1.5 block w-1.5 h-1.5 rounded-full bg-[#fd6158] flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs text-[#282828]">&ldquo;{f.claim}&rdquo;</p>
+                {f.note && <p className="text-xs text-[#282828]/55 leading-relaxed mt-0.5">{f.note}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>,
+    );
+  }
+  if (product.missingProof && product.missingProof.length > 0) {
+    claims.push(
+      <section key="missing" id="m-missing-proof">
+        <div className="flex items-center gap-2.5 mb-3">
+          <span className="w-[3px] h-[18px] rounded-full bg-[#b0a8a4] flex-shrink-0" />
+          <div>
+            <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this review</h2>
+            <p className="text-xs text-[#b0a8a4] mt-0.5">Public evidence the brand could provide to close verification gaps</p>
+          </div>
+        </div>
+        <div className="bg-[#faf7f2] rounded-2xl border border-[#efe9e0] p-4">
+          <ul className="space-y-2.5">
+            {product.missingProof.map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="text-[#b0a8a4] flex-shrink-0 mt-0.5 text-xs">○</span>
+                <span className="text-xs text-[#282828]/70 leading-relaxed">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>,
+    );
+  }
+
+  // ── Method ────────────────────────────────────────────────────────────────
+  const method: ReactNode[] = [];
+  method.push(
+    <section key="method" id="m-methodology">
+      <div className="bg-[#282828] rounded-2xl p-5">
+        <div className="flex items-start gap-4">
+          <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="text-white mb-2">About this review</div>
+            <p className="text-white/60 text-sm leading-relaxed mb-3">
+              {product.cleanSheetNote ?? "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
+            </p>
+            <p className="text-white/45 text-xs leading-relaxed mb-4">
+              Are you the brand? If you have published test data or want to request a re-review, write to us at{" "}
+              <a href={`mailto:hello@thecleansheet.in?subject=${encodeURIComponent(`Re-review request · ${product.brand} ${product.productName}`)}`} className="text-[#248179] hover:underline">hello@thecleansheet.in</a>.
+            </p>
+            <details className="group">
+              <summary className="flex items-center gap-1.5 cursor-pointer list-none text-xs text-[#248179] select-none">
+                <ChevronDown size={11} className="transition-transform group-open:rotate-180 flex-shrink-0" />
+                Full methodology
+              </summary>
+              <ul className="mt-3 space-y-1.5 text-xs text-white/35 leading-relaxed">
+                <li>What global regulations say about each ingredient</li>
+                <li>What toxicology evidence shows at cosmetic concentrations</li>
+                <li>What formula concentration context changes</li>
+                <li>What the product format and leave-on contact time changes</li>
+                <li>What the stated user group needs</li>
+                <li>What published test evidence confirms</li>
+                <li>What the brand is claiming vs what evidence supports</li>
+              </ul>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>,
+  );
+  if (relatedProducts.length > 0) {
+    method.push(
+      <section key="more">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
+            <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>More from {brand.name}</h2>
+          </div>
+          <Link href={`/brands/${brandSlug}`} className="text-xs text-[#248179] flex items-center gap-1">See all <ArrowRight size={11} /></Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+          {relatedProducts.map((p) => (
+            <Link key={p.slug} href={`/brands/${brandSlug}/${p.slug}`} className="flex-shrink-0 flex items-center gap-2.5 p-3 rounded-xl border border-[#efe9e0] bg-white w-[210px]">
+              <div className="w-10 h-10 rounded-lg bg-[#faf7f2] overflow-hidden flex-shrink-0">
+                <Image src={p.image} alt={p.productName} width={40} height={40} className="object-contain p-1 w-full h-full" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-[#282828] line-clamp-2 leading-snug">{p.productName}</div>
+              </div>
+              <div className="flex-shrink-0"><TierBadge tier={resolveTier(p)} size="sm" /></div>
+            </Link>
+          ))}
+        </div>
+      </section>,
+    );
+  }
+  method.push(
+    <Link key="back" href={`/brands/${brandSlug}`} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
+      <ArrowLeft size={14} /> Back to {brand.name}
+    </Link>,
+  );
+
+  const groups: { id: string; label: string; nodes: ReactNode[] }[] = [
+    { id: "overview", label: "Overview", nodes: overview },
+    { id: "ingredients", label: "Ingredients", nodes: ingredients },
+    { id: "claims", label: "Claims", nodes: claims },
+    { id: "method", label: "Method", nodes: method },
+  ];
+  // Only surface a tab if it has content for this product.
+  return groups
+    .filter((g) => g.nodes.length > 0)
+    .map((g) => ({ id: g.id, label: g.label, content: <>{g.nodes}</> }));
+}
+
 export function ProductScorecardView({
   product,
   brand,
@@ -619,7 +998,9 @@ export function ProductScorecardView({
       {isUnavailableInIndia(product) ? (
         <IndiaUnavailableBody product={product} />
       ) : (
-      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
+      <>
+      {/* Desktop: full stacked layout (≥lg). Mobile gets the tabbed profile below. */}
+      <div className="hidden lg:block max-w-5xl mx-auto px-5 sm:px-8 py-8 space-y-8">
 
         {/* 0. What to know before you buy (live reviews only). Category already
              lives in the hero eyebrow, so it is not repeated here. */}
@@ -1071,6 +1452,18 @@ export function ProductScorecardView({
           <ArrowLeft size={14} /> Back to {brand.name}
         </Link>
       </div>
+
+      {/* Mobile (<lg): the same review, reorganised into a profile-style
+          swipeable tab deck so the long scroll becomes a few short screens.
+          Content mirrors the desktop stack above; data + helpers are shared. */}
+      <ScorecardTabs
+        className="lg:hidden"
+        tabs={buildMobileTabs({
+          product, brand, brandSlug, analysis, relatedProducts,
+          proofCards, atAGlance,
+        })}
+      />
+      </>
       )}
     </div>
   );

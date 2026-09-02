@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -22,6 +22,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
 });
+
+/* viewport-fit=cover populates the CSS env(safe-area-inset-*) values so the
+   fixed bottom nav and floating bubble clear the iPhone home indicator and
+   notch. maximumScale is left unset so users can still pinch-zoom (a11y). */
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thecleansheet.in"),

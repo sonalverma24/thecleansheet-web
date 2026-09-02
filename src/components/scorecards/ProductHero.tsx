@@ -827,9 +827,45 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
 
           {/* ── LEFT COLUMN ── */}
           <div>
-            {/* Brand + category - brand is intentionally NOT a link (brand pages
-                don't exist for live-reviewed products). */}
-            <div className="flex items-center gap-2 mb-2">
+            {/* Mobile profile header: compact product avatar beside the brand,
+                name and Clean Sheet standing stamp — verdict stays above the
+                fold, app-profile style. Desktop keeps the stacked title + the
+                right-hand image column below. */}
+            <div className="lg:hidden mb-5">
+              <div className="flex items-start gap-3.5">
+                <div className="relative w-[88px] h-[88px] flex-shrink-0 rounded-2xl bg-white border border-[#efe9e0] overflow-hidden">
+                  <span aria-hidden className="absolute inset-0 flex items-center justify-center text-3xl text-[#d8d2cc] select-none">🧴</span>
+                  {product.image && (
+                    <Image
+                      src={product.image}
+                      alt={product.productName}
+                      fill
+                      sizes="110px"
+                      className="object-contain p-2"
+                    />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="block text-[10px] font-medium text-[#248179] uppercase tracking-widest truncate">
+                    {brand.name.toUpperCase()}
+                  </span>
+                  <h1
+                    className="mt-1 text-[1.3rem] leading-[1.15] text-[#282828] tracking-tight line-clamp-3"
+                    style={{ fontFamily: "'Cooper BT', Georgia, serif" }}
+                  >
+                    {product.productName}
+                  </h1>
+                  <span className="mt-1 inline-block text-[11px] text-[#b0a8a4]">{categoryLabel}</span>
+                </div>
+                <div className="flex-shrink-0 -mt-1">
+                  <ScoreBadge tier={resolveTier(product)} size={62} animate={false} />
+                </div>
+              </div>
+            </div>
+
+            {/* Brand + category (desktop) - brand is intentionally NOT a link
+                (brand pages don't exist for live-reviewed products). */}
+            <div className="hidden lg:flex items-center gap-2 mb-2">
               <span className="text-[11px] font-medium text-[#248179] uppercase tracking-widest">
                 {brand.name.toUpperCase()}
               </span>
@@ -837,9 +873,9 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
               <span className="text-[11px] text-[#b0a8a4]">{categoryLabel}</span>
             </div>
 
-            {/* Product name */}
+            {/* Product name (desktop) */}
             <h1
-              className="text-[1.75rem] sm:text-[2.1rem] text-[#282828] leading-tight tracking-tight mb-3"
+              className="hidden lg:block text-[2.1rem] text-[#282828] leading-tight tracking-tight mb-3"
               style={{ fontFamily: "'Cooper BT', Georgia, serif" }}
             >
               {product.productName}
@@ -849,31 +885,6 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
             <p className="text-sm text-[#282828]/65 leading-relaxed mb-5 max-w-xl">
               {product.summary || generateVerdict(product)}
             </p>
-
-            {/* Mobile only: image + badge.
-                The image uses `fill` over an emoji placeholder, so a missing,
-                slow or failed src never leaves an empty white box. The score
-                stamp sits in a fixed-width, non-animating column so its entrance
-                can never scale past the viewport's right edge. */}
-            <div className="lg:hidden mb-5">
-              <div className="flex items-stretch gap-4">
-                <div className="relative flex-1 min-w-0 rounded-2xl bg-white border border-[#efe9e0] overflow-hidden" style={{ height: 160 }}>
-                  <span aria-hidden className="absolute inset-0 flex items-center justify-center text-3xl text-[#d8d2cc] select-none">🧴</span>
-                  {product.image && (
-                    <Image
-                      src={product.image}
-                      alt={product.productName}
-                      fill
-                      sizes="(max-width: 1024px) 60vw, 220px"
-                      className="object-contain p-3"
-                    />
-                  )}
-                </div>
-                <div className="flex w-[100px] flex-shrink-0 flex-col items-center justify-center">
-                  <ScoreBadge tier={resolveTier(product)} size={92} animate={false} />
-                </div>
-              </div>
-            </div>
 
             {/* Divider */}
             <div className="border-t border-[#efe9e0] mb-5" />
