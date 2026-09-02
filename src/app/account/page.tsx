@@ -28,6 +28,13 @@ export default function AccountPage() {
   const [bootstrapping, setBootstrapping] = useState(false);
   const [bootstrapMsg, setBootstrapMsg]   = useState<string | null>(null);
 
+  // Inline email magic-link flow (no separate page).
+  const [emailMode, setEmailMode]     = useState(false);
+  const [email, setEmail]             = useState("");
+  const [emailSent, setEmailSent]     = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError]   = useState<string | null>(null);
+
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
@@ -96,6 +103,20 @@ export default function AccountPage() {
     });
   };
 
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setEmailLoading(true);
+    setEmailError(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) setEmailError(error.message);
+    else setEmailSent(true);
+    setEmailLoading(false);
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
@@ -156,13 +177,58 @@ export default function AccountPage() {
             <div className="flex-1 h-px bg-[#b0a8a4]/20" />
           </div>
 
-          <Link
-            href="/auth/login"
-            className="w-full flex items-center justify-center py-3.5 rounded-full border border-[#b0a8a4]/30 text-[14px] text-[#282828] hover:border-[#248179]/40 transition-all"
-            style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
-          >
-            Sign in with email
-          </Link>
+          {emailSent ? (
+            <p
+              className="text-[13px] text-[#282828] px-2 leading-relaxed"
+              style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+            >
+              We sent a magic link to{" "}
+              <strong className="font-normal">{email}</strong>. Click it to sign in.
+            </p>
+          ) : emailMode ? (
+            <form onSubmit={handleMagicLink} className="space-y-3">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                autoFocus
+                className="w-full px-4 py-3.5 rounded-full border border-[#b0a8a4]/30 text-[14px] text-[#282828] text-center focus:outline-none focus:border-[#248179]/50 placeholder-[#b0a8a4]"
+                style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+              />
+              {emailError && (
+                <p className="text-[12px] text-[#fd6158]" style={{ fontFamily: "Helvetica, Arial, sans-serif" }}>
+                  {emailError}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={emailLoading || !email.trim()}
+                className="w-full py-3.5 rounded-full text-[14px] text-white transition-all disabled:opacity-50"
+                style={{ background: "#248179", fontFamily: "Helvetica, Arial, sans-serif" }}
+              >
+                {emailLoading ? "Sending…" : "Send magic link"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailMode(false); setEmailError(null); }}
+                className="w-full text-[12px] text-[#b0a8a4] hover:text-[#282828] transition-colors"
+                style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+              >
+                Back
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEmailMode(true)}
+              className="w-full flex items-center justify-center py-3.5 rounded-full border border-[#b0a8a4]/30 text-[14px] text-[#282828] hover:border-[#248179]/40 transition-all"
+              style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
+            >
+              Sign in with email
+            </button>
+          )}
         </div>
 
         <p

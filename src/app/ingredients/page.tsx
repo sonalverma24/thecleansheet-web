@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import ingredientsData from "@/data/ingredients.json";
 import IngredientDirectory from "./IngredientDirectory";
-import type { Ingredient } from "./IngredientDirectory";
 import BackButton from "@/components/BackButton";
+import { getDirectoryIngredients } from "@/lib/ingredient-directory";
+
+// The directory merges the curated core with ingredients discovered from every
+// scanned product, so it must render server-side against the live table.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Cosmetic Ingredient Directory, 25,000+ Ingredients",
@@ -47,7 +50,8 @@ const datasetJsonLd = {
   ],
 };
 
-export default function IngredientsPage() {
+export default async function IngredientsPage() {
+  const ingredients = await getDirectoryIngredients();
   return (
     <div>
       <script
@@ -66,17 +70,17 @@ export default function IngredientsPage() {
               Ingredient Directory
             </div>
             <h1 className="text-3xl sm:text-4xl font-medium text-white tracking-tight mb-4">
-              What's in your skincare?
+              What&apos;s in your skincare?
             </h1>
             <p className="text-teal-200/70 text-base leading-relaxed">
-              {(ingredientsData as Ingredient[]).length.toLocaleString()} ingredients evaluated against EU, Indian, US and Korean regulations.
+              {ingredients.length.toLocaleString()} ingredients evaluated against EU, Indian, US and Korean regulations.
               Search by INCI name, CAS number, or function, then filter by concern level or flag type. Click any ingredient to see the full safety profile.
             </p>
           </div>
         </div>
       </div>
 
-      <IngredientDirectory ingredients={ingredientsData as Ingredient[]} />
+      <IngredientDirectory ingredients={ingredients} />
     </div>
   );
 }

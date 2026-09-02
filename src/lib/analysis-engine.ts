@@ -15,10 +15,40 @@ import type { ProductReview } from "@/lib/product-review-types";
 import type { AnalysisReport, CheckResult, CheckState, AuditPillar, CheckAxis, Obtainability } from "@/lib/analysis-types";
 import { categorise, categoryLabel } from "@/lib/product-categorise";
 import type { ProductCategory } from "@/data/analysis/categories";
+import { ingredientSafety } from "@/lib/ingredient-db";
 import {
   EU_FRAGRANCE_ALLERGENS_26, RESTRICTED_OR_BANNED, SENSITISING_PRESERVATIVES,
   SULPHATE_SURFACTANTS, COMEDOGENIC, UV_FILTERS, inciHas,
 } from "@/data/analysis/ingredient-risk";
+
+/** Findings aggregated per-review from the 734-ingredient database, unioned with
+    the curated starter lists so coverage is the best of both. */
+interface DbFindings {
+  prohibited: { name: string; note: string }[];
+  endocrine: { name: string; note: string }[];
+  cmr: { name: string; note: string }[];
+  allergens: string[];   // ingredient names the DB or the EU-26 list flags as allergens
+  found: number;         // how many INCI entries matched a trusted DB row (data coverage)
+  total: number;
+}
+
+function collectDbFindings(inci: string[], allergens26: string[]): DbFindings {
+  const f: DbFindings = { prohibited: [], endocrine: [], cmr: [], allergens: [...allergens26], found: 0, total: inci.length };
+  const seenAllergen = new Set(allergens26.map((a) => a.toLowerCase()));
+  for (const name of inci) {
+    const s = ingredientSafety(name);
+    if (s.found && s.valid) f.found++;
+    if (s.prohibited) f.prohibited.push({ name, note: s.note || "Prohibited in cosmetics." });
+    if (s.endocrine) f.endocrine.push({ name, note: s.note || "Flagged for endocrine activity." });
+    if (s.cmr || s.iarc) f.cmr.push({ name, note: s.note || `IARC ${s.iarc ?? "carcinogenicity"} concern.` });
+    if (s.allergen && !seenAllergen.has(name.toLowerCase())) { seenAllergen.add(name.toLowerCase()); f.allergens.push(name); }
+  }
+  // Union with the curated starter lists (catches names the DB may miss).
+  const joined = inci.join(" | ");
+  for (const r of RESTRICTED_OR_BANNED) if (r.banned && inciHas(joined, [r.stem]).length && !f.prohibited.some((p) => p.note === r.note)) f.prohibited.push({ name: r.stem, note: r.note });
+  for (const e of EDC_CONCERNS) if (inciHas(joined, [e.stem]).length && !f.endocrine.some((p) => p.note === e.note)) f.endocrine.push({ name: e.stem, note: e.note });
+  return f;
+}
 
 export const ANALYSIS_VERSION = "TCS-AX v1.0";
 
@@ -51,6 +81,7 @@ interface Ctx {
   isColour: boolean;
   isFragranced: boolean;
   allergens: string[];
+  db: DbFindings;
 }
 
 type Eval = { state: CheckState; detail: string; source?: string; penalty?: number };
@@ -62,6 +93,7 @@ interface CheckDef {
   label: string;
   axis: CheckAxis;
   obtainability: Obtainability;
+  hard?: boolean;                  // an adverse result here is a genuine problem
   applies?: (c: Ctx) => boolean;   // default: always
   evaluate: (c: Ctx) => Eval;
 }
@@ -99,29 +131,33 @@ const CHECKS: CheckDef[] = [
     evaluate: (c) => disclosedIf(claimsMention(c, /natural|plant|derived|biotech|fermented/i), "Brand describes ingredient origin in its claims.", "Ingredient origin is not disclosed.") },
   { id: "heavy_metals", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "Contaminants / heavy-metals testing", axis: "safety", obtainability: "private",
     evaluate: () => privateDoc("Heavy-metal / contaminant testing") },
-  { id: "annex_screen", pillar: "Ingredient Safety & Toxicity", subCategory: "Regulatory Compliance", label: "EU Annex II/III banned & restricted screen", axis: "safety", obtainability: "public",
+  { id: "annex_screen", pillar: "Ingredient Safety & Toxicity", subCategory: "Regulatory Compliance", label: "EU Annex II/III banned & restricted screen", axis: "safety", obtainability: "public", hard: true,
     evaluate: (c) => {
-      if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen against the banned/restricted lists." };
-      const hits = RESTRICTED_OR_BANNED.filter((r) => inciHas(c.inciJoined, [r.stem]).length > 0);
+      if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen against the prohibited lists." };
+      const hits = c.db.prohibited;
       return hits.length
-        ? { state: "adverse", detail: hits.map((h) => h.note).join(" "), penalty: 30 }
-        : { state: "verified", detail: "No banned or restricted ingredient from our reference screen was found." };
+        ? { state: "adverse", detail: hits.map((h) => `${h.name}: ${h.note}`).join(" "), penalty: 30 }
+        : { state: "verified", detail: `Screened against the ingredient database (${c.db.found} of ${c.db.total} ingredients matched); no cosmetics-prohibited ingredient found.` };
     } },
   { id: "endocrine", pillar: "Ingredient Safety & Toxicity", subCategory: "Toxicology", label: "Endocrine-disruptor screen", axis: "safety", obtainability: "public",
     evaluate: (c) => {
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen." };
-      const hits = EDC_CONCERNS.filter((e) => inciHas(c.inciJoined, [e.stem]).length > 0);
+      const hits = c.db.endocrine;
       return hits.length
-        ? { state: "adverse", detail: hits.map((h) => h.note).join(" "), penalty: 15 }
-        : { state: "verified", detail: "No ingredient from our endocrine-concern screen was found." };
+        ? { state: "adverse", detail: hits.map((h) => `${h.name}: ${h.note}`).join(" "), penalty: 15 }
+        : { state: "verified", detail: "No ingredient with a recognised endocrine-activity concern found in the database." };
     } },
   { id: "carcinogenicity", pillar: "Ingredient Safety & Toxicity", subCategory: "Toxicology", label: "Carcinogenicity / formaldehyde-releaser screen", axis: "safety", obtainability: "public",
     evaluate: (c) => {
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen." };
-      const hits = SENSITISING_PRESERVATIVES.filter((p) => /formaldehyde/i.test(p.note) && inciHas(c.inciJoined, [p.stem]).length > 0);
+      const formaldehyde = SENSITISING_PRESERVATIVES.filter((p) => /formaldehyde/i.test(p.note) && inciHas(c.inciJoined, [p.stem]).length > 0);
+      const hits = [
+        ...c.db.cmr.map((h) => `${h.name}: ${h.note}`),
+        ...formaldehyde.map((f) => `Formaldehyde-releaser: ${f.stem}`),
+      ];
       return hits.length
-        ? { state: "adverse", detail: `Formaldehyde-releasing preservative present: ${hits.map((h) => h.stem).join(", ")}.`, penalty: 12 }
-        : { state: "verified", detail: "No formaldehyde-releasing preservative from our screen was found." };
+        ? { state: "adverse", detail: hits.join(" "), penalty: 12 }
+        : { state: "verified", detail: "No IARC-classified or formaldehyde-releasing ingredient found in the database screen." };
     } },
   { id: "bioaccumulation", pillar: "Ingredient Safety & Toxicity", subCategory: "Toxicology", label: "Bioaccumulation potential", axis: "safety", obtainability: "private",
     evaluate: () => ({ state: "not-disclosed", detail: "No public bioaccumulation data for this formulation." }) },
@@ -141,10 +177,11 @@ const CHECKS: CheckDef[] = [
   { id: "allergen_panel", pillar: "Irritation & Allergen Risk", subCategory: "Ingredient Level", label: "EU fragrance-allergen panel (26)", axis: "safety", obtainability: "public",
     evaluate: (c) => {
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen for declared allergens." };
-      if (c.allergens.length) return { state: "disclosed", detail: `Declares ${c.allergens.length} of the 26 EU fragrance allergens (${c.allergens.slice(0, 6).join(", ")}${c.allergens.length > 6 ? "…" : ""}). Reactive skin should note these.` };
+      const a = c.db.allergens;
+      if (a.length) return { state: "disclosed", detail: `Declares ${a.length} known allergen(s) (${a.slice(0, 6).join(", ")}${a.length > 6 ? "…" : ""}). Reactive skin should note these.` };
       return c.isFragranced
         ? { state: "not-disclosed", detail: "Fragranced, but individual allergens are hidden behind 'Parfum' rather than declared." }
-        : { state: "verified", detail: "No EU-declarable fragrance allergen found in the list." };
+        : { state: "verified", detail: "No EU-declarable or database-flagged allergen found in the list." };
     } },
   { id: "preservative_sensitivity", pillar: "Irritation & Allergen Risk", subCategory: "Ingredient Level", label: "Preservative sensitivity (MI / MCI etc.)", axis: "safety", obtainability: "public",
     evaluate: (c) => {
@@ -259,7 +296,9 @@ function buildContext(review: ProductReview): Ctx {
   const isFacial = /facial|face|serum|toner|moisturizer|exfoliant|eye|anti-aging|redness|scar|oil control/.test(t) && category.family !== "Hair";
   const allergens = inciHas(inciJoined, EU_FRAGRANCE_ALLERGENS_26);
   const isFragranced = allergens.length > 0 || /\bparfum\b|\bfragrance\b/.test(inciJoined);
+  const db = collectDbFindings(inci, allergens);
   return {
+    db,
     review, category, inciJoined, hasInci, claimsText,
     isSunscreen: category.family === "Sunscreens" || /\bspf\b|sunscreen/.test(t),
     isBaby: category.family === "Baby" || /baby|kids/.test(t),
@@ -280,7 +319,7 @@ export function runAnalysis(review: ProductReview): AnalysisReport {
   // Evaluate every check EXACTLY ONCE. Each result carries the penalty it would
   // apply to the safety axis, so nothing is re-evaluated downstream.
   const evaluated = CHECKS.map((def) => {
-    const base = { id: def.id, pillar: def.pillar, subCategory: def.subCategory, label: def.label, axis: def.axis, obtainability: def.obtainability };
+    const base = { id: def.id, pillar: def.pillar, subCategory: def.subCategory, label: def.label, axis: def.axis, obtainability: def.obtainability, hard: def.hard };
     if (def.applies && !def.applies(ctx)) {
       return { result: { ...base, state: "not-applicable" as CheckState, detail: "Not applicable to this product type." }, penalty: 0 };
     }
@@ -299,7 +338,9 @@ export function runAnalysis(review: ProductReview): AnalysisReport {
     category: categoryLabel(ctx.category),
     categoryId: ctx.category.id,
     checks,
-    redFlags: checks.filter((c) => c.state === "adverse"),
+    // Only genuine problems lead the page. Legal-but-flagged concerns (endocrine-
+    // active-but-permitted filters, comedogenic oils) stay as context in the screen.
+    redFlags: checks.filter((c) => c.state === "adverse" && c.hard),
     methodologyVersion: ANALYSIS_VERSION,
   };
 }

@@ -38,7 +38,7 @@ function ScrollProgress() {
 
 export function Navigation() {
   const pathname = usePathname();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, openLoginModal } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -81,12 +81,16 @@ export function Navigation() {
                 Sign Out
               </button>
             ) : (
-              <Link
-                href="/auth/login"
+              <button
+                onClick={() => openLoginModal({
+                  returnPath: pathname,
+                  title: "Sign in to your account",
+                  subtitle: "Save products, compare formulations, build routines, and write reviews.",
+                })}
                 className="py-2 px-5 rounded-full bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
               >
                 Login
-              </Link>
+              </button>
             )
           )}
         </div>
