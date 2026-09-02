@@ -15,7 +15,8 @@ import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinks
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
-import { bannedIngredientsInInci } from "@/data/analysis/ingredient-risk";
+import { bannedIngredientsInInci } from "@/lib/ingredient-db";
+import { addDiscoveredNames } from "@/lib/ingredient-directory";
 import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -208,7 +209,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       label: "Ingredient safety",
       passed: !hasBannedIngredient,
       detail: hasBannedIngredient
-        ? `Contains an ingredient prohibited in cosmetics: ${banned.map((b) => b.stem).join(", ")}`
+        ? `Contains an ingredient prohibited in cosmetics: ${banned.map((b) => b.name).join(", ")}`
         : "No ingredient prohibited in cosmetics found in the retrieved list",
     },
     {
@@ -268,7 +269,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 
   // A banned ingredient gives "Not Recommended" a safety-specific headline.
   const headline = tier === "not-recommended" && hasBannedIngredient
-    ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].stem})` : ""}.`
+    ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
     : TIER_META[tier].headline;
 
   return {
@@ -588,6 +589,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (inci) {
     review.inciIngredients = inci.ingredients;
     review.inciSourceUrl = inci.source;
+  }
+
+  // Auto-grow the ingredient directory: any ingredient of this product that is
+  // not already in the directory is added, so /ingredients always holds every
+  // ingredient of every scanned product. Enrichment runs as a background job.
+  if (review.inciIngredients?.length) {
+    try { await addDiscoveredNames(review.inciIngredients); } catch { /* never block a review */ }
   }
 
   const verdict = deriveVerdict(review);

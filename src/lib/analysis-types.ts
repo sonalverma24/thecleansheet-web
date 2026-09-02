@@ -46,6 +46,12 @@ export interface CheckResult {
   detail: string;
   /** Where the finding came from, when there is a concrete source. */
   source?: string;
+  /** True only for a genuine problem (a prohibited ingredient, a contradiction).
+      An adverse finding that is merely a legal-but-flagged concern (an endocrine-
+      active-but-permitted UV filter, a comedogenic oil) is NOT hard: it shows as
+      context in the screen, never in the alarming "worth knowing" callout. Keeps
+      the read evidence-based rather than fear-based. */
+  hard?: boolean;
 }
 
 export interface AnalysisReport {

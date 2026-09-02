@@ -2,17 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, XCircle, FlaskConical, Shield, Globe } from "lucide-react";
 import {
-  getIngredientBySlug, getAllIngredientSlugs, toSlug,
-  ALL_INGREDIENTS, concernColor, statusBadge, type Ingredient,
+  getAllIngredientSlugs, toSlug,
+  ALL_INGREDIENTS, concernColor, statusBadge,
 } from "@/lib/ingredient-utils";
+import { getDirectoryIngredientBySlug } from "@/lib/ingredient-directory";
 
+// Core ingredients prebuild; ingredients discovered from scans render on-demand.
+export const revalidate = 300;
 export function generateStaticParams() {
   return getAllIngredientSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ing = getIngredientBySlug(slug);
+  const ing = await getDirectoryIngredientBySlug(slug);
   if (!ing) return {};
 
   const concern = ing.Concern_Level_TCS?.toLowerCase();
@@ -71,7 +74,7 @@ function FlagBadge({ value, label }: { value: string; label: string }) {
 
 export default async function IngredientDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ing = getIngredientBySlug(slug);
+  const ing = await getDirectoryIngredientBySlug(slug);
   if (!ing) notFound();
 
   const concern = concernColor(ing.Concern_Level_TCS);
