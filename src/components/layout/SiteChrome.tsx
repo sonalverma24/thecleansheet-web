@@ -22,8 +22,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Navigation />
-      {/* pb-16 on mobile reserves space for the fixed bottom nav */}
-      <main className="flex-1 pb-16 lg:pb-0">{children}</main>
+      {/* Reserve space for the fixed bottom tab bar (+ iOS home indicator) on mobile */}
+      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <Footer />
       <WhatsAppBubble />
       <FormModal />

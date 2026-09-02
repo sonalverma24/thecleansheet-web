@@ -119,6 +119,11 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Mobile: stop iOS auto-inflating text, kill the grey tap flash so buttons
+     feel native, and keep pinch-zoom available (a11y). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -126,6 +131,30 @@ body {
   color: #262525;
   font-family: var(--font-sans);
   line-height: 1.65;
+  /* No rubber-band / pull-to-refresh chaining past the app shell */
+  overscroll-behavior-y: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE APP-SHELL UTILITIES
+───────────────────────────────────────────────────────── */
+/* Full viewport height that respects the mobile browser chrome */
+.min-h-dvh { min-height: 100vh; min-height: 100dvh; }
+
+/* Hide scrollbars on horizontal strips (tab rails, chip rows) while
+   keeping them scrollable + swipeable. */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Safe-area helpers for fixed chrome */
+.pt-safe { padding-top: env(safe-area-inset-top); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.h-safe-bottom { height: env(safe-area-inset-bottom); }
+
+/* Momentum scrolling inside horizontal rails */
+.snap-x-rail {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
 
 /* ── Headers: Cooper BT / Playfair Display ── */
@@ -234,6 +263,13 @@ body {
   from { transform: translateX(48px); opacity: 0; }
   to   { transform: translateX(0); opacity: 1; }
 }
+/* Masked line-by-line headline rise. CSS-driven (not JS) so above-the-fold
+   headings are painted and animate even before / without hydration, and can
+   never sit stranded translated out of their overflow-hidden mask. */
+@keyframes title-rise {
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
+}
 
 .animate-fade-up    { animation: fade-up  0.65s var(--ease-smooth) both; }
 .animate-fade-in    { animation: fade-in  0.4s  var(--ease-smooth) both; }
@@ -246,6 +282,20 @@ body {
 .animate-cert-scan      { animation: cert-scan       5s   ease-in-out infinite; }
 .animate-badge-entrance { animation: badge-entrance  0.85s var(--ease-spring) 0.45s both; }
 .animate-slide-right    { animation: slide-from-right 0.7s var(--ease-smooth)  0.15s both; }
+.animate-title-rise     { animation: title-rise      0.9s var(--ease-smooth)  both; }
+
+/* Accessibility + safety net: honour reduced-motion, and guarantee any
+   fill-mode:both reveal lands on its END state instantly rather than its
+   hidden start state if the motion engine never runs. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 .tcs-footer-link { color: #248179; border: 1px solid #c2e8e4; background: rgba(36,129,121,0.04); }
 .tcs-footer-link:hover { background: rgba(36,129,121,0.08); }
 

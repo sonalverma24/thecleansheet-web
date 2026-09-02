@@ -830,7 +830,7 @@ const HOME_FAQS = [
   },
   {
     q: "What does the Clean Sheet standing mean?",
-    a: "Every reviewed product gets one of four standings. Clean Sheet Approved: every headline claim holds up, proven on the finished product. Mostly Clean: a well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof. Needs Proof: the claims may be honest, but the evidence isn't publicly visible yet. Misleading Claims: the product makes claims that aren't permitted in India or that its own ingredient list contradicts.",
+    a: "Every reviewed product gets one of four standings. Clean Sheet Approved: every headline claim holds up, proven on the finished product. Mostly Clean: a well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof. Can Do Better: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
   },
   {
     q: "Which beauty products are reviewed by The Clean Sheet in India?",

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { User } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 /* Reading-progress sweep across the bottom edge of the sticky header */
@@ -97,27 +98,42 @@ export function Navigation() {
         </div>
       </nav>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[var(--color-surface-subtle)] z-50 flex items-center justify-around p-4 text-[12px] tracking-[0.08em] uppercase">
-        <Link href="/" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Home</span>
-        </Link>
-        <Link href="/brands" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Reviews</span>
-        </Link>
-        <Link href="/standard" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Standard</span>
-        </Link>
-        <Link href="/education" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Education</span>
-        </Link>
-        <Link href="/verify" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>Verify</span>
-        </Link>
-        <Link href="/about" className="flex flex-col items-center gap-1 hover:text-[var(--color-primary)]">
-          <span>About</span>
-        </Link>
-      </nav>
+      {/* Mobile Top Bar · minimal logo bar. Recedes on scroll so each page's own
+          sticky chrome (search app-bar, verdict tabs) takes the top edge, while
+          the fixed bottom tab bar (MobileBottomNav) handles primary nav. */}
+      <div className="md:hidden pt-safe bg-white/90 backdrop-blur-md border-b border-[var(--color-surface-subtle)]">
+        <div className="relative flex items-center justify-center h-[52px] px-4">
+          <Link href="/" aria-label="The Clean Sheet home" className="flex items-center">
+            <img src="/images/logo.png" alt="The Clean Sheet" className="w-9 h-9 object-contain" />
+          </Link>
+          {!loading && (
+            <div className="absolute right-3">
+              {user ? (
+                <button
+                  onClick={() => signOut()}
+                  title={user.email ?? undefined}
+                  aria-label="Sign out"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-[11px] uppercase tracking-wide"
+                >
+                  {(user.email?.[0] ?? 'U').toUpperCase()}
+                </button>
+              ) : (
+                <button
+                  onClick={() => openLoginModal({
+                    returnPath: pathname,
+                    title: 'Sign in to your account',
+                    subtitle: 'Save products, compare formulations, build routines, and write reviews.',
+                  })}
+                  aria-label="Log in"
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-[var(--color-charcoal)]/15 text-[var(--color-charcoal)]"
+                >
+                  <User size={18} strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }

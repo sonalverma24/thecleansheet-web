@@ -115,12 +115,12 @@ export default async function BrandsPage() {
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-teal-300 text-xs px-3 py-1.5 rounded-full mb-4">
               <Microscope size={12} /> India&apos;s Independent Product Review Registry
             </div>
-            <h1 className="text-3xl sm:text-4xl font-medium text-white tracking-tight mb-3 leading-[1.1]">
+            <h1 className="text-[26px] sm:text-4xl font-medium text-white tracking-tight mb-3 leading-[1.1]">
               Every claim.<br />
               Every ingredient.<br />
               <span className="text-teal-400">Checked against proof.</span>
             </h1>
-            <p className="text-teal-300/75 text-[15px] leading-relaxed mb-4 max-w-md">
+            <p className="text-teal-300/75 text-sm sm:text-[15px] leading-relaxed mb-4 max-w-md">
               Independent reviews of India&apos;s beauty products: every marketing claim graded against
               real evidence, formulas read ingredient by ingredient.
             </p>
