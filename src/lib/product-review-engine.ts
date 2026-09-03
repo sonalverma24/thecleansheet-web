@@ -25,6 +25,18 @@ export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
 const isURL = (t: string) => /^https?:\/\//i.test(t.trim());
 
+/* A bare INCI paste (an ingredient list on its own) identifies no product: it
+   carries a formula but no brand or product name. Reviews of such scans are shown
+   to the user but never added to the public directory - the directory is for
+   identified products only. Heuristic: not a URL, and five or more comma / newline
+   / semicolon-separated tokens. A typed product name ("Cetaphil Gentle Skin
+   Cleanser") has none; a real ingredient list always does. */
+function looksLikeInciList(t: string): boolean {
+  if (isURL(t)) return false;
+  const parts = t.split(/[,\n;]+/).map((s) => s.trim()).filter(Boolean);
+  return parts.length >= 5;
+}
+
 /** Tolerant JSON extraction · handles a stray prose preamble or code fence. */
 function parseJSON(text: string): Record<string, unknown> | null {
   if (!text) return null;
@@ -632,8 +644,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const verdict = deriveVerdict(review);
 
+  // A scan of a bare INCI list (no URL, no product name) has no confirmed product
+  // identity, so its review is returned to the user but kept OUT of the public
+  // directory - neither the /brands repository grid nor the verified library.
+  const productIdentified = isURL(q) || !!inci || !looksLikeInciList(q);
+
   // Approved products join the registry (shown as tiles on /review and /brands).
-  if (verdict.status === "approved") {
+  if (verdict.status === "approved" && productIdentified) {
     await upsertVerifiedProduct({
       slug: slugify(review.productName, review.brand),
       productName: review.productName,
@@ -650,6 +667,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   const result: ProductReviewResult = { type: "product-review", review, verdict };
-  await store(canonicalSlug, result);
+  // Persist to the repository (which feeds the /brands directory grid) only for an
+  // identified product. An unidentified INCI-only scan is cached in-process so a
+  // repeat paste this session is instant, but it never reaches the directory DB.
+  if (productIdentified) {
+    await store(canonicalSlug, result);
+  } else {
+    REVIEW_CACHE.set(canonicalSlug, { result, at: Date.now() });
+  }
   return result;
 }

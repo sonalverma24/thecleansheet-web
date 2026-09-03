@@ -71,6 +71,16 @@ function isURL(text: string): boolean {
   }
 }
 
+/* A bare INCI paste (an ingredient list on its own) identifies no product - only
+   its formula, with no brand or product name - so its review is never registered
+   in the directory. Heuristic: not a URL, and five or more comma / newline /
+   semicolon-separated tokens; a typed product name has none. */
+function looksLikeInciList(text: string): boolean {
+  if (isURL(text)) return false;
+  const parts = text.split(/[,\n;]+/).map((s) => s.trim()).filter(Boolean);
+  return parts.length >= 5;
+}
+
 function isComparisonQuery(query: string): boolean {
   const q = query.toLowerCase();
   if (q.includes(" vs ") || q.includes(" versus ") || q.includes("compare")) return true;
@@ -312,9 +322,9 @@ CLAIM CHECK FINDINGS (already adjudicated by The Clean Sheet™ Claim Check engi
 ${JSON.stringify(cf.claims.map((c) => ({ claim: c.claim, verdict: c.verdict, evidenceLevel: c.evidenceLevel, explanation: c.explanation })))}`;
 }
 
-async function registerIfVerified(card: Scorecard, verdict: FinalVerdict, cf: Compact) {
+async function registerIfVerified(card: Scorecard, verdict: FinalVerdict, cf: Compact, identified: boolean) {
   try {
-    if (verdict.status !== "verified" || !card.productName) return;
+    if (verdict.status !== "verified" || !card.productName || !identified) return;
     await upsertVerifiedProduct({
       slug: slugify(card.productName, card.brand || ""),
       productName: card.productName,
@@ -449,7 +459,10 @@ ${scrapedContext}`;
 
   const scorecard = validateScorecard(parsed as Scorecard, claimFindings);
   const verdict = computeVerdict(scorecard, claimFindings);
-  await registerIfVerified(scorecard, verdict, claimFindings);
+  // A URL is a specific product page; anything else is identified only if it isn't
+  // a bare INCI-list paste. Unidentified scans are reviewed but not registered.
+  const identified = !!urlInput || !looksLikeInciList(query);
+  await registerIfVerified(scorecard, verdict, claimFindings, identified);
   return { type: "single", scorecard, verdict };
 }
 
