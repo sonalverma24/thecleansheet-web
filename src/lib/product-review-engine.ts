@@ -295,7 +295,14 @@ export type ProductReviewResult =
    Every review (any tier) is stored, keyed by the CANONICAL product slug, so
    any phrasing or URL that resolves to the same product serves the same stored
    review. L1 = in-memory; L2 = Supabase public.product_reviews. Defensive. */
-const REVIEW_CACHE = new Map<string, ProductReviewResult>();
+/* L1 entries carry the time they were cached. Without a TTL, a warm serverless
+   instance would serve a stored review forever, so an out-of-band DB repair
+   (e.g. scripts/backfill-review-inci.mts fixing a missing INCI) would not surface
+   until the instance recycled or the app redeployed. A short TTL bounds that
+   staleness to minutes without a redeploy. In-app edits still call
+   invalidateReviewCache for an immediate refresh. */
+const REVIEW_CACHE = new Map<string, { result: ProductReviewResult; at: number }>();
+const REVIEW_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min, matches the page's ISR revalidate
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
 export const RUBRIC_REV = "r6"; // r6: 4-tier stamp rename + code-verified hard-flag guardrails
 
@@ -318,14 +325,14 @@ function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
 async function getStored(slug: string): Promise<ProductReviewResult | null> {
   if (RETRACTED_SLUGS.has(slug)) return null;
   const mem = REVIEW_CACHE.get(slug);
-  if (mem) return withFreshVerdict(mem);
+  if (mem && Date.now() - mem.at < REVIEW_CACHE_TTL_MS) return withFreshVerdict(mem.result);
   try {
     const { data } = await createAdminClient()
       .from("product_reviews").select("result, rubric_rev")
       .eq("product_slug", slug).maybeSingle();
     if (data?.result && data.rubric_rev === RUBRIC_REV) {
       const r = data.result as ProductReviewResult;
-      REVIEW_CACHE.set(slug, r);
+      REVIEW_CACHE.set(slug, { result: r, at: Date.now() });
       return withFreshVerdict(r);
     }
   } catch { /* repository unavailable */ }
@@ -346,7 +353,7 @@ export function invalidateReviewCache(slug: string): void {
 }
 
 async function store(slug: string, result: ProductReviewResult): Promise<void> {
-  REVIEW_CACHE.set(slug, result);
+  REVIEW_CACHE.set(slug, { result, at: Date.now() });
   if (result.type !== "product-review") return;
   try {
     await createAdminClient().from("product_reviews").upsert(
