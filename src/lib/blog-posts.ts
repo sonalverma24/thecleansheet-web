@@ -20,11 +20,175 @@ export type BlogBlock =
   | { type: "callout"; text: string }
   | { type: "bullets"; items: string[] }
   | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "sources"; items: { text: string; href?: string }[] }
   | { type: "divider" }
   | { type: "image"; src: string; alt: string; caption?: string }
   | { type: "cta"; text: string; href: string; label: string };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "dermatologically-tested-clinically-proven-india",
+    category: "Regulation",
+    readTime: "12 min read",
+    date: "September 8, 2026",
+    title: "Can You Say “Dermatologically Tested” or “Clinically Proven” on an Indian Cosmetic Label?",
+    subtitle: "A dermatologist’s signature, a clinical study and a manufacturing licence answer different questions. Here is how to match your label claim to the evidence.",
+    excerpt: "“Dermatologically tested” looks reassuring. “Clinically proven” sounds stronger. Both can be used on an Indian cosmetic label, but only when the report supports the exact wording. Here is what the evidence must establish, what the customer will understand, and how to write a claim that fits.",
+    author: "The Clean Sheet Team",
+    image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1600&q=80",
+    content: [
+      { type: "paragraph", text: "The formula is ready. The packaging is nearly approved. There is space beneath the product name for one more line." },
+      { type: "paragraph", text: "“Dermatologically tested” would look reassuring. “Clinically proven” sounds even stronger. The manufacturer says they have a certificate. The designer is waiting." },
+      { type: "paragraph", text: "This is the moment to open the report." },
+      { type: "paragraph", text: "Yes, these claims can be used on an Indian cosmetic label when the evidence supports their exact meaning and the overall presentation is truthful. Neither phrase gives a product automatic regulatory approval. “Tested” describes an assessment; “proven” asserts that evidence establishes a particular result. [1][2]" },
+      { type: "paragraph", text: "That distinction should guide the wording, the study you commission and the documents you accept from a supplier." },
+
+      { type: "heading", level: 2, text: "What Indian law actually requires" },
+      { type: "paragraph", text: "Rule 36 of the Cosmetics Rules, 2020 prohibits cosmetic claims that convey a false or misleading idea to the intended user. Section 17C(c) of the Drugs and Cosmetics Act, 1940 also addresses false or misleading statements accompanying a cosmetic. [1][3]" },
+      { type: "paragraph", text: "A label also falls within the Consumer Protection Act, 2019 definition of advertising. Putting a claim on a carton does not take it outside advertising scrutiny. [4]" },
+      { type: "paragraph", text: "Alongside the law, the Advertising Standards Council of India, or ASCI, operates a self regulatory code. It expressly covers packaging and requires objective claims to be substantiated. It also addresses misleading implications, omissions and exaggeration. ASCI is not a government licensing authority. [2]" },
+      { type: "paragraph", text: "The national instruments reviewed for this article do not provide a universal recipe that makes either phrase acceptable for every cosmetic. There is no blanket conclusion that “a test was done, therefore the wording is allowed”. Applicable product standards and the particulars of the claim still matter." },
+      { type: "paragraph", text: "The practical review has two parts: what happened in the study, and what the customer will understand from the pack." },
+
+      { type: "heading", level: 2, text: "“Dermatologically tested” and “clinically proven” promise different things" },
+      { type: "paragraph", text: "The following is The Clean Sheet’s practical interpretation for reviewing evidence. These are not quoted Indian statutory definitions." },
+      {
+        type: "table",
+        headers: ["Claim", "What the evidence should establish", "What the phrase does not establish by itself"],
+        rows: [
+          ["Dermatologically tested", "A relevant assessment on people under a dermatologist’s supervision, with results supporting the impression conveyed", "That the product works for every concern or suits every person"],
+          ["Clinically tested", "A properly conducted human assessment using an appropriate clinical protocol and qualified supervision", "That the assessment produced a meaningful positive result"],
+          ["Clinically proven to deliver a named benefit", "Sufficient clinical evidence for that specific benefit, under the conditions stated or reasonably implied", "That other benefits, populations or durations have also been demonstrated"],
+          ["Dermatologist recommended", "Genuine recommendation evidence matching the wording and scope", "That a product underwent a clinical efficacy study"],
+        ],
+      },
+      { type: "paragraph", text: "For context, the European working group’s technical document on cosmetic claims describes dermatological testing as human testing supervised by a dermatologist. It distinguishes this from consumer self assessment and describes clinical testing in terms of qualified supervision and a clinical protocol or setting. This is an international best practice reference, not Indian law. [5]" },
+      { type: "callout", text: "Complete the sentence before approving it: tested for what, or proven to do what?" },
+
+      { type: "heading", level: 2, text: "What should sit behind “dermatologically tested”?" },
+      { type: "paragraph", text: "Imagine a facial cleanser with this claim on the front. The manufacturer sends a signed letter saying a dermatologist reviewed the ingredient list." },
+      { type: "paragraph", text: "The letter documents a review. It does not document people using the cleanser in a dermatological study. Those are different activities, and the label should accurately describe the activity that took place." },
+      { type: "paragraph", text: "The Clean Sheet recommends asking for a report that makes the following clear:" },
+      { type: "bullets", items: [
+        "The tested product’s identity, including formula reference and batch.",
+        "The study objective, such as assessing skin tolerance under specified conditions.",
+        "Who participated, including relevant skin characteristics.",
+        "How the product was applied and for how long.",
+        "The dermatologist’s role and qualifications.",
+        "How reactions, withdrawals and other findings were recorded.",
+        "The results, limitations and signed conclusion.",
+      ] },
+      { type: "paragraph", text: "A useful question for the supplier is: “Show us where the report supports this wording on this product.”" },
+      { type: "paragraph", text: "For example, a favourable result from a limited irritation assessment should not quietly become “suitable for every skin type” across the website. A study designed around one question has not necessarily answered the next one." },
+      { type: "paragraph", text: "Even the word “tested” needs care. In a reassuring label claim, customers are likely to infer a favourable outcome. The international technical guidance explicitly recognises that expectation. Merely arranging a test is not enough to justify a reassuring presentation when the findings do not support it. [5]" },
+
+      { type: "heading", level: 2, text: "What should sit behind “clinically proven”?" },
+      { type: "paragraph", text: "“Clinically proven” needs an object. A product might be assessed for hydration, visible flaking, appearance of fine lines or another defined cosmetic outcome. A general badge can leave the reader guessing which benefit was established." },
+      { type: "paragraph", text: "Before choosing those words, ask the study team to write down the exact proposed claim and the result needed to support it." },
+      { type: "paragraph", text: "Cosmetics Europe’s industry guidance describes claim support as a matter of relevant, reliable evidence, with a method suited to the claim. It also addresses statistical validity and the connection between tested material and the marketed product. This is technical guidance rather than an Indian legal requirement. [6]" },
+      { type: "paragraph", text: "The Clean Sheet recommends reviewing six questions together:" },
+      { type: "bullets", items: [
+        "Was the product identified? A report for a supplier’s ingredient, a prototype or a different formula needs a documented explanation of its relevance.",
+        "Was the claimed outcome measured? A participant saying their skin feels softer answers a different question from a measured change in skin hydration.",
+        "Does the timing match? A result after four weeks cannot become a result after one application without supporting evidence.",
+        "What is the comparison? An improvement from baseline does not establish superiority over another brand. The comparator must match the sentence.",
+        "How certain and meaningful is the result? Ask the scientific reviewer to explain both the uncertainty and the size of the effect in plain language.",
+        "What happened to participants who did not complete the study? Ask how withdrawals and missing results were handled before approving a success percentage.",
+      ] },
+      { type: "paragraph", text: "These are review questions, not a rule that every cosmetic claim requires the same trial design. The appropriate design depends on the claim. Strong wording requires a convincing explanation of why the evidence is sufficient." },
+
+      { type: "heading", level: 2, text: "Three Indian cases worth reading before approving the artwork" },
+      { type: "heading", level: 3, text: "When supporting clinical data were not provided" },
+      { type: "paragraph", text: "In its published decision concerning Avimee Herbal’s Hair Fall Control Kit+ for Pattern Baldness, ASCI upheld a complaint involving clinical hair fall and growth claims. It recorded that supporting claim data had not been provided. It also found that the ingredient related efficacy claims lacked product specific support and that the before and after presentation was unsupported. [7]" },
+      { type: "paragraph", text: "The lesson is about the evidence submitted for the claims reviewed. It is not a finding that every product from the company is ineffective." },
+      { type: "paragraph", text: "For a brand team, the action is straightforward: establish access to the supporting study before the claim is released. A manufacturer’s assurance that documents exist somewhere is a weak foundation for a response deadline." },
+      { type: "heading", level: 3, text: "When the study conditions shaped the acceptable claim" },
+      { type: "paragraph", text: "In the Aveeno Skin Relief Moisturizing Lotion case, ASCI did not uphold the complaint. For the prolonged hydration claim, it considered a study involving twice daily use over four weeks, followed by observation after use stopped. The published decision explains that the evidence supported sustained hydration after continuous use. It also considered additional evidence and qualifications. [8]" },
+      { type: "paragraph", text: "This matters because a duration claim can be misunderstood if the preceding usage regimen disappears. “After regular use” and “after one application” are different promises." },
+      { type: "heading", level: 3, text: "When the evidence supported the result but disclosure failed" },
+      { type: "paragraph", text: "In a decision concerning L’Oréal’s hydration, plumping and fine line claims, ASCI found that the submitted assessments supported the claimed effects. Nevertheless, it upheld the complaint under Clause 1.2 because the advertisement omitted the source and date of the supporting independent research. [9]" },
+      { type: "paragraph", text: "That is a useful reminder for teams who stop reviewing once a report is approved. The public wording and disclosure still need their own review." },
+      { type: "paragraph", text: "These are case specific self regulatory decisions based on the material before ASCI. They should not be treated as universal approval templates." },
+
+      { type: "heading", level: 2, text: "Can an ingredient study support the finished product claim?" },
+      { type: "paragraph", text: "Sometimes ingredient evidence can contribute to a claim assessment. It should not automatically be presented as clinical testing of the finished product." },
+      { type: "paragraph", text: "Cosmetics Europe’s guidance specifically calls for a justified link when extrapolating ingredient findings, including relevance of concentration, formulation and delivery. [6]" },
+      { type: "paragraph", text: "Consider a hypothetical moisturiser containing an ingredient studied in a supplier’s separate test formulation. The study could be useful background. The brand still needs to explain whether the commercial moisturiser delivers the claimed effect." },
+      { type: "paragraph", text: "The Clean Sheet recommends separating two statements in the internal file:" },
+      { type: "bullets", items: [
+        "Ingredient evidence: what research says about the material.",
+        "Product evidence: what supports the promise made for the bottle being sold.",
+      ] },
+      { type: "paragraph", text: "If you write “clinically proven moisturiser”, check whether a reasonable reader will understand that the moisturiser itself was clinically assessed. A footnote saying “ingredient study” may expose a mismatch rather than resolve it." },
+
+      { type: "heading", level: 2, text: "How to write a claim that fits the evidence" },
+      { type: "paragraph", text: "The examples below are editorial illustrations. They are not approved claims or a substitute for reviewing the underlying report." },
+      {
+        type: "table",
+        headers: ["Evidence available", "Wording direction to consider", "Wording that would exceed that evidence"],
+        rows: [
+          ["A dermatologist supervised tolerance assessment with favourable findings", "“Dermatologically tested for skin tolerance”, with relevant conditions", "“Guaranteed safe for everyone”"],
+          ["An appropriate hydration study assessing a stated usage period", "Name the measured hydration benefit and the period of use", "An unrelated claim about repairing every sign of skin damage"],
+          ["A consumer questionnaire about softness", "Report that participants said their skin felt softer, with the study basis", "Presenting the opinion percentage as an instrumental measurement"],
+          ["A study of a complete routine", "Attribute the finding to the tested routine", "Attributing the whole result to one product without justification"],
+          ["A clinical study of an ingredient in another formulation", "Explain the ingredient research accurately", "Implying your finished formula underwent that study"],
+        ],
+      },
+      { type: "paragraph", text: "Here is a deliberately hypothetical consumer study example. Suppose 45 of 50 respondents agree that their skin feels softer after two weeks. That is 90% of respondents reporting a perception. It is not a 90% increase in softness, nor proof that 90% of all customers will obtain the same result." },
+      { type: "paragraph", text: "Before approving a percentage, ask what its denominator is and what it measures. A change in a measured value, the proportion of responders and a questionnaire agreement rate should never be used interchangeably." },
+
+      { type: "heading", level: 2, text: "Your footnote is part of the promise" },
+      { type: "paragraph", text: "The CCPA’s 2022 misleading advertising guidelines say that a disclaimer must not conceal material information or attempt to correct a misleading claim. The government’s explanation also addresses language and font requirements. [10]" },
+      { type: "paragraph", text: "For example, a large “clinically proven” claim paired with a barely visible “based on consumer opinion” qualification deserves a rewrite. The reader should not have to discover that the main sentence meant something substantially different." },
+      { type: "paragraph", text: "The Clean Sheet recommends placing the essential study qualification beside the claim wherever practical. Depending on the claim, that may include who was assessed, the usage period, the measured endpoint and whether the finding is an average or a participant reported result." },
+      { type: "paragraph", text: "ASCI’s Code specifically requires the source and date when a claim is expressly based on or supported by independent research or assessment. [2]" },
+      { type: "paragraph", text: "A QR code can provide a fuller study summary. Treat it as additional transparency. It should not be used to hide a qualification needed to understand the label itself." },
+
+      { type: "heading", level: 2, text: "Do Indian labels require a fixed number of participants?" },
+      { type: "paragraph", text: "The general Indian provisions reviewed here do not set one participant count that automatically authorises these phrases for every cosmetic. A testing company’s standard package should not be presented as a universal legal threshold. Product specific requirements must still be checked. [1][2]" },
+      { type: "paragraph", text: "Ask why the proposed sample is adequate for the endpoint and the conclusion. “We always test on this number” does not explain the choice." },
+      { type: "paragraph", text: "Nor should a report be rejected solely because a brand funded it. Review the conduct, analysis and relevance, and represent any claim of independence accurately." },
+      { type: "paragraph", text: "For an overseas study, ask whether the participants and conditions support the Indian claim. The Aveeno decision illustrates that ASCI considered population applicability and additional evidence, rather than treating geography alone as the answer. [8]" },
+
+      { type: "heading", level: 2, text: "“Clinically proven” does not turn a cosmetic into a treatment" },
+      { type: "paragraph", text: "Adding clinical language to a disease claim does not resolve product classification." },
+      { type: "paragraph", text: "CDSCO’s public notice dated 18 May 2026 reiterates that cosmetics must remain within their intended cosmetic uses and addresses misleading claims and treatment use. [11]" },
+      { type: "paragraph", text: "If a proposed label says “clinically proven to cure eczema” or promises treatment of a medical condition, pause for a classification and regulatory assessment. The issue is broader than the strength of one test report." },
+      { type: "paragraph", text: "Likewise, do not treat a manufacturing licence, import registration or private certificate as proof of every efficacy statement on the pack. For each claim, identify the document that actually supports it." },
+
+      { type: "heading", level: 2, text: "Build a claim file the whole team can use" },
+      { type: "paragraph", text: "The Clean Sheet recommends one working record for each public claim. Keep it practical enough for your formulation, regulatory, marketing and customer support teams to read." },
+      { type: "paragraph", text: "Record the exact wording, the product and formula it applies to, the supporting report reference, the essential qualification, and the places where the claim appears. Add a named owner and a review date." },
+      { type: "paragraph", text: "Then create a short change log. If the formula, usage instructions, packaging or intended audience changes, record why the existing evidence remains applicable or what further review is needed. Avoid both automatic carryover and automatic retesting without considering the change." },
+      { type: "paragraph", text: "A useful final check is to compare the carton, product page and creator brief side by side. Has a carefully qualified claim become a guarantee in one channel? Has “appearance of” disappeared? Has the time period shortened?" },
+      { type: "paragraph", text: "These small edits can change the promise considerably." },
+
+      { type: "heading", level: 2, text: "The question to ask before printing" },
+      { type: "paragraph", text: "“Can we use these words?” is best answered with the report open and the artwork beside it." },
+      { type: "paragraph", text: "For “dermatologically tested”, identify the assessment and its findings. For “clinically proven”, identify the particular result the evidence establishes. Make the conditions understandable where the customer sees the claim." },
+      { type: "paragraph", text: "Before approving the label, ask your team to point to the evidence for every part of the sentence. If a word goes further than the report, change the word or build the evidence." },
+
+      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product’s wording holds up against its evidence.", href: "/review", label: "Review a product" },
+
+      { type: "paragraph", text: "This article addresses claims on cosmetics sold in India. It separates Indian legal requirements, ASCI self regulation and recommended evidence review practices. Acceptability depends on the complete product, evidence and presentation; the examples are not individual label clearances." },
+
+      { type: "divider" },
+      { type: "heading", level: 2, text: "Sources" },
+      { type: "sources", items: [
+        { text: "Cosmetics Rules, 2020, particularly Rule 36. Read with subsequent amendments.", href: "https://cdsco.gov.in/opencms/opencms/en/Acts-Rules/" },
+        { text: "ASCI Code, definitions and Chapter I, particularly Clauses 1.1, 1.2 and 1.4.", href: "https://www.ascionline.in/" },
+        { text: "Drugs and Cosmetics Act, 1940, official historical compilation, Section 17C(c). Used for the misbranding provision, not as a current consolidated account of all amendments.", href: "https://www.indiacode.nic.in/" },
+        { text: "Consumer Protection Act, 2019, India Code, Section 2(1), definition of advertisement.", href: "https://www.indiacode.nic.in/" },
+        { text: "Technical document on cosmetic claims, 3 July 2017, Annex II. European working group best practice document hosted by the European Commission; not binding Indian law or an official Commission legal interpretation.", href: "https://single-market-economy.ec.europa.eu/sectors/cosmetics_en" },
+        { text: "Cosmetics Europe: Guidelines for Cosmetic Product Claim Substantiation. Industry technical guidance, not Indian law.", href: "https://cosmeticseurope.eu/" },
+        { text: "ASCI decision: Avimee Herbal Hair Fall Control Kit+ for Pattern Baldness. Complaint upheld; absence of supporting data and product specific evidence among the findings.", href: "https://www.ascionline.in/complaint-outcomes/" },
+        { text: "ASCI decision: Aveeno Skin Relief Moisturizing Lotion. Complaint not upheld; assessment of hydration evidence, use conditions and supplementary support.", href: "https://www.ascionline.in/complaint-outcomes/" },
+        { text: "ASCI decision: L’Oréal hydration, plumping and fine line claims. Evidence accepted, complaint upheld for source and date disclosure under Clause 1.2.", href: "https://www.ascionline.in/complaint-outcomes/" },
+        { text: "Government explanation of the CCPA misleading advertising guidelines, 2022. Disclaimer requirements and the consumer protection framework." },
+        { text: "CDSCO public notice, 18 May 2026. Cosmetic intended use, misleading claims and treatment use.", href: "https://cdsco.gov.in/opencms/opencms/en/Cosmetics/cosmetics/" },
+      ] },
+    ],
+  },
   {
     slug: "cosmetic-manufacturing-licence-india",
     category: "Regulation",
@@ -151,15 +315,15 @@ export const BLOG_POSTS: BlogPost[] = [
 
       { type: "divider" },
       { type: "heading", level: 2, text: "Official sources" },
-      { type: "bullets", items: [
-        "1. Drugs and Cosmetics Rules, 1945, historical compilation. Earlier manufacturing forms and rules. Historical reference only.",
-        "2. CDSCO cosmetics FAQ. Particularly questions 82 to 89. Read with subsequent amendments.",
-        "3. ONDLS available services. Current application and licence form mappings.",
-        "4. CDSCO: Cosmetics. Regulatory responsibilities, cosmetic definition and standards.",
-        "5. Cosmetics Rules, 2020. Rules 3, 23, 26 and associated schedules, read with the 2025 amendment.",
-        "6. Kerala Drugs Control: cosmetic manufacturing checklist. State example for supporting documents and fees, published in 2022. Confirm current local requirements.",
-        "7. Delhi Drugs Control: Citizen’s Charter. Example of local query and response procedures.",
-        "8. Cosmetics (Amendment) Rules, 2025, G.S.R. 513(E). Outsourced laboratory approval, batch records and suspension or cancellation provisions.",
+      { type: "sources", items: [
+        { text: "Drugs and Cosmetics Rules, 1945, historical compilation. Earlier manufacturing forms and rules. Historical reference only.", href: "https://cdsco.gov.in/opencms/opencms/en/Acts-Rules/" },
+        { text: "CDSCO cosmetics FAQ. Particularly questions 82 to 89. Read with subsequent amendments.", href: "https://cdsco.gov.in/opencms/opencms/en/Cosmetics/cosmetics/" },
+        { text: "ONDLS available services. Current application and licence form mappings.", href: "https://cdscoonline.gov.in/CDSCO/homepage" },
+        { text: "CDSCO: Cosmetics. Regulatory responsibilities, cosmetic definition and standards.", href: "https://cdsco.gov.in/opencms/opencms/en/Cosmetics/cosmetics/" },
+        { text: "Cosmetics Rules, 2020. Rules 3, 23, 26 and associated schedules, read with the 2025 amendment.", href: "https://cdsco.gov.in/opencms/opencms/en/Acts-Rules/" },
+        { text: "Kerala Drugs Control: cosmetic manufacturing checklist. State example for supporting documents and fees, published in 2022. Confirm current local requirements.", href: "https://dc.kerala.gov.in/" },
+        { text: "Delhi Drugs Control: Citizen’s Charter. Example of local query and response procedures.", href: "https://health.delhi.gov.in/" },
+        { text: "Cosmetics (Amendment) Rules, 2025, G.S.R. 513(E). Outsourced laboratory approval, batch records and suspension or cancellation provisions.", href: "https://egazette.gov.in/" },
       ] },
     ],
   },

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, BookOpen, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Clock, BookOpen, ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { getPostBySlug, getAllSlugs, BLOG_POSTS, type BlogBlock } from "@/lib/blog-posts";
 
 export function generateStaticParams() {
@@ -145,6 +145,36 @@ function renderBlock(block: BlogBlock, i: number) {
             </tbody>
           </table>
         </div>
+      );
+
+    case "sources":
+      return (
+        <ol key={i} className="my-6 space-y-4 list-none">
+          {block.items.map((item, j) => (
+            <li key={j} className="flex items-start gap-3 text-ink-600 text-sm sm:text-base leading-relaxed">
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-teal-50 text-teal-700 border border-teal-100 flex items-center justify-center text-xs font-medium mt-0.5">
+                {j + 1}
+              </span>
+              <span>
+                {item.text}
+                {item.href && (
+                  <>
+                    {" "}
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-800 hover:decoration-teal-500 transition-colors"
+                    >
+                      View source
+                      <ArrowUpRight size={13} className="flex-shrink-0" />
+                    </a>
+                  </>
+                )}
+              </span>
+            </li>
+          ))}
+        </ol>
       );
 
     case "image":
