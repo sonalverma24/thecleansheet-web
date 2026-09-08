@@ -19,11 +19,150 @@ export type BlogBlock =
   | { type: "before-after"; before: string; after: string }
   | { type: "callout"; text: string }
   | { type: "bullets"; items: string[] }
+  | { type: "table"; headers: string[]; rows: string[][] }
   | { type: "divider" }
   | { type: "image"; src: string; alt: string; caption?: string }
   | { type: "cta"; text: string; href: string; label: string };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "cosmetic-manufacturing-licence-india",
+    category: "Regulation",
+    readTime: "11 min read",
+    date: "September 8, 2026",
+    title: "Cosmetic Manufacturing Licence in India: Form 31, COS-5 and the Process Explained",
+    subtitle: "Form 31, COS-5, COS-8. The paperwork behind a cosmetic manufacturing licence in India, what each document actually proves, and what a brand should check before trusting it.",
+    excerpt: "A manufacturer sends you a licence. It looks reassuring, until someone mentions Form 31, COS-5 and COS-8. Here is what each document does, who issues it, and what a brand should check before accepting the paperwork.",
+    author: "The Clean Sheet Team",
+    image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80",
+    content: [
+      { type: "paragraph", text: "You ask a manufacturer for their paperwork. A licence arrives. There is a company name, an address, a government seal and several numbers. It looks reassuring. Then someone mentions Form 31. Someone else asks for COS-5. Your consultant says COS-8." },
+      { type: "paragraph", text: "Before deciding whether the paperwork is right, it helps to know what each document actually does." },
+      { type: "paragraph", text: "For a fresh cosmetic manufacturing licence in India, COS-5 is the application and COS-8 is the licence issued. Form 31 belongs to the earlier framework. Ordinary domestic cosmetic manufacturing is licensed by the relevant State Licensing Authority, even though searches often describe the process as a “CDSCO cosmetic manufacturing licence”. [1][2][3]" },
+      { type: "paragraph", text: "This distinction matters whether you are setting up a factory, choosing a manufacturing partner or checking what sits behind the licence number on your packaging." },
+
+      { type: "heading", level: 2, text: "Why Form 31 still appears in searches" },
+      { type: "paragraph", text: "Under the earlier Drugs and Cosmetics Rules, 1945, Form 31 was the application for a cosmetic manufacturing licence. The corresponding licence was Form 32. The loan licence route used Form 31A and Form 32A. [1]" },
+      { type: "paragraph", text: "The Cosmetics Rules, 2020 introduced the COS forms. CDSCO’s FAQ specifically directs fresh manufacturing applications to COS-5 or COS-6. [2]" },
+      {
+        type: "table",
+        headers: ["Purpose", "Earlier form", "Current form"],
+        rows: [
+          ["Manufacturing licence application", "Form 31", "COS-5"],
+          ["Manufacturing licence issued", "Form 32", "COS-8"],
+          ["Loan licence application", "Form 31A", "COS-6"],
+          ["Loan licence issued", "Form 32A", "COS-9"],
+        ],
+      },
+      { type: "paragraph", text: "Sources: the earlier rules, CDSCO’s FAQ and the official ONDLS service list. [1][2][3]" },
+      { type: "paragraph", text: "An older form number is a reason to ask for the complete licensing history. It is not enough, by itself, to declare a manufacturer unlicensed. Ask for the current licence record, applicable retention evidence and subsequent endorsements. Equally, an application receipt should never be accepted as evidence that a licence has been granted." },
+
+      { type: "heading", level: 2, text: "Who issues the licence: CDSCO or the state?" },
+      { type: "paragraph", text: "CDSCO’s own explanation separates domestic manufacturing, which is regulated through state licensing and inspection, from imports, which fall under central registration. [4]" },
+      { type: "paragraph", text: "For a manufacturing project, start with the authority responsible for the factory’s location. A brand’s registered office may be somewhere else." },
+      { type: "callout", text: "Which authority and portal handle this manufacturing premises?" },
+      { type: "paragraph", text: "That question is more useful than searching for a single national application button." },
+      { type: "paragraph", text: "The official Online National Drugs Licensing System, or ONDLS, lists COS-5 to COS-8 and COS-6 to COS-9 services. Confirm that your state uses that service for your application before creating or submitting a file. [3]" },
+
+      { type: "heading", level: 2, text: "Decide the manufacturing arrangement before choosing the form" },
+      { type: "bullets", items: [
+        "Operating your own manufacturing premises: the application route is COS-5, leading to COS-8.",
+        "Applying to manufacture through another licensee’s site: the loan licence route is COS-6, leading to COS-9. [3][5]",
+      ] },
+      { type: "paragraph", text: "If you are a brand buying finished products from a contract manufacturer, establish who will legally manufacture the products and under whose licence. Do not assume that every private label agreement automatically requires the brand to hold a loan licence." },
+      { type: "paragraph", text: "Ask the proposed manufacturer to explain the arrangement in writing. Which entity holds the licence? Which site makes the product? Who releases the batch? Who keeps the records? Who handles a failed test or a customer complaint?" },
+      { type: "paragraph", text: "Those questions also make the commercial agreement more useful. “We handle compliance” is a promise. Named responsibilities are something you can check." },
+
+      { type: "heading", level: 2, text: "The cosmetic manufacturing licence process" },
+
+      { type: "numbered-heading", n: "1", text: "Confirm the product’s regulatory category" },
+      { type: "paragraph", text: "CDSCO describes cosmetics by their intended use, including cleansing, beautifying and altering appearance. Product standards and other applicable requirements still apply. [4]" },
+      { type: "paragraph", text: "Before filing, review the formula, intended use and proposed claims together. If the product makes treatment claims, obtain a classification assessment before assuming the cosmetic route fits." },
+      { type: "paragraph", text: "There is also a specific legal category called a new cosmetic, linked to novel ingredients without the specified history of use or recognition. This does not simply mean a newly launched brand. [5]" },
+      { type: "paragraph", text: "Where that category applies, prior central permission is required: COS-12 is the application and COS-3 is the permission. [2]" },
+
+      { type: "numbered-heading", n: "2", text: "Prepare the premises and technical team" },
+      { type: "paragraph", text: "The Seventh Schedule covers cosmetic manufacturing premises, equipment and good manufacturing practices. COS-7 is the declaration of compliance. [5]" },
+      { type: "paragraph", text: "For a practical example, Kerala’s published checklist asks for a layout showing section areas, machinery details, lawful possession of the premises, and technical staff qualifications and consent to full time employment. It also distinguishes production space from storage needs. [6]" },
+      { type: "paragraph", text: "Use this stage to walk through a proposed batch from arrival of ingredients to dispatch. Where will materials be received? Where will rejected stock go? How will the team prevent an unapproved batch from being shipped?" },
+      { type: "paragraph", text: "A floor plan should answer operational questions. Treat it as a description of how work will happen, rather than an attachment prepared only for submission." },
+
+      { type: "numbered-heading", n: "3", text: "Build one consistent application file" },
+      { type: "paragraph", text: "Kerala’s checklist provides a useful example of the supporting file: application and fee receipt, premises documents, business constitution, equipment, technical staff details, product compositions, proposed labels, COS-7 and the required undertaking. Some requirements depend on the category, such as fire clearance for specified products. [6]" },
+      { type: "paragraph", text: "Your state’s current checklist should determine the actual submission." },
+      { type: "paragraph", text: "The Clean Sheet recommends a consistency check before upload. Compare the applicant’s legal name across every document. Compare the premises address. Compare product names and formula versions. Check that the label artwork being reviewed is the artwork the packaging team intends to print." },
+      { type: "paragraph", text: "For example, if a moisturiser was reformulated after its original specification was prepared, put both documents side by side. Resolve the version mismatch before it becomes a question from the authority or a disagreement with the manufacturer." },
+
+      { type: "numbered-heading", n: "4", text: "Calculate the fee by category and item count" },
+      { type: "paragraph", text: "The published fee schedule specifies ₹10,000 for up to ten items in a category, with ₹500 for each additional item in that category. Additional categories carry their own applicable fee. The loan licence schedule follows the same basic structure. [6]" },
+      { type: "paragraph", text: "For illustration, twelve items accepted within one category would mean ₹11,000: ₹10,000 plus ₹500 for each of the two additional items." },
+      { type: "paragraph", text: "Confirm the category allocation and payable amount with the authority. Keep government fees separate from laboratory charges, premises costs and professional fees when budgeting the launch." },
+
+      { type: "numbered-heading", n: "5", text: "Submit through the applicable state route" },
+      { type: "paragraph", text: "Select the manufacturing or loan licence service that matches the arrangement. ONDLS lists these as separate services. [3]" },
+      { type: "paragraph", text: "Keep an exact copy of the submission, supporting files, payment acknowledgement and application reference. Assign one person to monitor communications and maintain a query log." },
+      { type: "paragraph", text: "Delhi’s published Citizen’s Charter, for example, sets out separate communications and response periods for documentary and inspection shortcomings. That illustrates why a national process overview cannot replace local follow up instructions. [7]" },
+      { type: "paragraph", text: "When responding to a query, identify the issue, the correction and the replacement document. Uploading a folder of unexplained files makes the reviewer do the reconciliation work you should already have done." },
+
+      { type: "numbered-heading", n: "6", text: "Understand the grant and inspection sequence" },
+      { type: "paragraph", text: "Rule 23 provides a 45 day period for grant following satisfactory scrutiny, or communication that requirements are unmet. It also provides for inspection within 30 days after grant to verify COS-7. After receiving the licence, the rule requires uploading a copy to CDSCO’s website before manufacturing for sale or distribution. [5]" },
+      { type: "paragraph", text: "Treat those provisions as the regulatory sequence, rather than a guaranteed launch date. An incomplete submission, an unresolved question or unfinished factory work belongs in your project schedule." },
+      { type: "paragraph", text: "Do not interpret silence after an application as permission to start. Ask the state authority for the current operational method for the licence upload and retain proof that it was completed." },
+
+      { type: "heading", level: 2, text: "The 2025 changes your checklist should reflect" },
+      { type: "paragraph", text: "The Cosmetics (Amendment) Rules, 2025 changed the outsourced testing provision to refer to laboratories approved by the State Licensing Authority. The NABL accreditation requirement remains relevant. [5][8]" },
+      { type: "paragraph", text: "The amendment also permits specified manufacturing and testing records in paper or electronic form. These must be retained for three years or six months after batch expiry, whichever is later. It specifies testing of each raw material batch or lot and each finished product batch. Soap has a specific exception, with procedures and records approved by the Licensing Authority. [8]" },
+      { type: "paragraph", text: "For your team, this means reviewing both the laboratory agreement and the record retention policy. An old checklist can look perfectly organised while still pointing to an outdated requirement." },
+      { type: "paragraph", text: "Ask the laboratory for evidence of its relevant approval and accreditation scope. Agree how reports will identify your product, formula version and batch. A report is much easier to use when its connection to the product is clear from the start." },
+
+      { type: "heading", level: 2, text: "Does the licence expire after five years?" },
+      { type: "paragraph", text: "COS-8 and COS-9 licences remain valid in perpetuity, subject to the required retention fee before the five year deadline and provided they are not suspended or cancelled. [2]" },
+      { type: "callout", text: "“Valid in perpetuity” should trigger a calendar reminder, not the deletion of one." },
+      { type: "paragraph", text: "For an existing supplier, request the evidence supporting its current status. For your own operation, assign an owner to the retention date and keep the payment record alongside the licence." },
+      { type: "paragraph", text: "The 2025 amendment also introduced an express suspension and cancellation provision, Rule 31A, for noncompliance, with an opportunity to respond and an appeal route. [8]" },
+
+      { type: "heading", level: 2, text: "What a brand should check before accepting a manufacturer’s licence" },
+      { type: "paragraph", text: "The Clean Sheet recommends reading the licence as the beginning of a document review. Use these questions when evaluating a manufacturing partner:" },
+      { type: "bullets", items: [
+        "Does the named licence holder match the entity in our agreement?",
+        "Does the licensed address match the site that will actually make our product?",
+        "Can the manufacturer show how our product is covered in the licence and relevant endorsements?",
+        "Is there evidence supporting current licence status and retention?",
+        "Can we trace a finished batch to its manufacturing and testing records?",
+        "Have we agreed who investigates a failed result, complaint or proposed formula change?",
+      ] },
+      { type: "paragraph", text: "These are recommended due diligence questions, rather than a substitute statutory application checklist." },
+      { type: "paragraph", text: "Consider a hypothetical body lotion brand. The manufacturer supplies a licence and a test report. The brand should still ask whether the report relates to its lotion, its current formula and an identifiable batch. A document can be authentic and still fail to answer the question being asked of it." },
+
+      { type: "heading", level: 2, text: "A manufacturing licence does not answer every product question" },
+      { type: "paragraph", text: "A useful way to review evidence is to name the question first." },
+      { type: "bullets", items: [
+        "“Who is authorised to manufacture this product at this premises?” belongs in the licensing file.",
+        "“What supports our 24 hour moisturisation claim?” belongs in the claims evidence file.",
+        "“How do we know the next batch met its specifications?” belongs in the batch release file.",
+      ] },
+      { type: "paragraph", text: "The Clean Sheet’s recommendation is to keep those connections visible. For every public claim, identify the supporting evidence, the product it applies to and its limits. Do not ask the licence to carry an argument that depends on a different document." },
+      { type: "paragraph", text: "A founder should be able to move from the pack to the manufacturer, from the manufacturer to the batch, and from the promise to the evidence without relying on someone’s memory." },
+      { type: "paragraph", text: "Before your next production order, ask for the current licence, relevant product coverage and one complete example of a batch evidence file. Read them together." },
+
+      { type: "cta", text: "A licence proves who may manufacture. It does not prove a claim. See how a product holds up against the evidence behind it.", href: "/review", label: "Review a product" },
+
+      { type: "paragraph", text: "This article explains the national framework and uses selected state documents as examples. Confirm the current filing requirements with the authority responsible for your manufacturing premises." },
+
+      { type: "divider" },
+      { type: "heading", level: 2, text: "Official sources" },
+      { type: "bullets", items: [
+        "1. Drugs and Cosmetics Rules, 1945, historical compilation. Earlier manufacturing forms and rules. Historical reference only.",
+        "2. CDSCO cosmetics FAQ. Particularly questions 82 to 89. Read with subsequent amendments.",
+        "3. ONDLS available services. Current application and licence form mappings.",
+        "4. CDSCO: Cosmetics. Regulatory responsibilities, cosmetic definition and standards.",
+        "5. Cosmetics Rules, 2020. Rules 3, 23, 26 and associated schedules, read with the 2025 amendment.",
+        "6. Kerala Drugs Control: cosmetic manufacturing checklist. State example for supporting documents and fees, published in 2022. Confirm current local requirements.",
+        "7. Delhi Drugs Control: Citizen’s Charter. Example of local query and response procedures.",
+        "8. Cosmetics (Amendment) Rules, 2025, G.S.R. 513(E). Outsourced laboratory approval, batch records and suspension or cancellation provisions.",
+      ] },
+    ],
+  },
   {
     slug: "beautys-next-era-will-be-built-on-proof",
     category: "Standards",

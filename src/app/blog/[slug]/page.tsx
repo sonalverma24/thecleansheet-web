@@ -113,6 +113,40 @@ function renderBlock(block: BlogBlock, i: number) {
         </ul>
       );
 
+    case "table":
+      return (
+        <div key={i} className="my-8 -mx-4 sm:mx-0 overflow-x-auto">
+          <table className="w-full border-collapse text-sm sm:text-base min-w-[32rem]">
+            <thead>
+              <tr>
+                {block.headers.map((h, j) => (
+                  <th
+                    key={j}
+                    className="text-left font-medium text-ink-950 bg-teal-50 border border-teal-100 px-4 py-3"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, r) => (
+                <tr key={r}>
+                  {row.map((cell, c) => (
+                    <td
+                      key={c}
+                      className="text-ink-700 border border-teal-100 px-4 py-3 align-top"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+
     case "image":
       return (
         <figure key={i} className="my-12 -mx-4 sm:mx-0">
