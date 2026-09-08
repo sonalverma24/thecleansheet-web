@@ -14,7 +14,7 @@ import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
-import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
+import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci } from "@/lib/ingredient-db";
@@ -326,6 +326,13 @@ export const RUBRIC_REV = "r6"; // r6: 4-tier stamp rename + code-verified hard-
 const RETRACTED_SLUGS = new Set<string>([
   "la-roche-posay-cicaplast-balm",
   "moxie-curly-hair-shampoo", // duplicate Moxie shampoo review (AI-generated imagery); other Moxie review kept
+  // Duplicate of the same product under the old brand name "Minimalist" (the
+  // company rebranded to "Be Minimalist"). The brand-PDP scrape flagged two
+  // drug-boundary claims ("treats dandruff & itching", "eliminates ...fungus")
+  // so it derived Not Recommended, while the INCIDecoder-sourced "Be Minimalist"
+  // row never saw those claims and derived Approved. Same INCI, same product.
+  // The "be-minimalist-..." row (real image + INCI source) is the keeper.
+  "minimalist-cph-complex-oligopeptide-0-8-anti-dandruff-serum",
 ]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
@@ -582,6 +589,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const review = parsed as ProductReview;
 
+  /* Collapse historical brand names to one canonical identity BEFORE the slug is
+     computed, so a rebrand (Minimalist → Be Minimalist) can't store the same
+     product twice under two names. */
+  review.brand = canonicalizeBrand(review.brand);
+
   /* Guardrail 2 (corroboration): when we actually scraped a product page and/or
      brand evidence, verify that each claim we might penalise the brand for is
      genuinely present in that text. A red-flag / drug-boundary claim whose
@@ -600,8 +612,16 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      doing any more work - a second search for the same product now serves the
      existing review instead of creating a duplicate. */
   const canonicalSlug = inci?.slug ?? slugify(review.productName, review.brand);
-  if (canonicalSlug !== slug) {
-    const existing = await getStored(canonicalSlug);
+  // De-dupe across every historical brand spelling (a rebrand must not create a
+  // twin review) plus the INCIDecoder slug, so a re-search of a product already
+  // stored under any of its names serves the existing review.
+  const dedupeSlugs = new Set<string>([
+    canonicalSlug,
+    ...brandNameVariants(review.brand).map((b) => slugify(review.productName, b)),
+  ]);
+  for (const candidate of dedupeSlugs) {
+    if (candidate === slug) continue;
+    const existing = await getStored(candidate);
     if (existing) return existing;
   }
 

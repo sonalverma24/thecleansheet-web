@@ -20,6 +20,35 @@ export function slugify(productName: string, brand: string): string {
     .slice(0, 80);
 }
 
+/* Brands that have traded under more than one name collapse to a single
+   canonical identity, so the same product cannot spawn two reviews under two
+   spellings (e.g. the company rebranded "Minimalist" → "Be Minimalist"). Each
+   group is lowercased; the first entry is the canonical display name. Add a new
+   group when you discover a rebrand or a consistent alternate spelling. */
+const BRAND_ALIAS_GROUPS: string[][] = [
+  ["Be Minimalist", "Minimalist"],
+];
+
+/** Canonical display name for a brand, collapsing known aliases. Unknown brands
+    pass through unchanged (only trimmed). */
+export function canonicalizeBrand(brand: string): string {
+  const b = brand.trim().toLowerCase();
+  for (const group of BRAND_ALIAS_GROUPS) {
+    if (group.some((name) => name.toLowerCase() === b)) return group[0];
+  }
+  return brand.trim();
+}
+
+/** Every brand-name spelling equivalent to `brand` (itself always included),
+    used to match a product against rows stored under any historical name. */
+export function brandNameVariants(brand: string): string[] {
+  const b = brand.trim().toLowerCase();
+  for (const group of BRAND_ALIAS_GROUPS) {
+    if (group.some((name) => name.toLowerCase() === b)) return group;
+  }
+  return [brand.trim()];
+}
+
 function rowToProduct(r: Record<string, unknown>): VerifiedProduct {
   return {
     slug: String(r.slug),
