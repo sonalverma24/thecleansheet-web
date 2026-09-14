@@ -38,7 +38,6 @@ const products: ProductScorecard[] = [
     score: 64,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "PM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_15_Serum_30ml_1001x1001_px.webp?v=1776943410",
     pillars: [
       {
@@ -152,7 +151,6 @@ const products: ProductScorecard[] = [
     score: 69,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "AM+PM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Nia_Serum_50ml_1001x1001_px_5.webp?v=1778132412",
     pillars: [
       {
@@ -274,7 +272,6 @@ const products: ProductScorecard[] = [
     score: 55,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "PM",
     image: "https://plumgoodness.com/cdn/shop/files/011_60360bbc-c8e2-409b-a694-1520e2c64408.jpg?v=1776772927",
     pillars: [
       {
@@ -399,7 +396,6 @@ const products: ProductScorecard[] = [
     score: 43,
     scoreLabel: "Concern",
     publicDecisionLabel: "Weak public evidence",
-    routineSlot: "AM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_GT_SPF_1001x1001_px.webp?v=1776770983",
     pillars: [
       {
@@ -536,7 +532,6 @@ const products: ProductScorecard[] = [
     score: 68,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "PM",
     image: "https://plumgoodness.com/cdn/shop/files/SA-Serum-30ml-01.jpg?v=1775713159",
     pillars: [
       {
@@ -651,7 +646,6 @@ const products: ProductScorecard[] = [
     score: 73,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "AM+PM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_HA_Serum_1001x1001_px_5dceb604-4ce4-4130-9aa8-b313abaf1846.webp?v=1776934475",
     pillars: [
       {
@@ -762,7 +756,6 @@ const products: ProductScorecard[] = [
     score: 78,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "AM+PM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_1.5_100ml_Toner_1001x1001_px.webp?v=1776937410",
     pillars: [
       {
@@ -872,7 +865,6 @@ const products: ProductScorecard[] = [
     score: 69,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "PM",
     image: "https://plumgoodness.com/cdn/shop/files/Listing_1st_Tile_Vit_C_Under_Eye_Cream_1001x1001_px.webp?v=1776938914",
     pillars: [
       {

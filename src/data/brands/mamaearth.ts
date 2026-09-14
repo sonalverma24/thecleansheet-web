@@ -184,7 +184,6 @@ const products: ProductScorecard[] = [
     suitabilityTags: ["Dark Spots and Pigmentation", "Daily Use", "Melanin Rich Skin"],
     cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Active % Not Verified", "Clinical Claim Not Verified"],
     fragranceStatus: "synthetic",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -336,7 +335,6 @@ const products: ProductScorecard[] = [
     suitabilityTags: ["Skincare Beginners", "Daily Use", "Combination Skin"],
     cautionTags: ["Clinical Claim Not Verified"],
     fragranceStatus: "synthetic",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -489,7 +487,6 @@ const products: ProductScorecard[] = [
     suitabilityTags: ["Oily Skin", "Combination Skin", "Skincare Beginners"],
     cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag"],
     fragranceStatus: "synthetic",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -652,7 +649,6 @@ const products: ProductScorecard[] = [
     suitabilityTags: ["Dark Spots and Pigmentation", "Dry Skin", "Combination Skin"],
     cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Retinoid Flag", "Pregnancy Not Reviewed", "Active % Not Verified"],
     fragranceStatus: "synthetic",
-    routineSlot: "PM",
   },
 
 ];

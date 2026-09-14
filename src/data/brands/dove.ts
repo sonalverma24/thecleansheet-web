@@ -187,7 +187,6 @@ const products: ProductScorecard[] = [
     concernTags: ["Moisturisation", "Skin Bounce"],
     suitabilityTags: ["Normal Skin", "Dry Skin"],
     cautionTags: ["Contains Fragrance", "Multiple Fragrance Allergens"],
-    routineSlot: "AM+PM",
     fragranceStatus: "synthetic",
     alcoholStatus: "free",
     certificationStatus: "not-certified",

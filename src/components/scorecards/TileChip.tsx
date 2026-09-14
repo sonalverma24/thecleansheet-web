@@ -1,6 +1,6 @@
 "use client";
 
-export type TileChipVariant = "skin" | "routine" | "flag";
+export type TileChipVariant = "skin" | "flag";
 
 interface TileChipProps {
   label: string;
@@ -8,9 +8,8 @@ interface TileChipProps {
 }
 
 const CHIP_CLASSES: Record<TileChipVariant, string> = {
-  skin:    "bg-[#faf7f2] text-[#5a5550] border-[#e8e2d8]",
-  routine: "bg-[#e3f1ef] text-[#248179] border-[#c0ddd9]",
-  flag:    "bg-[#ffe6e4] text-[#fd6158] border-[#ffd0cc]",
+  skin: "bg-[#faf7f2] text-[#5a5550] border-[#e8e2d8]",
+  flag: "bg-[#ffe6e4] text-[#fd6158] border-[#ffd0cc]",
 };
 
 export function TileChip({ label, variant }: TileChipProps) {

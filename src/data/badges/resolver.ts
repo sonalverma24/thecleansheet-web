@@ -45,31 +45,7 @@ function deriveSkinLabel(tags: string[]): string | null {
 }
 
 /**
- * Derive the routine slot (AM / PM / AM+PM).
- * Uses the explicit `routineSlot` field when set; otherwise infers from
- * category, subCategory, and cautionTags.
- */
-function deriveRoutineLabel(product: ProductScorecard): string | null {
-  if (product.routineSlot) return product.routineSlot;
-
-  const cat     = (product.category    ?? "").toLowerCase();
-  const subCat  = (product.subCategory ?? "").toLowerCase();
-  const cautions = (product.cautionTags ?? []).map((c) => c.toLowerCase());
-
-  if (cat === "sunscreens") return "AM";
-  if (cautions.some((c) => c.includes("retinoid"))) return "PM";
-  if (
-    subCat.includes("peel") ||
-    cautions.some((c) => c.includes("acid active") || c.includes("strong exfoliant"))
-  ) return "PM";
-
-  return "AM+PM";
-}
-
-/**
  * Pick the single most important consumer-facing red flag.
- * Routine-slot concerns (e.g. retinoid = PM) are intentionally excluded here
- * since the routine chip already communicates that.
  */
 function deriveFlagLabel(product: ProductScorecard): string | null {
   const cautions      = (product.cautionTags  ?? []).map((c) => c.toLowerCase());
@@ -90,21 +66,18 @@ function deriveFlagLabel(product: ProductScorecard): string | null {
 }
 
 /**
- * Return up to 3 tile chips for a product card:
+ * Return up to 2 tile chips for a product card:
  *   1. Skin type - who it is for
- *   2. Routine   - AM / PM / AM+PM
- *   3. Red flag  - top consumer-facing caution (if any)
+ *   2. Red flag  - top consumer-facing caution (if any)
  */
 export function getTileChips(product: ProductScorecard): TileChip[] {
   const chips: TileChip[] = [];
 
-  const skin    = deriveSkinLabel(product.skinTypeTags ?? []);
-  const routine = deriveRoutineLabel(product);
-  const flag    = deriveFlagLabel(product);
+  const skin = deriveSkinLabel(product.skinTypeTags ?? []);
+  const flag = deriveFlagLabel(product);
 
-  if (skin)    chips.push({ label: skin,    variant: "skin"    });
-  if (routine) chips.push({ label: routine, variant: "routine" });
-  if (flag)    chips.push({ label: flag,    variant: "flag"    });
+  if (skin) chips.push({ label: skin, variant: "skin" });
+  if (flag) chips.push({ label: flag, variant: "flag" });
 
   return chips;
 }

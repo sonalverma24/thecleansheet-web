@@ -157,7 +157,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Drying Alcohol", "SPF Not Verified"],
     fragranceStatus: "free",
     alcoholStatus: "contains-drying",
-    routineSlot: "AM",
   },
 
   /* -------------------------------------------------
@@ -462,7 +461,6 @@ const products: ProductScorecard[] = [
     suitabilityTags: ["Melanin Rich Skin", "Active Experienced Users"],
     cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Essential Oil Flag", "High Irritation Potential"],
     fragranceStatus: "essential-oil",
-    routineSlot: "PM",
   },
 
   /* -------------------------------------------------

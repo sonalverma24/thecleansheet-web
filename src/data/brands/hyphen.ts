@@ -35,7 +35,6 @@ const products: ProductScorecard[] = [
     score: 74,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "AM+PM",
     image: "https://letshyphen.com/cdn/shop/files/card1_7c0e5fdd-ad93-4b10-be41-f409b5e1386f.jpg?v=1749705417",
     pillars: [
       {
@@ -173,7 +172,6 @@ const products: ProductScorecard[] = [
     score: 69,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "AM+PM",
     image: "https://letshyphen.com/cdn/shop/files/1_273df412-dfbe-4092-a165-639b08385dd1.jpg?v=1768809679",
     pillars: [
       {
@@ -298,7 +296,6 @@ const products: ProductScorecard[] = [
     score: 66,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
-    routineSlot: "AM+PM",
     image: "https://letshyphen.com/cdn/shop/files/1_e2c45436-eaa0-422c-bd1c-419271ffcfbc.jpg?v=1749643571",
     pillars: [
       {
@@ -411,7 +408,6 @@ const products: ProductScorecard[] = [
     score: 80,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "PM",
     image: "https://letshyphen.com/cdn/shop/files/0.1___retinal_serum.jpg?v=1737977239",
     pillars: [
       {
@@ -549,7 +545,6 @@ const products: ProductScorecard[] = [
     score: 72,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "AM",
     image: "https://letshyphen.com/cdn/shop/files/Card1_2_d7977876-0aec-447a-842a-1edda62fb20e.jpg?v=1777290798",
     pillars: [
       {
@@ -687,7 +682,6 @@ const products: ProductScorecard[] = [
     score: 71,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "PM",
     image: "https://letshyphen.com/cdn/shop/files/Advance_de_pigmentation_serum.jpg?v=1737977903",
     pillars: [
       {
@@ -799,7 +793,6 @@ const products: ProductScorecard[] = [
     score: 75,
     scoreLabel: "Good",
     publicDecisionLabel: "Mostly credible with gaps",
-    routineSlot: "AM+PM",
     image: "https://letshyphen.com/cdn/shop/files/Artboard1_652d4833-dc7c-4577-84ae-4d5fbec62d37.jpg?v=1748929342",
     pillars: [
       {

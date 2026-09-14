@@ -168,7 +168,6 @@ const products: ProductScorecard[] = [
     concernTags: ["Dry Skin", "Moisturisation"],
     suitabilityTags: ["Normal Skin", "Dry Skin", "Skincare Beginners"],
     cautionTags: ["May be Comedogenic (Isopropyl Myristate)", "Unspecified Fragrance"],
-    routineSlot: "AM+PM",
     fragranceStatus: "synthetic",
     alcoholStatus: "free",
     certificationStatus: "not-certified",

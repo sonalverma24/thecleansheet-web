@@ -206,7 +206,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Endocrine Disruptor Concern", "SPF Not Verified"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM",
   },
 
   /* -------------------------------------------------
@@ -403,7 +402,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Endocrine Disruptor Concern", "SPF Not Verified"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM",
   },
 
   /* -------------------------------------------------
@@ -580,7 +578,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Fragrance Sensitive Skin", "Azo Dye Sensitivity"],
     fragranceStatus: "synthetic",
     alcoholStatus: "free",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -769,7 +766,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Fragrance Sensitive Skin", "Azo Dye Sensitivity"],
     fragranceStatus: "synthetic",
     alcoholStatus: "free",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -935,7 +931,6 @@ const products: ProductScorecard[] = [
     cautionTags: [],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM+PM",
   },
 
 ];

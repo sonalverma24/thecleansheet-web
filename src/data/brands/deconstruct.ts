@@ -183,7 +183,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["ph not disclosed"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -345,7 +344,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["dual-acid", "ph not disclosed", "high irritation"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "PM",
   },
 
   /* -------------------------------------------------
@@ -503,7 +501,6 @@ const products: ProductScorecard[] = [
     cautionTags: [],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM+PM",
   },
 
   /* -------------------------------------------------
@@ -669,7 +666,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["Retinoid Flag", "Pregnancy Not Reviewed", "high irritation"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "PM",
   },
 
   /* -------------------------------------------------
@@ -837,7 +833,6 @@ const products: ProductScorecard[] = [
     cautionTags: ["SPF Not Verified"],
     fragranceStatus: "free",
     alcoholStatus: "free",
-    routineSlot: "AM",
   },
 
 ];
