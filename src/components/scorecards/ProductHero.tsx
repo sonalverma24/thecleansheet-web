@@ -14,6 +14,7 @@ import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
 import { resolveTier, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
 import type { ReviewTier } from "@/lib/product-review-types";
+import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
 import { HeroActions } from "./HeroActions";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -954,16 +955,26 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
               <div className="text-sm text-[#248179] mb-2" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Key Ingredients</div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {keyIngredients.map((name, i) => {
-                  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+                  // Key-active labels carry a concentration ("Niacinamide (10%)")
+                  // that no ingredient page is keyed on — strip the trailing
+                  // parenthetical before slugging, then only link when a real
+                  // ingredient page exists so we never point at a 404.
+                  const cleanName = name.replace(/\s*\([^)]*\)\s*$/, "").trim();
+                  const slug = toSlug(cleanName);
+                  const linked = hasIngredientPage(slug);
                   return (
                     <span key={name} className="flex items-center gap-2">
                       {i > 0 && <span className="text-[#b0a8a4] text-sm select-none">&bull;</span>}
-                      <Link
-                        href={`/ingredients/${slug}`}
-                        className="text-sm text-[#282828]/80 hover:text-[#248179] transition-colors"
-                      >
-                        {name}
-                      </Link>
+                      {linked ? (
+                        <Link
+                          href={`/ingredients/${slug}`}
+                          className="text-sm text-[#282828]/80 hover:text-[#248179] transition-colors"
+                        >
+                          {name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-[#282828]/80">{name}</span>
+                      )}
                     </span>
                   );
                 })}

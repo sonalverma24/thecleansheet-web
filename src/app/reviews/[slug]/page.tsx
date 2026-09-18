@@ -8,7 +8,7 @@ import { getStoredReview } from "@/lib/product-review-engine";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
-import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
 
 export const revalidate = 300;
 
@@ -36,5 +36,40 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   if (!result || result.type !== "product-review") notFound();
 
   const { product, brand, brandSlug } = reviewToScorecard(result.review, result.verdict);
-  return <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} analysis={runAnalysis(result.review)} />;
+
+  const url = `https://thecleansheet.in/reviews/${slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
+          { "@type": "ListItem", position: 2, name: "Reviews", item: "https://thecleansheet.in/reviews" },
+          { "@type": "ListItem", position: 3, name: product.productName, item: url },
+        ],
+      },
+      {
+        "@type": "Product",
+        name: product.productName,
+        brand: { "@type": "Brand", name: brand.name },
+        image: product.image,
+        description: product.summary,
+        review: {
+          "@type": "Review",
+          author: { "@type": "Organization", name: "The Clean Sheet" },
+          reviewBody: product.summary,
+          datePublished: product.analyzedAt,
+          reviewRating: tierToRating(result.verdict.tier),
+        },
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} analysis={runAnalysis(result.review)} />
+    </>
+  );
 }

@@ -59,6 +59,15 @@ export function getAllIngredientSlugs(): string[] {
   return ALL_INGREDIENTS.map((i) => toSlug(i.INCI_Name));
 }
 
+/* Set of every slug that resolves to a real ingredient page. Used to decide
+   whether an ingredient name in a product INCI list should link out (avoids
+   linking to 404s for ingredients not in the directory). Built once. */
+const INGREDIENT_SLUG_SET: Set<string> = new Set(getAllIngredientSlugs());
+
+export function hasIngredientPage(slug: string): boolean {
+  return INGREDIENT_SLUG_SET.has(slug);
+}
+
 export function concernColor(level: string): { badge: string; dot: string; label: string } {
   switch (level?.toLowerCase()) {
     case "low":

@@ -60,6 +60,28 @@ export function resolveTier(product: { reviewTier?: ReviewTier; score: number })
   return product.reviewTier ?? scoreToTier(product.score);
 }
 
+/* Maps the *visible* verdict tier to a schema.org Rating (0-5 scale) for
+   Product/Review JSON-LD, so search engines can show review stars. Google
+   requires the rating to reflect what the user sees on the page — we key it to
+   the tier badge (visible), never to the hidden numeric score. `alternateName`
+   carries the exact on-page label so the star rating and the badge agree. */
+const TIER_RATING: Record<ReviewTier, number> = {
+  "approved": 5,
+  "mostly-clean": 4,
+  "can-do-better": 2.5,
+  "not-recommended": 1.5,
+};
+
+export function tierToRating(tier: ReviewTier) {
+  return {
+    "@type": "Rating" as const,
+    ratingValue: TIER_RATING[tier],
+    bestRating: 5,
+    worstRating: 1,
+    alternateName: TIER_STYLES[tier].label,
+  };
+}
+
 /* The TCS logo with an angled "APPROVED" rubber stamp across its lower third -
    overflowing the edge, never hiding the wordmark. Scales from tile corners
    (54px) to the product-page hero (120px+). */

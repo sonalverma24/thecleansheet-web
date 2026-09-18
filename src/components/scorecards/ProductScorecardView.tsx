@@ -15,6 +15,7 @@ import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import { ScorecardTabs, type ScorecardTab } from "@/components/scorecards/ScorecardTabs";
 import { simplifyPillarName } from "@/lib/pillar-display";
+import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -701,11 +702,22 @@ function buildMobileTabs({
         <div className="divide-y divide-[#efe9e0] rounded-xl border border-[#efe9e0] overflow-hidden">
           {product.ingredients.map((ing) => {
             const s = ingredientFlagStyles(ing.flag);
+            const ingSlug = toSlug(ing.name);
+            const linked = hasIngredientPage(ingSlug);
             return (
               <div key={ing.name} className={`${s.rowBg} px-3 py-2`}>
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-                  <span className="text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                  {linked ? (
+                    <Link
+                      href={`/ingredients/${ingSlug}`}
+                      className="text-sm font-medium text-[#282828] break-words min-w-0 underline decoration-[#efe9e0] underline-offset-2 hover:decoration-[#248179] hover:text-[#248179] transition-colors"
+                    >
+                      {ing.name}
+                    </Link>
+                  ) : (
+                    <span className="text-sm font-medium text-[#282828] break-words min-w-0">{ing.name}</span>
+                  )}
                 </div>
                 {ing.note && <p className="text-xs text-[#b0a8a4] leading-relaxed mt-1 pl-4">{ing.note}</p>}
               </div>
