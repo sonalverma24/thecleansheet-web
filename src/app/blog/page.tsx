@@ -22,6 +22,7 @@ const CATEGORY_STYLE: Record<string, { bg: string; color: string }> = {
   "Consumer Safety": { bg: "var(--color-coral)",    color: "#fff" },
   Science:           { bg: "var(--color-lime)",     color: INK },
   Health:            { bg: "var(--color-lime)",     color: INK },
+  Industry:          { bg: "var(--color-charcoal)", color: "#fff" },
 };
 
 function CategoryTag({ category }: { category: string }) {

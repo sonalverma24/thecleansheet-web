@@ -46,6 +46,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Health:            "bg-safe-100 text-safe-600 border-safe-600/20",
   Science:           "bg-amber-100 text-amber-700 border-amber-200",
   "Consumer Safety": "bg-coral-100 text-coral-600 border-coral-600/20",
+  Industry:          "bg-ink-900 text-white border-ink-900",
 };
 
 function renderBlock(block: BlogBlock, i: number) {
