@@ -17,13 +17,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     ? `https://thecleansheet.in${post.image}`
     : post.image;
 
+  // SEO/social description: a dedicated, search-tuned meta description when the
+  // post provides one, otherwise the visible subtitle.
+  const description = post.metaDescription ?? post.subtitle;
+
   return {
     title: post.title,
-    description: post.subtitle,
+    description,
     alternates: { canonical: `https://thecleansheet.in/blog/${slug}` },
     openGraph: {
       title: post.title,
-      description: post.subtitle,
+      description,
       url: `https://thecleansheet.in/blog/${slug}`,
       siteName: "The Clean Sheet",
       type: "article",
@@ -35,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     twitter: {
       card: "summary_large_image",
       title: post.title,
-      description: post.subtitle,
+      description,
       images: [ogImage],
     },
   };

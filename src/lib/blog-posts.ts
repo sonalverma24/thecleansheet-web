@@ -17,6 +17,8 @@ export type BlogPost = {
   imageEffect?: "blur-caution";
   content: BlogBlock[];
   faq?: { q: string; a: string }[];
+  /** Optional search-tuned meta description; falls back to `subtitle`. */
+  metaDescription?: string;
 };
 
 export type BlogBlock =
@@ -40,6 +42,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "September 21, 2026",
     title: "How to Verify Beauty Product Claims Before You Buy",
     subtitle: "Beauty marketing moves faster than the rulebook. This is a four-part framework for checking whether a product's promise is backed by evidence, regulation, or independent certification, before you pay for it.",
+    metaDescription: "Learn how to verify beauty product claims with a 5-step checklist, India-specific regulations (CDSCO, ASCI, BIS), and red flags to spot misleading marketing.",
     excerpt: "Beauty claim verification is the process of checking whether a product's advertised benefits are supported by evidence, regulation, or independent third-party certification. Not marketing. Not testimonials. Proof. Here is the four-part framework: claim types, evidence standards, red flags, and the India-specific rules that decide what a label can legally say.",
     author: "Sonal Verma",
     image: "https://images.unsplash.com/photo-1631730359585-38a4935cbec4?auto=format&fit=crop&w=1600&q=80",
