@@ -32,14 +32,6 @@ const PRINCIPLES = [
   { t: "Corrections when new information appears", b: "If we get something wrong, or the evidence changes, we correct it in the open." },
 ];
 
-const INDEPENDENCE = [
-  "Certification decisions are made independently of any commercial relationship with the brand.",
-  "Advice, evidence development and the certification decision are kept separate.",
-  "Conflicts of interest are declared and managed.",
-  "Public reviews carry corrections, a revision history and a right of reply.",
-  "The Clean Sheet takes no paid placements, ever.",
-];
-
 export default function AboutPage() {
   return (
     <div className="bg-white">
@@ -153,27 +145,61 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Governance & independence */}
+      {/* Independent panel */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-20 md:pb-28">
-        <div className="rounded-2xl p-6 md:p-10" style={{ border: `1px solid ${HAIR}` }}>
+        <div className="grid lg:grid-cols-2 gap-x-20 gap-y-14 items-start">
           <Reveal>
-            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}>Governance & independence</p>
-            <h2 className="font-display mt-5 text-2xl md:text-3xl leading-tight max-w-2xl" style={{ ...DISPLAY_LIGHT, color: INK }}>
-              How we keep it honest.
-            </h2>
-            <div className="mt-6 flex flex-col">
-              {INDEPENDENCE.map((line) => (
-                <p key={line} className="flex gap-3 py-3 text-[15px] leading-[1.6]" style={{ color: INK, borderTop: `1px solid ${HAIR}` }}>
-                  <span className="mt-2 inline-block w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: TEAL }} />
-                  {line}
-                </p>
-              ))}
-            </div>
-            <p className="mt-5 text-[14px] leading-[1.7] max-w-2xl" style={{ color: WARM }}>
-              As we formally appoint specialist reviewers and governance roles, we will name them
-              here with their responsibilities and declared conflicts. We do not claim a standing
-              panel we have not appointed.
+            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: CORAL }}>
+              Credibility
             </p>
+            <h2 className="font-display mt-6 text-[32px] md:text-[40px] leading-[1.15]" style={{ ...DISPLAY_LIGHT, color: INK }}>
+              Our independent panel.
+            </h2>
+            <div className="mt-6 flex flex-col gap-4 text-[16px] leading-[1.75] max-w-lg" style={{ color: WARM }}>
+              <p>
+                The Clean Sheet evaluations are reviewed by an independent panel of experts,
+                including cosmetic scientists, toxicologists, and dermatologists.
+              </p>
+              <p>
+                We deliberately keep the panel confidential. Anonymity shields each
+                evaluation from lobbying, brand pressure and personal bias, so a verdict
+                rests on the evidence and nothing else.
+              </p>
+              <p>
+                No panel member holds a commercial relationship with the brands under
+                review. Conflicts of interest are declared and managed, and evaluators
+                never deal with a brand directly.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <div className="pt-6" style={{ borderTop: `1px solid ${INK}` }}>
+              <h3 className="font-display text-[24px] pb-4" style={{ color: INK }}>Want to be on the panel?</h3>
+              <p className="text-[15px] leading-[1.7] max-w-md pb-6" style={{ color: WARM }}>
+                If you are a cosmetic scientist, toxicologist, or dermatologist who wants to
+                make a difference, we&apos;d love to hear from you. The composition of our panel
+                is taken seriously.
+              </p>
+              <div className="flex flex-col gap-3 pb-8">
+                {[
+                  "No brand affiliation required",
+                  "Conflict of interest protocols in place",
+                  "Your identity kept strictly confidential",
+                ].map((t) => (
+                  <p key={t} className="flex items-center gap-3 text-[14px]" style={{ color: INK }}>
+                    <span className="inline-block w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: TEAL }} />
+                    {t}
+                  </p>
+                ))}
+              </div>
+              <a
+                href="mailto:hello@thecleansheet.in?subject=Panel%20Application%20%7C%20The%20Clean%20Sheet"
+                className="inline-flex items-center gap-3 rounded-full px-8 py-4 text-[15px] text-white hover:opacity-90 transition-opacity"
+                style={{ background: TEAL }}
+              >
+                hello@thecleansheet.in <span aria-hidden>→</span>
+              </a>
+            </div>
           </Reveal>
         </div>
       </section>
