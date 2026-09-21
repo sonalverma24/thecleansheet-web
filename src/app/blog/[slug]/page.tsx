@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, BookOpen, ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
-import { getPostBySlug, getAllSlugs, BLOG_POSTS, type BlogBlock } from "@/lib/blog-posts";
+import { getPostBySlug, getAllSlugs, BLOG_POSTS, type BlogBlock, type RichText } from "@/lib/blog-posts";
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -49,12 +49,36 @@ const CATEGORY_COLORS: Record<string, string> = {
   Industry:          "bg-ink-900 text-white border-ink-900",
 };
 
+// Render inline rich text: a plain string, or a mix of strings and links.
+// Internal hrefs (starting with "/") use Next.js Link; external ones open in a
+// new tab. Links share the article's teal underline treatment.
+function renderRich(text: RichText) {
+  if (typeof text === "string") return text;
+  return text.map((node, k) => {
+    if (typeof node === "string") return <span key={k}>{node}</span>;
+    const linkClass =
+      "text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-800 hover:decoration-teal-500 transition-colors";
+    if (node.href.startsWith("/")) {
+      return (
+        <Link key={k} href={node.href} className={linkClass}>
+          {node.text}
+        </Link>
+      );
+    }
+    return (
+      <a key={k} href={node.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+        {node.text}
+      </a>
+    );
+  });
+}
+
 function renderBlock(block: BlogBlock, i: number) {
   switch (block.type) {
     case "paragraph":
       return (
         <p key={i} className="text-ink-700 leading-relaxed text-lg mb-6">
-          {block.text}
+          {renderRich(block.text)}
         </p>
       );
 
@@ -108,7 +132,7 @@ function renderBlock(block: BlogBlock, i: number) {
           {block.items.map((item, j) => (
             <li key={j} className="flex items-start gap-3 text-ink-700">
               <CheckCircle2 size={18} className="text-teal-500 flex-shrink-0 mt-1" />
-              <span className="leading-relaxed">{item}</span>
+              <span className="leading-relaxed">{renderRich(item)}</span>
             </li>
           ))}
         </ul>
@@ -268,6 +292,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         articleSection: post.category,
         keywords: ["clean beauty", "skincare", "ingredient safety", "India", post.category],
       },
+      ...(post.faq && post.faq.length > 0
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: post.faq.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ]
+        : []),
     ],
   };
 
@@ -347,6 +383,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {/* Content blocks */}
         <div className="pb-16">
           {post.content.map((block, i) => renderBlock(block, i))}
+
+          {/* FAQ (also emitted as FAQPage structured data above) */}
+          {post.faq && post.faq.length > 0 && (
+            <div className="mt-14 pt-8 border-t border-teal-100">
+              <h2 className="text-2xl lg:text-3xl font-medium text-ink-950 mb-8">
+                Frequently asked questions
+              </h2>
+              <div className="space-y-8">
+                {post.faq.map((f, j) => (
+                  <div key={j}>
+                    <h3 className="text-lg font-medium text-ink-900 mb-2">{f.q}</h3>
+                    <p className="text-ink-700 leading-relaxed">{f.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

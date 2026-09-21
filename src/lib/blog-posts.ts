@@ -1,3 +1,9 @@
+// Inline rich text: a plain string, or a sequence of strings and links.
+// Links whose href starts with "/" render as internal Next.js links; others
+// render as external anchors (new tab, rel="noopener").
+export type InlineNode = string | { text: string; href: string };
+export type RichText = string | InlineNode[];
+
 export type BlogPost = {
   slug: string;
   category: string;
@@ -10,15 +16,16 @@ export type BlogPost = {
   image: string;
   imageEffect?: "blur-caution";
   content: BlogBlock[];
+  faq?: { q: string; a: string }[];
 };
 
 export type BlogBlock =
-  | { type: "paragraph"; text: string }
+  | { type: "paragraph"; text: RichText }
   | { type: "heading"; level: 2 | 3; text: string }
   | { type: "numbered-heading"; n: string; text: string }
   | { type: "before-after"; before: string; after: string }
   | { type: "callout"; text: string }
-  | { type: "bullets"; items: string[] }
+  | { type: "bullets"; items: RichText[] }
   | { type: "table"; headers: string[]; rows: string[][] }
   | { type: "sources"; items: { text: string; href?: string }[] }
   | { type: "divider" }
@@ -26,6 +33,93 @@ export type BlogBlock =
   | { type: "cta"; text: string; href: string; label: string };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "how-to-verify-beauty-product-claims-before-you-buy",
+    category: "Consumer Safety",
+    readTime: "9 min read",
+    date: "September 21, 2026",
+    title: "How to Verify Beauty Product Claims Before You Buy",
+    subtitle: "Beauty marketing moves faster than the rulebook. This is a four-part framework for checking whether a product's promise is backed by evidence, regulation, or independent certification, before you pay for it.",
+    excerpt: "Beauty claim verification is the process of checking whether a product's advertised benefits are supported by evidence, regulation, or independent third-party certification. Not marketing. Not testimonials. Proof. Here is the four-part framework: claim types, evidence standards, red flags, and the India-specific rules that decide what a label can legally say.",
+    author: "Sonal Verma",
+    image: "https://images.unsplash.com/photo-1631730359585-38a4935cbec4?auto=format&fit=crop&w=1600&q=80",
+    content: [
+      { type: "heading", level: 2, text: "Why beauty claim verification matters in 2026" },
+      { type: "paragraph", text: ["Beauty marketing in India moves faster than the rulebook. New launches ship weekly, influencer feeds push ingredient claims by the hour, and the burden of ", { text: "separating real evidence from clever copy", href: "/blog/beautys-next-era-will-be-built-on-proof" }, " has quietly shifted to the buyer."] },
+      { type: "paragraph", text: ["The numbers back this up. According to the ", { text: "Advertising Standards Council of India's Annual Complaints Report 2023-24", href: "https://www.ascionline.in/wp-content/uploads/2024/05/Annual-Complaints-Report-2023-24.pdf" }, ", personal care made up 13% of the violative advertisements processed that year, and of the 1,064 personal care ads examined, 95% appeared online."] },
+      { type: "paragraph", text: "So what does beauty claim verification actually mean? It is the process of checking whether a product's advertised benefits are supported by evidence, regulation, or independent third-party certification. Not marketing. Not testimonials. Proof." },
+      { type: "paragraph", text: "This guide walks through a four-part framework: the types of claims brands make, the evidence standards those claims should meet, the red flags that signal something is off, and the India-specific regulatory rules that decide what a brand can legally say on a label." },
+
+      { type: "heading", level: 2, text: "What counts as a beauty product claim?" },
+      { type: "paragraph", text: "Not every beauty claim is built the same, and knowing the category tells you what evidence should back it." },
+      { type: "paragraph", text: ["Three main types show up on almost every label. Function claims describe what the product does, like “reduces the appearance of fine lines”. Attribute claims describe what the product contains or how it is made, like “formulated with 5% niacinamide” or ", { text: "“paraben-free”", href: "/blog/parabens-in-indian-skincare-the-truth" }, ". Comparative claims position the product against alternatives, like “brightens twice as fast as vitamin C serums”. Each type demands a different kind of proof."] },
+      { type: "paragraph", text: ["Then there is the line that legally matters most in India: cosmetic versus drug. Section 3(aaa) of the Drugs and Cosmetics Act, 1940 defines a cosmetic as an article intended to be rubbed, poured, sprinkled or sprayed on the body for cleansing, beautifying, promoting attractiveness, or altering appearance. Anything that claims to treat, cure, or prevent a condition crosses into drug territory. Drug claims trigger ", { text: "CDSCO oversight", href: "/blog/cosmetic-regulations-india-eu-us-guide" }, " and, for imported cosmetics, mandatory registration via Form COS-1 on the SUGAM portal. Cosmetic claims do not."] },
+      { type: "image", src: "https://images.unsplash.com/photo-1598662957563-ee4965d4d72c?auto=format&fit=crop&w=1600&q=80", alt: "A sunscreen carton and tube printed with product claims and usage directions", caption: "Where the label language sits, cosmetic or drug, decides which rules apply. Photo: Unsplash." },
+      { type: "paragraph", text: "Take a common Indian D2C serum page. “Brightens dull skin” is a function claim. “10% niacinamide + zinc” is an attribute claim. “Reduces acne scars” is a drug claim, and legally it should not sit on a cosmetic label without approval." },
+      { type: "table", headers: ["Claim type", "Example", "Evidence required", "India regulator"], rows: [
+        ["Function claim", "“Reduces fine lines”", "Clinical study on the finished product", "ASCI (advertising standards)"],
+        ["Attribute claim", "“Contains 5% niacinamide”", "Ingredient disclosure, concentration verification", "BIS / labelling rules"],
+        ["Comparative claim", "“Brightens 2x faster than vitamin C”", "Head-to-head study, statistical significance", "ASCI (advertising standards)"],
+        ["Drug claim", "“Treats acne scars”", "Clinical trials, safety data", "CDSCO (Drugs and Cosmetics Act)"],
+      ] },
+
+      { type: "heading", level: 2, text: "How to verify a claim: a 5-step checklist" },
+      { type: "paragraph", text: "A claim is only as strong as the evidence sitting behind it. Here is a five-step checklist to work through before you trust one." },
+
+      { type: "numbered-heading", n: "1", text: "Pin down the exact wording" },
+      { type: "paragraph", text: "Copy the claim as it appears on the label or product page, then classify it as function, attribute, comparative, or drug. Vague language like “visibly transforms” hides what is actually being promised." },
+
+      { type: "numbered-heading", n: "2", text: "Separate ingredient evidence from formula evidence" },
+      { type: "paragraph", text: ["This is where most claims quietly fall apart. ", { text: "Cosmetics Europe's guidelines for claim substantiation", href: "https://cosmeticseurope.eu/wp-content/uploads/2024/10/Guidelines_for_Cosmetic_Product_Claim_Substantiation.pdf" }, " are explicit: any claim that extrapolates the properties of an ingredient to a finished product must demonstrate that the ingredient is present at an effective concentration in the marketed cosmetic. A study showing niacinamide works at 5% does not validate a serum that contains 0.5%."] },
+
+      { type: "numbered-heading", n: "3", text: "Locate and read the source study" },
+      { type: "paragraph", text: ["Check the sample size (n greater than 30 is a reasonable baseline), who funded it, whether it went through peer review, and critically, whether the study tested the finished product or just the raw ingredient. A brand-funded, non-peer-reviewed study on 20 people does not substantiate a broad efficacy claim, and you can follow a fuller ", { text: "guide to sanity-checking a product's safety data", href: "/blog/how-to-check-if-skincare-product-is-safe-india" }, " if you want the step-by-step."] },
+
+      { type: "numbered-heading", n: "4", text: "Cross-reference independent databases" },
+      { type: "paragraph", text: ["Independent tools give ingredient-level hazard context that brand pages rarely surface. ", { text: "EWG's Skin Deep", href: "https://www.ewg.org/skindeep/" }, " and ", { text: "SkinSort", href: "https://skinsort.com/" }, " let you sense-check what is actually in the bottle."] },
+
+      { type: "numbered-heading", n: "5", text: "Understand what each certification actually verifies" },
+      { type: "paragraph", text: ["", { text: "COSMOS", href: "https://www.cosmos-standard.org/" }, " certifies organic content. ", { text: "Leaping Bunny", href: "https://www.leapingbunny.org/" }, " verifies a cruelty-free supply chain. ", { text: "EWG Verified", href: "https://www.ewg.org/ewgverified/" }, " applies an ingredient hazard threshold. None of these certify overall product efficacy, and treating them as a single trust badge is a common mistake."] },
+      { type: "image", src: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1600&q=80", alt: "A skincare tube resting on white fabric with its printed label visible", caption: "Working through the evidence on a product before deciding to buy. Photo: Unsplash." },
+
+      { type: "heading", level: 2, text: "Why ingredient-level evidence rarely proves a formula claim" },
+      { type: "paragraph", text: ["Here is the trap most shoppers walk into: a product lists a hero ingredient, points to a study, and the label feels settled. It is not. Ingredient evidence and formula evidence are two different things, and treating them as interchangeable is where most ", { text: "misleading beauty claims survive scrutiny", href: "/blog/your-favourite-skincare-brand-is-lying-to-you" }, "."] },
+      { type: "paragraph", text: "Consider niacinamide. A clinical trial might show a 10% concentration reduces hyperpigmentation over eight weeks. That result belongs to that formula, at that pH, in that vehicle, tested on that panel. A moisturiser containing 0.5% niacinamide, buffered differently and layered with occlusives, is a completely different product. Cosmetics Europe's guidance draws the same line: ingredient data has to be relevant to the concentration actually used in the finished formulation." },
+      { type: "paragraph", text: "Three red flags worth memorising:" },
+      { type: "bullets", items: [
+        ["Vague concentrations. “Contains niacinamide” tells you nothing. ", { text: "The percentage is the whole story", href: "/blog/the-concentration-illusion" }, "."],
+        "Supplier studies passed off as product proof. Ingredient manufacturers fund efficacy research on their raw material. That data does not travel to a finished product unless the formula matches the study conditions.",
+        ["“Clinically tested” with no specifics. Tested for what? On whom? By whom? In India the phrase is ", { text: "largely unregulated", href: "/blog/dermatologically-tested-clinically-proven-india" }, ", so without answers it is decorative."],
+      ] },
+      { type: "paragraph", text: "India's Legal Metrology Act and BIS standards regulate labelling accuracy, but efficacy-claim enforcement stays inconsistent. That gap is exactly why consumer-side verification matters." },
+      { type: "image", src: "https://images.unsplash.com/photo-1570723989345-3a537f60a9c5?auto=format&fit=crop&w=1600&q=80", alt: "A researcher in a white coat pouring liquid into a graduated cylinder", caption: "A study on a hero ingredient rarely proves what a finished formula does on skin. Photo: Unsplash." },
+
+      { type: "heading", level: 2, text: "Verify any beauty product in seconds" },
+      { type: "paragraph", text: "The five-step process works. It also takes time most shoppers do not have while standing in a store aisle or scrolling through a checkout screen. That is the gap The Clean Sheet is built to close." },
+      { type: "paragraph", text: ["Every product in our ", { text: "verified brand registry", href: "/brands" }, " is graded against the same evidence ladder used throughout this guide, with a clear Clean Sheet standing so you can see, at a glance, whether a claim holds up. No editorial endorsements. No brand advocacy. Just independent verification of what a product actually substantiates."] },
+      { type: "paragraph", text: ["Search a brand you are considering, run a specific product through the ", { text: "free analyser", href: "/analyzer" }, ", and decide with the evidence in front of you. That is what ingredient-conscious buying looks like when the platform does the audit work for you."] },
+      { type: "cta", text: "Check any product's claims against the evidence, free.", href: "/analyzer", label: "Analyse a Product Now" },
+
+      { type: "heading", level: 2, text: "Sources and further reading" },
+      { type: "sources", items: [
+        { text: "Advertising Standards Council of India (ASCI), Annual Complaints Report 2023-24. Personal care accounted for 13% of processed violative ads (1,064 ads), with 95% appearing on digital media.", href: "https://www.ascionline.in/wp-content/uploads/2024/05/Annual-Complaints-Report-2023-24.pdf" },
+        { text: "Cosmetics Europe, Guidelines for Cosmetic Product Claim Substantiation. Claims extrapolating an ingredient's properties to a finished product must show the ingredient is present at an effective concentration in the marketed cosmetic.", href: "https://cosmeticseurope.eu/wp-content/uploads/2024/10/Guidelines_for_Cosmetic_Product_Claim_Substantiation.pdf" },
+        { text: "Central Drugs Standard Control Organisation (CDSCO), Cosmetics. Regulation of cosmetics in India under the Drugs and Cosmetics Act, 1940 and the Cosmetics Rules, 2020, including import registration.", href: "https://cdsco.gov.in/opencms/opencms/en/Cosmetics/cosmetics/" },
+        { text: "EWG Skin Deep cosmetics database. Ingredient-level hazard ratings for personal care products.", href: "https://www.ewg.org/skindeep/" },
+        { text: "Leaping Bunny (Cruelty Free International). Certifies cruelty-free supply chains, not product efficacy.", href: "https://www.leapingbunny.org/" },
+        { text: "COSMOS-standard. Certifies organic and natural content and processing, not product efficacy.", href: "https://www.cosmos-standard.org/" },
+      ] },
+      { type: "paragraph", text: "This is a consumer guide. Regulatory references are summarised from the published sources above and should be confirmed against the originals before use in any commercial claim. Images courtesy of Unsplash and their photographers, used under the Unsplash License." },
+    ],
+    faq: [
+      { q: "What counts as a skincare claim?", a: "A skincare claim is any statement about what a product does (function), what it contains (attribute), or how it compares to alternatives (comparative). This includes explicit label text like “reduces wrinkles by 40%” and implied visuals, such as a before-and-after image on packaging. Both are subject to advertising standards and both need substantiation." },
+      { q: "Does one peer-reviewed study prove a beauty claim?", a: "No. A single study, particularly one with a small sample size or industry funding, is a starting point rather than proof. Robust substantiation requires replication, independent verification, and evidence at the finished-formula level, not just the ingredient level. One trial gets a claim onto the ladder. It does not move it to the top." },
+      { q: "Can a brand use an ingredient supplier's study as evidence?", a: "Only with caveats. Supplier studies test ingredients in isolation at specific concentrations, pH values, and delivery vehicles. They do not automatically validate a finished product unless the brand's formula matches the study conditions closely. Ask whether the brand has run its own bridging study on the marketed formula." },
+      { q: "What does “clinically tested” actually mean in India?", a: "The phrase is largely unregulated in India. It can describe anything from a rigorous double-blind, placebo-controlled trial to an in-house consumer perception survey with 20 participants. Always check what was tested, on how many people, for how long, and by which independent body. Without those specifics, “clinically tested” is marketing language, not evidence." },
+      { q: "Which third-party certifications should I trust?", a: "Each certification verifies a narrow thing, not overall product quality. COSMOS and Ecocert verify organic content and processing standards. Leaping Bunny verifies cruelty-free supply chains. EWG Verified sets ingredient hazard thresholds. A product can carry one of these seals and still make efficacy claims that are unsubstantiated. Read what each seal actually certifies." },
+      { q: "Are there Indian regulations for beauty product claims?", a: "Yes. CDSCO regulates cosmetic manufacturing, import, and any drug-classified claims under the Drugs and Cosmetics Act. The Legal Metrology Act governs labelling accuracy, and BIS publishes product standards. ASCI oversees advertising code compliance. Efficacy-claim enforcement, however, remains lighter than in EU or US frameworks, which is why independent verification matters." },
+    ],
+  },
   {
     slug: "what-makes-a-clinically-proven-claim-believable",
     category: "Consumer Safety",
