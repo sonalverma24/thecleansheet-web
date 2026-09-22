@@ -45,7 +45,7 @@ export const BLOG_POSTS: BlogPost[] = [
     metaDescription: "5 red flags in beauty product ingredient lists, from vague “complex” percentages to “fragrance free” and “preservative free” claims, with India's labelling rules explained.",
     excerpt: "A serum advertises “2% ceramide complex”. A moisturiser says “fragrance free” but lists parfum. A mist promises long shelf life with “no preservatives”. Each label raises a different question. This guide covers what an ingredient list can reveal, five red flags worth checking, and what to do when the answer stays unclear.",
     author: "Sonal Verma",
-    image: "https://images.unsplash.com/photo-1612817288484-6f916006741a?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/blog/red-flags/hero.jpg",
     content: [
       { type: "paragraph", text: "A serum advertises “2% ceramide complex”. A moisturiser says “fragrance free”, but its ingredient list includes parfum. A face mist promises a long shelf life with “no preservatives”." },
       { type: "paragraph", text: "These labels raise different questions. One needs a clearer percentage. One contains conflicting information. One needs an explanation of how the product stays protected." },
@@ -70,7 +70,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
       { type: "numbered-heading", n: "1", text: "You can find the hero ingredients, but never the full formula" },
       { type: "paragraph", text: "“Aloe vera, vitamin E and botanical extracts” may be a selection of ingredients chosen for the sales page. Check whether a separate, complete list appears on the carton, packaging image or brand website." },
-      { type: "image", src: "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?auto=format&fit=crop&w=1600&q=80", alt: "Three minimally labelled skincare bottles beside an aloe plant", caption: "Hero ingredients on the front rarely tell you the full formula. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/red-flags/full-formula.jpg", alt: "A person's hands examining the blank label on an unbranded skincare bottle", caption: "Hero ingredients on the front rarely tell you the full formula." },
       { type: "paragraph", text: "Descriptions such as “cream base” leave you unable to identify the components they cover. This becomes especially important when you need to avoid a specific allergen." },
       { type: "paragraph", text: ["There is an Indian labelling nuance: Rule 34(7) exempts packs containing up to 60 ml of liquid or 30 g of solid and semisolid cosmetics from that ingredient statement requirement. Missing information on a small pack therefore does not automatically establish a violation. It can still leave you without enough information to choose confidently. ", { text: "Read the rule", href: "https://cdsco.gov.in/opencms/resources/UploadCDSCOWeb/2022/cos_rules/Cosmetics%20Rules%202020.pdf" }, "."] },
       { type: "callout", text: "Ask the brand: “Please share the complete ingredient list for the version currently sold in India.”" },
@@ -85,7 +85,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
       { type: "numbered-heading", n: "3", text: "The percentage measures something different from what you assume" },
       { type: "paragraph", text: "“2% ceramide complex” does not necessarily mean 2% ceramides." },
-      { type: "image", src: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1600&q=80", alt: "A skincare cleanser tube with a swatch of product beside it", caption: "A percentage on the label may describe a blend, not the active in the finished product. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/red-flags/percentage.jpg", alt: "A dropper releasing a droplet over a bottle of gradient-coloured serum", caption: "A percentage on the label may describe a blend, not the active in the finished product." },
       { type: "paragraph", text: "A supplied blend may contain ceramides together with carriers and other ingredients. In a hypothetical formula containing 2% of a blend that is itself 10% ceramides by weight, that blend contributes 0.2% ceramides to the finished product." },
       { type: "paragraph", text: "This is a disclosure question. The calculation alone cannot tell you whether the moisturiser performs well." },
       { type: "paragraph", text: [{ text: "Cosmetics Europe's claim substantiation guidance", href: "https://cosmeticseurope.eu/wp-content/uploads/2024/10/Guidelines_for_Cosmetic_Product_Claim_Substantiation.pdf" }, " explains that applying ingredient research to a finished product needs justification, including concentration, delivery system and formulation. This is European industry guidance, not Indian law."] },
@@ -101,7 +101,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
       { type: "numbered-heading", n: "5", text: "“Preservative free” is treated as a safety certificate" },
       { type: "paragraph", text: "A water based face mist containing plant extracts still needs an effective way to control microbial contamination." },
-      { type: "image", src: "https://images.unsplash.com/photo-1570723989345-3a537f60a9c5?auto=format&fit=crop&w=1600&q=80", alt: "A researcher in a white coat pouring liquid into a graduated cylinder", caption: "“Preservative free” still needs a system that controls microbial growth. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/red-flags/preservative-testing.jpg", alt: "Gloved hands holding a petri dish beside amber ingredient bottles and lab glassware", caption: "“Preservative free” still needs a system that controls microbial growth." },
       { type: "paragraph", text: ["Noureddine Halla and colleagues, in their 2018 review ", { text: "“Cosmetics Preservation: A Review on Present Strategies”", href: "https://pubmed.ncbi.nlm.nih.gov/29958439/" }, ", describe preservation as a system involving manufacturing, raw material control and suitable testing. Looking for one familiar preservative name cannot evaluate that whole system."] },
       { type: "paragraph", text: ["Some formulations can achieve protection through other approaches. ", { text: "ISO 11930", href: "https://www.iso.org/standard/75058.html" }, " covers preservation testing and microbial risk assessment, including circumstances where products assessed as low risk do not require its preservation efficacy test."] },
       { type: "callout", text: "Ask the brand: “How is this product protected against microbial growth, and what testing or risk assessment supports its shelf life?”" },
