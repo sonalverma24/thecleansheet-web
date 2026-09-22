@@ -151,7 +151,7 @@ export const BLOG_POSTS: BlogPost[] = [
     metaDescription: "Learn how to verify beauty product claims with a 5-step checklist, India-specific regulations (CDSCO, ASCI, BIS), and red flags to spot misleading marketing.",
     excerpt: "Beauty claim verification is the process of checking whether a product's advertised benefits are supported by evidence, regulation, or independent third-party certification. Not marketing. Not testimonials. Proof. Here is the four-part framework: claim types, evidence standards, red flags, and the India-specific rules that decide what a label can legally say.",
     author: "Sonal Verma",
-    image: "https://images.unsplash.com/photo-1631730359585-38a4935cbec4?auto=format&fit=crop&w=1600&q=80",
+    image: "/images/blog/verify-claims/hero.jpg",
     content: [
       { type: "heading", level: 2, text: "Why beauty claim verification matters in 2026" },
       { type: "paragraph", text: ["Beauty marketing in India moves faster than the rulebook. New launches ship weekly, influencer feeds push ingredient claims by the hour, and the burden of ", { text: "separating real evidence from clever copy", href: "/blog/beautys-next-era-will-be-built-on-proof" }, " has quietly shifted to the buyer."] },
@@ -163,7 +163,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Not every beauty claim is built the same, and knowing the category tells you what evidence should back it." },
       { type: "paragraph", text: ["Three main types show up on almost every label. Function claims describe what the product does, like “reduces the appearance of fine lines”. Attribute claims describe what the product contains or how it is made, like “formulated with 5% niacinamide” or ", { text: "“paraben-free”", href: "/blog/parabens-in-indian-skincare-the-truth" }, ". Comparative claims position the product against alternatives, like “brightens twice as fast as vitamin C serums”. Each type demands a different kind of proof."] },
       { type: "paragraph", text: ["Then there is the line that legally matters most in India: cosmetic versus drug. Section 3(aaa) of the Drugs and Cosmetics Act, 1940 defines a cosmetic as an article intended to be rubbed, poured, sprinkled or sprayed on the body for cleansing, beautifying, promoting attractiveness, or altering appearance. Anything that claims to treat, cure, or prevent a condition crosses into drug territory. Drug claims trigger ", { text: "CDSCO oversight", href: "/blog/cosmetic-regulations-india-eu-us-guide" }, " and, for imported cosmetics, mandatory registration via Form COS-1 on the SUGAM portal. Cosmetic claims do not."] },
-      { type: "image", src: "https://images.unsplash.com/photo-1598662957563-ee4965d4d72c?auto=format&fit=crop&w=1600&q=80", alt: "A sunscreen carton and tube printed with product claims and usage directions", caption: "Where the label language sits, cosmetic or drug, decides which rules apply. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/verify-claims/cosmetic-vs-drug.jpg", alt: "An unbranded cream tube beside a pump serum bottle on a pale stone surface", caption: "Where the label language sits, cosmetic or drug, decides which rules apply." },
       { type: "paragraph", text: "Take a common Indian D2C serum page. “Brightens dull skin” is a function claim. “10% niacinamide + zinc” is an attribute claim. “Reduces acne scars” is a drug claim, and legally it should not sit on a cosmetic label without approval." },
       { type: "table", headers: ["Claim type", "Example", "Evidence required", "India regulator"], rows: [
         ["Function claim", "“Reduces fine lines”", "Clinical study on the finished product", "ASCI (advertising standards)"],
@@ -189,7 +189,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
       { type: "numbered-heading", n: "5", text: "Understand what each certification actually verifies" },
       { type: "paragraph", text: ["", { text: "COSMOS", href: "https://www.cosmos-standard.org/" }, " certifies organic content. ", { text: "Leaping Bunny", href: "https://www.leapingbunny.org/" }, " verifies a cruelty-free supply chain. ", { text: "EWG Verified", href: "https://www.ewg.org/ewgverified/" }, " applies an ingredient hazard threshold. None of these certify overall product efficacy, and treating them as a single trust badge is a common mistake."] },
-      { type: "image", src: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1600&q=80", alt: "A skincare tube resting on white fabric with its printed label visible", caption: "Working through the evidence on a product before deciding to buy. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/verify-claims/examining-product.jpg", alt: "A person's hands examining an unbranded skincare bottle in soft window light", caption: "Working through the evidence on a product before deciding to buy." },
 
       { type: "heading", level: 2, text: "Why ingredient-level evidence rarely proves a formula claim" },
       { type: "paragraph", text: ["Here is the trap most shoppers walk into: a product lists a hero ingredient, points to a study, and the label feels settled. It is not. Ingredient evidence and formula evidence are two different things, and treating them as interchangeable is where most ", { text: "misleading beauty claims survive scrutiny", href: "/blog/your-favourite-skincare-brand-is-lying-to-you" }, "."] },
@@ -201,7 +201,7 @@ export const BLOG_POSTS: BlogPost[] = [
         ["“Clinically tested” with no specifics. Tested for what? On whom? By whom? In India the phrase is ", { text: "largely unregulated", href: "/blog/dermatologically-tested-clinically-proven-india" }, ", so without answers it is decorative."],
       ] },
       { type: "paragraph", text: "India's Legal Metrology Act and BIS standards regulate labelling accuracy, but efficacy-claim enforcement stays inconsistent. That gap is exactly why consumer-side verification matters." },
-      { type: "image", src: "https://images.unsplash.com/photo-1570723989345-3a537f60a9c5?auto=format&fit=crop&w=1600&q=80", alt: "A researcher in a white coat pouring liquid into a graduated cylinder", caption: "A study on a hero ingredient rarely proves what a finished formula does on skin. Photo: Unsplash." },
+      { type: "image", src: "/images/blog/verify-claims/lab-testing.jpg", alt: "Gloved hands using a pipette to place a droplet into a petri dish beside amber ingredient bottles", caption: "A study on a hero ingredient rarely proves what a finished formula does on skin." },
 
       { type: "heading", level: 2, text: "Verify any beauty product in seconds" },
       { type: "paragraph", text: "The five-step process works. It also takes time most shoppers do not have while standing in a store aisle or scrolling through a checkout screen. That is the gap The Clean Sheet is built to close." },
