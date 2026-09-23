@@ -13,7 +13,6 @@ import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
-import { ClaimCheckMeterInline } from "@/components/scorecards/ClaimCheckMeter";
 import { ScorecardTabs, type ScorecardTab } from "@/components/scorecards/ScorecardTabs";
 import { simplifyPillarName } from "@/lib/pillar-display";
 import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
@@ -947,10 +946,7 @@ function buildMobileTabs({
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium text-[#282828] line-clamp-2 leading-snug">{p.productName}</div>
               </div>
-              <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-                <TierBadge tier={resolveTier(p)} size="sm" />
-                <ClaimCheckMeterInline score={p.score} width={44} />
-              </div>
+              <div className="flex-shrink-0"><TierBadge tier={resolveTier(p)} size="sm" /></div>
             </Link>
           ))}
         </div>
@@ -1450,9 +1446,8 @@ export function ProductScorecardView({
                         {p.productName}
                       </div>
                     </div>
-                    <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
+                    <div className="flex-shrink-0">
                       <TierBadge tier={resolveTier(p)} size="sm" />
-                      <ClaimCheckMeterInline score={p.score} width={44} />
                     </div>
                   </Link>
                 );

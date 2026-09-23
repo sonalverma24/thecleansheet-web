@@ -41,10 +41,10 @@ export function PillarDots({ score, max }: { score: number; max: number }) {
 import type { ReviewTier } from "@/lib/product-review-types";
 
 export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: string; border: string }> = {
-  "approved":         { label: "Clean Sheet Approved", bg: "rgba(210,255,52,0.16)", fg: "#3f6212", border: "#a3c614" },
-  "mostly-clean":     { label: "Mostly Clean",         bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
-  "can-do-better":    { label: "Can Do Better",        bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
-  "not-recommended":  { label: "Not Recommended",      bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
+  "approved":         { label: "Clean Sheet Recommended", bg: "rgba(210,255,52,0.16)", fg: "#3f6212", border: "#a3c614" },
+  "mostly-clean":     { label: "Good Standing",           bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
+  "can-do-better":    { label: "Room to Improve",         bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
+  "not-recommended":  { label: "Not Recommended",         bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
 };
 
 export function scoreToTier(score: number): ReviewTier {
@@ -91,7 +91,7 @@ export function ApprovedStamp({ size = 54, animate = false }: { size?: number; a
     <span
       className="relative inline-block"
       style={{ width: size, height: size, ...(animate ? { animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" } : {}) }}
-      aria-label="Clean Sheet Approved"
+      aria-label="Clean Sheet Recommended"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -108,27 +108,27 @@ export function ApprovedStamp({ size = 54, animate = false }: { size?: number; a
           bottom: 7 * s,
           left: -9 * s,
           transform: "rotate(-9deg)",
-          fontSize: 8.5 * s,
+          fontSize: 6 * s,
           fontWeight: 800,
-          letterSpacing: "0.12em",
+          letterSpacing: "0.02em",
           lineHeight: 1,
           color: "#1d6a5f",
           background: "rgba(255,255,255,0.94)",
           border: `${Math.max(1.5 * s, 1.5)}px solid #1d6a5f`,
           borderRadius: 3 * s,
-          padding: `${2.5 * s}px ${5 * s}px`,
+          padding: `${2 * s}px ${4 * s}px`,
           boxShadow: "0 1px 4px rgba(0,0,0,0.14)",
           fontFamily: "Helvetica, Arial, sans-serif",
         }}
       >
-        Approved
+        Recommended
       </span>
     </span>
   );
 }
 
 /* The rubber-stamp band on its own - same ink-stamp language as the "APPROVED"
-   mark, but without the TCS logo disc. Used for Mostly Clean / Can Do Better /
+   mark, but without the TCS logo disc. Used for Good Standing / Room to Improve /
    Not Recommended so every tier reads as one consistent stamp family. */
 export function TierStamp({ tier, size = 116, animate = false }: { tier: Exclude<ReviewTier, "approved">; size?: number; animate?: boolean }) {
   const t = TIER_STYLES[tier];

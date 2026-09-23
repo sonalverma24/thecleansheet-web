@@ -100,13 +100,13 @@ export function GET() {
 
   lines.push("## What the verdicts mean");
   lines.push(
-    "- Clean Sheet Approved: passes on ingredient safety, regulatory compliance and claim substantiation — recommended.",
+    "- Clean Sheet Recommended: passes on ingredient safety, regulatory compliance and claim substantiation — our highest standing.",
   );
   lines.push(
-    "- Mostly Clean: broadly sound with minor gaps (e.g. a claim that is plausible but not publicly proven).",
+    "- Good Standing: broadly sound with minor gaps (e.g. a claim that is plausible but not publicly proven).",
   );
   lines.push(
-    "- Can Do Better: real concerns — unproven claims, transparency gaps, or formulation issues a buyer should weigh.",
+    "- Room to Improve: real concerns — unproven claims, transparency gaps, or formulation issues a buyer should weigh.",
   );
   lines.push(
     "- Not Recommended: fails on safety, compliance or claim honesty. Avoid or treat with caution.",

@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { mockProducts, Product } from '@/data/mockProducts';
-import { ClaimCheckMeter } from '@/components/scorecards/ClaimCheckMeter';
-import { scoreToTier } from '@/components/scorecards/pillar-ui';
 
 interface MobilePDPProps {
   productId: string | null;
@@ -64,6 +62,13 @@ export function MobilePDP({
       }
     ]);
     setNewReviewText('');
+  };
+
+  const getScoreBand = (score: number) => {
+    if (score >= 90) return 'Excellent profile';
+    if (score >= 75) return 'Good profile';
+    if (score >= 60) return 'Fair profile';
+    return 'Use with caution';
   };
 
   const renderDots = (score: number, max: number) => {
@@ -149,19 +154,25 @@ export function MobilePDP({
                 {product.category}
               </span>
             </div>
+            
+            {/* Massive Circular Score Badge */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-16 h-16 rounded-full border border-[#248179]/20 bg-[#248179]/5 flex flex-col items-center justify-center">
+                <span className="font-display text-[22px] leading-none text-[#248179]">{product.scores.total}</span>
+                <span className="text-[8px] font-sans text-[#248179]/80 uppercase tracking-tighter">Score</span>
+              </div>
+              <span className="font-sans text-[9px] text-[#248179] uppercase tracking-wider text-center">{getScoreBand(product.scores.total)}</span>
+            </div>
           </div>
 
           {/* Product Image */}
           <div className="w-full h-[220px] bg-[#f9f8f7] border border-[#b0a8a4]/15 rounded overflow-hidden relative">
             <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-
+            
             {/* Status Indicator Pill */}
-            <span className="absolute bottom-4 left-3 bg-[#282828] text-white font-sans text-[10px] tracking-wider uppercase px-2.5 py-1 rounded shadow">
+            <span className="absolute bottom-3 left-3 bg-[#282828] text-white font-sans text-[10px] tracking-wider uppercase px-2.5 py-1 rounded shadow">
               {product.status}
             </span>
-
-            {/* Claim check meter - bottom edge of the image */}
-            <ClaimCheckMeter score={product.scores.total} tier={scoreToTier(product.scores.total)} height={7} />
           </div>
 
           {/* Pricing & Analysis Info */}

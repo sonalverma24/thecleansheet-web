@@ -1,6 +1,5 @@
 "use client";
-import { resolveTier } from "@/components/scorecards/pillar-ui";
-import { ClaimCheckMeter } from "@/components/scorecards/ClaimCheckMeter";
+import { resolveTier, TileTierMark } from "@/components/scorecards/pillar-ui";
 import Image from "next/image";
 import Link from "next/link";
 import { TileChip } from "./TileChip";
@@ -66,8 +65,10 @@ export function ScorecardResultCard({
             </div>
           )}
 
-          {/* Claim check meter - bottom edge of the square */}
-          <ClaimCheckMeter score={product.score} tier={resolveTier(product)} />
+          {/* Tier mark - top right (Approved = branded seal) */}
+          <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
+            <TileTierMark tier={resolveTier(product)} />
+          </div>
 
           {/* NEW badge - top left, lime, first 30 days only */}
           {isNew && (
@@ -94,7 +95,7 @@ export function ScorecardResultCard({
 
           {/* Category pill - bottom left */}
           <div
-            className="absolute bottom-3 left-2 max-w-[calc(100%-16px)] overflow-hidden"
+            className="absolute bottom-2 left-2 max-w-[calc(100%-16px)] overflow-hidden"
             style={{
               background: "rgba(255,255,255,0.88)",
               backdropFilter: "blur(8px)",

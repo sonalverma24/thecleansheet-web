@@ -8,8 +8,6 @@ import {
   SlidersHorizontal, X, Search, Heart, GitCompare,
   ChevronDown, ExternalLink, ArrowUpDown, Loader2,
 } from "lucide-react";
-import { ClaimCheckMeter } from "@/components/scorecards/ClaimCheckMeter";
-import { scoreToTier } from "@/components/scorecards/pillar-ui";
 
 // ── Supabase product type ─────────────────────────────────────────────────────
 type DbProduct = {
@@ -40,6 +38,13 @@ type DbProduct = {
 };
 
 // ── helpers ───────────────────────────────────────────────────────────────────
+function scoreBand(score: number) {
+  if (score >= 90) return { label: "Excellent",      color: "#248179", bg: "rgba(36,129,121,0.08)"  };
+  if (score >= 75) return { label: "Good",           color: "#248179", bg: "rgba(36,129,121,0.08)"  };
+  if (score >= 60) return { label: "Fair",           color: "#D97706", bg: "rgba(217,119,6,0.08)"   };
+  return             { label: "Use with Caution", color: "#fd6158", bg: "rgba(253,97,88,0.08)"   };
+}
+
 function formatPrice(p: DbProduct) {
   if (p.mrp)       return `₹${p.mrp}`;
   if (p.price_max) return p.price_min && p.price_min !== p.price_max
@@ -59,6 +64,26 @@ const SORT_OPTIONS = [
   { value: "newest",     label: "Newest Analysed"   },
   { value: "alpha",      label: "A – Z"             },
 ];
+
+// ── Score Badge ───────────────────────────────────────────────────────────────
+function ScoreBadge({ score }: { score: number }) {
+  const band = scoreBand(score);
+  return (
+    <div
+      className="flex items-center justify-center w-10 h-10 rounded-full"
+      style={{
+        background: band.bg,
+        color: band.color,
+        fontFamily: "Helvetica, Arial, sans-serif",
+        fontWeight: 400,
+        fontSize: 13,
+        border: `1.5px solid ${band.color}30`,
+      }}
+    >
+      {score}
+    </div>
+  );
+}
 
 // ── Status Label ──────────────────────────────────────────────────────────────
 function StatusLabel({ status }: { status: string | null }) {
@@ -82,6 +107,7 @@ function StatusLabel({ status }: { status: string | null }) {
 // ── Product Card ──────────────────────────────────────────────────────────────
 function ProductCard({ product, saved, onSave }: { product: DbProduct; saved: boolean; onSave: () => void }) {
   const score = product.product_scores?.[0]?.total_score ?? 0;
+  const band  = scoreBand(score);
   const href  = `/brands/${product.brand_slug}/${product.slug}`;
   const topPill    = product.skin_type_tags?.[0] ?? product.concern_tags?.[0] ?? null;
   const secondPill = product.fragrance_free ? "Fragrance-free" : product.caution_tags?.[0] ?? null;
@@ -107,6 +133,9 @@ function ProductCard({ product, saved, onSave }: { product: DbProduct; saved: bo
             </span>
           </div>
         )}
+        <div className="absolute top-2.5 right-2.5">
+          <ScoreBadge score={score} />
+        </div>
         <button
           onClick={e => { e.preventDefault(); onSave(); }}
           className="absolute top-2.5 left-2.5 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
@@ -117,7 +146,6 @@ function ProductCard({ product, saved, onSave }: { product: DbProduct; saved: bo
             className={saved ? "text-[#fd6158]" : "text-[#b0a8a4]"}
           />
         </button>
-        <ClaimCheckMeter score={score} tier={scoreToTier(score)} />
       </Link>
 
       {/* Info */}

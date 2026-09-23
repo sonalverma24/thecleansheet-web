@@ -21,7 +21,7 @@ function Hero() {
       </div>
       <div className="flex items-center gap-2 mb-3.5">
         <ApprovedStamp size={32} />
-        <span className="font-display text-[17px] text-ink-900 leading-[1.1]">Clean Sheet Approved</span>
+        <span className="font-display text-[17px] text-ink-900 leading-[1.1]">Clean Sheet Recommended</span>
       </div>
       <div className="space-y-2.5">
         {[["Claims evidence", "Excellent", "95%"], ["Formula logic", "Strong", "88%"], ["Transparency", "Strong", "92%"]].map(([l, rating, w]) => (
@@ -203,7 +203,7 @@ function TheProblem() {
     { claim: '"Clinically proven"', reality: 'No study on file', bad: true },
     { claim: '"Dermatologist tested"', reality: 'No panel, no protocol', bad: true },
     { claim: '"100% natural"', reality: 'No origin verification', bad: true },
-    { claim: 'Clean Sheet Approved', reality: 'Independent review. Public proof.', bad: false },
+    { claim: 'Clean Sheet Recommended', reality: 'Independent review. Public proof.', bad: false },
   ];
   return (
     <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 grain-overlay" style={{ background: "linear-gradient(155deg, #131315 0%, #0b0b0c 52%, #0d211f 100%)" }}>
@@ -508,7 +508,7 @@ function AnalyzerPreview() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/logo.png" alt="" className="w-9 h-9 rounded-full object-cover" />
                     <div>
-                      <div className="text-xs font-medium text-teal-700 uppercase tracking-wide">Clean Sheet Approved</div>
+                      <div className="text-xs font-medium text-teal-700 uppercase tracking-wide">Clean Sheet Recommended</div>
                       <div className="text-xs text-ink-400">Claims hold up to the evidence</div>
                     </div>
                     <CheckCircle2 size={18} className="ml-auto text-teal-600" />
@@ -830,7 +830,7 @@ const HOME_FAQS = [
   },
   {
     q: "What does the Clean Sheet standing mean?",
-    a: "Every reviewed product gets one of four standings. Clean Sheet Approved: every headline claim holds up, proven on the finished product. Mostly Clean: a well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof. Can Do Better: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
+    a: "Every reviewed product gets one of four standings. Clean Sheet Recommended: every headline claim holds up, proven on the finished product. Good Standing: a well-made, transparent product, but some claims lean on ingredient research rather than finished-product proof. Room to Improve: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
   },
   {
     q: "Which beauty products are reviewed by The Clean Sheet in India?",

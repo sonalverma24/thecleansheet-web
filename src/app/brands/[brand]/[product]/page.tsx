@@ -16,15 +16,15 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
   const name = product.productName;
 
   const approvedLead: Record<typeof tier, string> = {
-    "approved": `Yes. ${name} is Clean Sheet Approved — it passes our independent checks on ingredient safety, regulatory compliance and claim substantiation.`,
-    "mostly-clean": `${name} is rated Mostly Clean by The Clean Sheet: broadly sound, with only minor gaps such as a claim that is plausible but not publicly proven.`,
-    "can-do-better": `Not quite. ${name} is rated "Can Do Better" by The Clean Sheet — we found real concerns a buyer should weigh, such as unproven claims or transparency gaps.`,
+    "approved": `Yes. ${name} is Clean Sheet Recommended — it passes our independent checks on ingredient safety, regulatory compliance and claim substantiation.`,
+    "mostly-clean": `${name} is in Good Standing with The Clean Sheet: broadly sound, with only minor gaps such as a claim that is plausible but not publicly proven.`,
+    "can-do-better": `Not quite. ${name} is rated "Room to Improve" by The Clean Sheet — we found real concerns a buyer should weigh, such as unproven claims or transparency gaps.`,
     "not-recommended": `No. ${name} is Not Recommended by The Clean Sheet, based on issues with safety, regulatory compliance or claim honesty.`,
   } as const;
 
   const faqs: ({ q: string; a: string } | null)[] = [
     {
-      q: `Is ${name} Clean Sheet Approved?`,
+      q: `Is ${name} Clean Sheet Recommended?`,
       a: `${approvedLead[tier]} ${product.summary}`.trim(),
     },
     product.cleanSheetNote
