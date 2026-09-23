@@ -55,13 +55,18 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
         brand: { "@type": "Brand", name: brand.name },
         image: product.image,
         description: product.summary,
-        review: {
-          "@type": "Review",
-          author: { "@type": "Organization", name: "The Clean Sheet" },
-          reviewBody: product.summary,
-          datePublished: product.analyzedAt,
-          reviewRating: tierToRating(result.verdict.tier),
-        },
+        // Licensed drugs carry no cosmetic rating, so they emit no Review node.
+        ...(tierToRating(result.verdict.tier)
+          ? {
+              review: {
+                "@type": "Review",
+                author: { "@type": "Organization", name: "The Clean Sheet" },
+                reviewBody: product.summary,
+                datePublished: product.analyzedAt,
+                reviewRating: tierToRating(result.verdict.tier),
+              },
+            }
+          : {}),
       },
     ],
   };

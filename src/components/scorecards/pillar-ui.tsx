@@ -45,6 +45,7 @@ export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: st
   "mostly-clean":     { label: "Good Standing",           bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
   "can-do-better":    { label: "Room to Improve",         bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
   "not-recommended":  { label: "Not Recommended",         bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
+  "not-assessed":     { label: "Licensed Drug",           bg: "rgba(120,113,108,0.10)", fg: "#57534e", border: "rgba(120,113,108,0.4)" },
 };
 
 export function scoreToTier(score: number): ReviewTier {
@@ -65,14 +66,18 @@ export function resolveTier(product: { reviewTier?: ReviewTier; score: number })
    requires the rating to reflect what the user sees on the page — we key it to
    the tier badge (visible), never to the hidden numeric score. `alternateName`
    carries the exact on-page label so the star rating and the badge agree. */
-const TIER_RATING: Record<ReviewTier, number> = {
+const TIER_RATING: Record<Exclude<ReviewTier, "not-assessed">, number> = {
   "approved": 5,
   "mostly-clean": 4,
   "can-do-better": 2.5,
   "not-recommended": 1.5,
 };
 
+/* A licensed drug is not rated on the cosmetic scale, so it emits no star
+   rating - returning a fake number would be a Google structured-data violation.
+   Callers must skip the Review JSON-LD when this is null. */
 export function tierToRating(tier: ReviewTier) {
+  if (tier === "not-assessed") return null;
   return {
     "@type": "Rating" as const,
     ratingValue: TIER_RATING[tier],

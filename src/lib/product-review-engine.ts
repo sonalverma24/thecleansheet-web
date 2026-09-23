@@ -108,6 +108,38 @@ function isIngredientClaim(t: string): boolean {
   return isFreeFromClaim(t) || isContainsClaim(t);
 }
 
+/* Actives that make a product a LICENSED DRUG in India (Drugs & Cosmetics Act),
+   not a cosmetic. A product built on any of these is regulated as a medicine and
+   is entitled to make treatment claims a cosmetic could not - so it must not be
+   scored against the Clean Sheet COSMETIC standard at all. We detect it and mark
+   the review "not assessed as a cosmetic" rather than condemning it for claims it
+   is actually licensed to make. Salicylic acid, niacinamide, zinc pyrithione,
+   piroctone olamine, climbazole and the like are cosmetic actives and are NOT on
+   this list. */
+const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string }[] = [
+  { re: /ketoconazole/i, name: "Ketoconazole" },
+  { re: /\bminoxidil\b/i, name: "Minoxidil" },
+  { re: /selenium\s+sul(f|ph)ide/i, name: "Selenium sulfide" },
+  { re: /coal\s+tar/i, name: "Coal tar" },
+  { re: /\bclindamycin\b/i, name: "Clindamycin" },
+  { re: /\berythromycin\b/i, name: "Erythromycin" },
+  { re: /benzoyl\s+peroxide/i, name: "Benzoyl peroxide" },
+  { re: /\btretinoin\b|retinoic\s+acid/i, name: "Tretinoin" },
+  { re: /\badapalene\b/i, name: "Adapalene" },
+  { re: /\bciclopirox\b/i, name: "Ciclopirox" },
+  { re: /\bmupirocin\b/i, name: "Mupirocin" },
+  { re: /\bterbinafine\b/i, name: "Terbinafine" },
+  { re: /\bfluconazole\b/i, name: "Fluconazole" },
+  { re: /\bpermethrin\b/i, name: "Permethrin" },
+];
+
+/** Drug actives found in the retrieved INCI. Empty when none (or no INCI). */
+function licensedDrugActivesInInci(inci: string[]): string[] {
+  if (!inci.length) return [];
+  const joined = inci.join(" · ");
+  return LICENSED_DRUG_ACTIVES.filter((d) => d.re.test(joined)).map((d) => d.name);
+}
+
 /* Common words that don't identify what a claim is ABOUT - ignored when we test
    whether a claim's subject actually appears in the scraped page. */
 const CLAIM_STOP = new Set([
@@ -334,15 +366,29 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const SPF_LABEL_RE = /spf|pa\+|uva|uvb|broad.?spectrum|sun.?protection|blue light/i;
   const HARD_RED_RE = /\b(cures?|treats?|heals?|whitens?|whitening|fairness|lightens?\s+skin|permanent(?:ly)?|guaranteed?)\b|contradict|not listed in|inci lists|own ingredient/i;
 
-  const hardClaims = (r.claimMap ?? []).filter((c) => {
+  // Hard flags come in two kinds, and they no longer carry the same weight:
+  //   - "contradiction": the claim is factually false about THIS product - an
+  //     ingredient claim the retrieved INCI contradicts (e.g. "with Ketoconazole"
+  //     on an INCI that has none, or a "free-from" that the INCI disproves). A
+  //     product that lies about its own contents is Not Recommended.
+  //   - "boundary": drug-territory treatment LANGUAGE ("eliminates dandruff",
+  //     "cures acne", "permanent whitening") on a product that is otherwise safe
+  //     and honestly labelled. This is a claims/ASCI overreach, not a safety or
+  //     honesty failure, so it caps the standing at "Room to Improve" rather than
+  //     condemning the product to the worst tier.
+  const CONTRADICTION_CTX_RE = /contradict|not listed in|inci lists|own ingredient|absent from|no .*in the (inci|ingredient)/i;
+  type HardKind = "contradiction" | "boundary";
+  const hardClassified: { c: ClaimAnalysis; kind: HardKind }[] = [];
+
+  for (const c of r.claimMap ?? []) {
     // Guardrail 2: a claim the engine could not corroborate in any scraped
     // source is never counted - it may be a hallucination.
-    if (c.corroborated === false) return false;
+    if (c.corroborated === false) continue;
 
     const ctx = `${c.text} ${c.evidenceNote ?? ""} ${c.asciNote ?? ""} ${c.drugBoundaryNote ?? ""}`;
     const isDrugBoundary = c.drugBoundaryRisk && !SPF_LABEL_RE.test(c.text);
     const isRedFlag = c.riskLevel === "red-flag" && HARD_RED_RE.test(ctx);
-    if (!isDrugBoundary && !isRedFlag) return false;
+    if (!isDrugBoundary && !isRedFlag) continue;
 
     // Guardrail 1: if this is an ingredient (free-from / contains) claim, the
     // contradiction must be code-confirmed against the retrieved INCI. Absent
@@ -353,11 +399,22 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       // scraped source. On a name-only query, where no page was read, we cannot
       // confirm the brand ever made the claim, so we do NOT let it force "Not
       // Recommended" (the conservative, defensible direction).
-      if (c.corroborated !== true) return false;
-      return inciConfirmsContradiction(c.text, inci);
+      if (c.corroborated !== true) continue;
+      if (!inciConfirmsContradiction(c.text, inci)) continue;
+      hardClassified.push({ c, kind: "contradiction" });
+      continue;
     }
-    return true;
-  });
+
+    // A pure drug-boundary treatment claim is a boundary overreach. A red-flag
+    // whose context explicitly names an INCI contradiction is a contradiction.
+    const kind: HardKind =
+      !isDrugBoundary && CONTRADICTION_CTX_RE.test(ctx) ? "contradiction" : "boundary";
+    hardClassified.push({ c, kind });
+  }
+
+  const hardClaims = hardClassified.map((x) => x.c);
+  const contradictionFlags = hardClassified.filter((x) => x.kind === "contradiction").length;
+  const boundaryFlags = hardClassified.filter((x) => x.kind === "boundary").length;
 
   // Mark voided claims so the UI / audit trail can show WHY a model flag was
   // dropped (mutation is safe - deriveVerdict owns the derived view).
@@ -437,35 +494,49 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     },
   ];
 
-  /* 4-tier ladder (best → worst):
-     - not-recommended: a code-verified problem only - a confirmed drug-boundary
-       crossing or an INCI-contradicted claim (guardrails passed). Missing proof
-       is NEVER "not-recommended".
-     - approved: high overall score AND the claims themselves are well evidenced.
-     - mostly-clean: safe & honest, but proof leans on ingredient evidence.
-     - can-do-better: safe, no confirmed problem, but thin proof / transparency
-       or claims that outrun their evidence. */
+  // A licensed drug is regulated as a medicine, not a cosmetic. It is entitled to
+  // make treatment claims a cosmetic could not, so scoring it on the Clean Sheet
+  // cosmetic standard would be a category error. Detect it and exclude it with a
+  // note rather than condemning it. This gate wins over every cosmetic tier below.
+  const drugActives = licensedDrugActivesInInci(inci);
+  const isDrug = drugActives.length > 0;
+
+  /* Cosmetic standing ladder (best → worst). Two changes from the old rule:
+     - not-recommended is now reserved for a product that is UNSAFE or DISHONEST
+       about itself - a banned ingredient, or a claim its own INCI contradicts.
+       A safe, honestly-labelled product does not land here just for aggressive
+       ad copy.
+     - a drug-boundary treatment CLAIM ("eliminates dandruff", "cures acne") on
+       an otherwise safe product caps the standing at "Room to Improve" - a
+       claims-overreach flag, not a condemnation. Missing proof is never
+       "not-recommended". */
   const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
-  const tier: DerivedVerdict["tier"] =
-    (hardFlags > 0 || hasBannedIngredient)
+  const cosmeticTier: DerivedVerdict["tier"] =
+    (contradictionFlags > 0 || hasBannedIngredient)
       ? "not-recommended"
-      : total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable
-        ? "approved"
-        : total >= 65
-          ? "mostly-clean"
-          : "can-do-better";
+      : boundaryFlags > 0
+        ? "can-do-better"
+        : total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable
+          ? "approved"
+          : total >= 65
+            ? "mostly-clean"
+            : "can-do-better";
+
+  const tier: DerivedVerdict["tier"] = isDrug ? "not-assessed" : cosmeticTier;
 
   const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
     "approved":         { label: "Clean Sheet Recommended", headline: "Claims hold up to the evidence." },
     "mostly-clean":     { label: "Good Standing",           headline: "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof." },
     "can-do-better":    { label: "Room to Improve",         headline: "Nothing wrong here, but the proof and transparency don't yet match the claims." },
-    "not-recommended":  { label: "Not Recommended",      headline: "Makes a claim that isn't permitted in India, or one the product's own ingredient list contradicts." },
+    "not-recommended":  { label: "Not Recommended",         headline: "Makes a claim its own ingredient list contradicts, or contains an ingredient prohibited in cosmetics." },
+    "not-assessed":     { label: "Licensed Drug",           headline: "Regulated as a drug in India, not a cosmetic, so it is not scored on the Clean Sheet cosmetic standard." },
   };
 
-  // A banned ingredient gives "Not Recommended" a safety-specific headline.
-  const headline = tier === "not-recommended" && hasBannedIngredient
-    ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
-    : TIER_META[tier].headline;
+  const headline = isDrug
+    ? `Regulated as a drug in India (contains ${drugActives.join(", ")}), so it is assessed as a licensed medicine, not against the Clean Sheet cosmetic standard.`
+    : tier === "not-recommended" && hasBannedIngredient
+      ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
+      : TIER_META[tier].headline;
 
   return {
     status: tier === "approved" ? "approved" : "not_approved",
@@ -474,6 +545,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     headline,
     gates,
     standard: `${REVIEW_METHODOLOGY_VERSION} · safety · claims · evidence · formula`,
+    ...(isDrug ? { isDrug, drugActives } : {}),
   };
 }
 

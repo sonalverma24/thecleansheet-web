@@ -8,7 +8,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin, Pill } from "lucide-react";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
 import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
@@ -486,6 +486,37 @@ function IndiaUnavailableBody({ product }: { product: ProductScorecard }) {
         </p>
         <p className="text-xs text-[#b0a8a4] mt-5 max-w-md mx-auto leading-relaxed">
           We&apos;ll run the complete Clean Sheet review the day it lands in the Indian market.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* A licensed drug is regulated as a medicine, not a cosmetic, so we do not run
+   the cosmetic scorecard on it. The whole body is replaced by this note, the same
+   way an India-unavailable product swaps in IndiaUnavailableBody. */
+function LicensedDrugBody({ product }: { product: ProductScorecard }) {
+  const actives = product.drugActives ?? [];
+  const activesLine =
+    actives.length === 1 ? actives[0] : actives.length ? `${actives.slice(0, -1).join(", ")} and ${actives[actives.length - 1]}` : "a regulated drug active";
+  const name = product.productName?.trim() || "This product";
+  return (
+    <div className="max-w-5xl mx-auto px-5 sm:px-8 py-10">
+      <div className="rounded-2xl border border-[#efe9e0] bg-[#faf7f2] p-7 sm:p-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-[#57534e]/10 flex items-center justify-center mx-auto mb-5">
+          <Pill size={22} className="text-[#57534e]" />
+        </div>
+        <h2 className="text-lg sm:text-xl text-[#282828] mb-2.5" style={{ fontFamily: "'Cooper BT', Georgia, serif" }}>
+          A licensed medicine, not a cosmetic
+        </h2>
+        <p className="text-sm text-[#282828]/70 leading-relaxed max-w-lg mx-auto">
+          {name}{" "}contains {activesLine}, which makes it a drug regulated under India&apos;s Drugs
+          &amp; Cosmetics Act, not a cosmetic. Medicines are licensed to make treatment claims a
+          cosmetic cannot, so The Clean Sheet does not score it against the cosmetic standard.
+        </p>
+        <p className="text-xs text-[#b0a8a4] mt-5 max-w-md mx-auto leading-relaxed">
+          Follow the medicine&apos;s own label and directions, and use it under the guidance of a
+          doctor or pharmacist. For safety questions, refer to the product&apos;s package insert.
         </p>
       </div>
     </div>
@@ -1006,8 +1037,10 @@ export function ProductScorecardView({
         brandSlug={brandSlug}
       />
 
-      {/* ── Body ── (masked when the product isn't sold in India) */}
-      {isUnavailableInIndia(product) ? (
+      {/* ── Body ── (swapped out for licensed drugs and India-unavailable products) */}
+      {product.reviewTier === "not-assessed" ? (
+        <LicensedDrugBody product={product} />
+      ) : isUnavailableInIndia(product) ? (
         <IndiaUnavailableBody product={product} />
       ) : (
       <>

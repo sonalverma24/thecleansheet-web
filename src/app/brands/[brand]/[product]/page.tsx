@@ -20,6 +20,7 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
     "mostly-clean": `${name} is in Good Standing with The Clean Sheet: broadly sound, with only minor gaps such as a claim that is plausible but not publicly proven.`,
     "can-do-better": `Not quite. ${name} is rated "Room to Improve" by The Clean Sheet — we found real concerns a buyer should weigh, such as unproven claims or transparency gaps.`,
     "not-recommended": `No. ${name} is Not Recommended by The Clean Sheet, based on issues with safety, regulatory compliance or claim honesty.`,
+    "not-assessed": `${name} is a licensed drug in India, not a cosmetic, so The Clean Sheet does not score it against the cosmetic standard. Follow the medicine's own label and your doctor or pharmacist.`,
   } as const;
 
   const faqs: ({ q: string; a: string } | null)[] = [
@@ -167,13 +168,18 @@ export default async function ProductPage({
           priceCurrency: "INR",
           lowPrice: product.priceRange.split("-")[0].replace(/[^0-9]/g, ""),
         },
-        review: {
-          "@type": "Review",
-          author: { "@type": "Organization", name: "The Clean Sheet" },
-          reviewBody: product.summary,
-          datePublished: product.analyzedAt,
-          reviewRating,
-        },
+        // Licensed drugs carry no cosmetic rating, so they emit no Review node.
+        ...(reviewRating
+          ? {
+              review: {
+                "@type": "Review",
+                author: { "@type": "Organization", name: "The Clean Sheet" },
+                reviewBody: product.summary,
+                datePublished: product.analyzedAt,
+                reviewRating,
+              },
+            }
+          : {}),
       },
       ...(faqs.length
         ? [

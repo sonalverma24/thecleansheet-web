@@ -92,13 +92,17 @@ export type ProductScorecard = {
   /** Product entered the catalogue via the live review repository (no static
       detail page — tiles link to the stored review; shows a NEW badge for 30 days). */
   freshReview?: boolean;
-  /** True verdict tier for repository products (claim-gated, not score-only). */
-  reviewTier?: "approved" | "mostly-clean" | "can-do-better" | "not-recommended";
+  /** True verdict tier for repository products (claim-gated, not score-only).
+      "not-assessed" = a licensed drug, exempt from the cosmetic standard. */
+  reviewTier?: "approved" | "mostly-clean" | "can-do-better" | "not-recommended" | "not-assessed";
   /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
       live-reviewed products — rendered as its own section in the product view. */
   regulatoryFlags?: { claim: string; note: string }[];
   /** NEW tile badge — only the latest few repository arrivals carry it. */
   newArrival?: boolean;
+  /** Licensed-drug products (reviewTier "not-assessed"): the drug active(s) that
+      make it a medicine, used to explain why it is not scored as a cosmetic. */
+  drugActives?: string[];
 };
 
 export type Brand = {

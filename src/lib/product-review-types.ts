@@ -247,7 +247,12 @@ export interface ReviewGate {
 /* The four Clean Sheet standings, best → worst. "can-do-better" and
    "not-recommended" replace the former "needs-proof" / "misleading" keys.
    Definitions live in STAMPS.md and are enforced in deriveVerdict. */
-export type ReviewTier = "approved" | "mostly-clean" | "can-do-better" | "not-recommended";
+export type ReviewTier =
+  | "approved"
+  | "mostly-clean"
+  | "can-do-better"
+  | "not-recommended"
+  | "not-assessed";
 
 export interface DerivedVerdict {
   /** Kept for registry back-compat; derived from tier. */
@@ -257,4 +262,8 @@ export interface DerivedVerdict {
   headline: string;
   gates: ReviewGate[];
   standard: string;
+  /** Set only when the product is a licensed drug, not a cosmetic. */
+  isDrug?: boolean;
+  /** The drug active(s) that make it a medicine (e.g. Ketoconazole). */
+  drugActives?: string[];
 }

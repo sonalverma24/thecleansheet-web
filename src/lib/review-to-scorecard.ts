@@ -216,6 +216,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     claimsMade: claims.slice(0, 8).map((c) => c.text),
     freshReview: true,
     reviewTier: verdict.tier,
+    ...(verdict.isDrug ? { drugActives: verdict.drugActives } : {}),
     regulatoryFlags: claims
       .filter((c) => c.asciConcern || c.drugBoundaryRisk)
       .slice(0, 8)
