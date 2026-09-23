@@ -381,7 +381,10 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   //     labelled. A claims/ASCI overreach, not a safety or honesty failure, so it
   //     caps the standing at "Room to Improve" rather than the worst tier.
   const CONTRADICTION_CTX_RE = /contradict|not listed in|inci lists|own ingredient|absent from|no .*in the (inci|ingredient)/i;
-  const FAIRNESS_RE = /\b(whiten(?:s|ed|ing)?|fairness|skin[\s-]+lighten(?:s|ed|ing)?|permanent(?:ly)?[\s-]+(?:whiten|lighten|fair))/i;
+  // Matches skin-whitening / fairness / skin-lightening claims, but NOT negated
+  // forms ("non-whitening", "no whitening" - a sunscreen boasting no white cast),
+  // and NOT bare "white" (white cast, white tea). "whiter/whitest" do count.
+  const FAIRNESS_RE = /(?<!\b(?:non|no|not|without|anti)[\s-])\b(whit(?:en(?:s|ed|ing)?|er|est)|fairness|skin[\s-]+lighten(?:s|ed|ing)?|permanent(?:ly)?[\s-]+(?:whiten|lighten|fair))/i;
   type HardKind = "contradiction" | "fairness" | "boundary";
   const hardClassified: { c: ClaimAnalysis; kind: HardKind }[] = [];
 
