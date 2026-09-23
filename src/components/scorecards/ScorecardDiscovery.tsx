@@ -442,8 +442,13 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
       // best_match already sorted above; default keeps order
     }
 
-    // Pin freshly-reviewed products (last 30 days) to the top, regardless of sort,
-    // so the lime NEW badge is actually seen. Stable within each group.
+    // Pin freshly-reviewed products (last 30 days) to the top, so the lime NEW
+    // badge is actually seen - but only under "Newest scorecard", where that's
+    // just the sort itself. Any other sort the user explicitly picked (score,
+    // price, value, fewest cautions) is a stronger signal of what they want to
+    // see first than review recency, so it's respected as-is: a "Highest score"
+    // sort should never surface a low/flagged score just because it's new.
+    if (sortBy !== "newest") return sorted;
     const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
     const isFresh = (p: ProductScorecard) =>
       p.freshReview === true && Date.now() - new Date(p.analyzedAt).getTime() < THIRTY_DAYS;
