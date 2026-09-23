@@ -366,18 +366,23 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const SPF_LABEL_RE = /spf|pa\+|uva|uvb|broad.?spectrum|sun.?protection|blue light/i;
   const HARD_RED_RE = /\b(cures?|treats?|heals?|whitens?|whitening|fairness|lightens?\s+skin|permanent(?:ly)?|guaranteed?)\b|contradict|not listed in|inci lists|own ingredient/i;
 
-  // Hard flags come in two kinds, and they no longer carry the same weight:
+  // Hard flags come in three kinds, and they no longer carry the same weight:
   //   - "contradiction": the claim is factually false about THIS product - an
   //     ingredient claim the retrieved INCI contradicts (e.g. "with Ketoconazole"
   //     on an INCI that has none, or a "free-from" that the INCI disproves). A
   //     product that lies about its own contents is Not Recommended.
-  //   - "boundary": drug-territory treatment LANGUAGE ("eliminates dandruff",
-  //     "cures acne", "permanent whitening") on a product that is otherwise safe
-  //     and honestly labelled. This is a claims/ASCI overreach, not a safety or
-  //     honesty failure, so it caps the standing at "Room to Improve" rather than
-  //     condemning the product to the worst tier.
+  //   - "fairness": a skin-whitening / fairness / skin-lightening claim. India
+  //     (ASCI) treats these as a public-harm category, so The Clean Sheet does
+  //     NOT soften them - they stay Not Recommended even when the product is
+  //     otherwise safe. (Cosmetic "brightening" / "dark-spot" claims are not
+  //     fairness claims and are not caught here.)
+  //   - "boundary": other drug-territory treatment LANGUAGE ("eliminates
+  //     dandruff", "cures acne") on a product that is otherwise safe and honestly
+  //     labelled. A claims/ASCI overreach, not a safety or honesty failure, so it
+  //     caps the standing at "Room to Improve" rather than the worst tier.
   const CONTRADICTION_CTX_RE = /contradict|not listed in|inci lists|own ingredient|absent from|no .*in the (inci|ingredient)/i;
-  type HardKind = "contradiction" | "boundary";
+  const FAIRNESS_RE = /\b(whiten(?:s|ed|ing)?|fairness|skin[\s-]+lighten(?:s|ed|ing)?|permanent(?:ly)?[\s-]+(?:whiten|lighten|fair))/i;
+  type HardKind = "contradiction" | "fairness" | "boundary";
   const hardClassified: { c: ClaimAnalysis; kind: HardKind }[] = [];
 
   for (const c of r.claimMap ?? []) {
@@ -405,15 +410,18 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       continue;
     }
 
-    // A pure drug-boundary treatment claim is a boundary overreach. A red-flag
-    // whose context explicitly names an INCI contradiction is a contradiction.
+    // Fairness/whitening stays severe; a red-flag whose context names an INCI
+    // contradiction is a contradiction; everything else is a boundary overreach.
     const kind: HardKind =
-      !isDrugBoundary && CONTRADICTION_CTX_RE.test(ctx) ? "contradiction" : "boundary";
+      FAIRNESS_RE.test(ctx) ? "fairness"
+      : !isDrugBoundary && CONTRADICTION_CTX_RE.test(ctx) ? "contradiction"
+      : "boundary";
     hardClassified.push({ c, kind });
   }
 
   const hardClaims = hardClassified.map((x) => x.c);
   const contradictionFlags = hardClassified.filter((x) => x.kind === "contradiction").length;
+  const fairnessFlags = hardClassified.filter((x) => x.kind === "fairness").length;
   const boundaryFlags = hardClassified.filter((x) => x.kind === "boundary").length;
 
   // Mark voided claims so the UI / audit trail can show WHY a model flag was
@@ -512,7 +520,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
        "not-recommended". */
   const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
   const cosmeticTier: DerivedVerdict["tier"] =
-    (contradictionFlags > 0 || hasBannedIngredient)
+    (contradictionFlags > 0 || fairnessFlags > 0 || hasBannedIngredient)
       ? "not-recommended"
       : boundaryFlags > 0
         ? "can-do-better"
@@ -536,7 +544,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     ? `Regulated as a drug in India (contains ${drugActives.join(", ")}), so it is assessed as a licensed medicine, not against the Clean Sheet cosmetic standard.`
     : tier === "not-recommended" && hasBannedIngredient
       ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
-      : TIER_META[tier].headline;
+      : tier === "not-recommended" && fairnessFlags > 0 && contradictionFlags === 0
+        ? "Makes a skin-whitening or fairness claim, a category India (ASCI) treats as misleading and harmful."
+        : TIER_META[tier].headline;
 
   return {
     status: tier === "approved" ? "approved" : "not_approved",
