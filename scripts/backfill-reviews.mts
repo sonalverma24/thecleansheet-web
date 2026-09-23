@@ -5,7 +5,7 @@
    there is no API cost and claim research is untouched. Idempotent (safe to re-run).
    Run: set -a; . ./.env.local; set +a; npx tsx --tsconfig tsconfig.json scripts/backfill-reviews.mts */
 import { createClient } from "@supabase/supabase-js";
-import { deriveVerdict, RUBRIC_REV } from "@/lib/product-review-engine";
+import { deriveVerdict, reconcileReviewScores, RUBRIC_REV } from "@/lib/product-review-engine";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
 
 const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -19,6 +19,10 @@ const flips: string[] = [];
 for (const row of data!) {
   const result = row.result as { type?: string; review?: ProductReview; verdict?: DerivedVerdict } | null;
   if (!result?.review || result.type !== "product-review") { skipped++; continue; }
+  // Re-sum total/label from the sections in code (with the claim-evidence ceiling)
+  // so the persisted result matches the current code-authoritative scoring, then
+  // derive the verdict from it.
+  result.review.scores = reconcileReviewScores(result.review).scores;
   const verdict = deriveVerdict(result.review);           // current logic
   const oldTier = String(row.tier ?? "");
   if (verdict.tier !== oldTier) { changed++; if (flips.length < 25) flips.push(`${result.review.brand}/${result.review.productName}: ${oldTier} -> ${verdict.tier}`); }
