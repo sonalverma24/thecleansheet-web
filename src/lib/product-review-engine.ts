@@ -173,10 +173,10 @@ async function marketplaceListingCorpus(brand: string, productName: string): Pro
 }
 
 /* ═══════════════ Derived standing (computed in code) ═══════════════
-   Four standings, best → worst. "Clean Sheet Approved" must mean the CLAIMS
+   Four standings, best → worst. "Clean Sheet Recommended" must mean the CLAIMS
    themselves hold up - not just a good blended score - so the top tier is gated
    on the claim-evidence dimension. "Not Recommended" is the ONLY negative-naming
-   tier and requires a code-verified problem. Missing proof is "Can Do Better",
+   tier and requires a code-verified problem. Missing proof is "Room to Improve",
    never "Not Recommended". Full definitions in STAMPS.md. */
 export const APPROVAL_BAR = 85;
 const CLAIM_EVIDENCE_BAR = 15; // out of 20 - headline claims carry finished-product / clinical proof
@@ -456,9 +456,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
           : "can-do-better";
 
   const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
-    "approved":         { label: "Clean Sheet Approved", headline: "Claims hold up to the evidence." },
-    "mostly-clean":     { label: "Mostly Clean",         headline: "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof." },
-    "can-do-better":    { label: "Can Do Better",        headline: "Nothing wrong here, but the proof and transparency don't yet match the claims." },
+    "approved":         { label: "Clean Sheet Recommended", headline: "Claims hold up to the evidence." },
+    "mostly-clean":     { label: "Good Standing",           headline: "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof." },
+    "can-do-better":    { label: "Room to Improve",         headline: "Nothing wrong here, but the proof and transparency don't yet match the claims." },
     "not-recommended":  { label: "Not Recommended",      headline: "Makes a claim that isn't permitted in India, or one the product's own ingredient list contradicts." },
   };
 
