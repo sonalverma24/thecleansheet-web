@@ -19,7 +19,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci } from "@/lib/ingredient-db";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
-import type { ProductReview, DerivedVerdict, ReviewGate } from "@/lib/product-review-types";
+import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
@@ -136,6 +136,42 @@ function markClaimCorroboration(review: ProductReview, corpus: string): void {
   }
 }
 
+/* Corroboration corpus for a NAME query (guardrail 2, path-parity fix).
+   A URL paste gives markClaimCorroboration a real page to check hard-flag claims
+   against; a name query historically gave it nothing, so the SAME product could
+   be condemned on the model's word when searched by name yet cleared when pasted
+   as a link. This resolves the product's marketplace listing (Amazon.in, Nykaa)
+   the same way a shopper would and scrapes it, so a name query corroborates hard
+   flags against a source we actually read - just like the URL path. Best-effort
+   and keyless: on a miss it returns "", and the caller falls back to the prior
+   name-query behaviour. Amazon + Nykaa run in parallel to bound latency. */
+async function marketplaceListingCorpus(brand: string, productName: string): Promise<string> {
+  const query = [brand, productName].filter(Boolean).join(" ").trim();
+  if (!query) return "";
+  const enc = encodeURIComponent(query);
+  const sources: { search: string; pdp: RegExp }[] = [
+    { search: `https://www.amazon.in/s?k=${enc}`, pdp: /https?:\/\/www\.amazon\.in\/[^)\s]*dp\/[A-Z0-9]{10}/i },
+    { search: `https://www.nykaa.com/search/result/?q=${enc}`, pdp: /https?:\/\/www\.nykaa\.com\/[^)\s]+\/p\/\d+/i },
+  ];
+  const parts = await Promise.all(
+    sources.map(async ({ search, pdp }) => {
+      const searchMd = await fetchPageMarkdown(search, 30000);
+      if (!searchMd) return "";
+      // Prefer the actual product page (full claim text); the top result for a
+      // "[brand] [product]" search is almost always this product. If we grab a
+      // near-miss, the hard-flag claim simply won't be found there and is voided
+      // - erring toward NOT condemning, the safe direction.
+      const url = searchMd.match(pdp)?.[0];
+      if (url) {
+        const pdpMd = await fetchPageMarkdown(url, 40000);
+        if (pdpMd) return productBodyExcerpt(pdpMd, 4000);
+      }
+      return productBodyExcerpt(searchMd, 2500); // fall back to search-page blurbs
+    }),
+  );
+  return parts.filter(Boolean).join("\n---\n");
+}
+
 /* ═══════════════ Derived standing (computed in code) ═══════════════
    Four standings, best → worst. "Clean Sheet Approved" must mean the CLAIMS
    themselves hold up - not just a good blended score - so the top tier is gated
@@ -145,10 +181,143 @@ function markClaimCorroboration(review: ProductReview, corpus: string): void {
 export const APPROVAL_BAR = 85;
 const CLAIM_EVIDENCE_BAR = 15; // out of 20 - headline claims carry finished-product / clinical proof
 
+/* ═══════════════ Code-authoritative scoring (the maths) ═══════════════
+   The model returns a score for each of the seven sections AND a `total`, but
+   the total is the number the verdict tier is gated on, so it must be OUR sum,
+   not the model's. The model can (and does) return a `total` that doesn't equal
+   the sum of its own sections, or a section above its cap - both would let an
+   inflated `total` reach the approval bar. reconcileScores is the one place the
+   arithmetic is enforced: every section is clamped to its published maximum, the
+   total is recomputed as the code sum, and the band label is derived from that
+   sum. The model researches the parts; the code adds them up. */
+const SECTION_MAX: Record<keyof Omit<ProductReviewScores, "total" | "label">, number> = {
+  priceFairness: 10,
+  claimClarity: 15,
+  claimEvidence: 20,
+  ingredientTransparency: 20,
+  formulaLogic: 15,
+  consumerSuitability: 10,
+  platformConsistency: 10,
+};
+// The /100 scale is the sum of the section caps. Assert it at module load so a
+// future section-cap edit that breaks the scale fails loudly instead of silently
+// shifting every score and tier.
+const TOTAL_MAX = 100;
+{
+  const capSum = Object.values(SECTION_MAX).reduce((a, b) => a + b, 0);
+  if (capSum !== TOTAL_MAX) {
+    throw new Error(`Clean Sheet section caps sum to ${capSum}, expected ${TOTAL_MAX}`);
+  }
+}
+
+/** Band label for a /100 total, matching the SCORING SYSTEM bands in the prompt.
+    Derived from the code total so the label can never contradict the sum. */
+function totalLabel(total: number): ProductReviewScores["label"] {
+  if (total >= 85) return "Clean Sheet Strong";
+  if (total >= 75) return "Mostly Transparent";
+  if (total >= 55) return "Needs More Clarity";
+  if (total >= 40) return "High Claim Risk";
+  return "Consumer Confusion Risk";
+}
+
+const clampSection = (v: unknown, max: number): number => {
+  const n = typeof v === "number" && Number.isFinite(v) ? v : 0;
+  return Math.max(0, Math.min(max, Math.round(n)));
+};
+
+/* The Claim Evidence section (20 pts) is the single biggest reward and one of
+   the two gates on approval, yet the model both grades it AND assigns each
+   claim's evidenceLevel - so it can hand out 18/20 while its own claimMap shows
+   nothing better than borrowed ingredient research. This turns the prompt's own
+   Section-3 banding into a code CEILING: claimEvidence can be no higher than the
+   best finished-product evidence actually present in the claimMap supports.
+     max evidenceLevel 6-7 (clinical / published) → up to 20
+     max evidenceLevel 4-5 (finished-product / third-party) → up to 17
+     max evidenceLevel 3   (active % disclosed only)        → up to 13
+     max evidenceLevel 2   (ingredient research only)       → up to 7
+     max evidenceLevel ≤1 / no claims                       → up to 2
+   Because the approval bar is claimEvidence ≥ 15, approval now REQUIRES at least
+   one substantive claim at Level 4+ (a real finished-product test), matching the
+   prompt's "an ingredient study is Level 2 for a finished-product claim" rule.
+   Only downward: it never raises the model's own number. Emotional puffery and
+   claims the corroboration guardrail rejected (corroborated===false) cannot
+   supply the evidence, so feel-good or fabricated claims can't lift the ceiling. */
+export function evidenceCeiling(claimMap: ClaimAnalysis[] | undefined): number {
+  const levels = (claimMap ?? [])
+    .filter((c) => c.corroborated !== false && c.primaryType !== "emotional")
+    .map((c) => (typeof c.evidenceLevel === "number" ? c.evidenceLevel : 0));
+  const max = levels.length ? Math.max(...levels) : 0;
+  if (max >= 6) return 20;
+  if (max >= 4) return 17;
+  if (max >= 3) return 13;
+  if (max >= 2) return 7;
+  return 2;
+}
+
+export interface ReconciledScores {
+  /** Section scores clamped to their caps, total recomputed as the code sum,
+      label derived from that total. */
+  scores: ProductReviewScores;
+  /** The total the model claimed (0 if it returned none), for audit / logging. */
+  modelTotal: number;
+  /** code total − model total. Non-zero means the model's arithmetic was off. */
+  delta: number;
+}
+
+/** Recompute a review's `total` and `label` from its section scores in code.
+    Sections are clamped to their caps first, so neither an out-of-range section
+    nor a mismatched model `total` can inflate a product toward the approval bar.
+    When `opts.evidenceCeiling` is given (from evidenceCeiling(claimMap)),
+    claimEvidence is additionally capped to what the structured evidence supports
+    before the total is summed - so the reward and the total both reflect the real
+    evidence, not the model's asserted number. */
+export function reconcileScores(
+  raw: Partial<ProductReviewScores> | undefined,
+  opts?: { evidenceCeiling?: number },
+): ReconciledScores {
+  const priceFairness = clampSection(raw?.priceFairness, SECTION_MAX.priceFairness);
+  const claimClarity = clampSection(raw?.claimClarity, SECTION_MAX.claimClarity);
+  let claimEvidence = clampSection(raw?.claimEvidence, SECTION_MAX.claimEvidence);
+  if (typeof opts?.evidenceCeiling === "number") claimEvidence = Math.min(claimEvidence, opts.evidenceCeiling);
+  const ingredientTransparency = clampSection(raw?.ingredientTransparency, SECTION_MAX.ingredientTransparency);
+  const formulaLogic = clampSection(raw?.formulaLogic, SECTION_MAX.formulaLogic);
+  const consumerSuitability = clampSection(raw?.consumerSuitability, SECTION_MAX.consumerSuitability);
+  const platformConsistency = clampSection(raw?.platformConsistency, SECTION_MAX.platformConsistency);
+
+  const total = Math.min(
+    TOTAL_MAX,
+    priceFairness + claimClarity + claimEvidence + ingredientTransparency +
+      formulaLogic + consumerSuitability + platformConsistency,
+  );
+  const modelTotal = typeof raw?.total === "number" && Number.isFinite(raw.total) ? Math.round(raw.total) : 0;
+
+  return {
+    scores: {
+      priceFairness, claimClarity, claimEvidence, ingredientTransparency,
+      formulaLogic, consumerSuitability, platformConsistency,
+      total,
+      label: totalLabel(total),
+    },
+    modelTotal,
+    delta: total - modelTotal,
+  };
+}
+
+/** reconcileScores for a whole review: applies the code arithmetic AND the
+    evidence ceiling derived from the review's own claimMap. This is the form the
+    engine uses everywhere a full review is in hand; call reconcileScores directly
+    only when the claimMap is genuinely unavailable. */
+export function reconcileReviewScores(review: Pick<ProductReview, "scores" | "claimMap">): ReconciledScores {
+  return reconcileScores(review.scores, { evidenceCeiling: evidenceCeiling(review.claimMap) });
+}
+
 export function deriveVerdict(r: ProductReview): DerivedVerdict {
-  const evidencePts = r.scores?.claimEvidence ?? 0;      // out of 20
-  const formulaPts = r.scores?.formulaLogic ?? 0;        // out of 15
-  const total = r.scores?.total ?? 0;                    // out of 100
+  // Grade against the CODE total (with the evidence ceiling applied), never the
+  // model's own `total` or its unverified claimEvidence number.
+  const norm = reconcileReviewScores(r).scores;
+  const evidencePts = norm.claimEvidence;                // out of 20
+  const formulaPts = norm.formulaLogic;                  // out of 15
+  const total = norm.total;                              // out of 100
   const overreach = r.formulaLogic?.claimOverreach === true;
   const inci = reviewInciList(r);
 
@@ -209,6 +378,16 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const banned = bannedIngredientsInInci(inci);
   const hasBannedIngredient = banned.length > 0;
 
+  // The banned-ingredient screen can only clear a product it can actually read.
+  // With NO retrieved INCI (common for Indian / newly-launched brands not on
+  // INCIDecoder and without a scrapable PDP list), bannedIngredientsInInci([])
+  // trivially returns nothing - "no banned ingredient FOUND" is not "safe",
+  // it is "not checked". Unverified safety must not earn the top stamp (a
+  // prohibited fairness active like hydroquinone would slip straight through),
+  // so a retrieved INCI is required for approval. It is NOT grounds to condemn:
+  // missing data is never "Not Recommended".
+  const safetyVerifiable = inci.length > 0;
+
   // Gates are informational; `lawful` or the safety gate can block on their own.
   const lawful = hardFlags === 0;
   const honest = evidencePts >= 10;                      // ≥ half the evidence points
@@ -221,10 +400,12 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     {
       id: "safety",
       label: "Ingredient safety",
-      passed: !hasBannedIngredient,
+      passed: safetyVerifiable && !hasBannedIngredient,
       detail: hasBannedIngredient
         ? `Contains an ingredient prohibited in cosmetics: ${banned.map((b) => b.name).join(", ")}`
-        : "No ingredient prohibited in cosmetics found in the retrieved list",
+        : !safetyVerifiable
+          ? "No ingredient list could be retrieved, so the safety screen could not run - approval is withheld until an INCI is available"
+          : "No ingredient prohibited in cosmetics found in the retrieved list",
     },
     {
       id: "claims",
@@ -268,7 +449,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const tier: DerivedVerdict["tier"] =
     (hardFlags > 0 || hasBannedIngredient)
       ? "not-recommended"
-      : total >= APPROVAL_BAR && claimsHoldUp
+      : total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable
         ? "approved"
         : total >= 65
           ? "mostly-clean"
@@ -316,7 +497,7 @@ export type ProductReviewResult =
 const REVIEW_CACHE = new Map<string, { result: ProductReviewResult; at: number }>();
 const REVIEW_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min, matches the page's ISR revalidate
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
-export const RUBRIC_REV = "r6"; // r6: 4-tier stamp rename + code-verified hard-flag guardrails
+export const RUBRIC_REV = "r7"; // r7: total code-summed from sections + claimEvidence capped to the finished-product evidence actually in claimMap + approval requires a retrieved INCI; r6: 4-tier stamp rename + code-verified hard-flag guardrails
 
 /* Reviews pulled from the site. Suppressed on every read path (getStored,
    listings, catalogue); the stored row is left intact so it can be restored or
@@ -336,9 +517,14 @@ const RETRACTED_SLUGS = new Set<string>([
 ]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
-   review - verdict rule changes then apply without re-running the model. */
+   review - verdict rule changes then apply without re-running the model. The
+   review's `total`/`label` are re-summed from the sections at the same time, so a
+   row stored before code-authoritative scoring self-heals on read: the displayed
+   total and the tier badge are both the current code sum, no backfill required. */
 function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
-  return r.type === "product-review" ? { ...r, verdict: deriveVerdict(r.review) } : r;
+  if (r.type !== "product-review") return r;
+  const review = { ...r.review, scores: reconcileReviewScores(r.review).scores };
+  return { ...r, review, verdict: deriveVerdict(review) };
 }
 
 async function getStored(slug: string): Promise<ProductReviewResult | null> {
@@ -362,6 +548,21 @@ async function getStored(slug: string): Promise<ProductReviewResult | null> {
     Powers the permanent /reviews/[slug] product page for repository products. */
 export async function getStoredReview(slug: string): Promise<ProductReviewResult | null> {
   return getStored(slug);
+}
+
+/** An admin-pinned image must survive a fresh re-review, so we read it straight
+    from the stored row IGNORING the rubric gate (a RUBRIC_REV bump forces a fresh
+    run, but the human-corrected photo underneath it still stands). Returns the
+    locked URL only when `imageLocked` is set. */
+async function getPinnedImage(slug: string): Promise<string | null> {
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews").select("result").eq("product_slug", slug).maybeSingle();
+    const rv = (data?.result as ProductReviewResult | undefined);
+    const review = rv && rv.type === "product-review" ? rv.review : undefined;
+    if (review?.imageLocked && review.imageUrl) return review.imageUrl;
+  } catch { /* repository unavailable */ }
+  return null;
 }
 
 /** Drop a slug from the in-memory L1 cache so the next read re-fetches from the
@@ -461,8 +662,10 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
       const rv = res?.review;
       if (!rv?.productName) return [];
-      // Re-derive the tier from current logic so approval-rule changes apply
-      // to already-stored reviews without re-running the batch.
+      // Re-derive the tier AND re-sum the score from current logic so scoring /
+      // approval-rule changes apply to already-stored reviews without re-running
+      // the batch (this read path bypasses withFreshVerdict).
+      const codeScore = reconcileReviewScores(rv).scores.total;
       const tier = deriveVerdict(rv).tier;
       const newArrival = idx < 5 && Date.now() - new Date(String(row.reviewed_at ?? 0)).getTime() < THIRTY_DAYS;
       return [{
@@ -474,7 +677,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         productType: "leave-on" as const,
         concern: rv.category ?? "",
         summary: rv.verdict?.cleanSheetTakeaway ?? "",
-        score: rv.scores?.total ?? 0,
+        score: codeScore,
         scoreLabel: tierToLegacy[tier] ?? "Fair",
         targetUser: rv.targetUser ?? "",
         image: rv.imageUrl ?? "",
@@ -594,15 +797,21 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
 
-  /* Guardrail 2 (corroboration): when we actually scraped a product page and/or
-     brand evidence, verify that each claim we might penalise the brand for is
-     genuinely present in that text. A red-flag / drug-boundary claim whose
-     subject never appears in what we scraped is treated as uncorroborated and
-     is NOT hard-flagged - this is what stops an invented claim (e.g. a
-     "silicone-free" the brand never made) from dropping a product a tier.
-     Name-only queries have no page corpus, so claims stay unmarked (assumed
-     made) and only guardrail 1 (INCI truth) applies. */
-  markClaimCorroboration(review, `${pageExcerpt}\n${evidenceBlock}`);
+  /* Guardrail 2 (corroboration): verify that each claim we might penalise the
+     brand for is genuinely present in a source we actually read. A red-flag /
+     drug-boundary claim whose subject never appears is treated as uncorroborated
+     and is NOT hard-flagged - this stops an invented claim (e.g. a "silicone-free"
+     the brand never made) from dropping a product a tier.
+     Path parity (#4): a URL paste corroborates against the scraped page; a name
+     query now corroborates against the product's marketplace listing, fetched the
+     same way. So the SAME product no longer earns a different verdict depending on
+     whether it was searched by name or by link. If the listing can't be fetched,
+     the corpus is empty and the prior name-query behaviour (guardrail 1 only)
+     applies. */
+  const corroborationCorpus = isURL(q)
+    ? `${pageExcerpt}\n${evidenceBlock}`
+    : await marketplaceListingCorpus(review.brand, review.productName);
+  markClaimCorroboration(review, corroborationCorpus);
 
   /* Canonical identity + de-dupe. If the product resolved on INCIDecoder, `slug`
      is already canonical. Otherwise it was slugified from the raw query TEXT,
@@ -630,14 +839,31 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // Every candidate is checked for liveness before it is stored: a 404 or
   // hotlink-blocked URL renders as a broken image on the product page forever.
   let imageUrl: string | null = null;
-  if (inci?.imageUrl && (await isLiveImage(inci.imageUrl))) imageUrl = inci.imageUrl;
-  if (!imageUrl && isURL(q)) imageUrl = await resolveProductImage(q);
-  if (!imageUrl) imageUrl = await findProductImageKeyless(review.brand, review.productName);
+  let imageSource: ProductImageSource | null = null;
+  let imageConfidence: number | null = null;
+  let imageLocked = false;
+
+  // #4 — Honour an admin-pinned image first: a fresh re-review (e.g. after a
+  // RUBRIC_REV bump) must not clobber a human-corrected photo. Checked against
+  // both the canonical slug and the incoming slug the row may still live under.
+  const pinned = (await getPinnedImage(canonicalSlug)) ?? (canonicalSlug !== slug ? await getPinnedImage(slug) : null);
+  if (pinned) { imageUrl = pinned; imageSource = "manual"; imageLocked = true; }
+
+  if (!imageUrl && inci?.imageUrl && (await isLiveImage(inci.imageUrl))) { imageUrl = inci.imageUrl; imageSource = "inci"; }
+  if (!imageUrl && isURL(q)) { const u = await resolveProductImage(q); if (u) { imageUrl = u; imageSource = "page"; } }
+  if (!imageUrl) {
+    const pick = await findProductImageKeyless(review.brand, review.productName);
+    if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
+  }
   if (!imageUrl) {
     const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
-    imageUrl = await searchProductImage(imgQuery || q, review.brand);
+    const pick = await searchProductImage(imgQuery || q, review.brand);
+    if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
   }
   review.imageUrl = imageUrl;
+  review.imageSource = imageSource ?? undefined;
+  review.imageConfidence = imageConfidence;
+  review.imageLocked = imageLocked;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;
@@ -661,6 +887,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (review.inciIngredients?.length) {
     try { await addDiscoveredNames(review.inciIngredients); } catch { /* never block a review */ }
   }
+
+  // Code owns the arithmetic: overwrite the model's `total`/`label` with the code
+  // sum of the (clamped, evidence-ceilinged) sections before the review is graded
+  // or stored, so an inflated total or an unbacked claimEvidence number can never
+  // reach the approval bar. Runs after markClaimCorroboration so the ceiling
+  // ignores claims the corroboration guardrail rejected.
+  review.scores = reconcileReviewScores(review).scores;
 
   const verdict = deriveVerdict(review);
 

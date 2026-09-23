@@ -8,7 +8,43 @@ type Row = {
   brand: string | null;
   image_url: string | null;
   reviewed_at: string | null;
+  // From the result JSON (PostgREST returns JSON text, so these are strings).
+  image_source: string | null;
+  image_confidence: string | null;
+  image_locked: string | null;
 };
+
+const SOURCE_LABEL: Record<string, string> = {
+  inci: "INCIDecoder", page: "Product page", amazon: "Amazon",
+  nykaa: "Nykaa", cse: "Google", search: "Web search", manual: "Manual",
+};
+
+function ProvenanceBadge({ row }: { row: Row }) {
+  const locked = row.image_locked === "true";
+  const src = row.image_source;
+  const conf = row.image_confidence != null ? Number(row.image_confidence) : null;
+  if (!src && !locked) return null;
+  // Low-confidence auto-matches are the ones most worth eyeballing.
+  const lowConf = conf != null && conf < 0.6;
+  return (
+    <span className="inline-flex items-center gap-1 flex-wrap">
+      {src && (
+        <span
+          className="rounded px-1.5 py-0.5 text-[10px]"
+          style={{ background: lowConf ? "#fd61581a" : "#f3efe9", color: lowConf ? "#fd6158" : "#b0a8a4" }}
+          title={lowConf ? "Low-confidence match — worth checking" : undefined}
+        >
+          {SOURCE_LABEL[src] ?? src}{conf != null ? ` ${Math.round(conf * 100)}%` : ""}
+        </span>
+      )}
+      {locked && (
+        <span className="rounded px-1.5 py-0.5 text-[10px]" style={{ background: "#2481791a", color: "#248179" }}>
+          🔒 pinned
+        </span>
+      )}
+    </span>
+  );
+}
 
 export function RepositoryAdminClient() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -62,9 +98,31 @@ export function RepositoryAdminClient() {
       });
       const d = await res.json();
       if (!res.ok || d.error) throw new Error(d.error ?? `HTTP ${res.status}`);
-      setRows((prev) => prev.map((r) => (r.product_slug === slug ? { ...r, image_url: imageUrl } : r)));
+      setRows((prev) => prev.map((r) => (r.product_slug === slug
+        ? { ...r, image_url: imageUrl, image_source: "manual", image_confidence: null, image_locked: "true" }
+        : r)));
       setDrafts((prev) => ({ ...prev, [slug]: "" }));
-      setFlash(`Image updated for ${slug}.`);
+      setFlash(`Image pinned for ${slug}. It will survive re-reviews until unlocked.`);
+    } catch (e) {
+      setFlash(`Failed: ${String(e instanceof Error ? e.message : e)}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function unlockImage(slug: string) {
+    setBusy(slug);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/admin/repository", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "unlock-image", slug }),
+      });
+      const d = await res.json();
+      if (!res.ok || d.error) throw new Error(d.error ?? `HTTP ${res.status}`);
+      setRows((prev) => prev.map((r) => (r.product_slug === slug ? { ...r, image_locked: "false" } : r)));
+      setFlash(`Unpinned ${slug}. The next re-review will resolve its image automatically.`);
     } catch (e) {
       setFlash(`Failed: ${String(e instanceof Error ? e.message : e)}`);
     } finally {
@@ -130,7 +188,10 @@ export function RepositoryAdminClient() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-[#282828] truncate">{r.product_name ?? "(untitled)"}</div>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm text-[#282828] truncate">{r.product_name ?? "(untitled)"}</span>
+                <ProvenanceBadge row={r} />
+              </div>
               <div className="text-[11px] text-[#b0a8a4] font-mono truncate">{r.brand ?? "—"} · {r.product_slug}</div>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <input
@@ -144,8 +205,17 @@ export function RepositoryAdminClient() {
                   disabled={busy === r.product_slug}
                   className="rounded-lg bg-[#248179] text-white text-xs px-3 py-1.5 disabled:opacity-50"
                 >
-                  {busy === r.product_slug ? "…" : "Save image"}
+                  {busy === r.product_slug ? "…" : "Pin image"}
                 </button>
+                {r.image_locked === "true" && (
+                  <button
+                    onClick={() => unlockImage(r.product_slug)}
+                    disabled={busy === r.product_slug}
+                    className="rounded-lg border border-[#248179]/40 text-[#248179] text-xs px-3 py-1.5 disabled:opacity-50"
+                  >
+                    Unpin
+                  </button>
+                )}
                 <a
                   href={`/reviews/${r.product_slug}`}
                   target="_blank"

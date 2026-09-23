@@ -2,7 +2,8 @@
    public.product_reviews). Gated to ADMIN_EMAILS, same pattern as the reviews
    export route. Powers /admin/repository:
      - GET               → list recent stored reviews (for the UI)
-     - POST set-image     → fix a review's image (image_url + result.review.imageUrl)
+     - POST set-image     → fix + pin a review's image (locks it against re-review)
+     - POST unlock-image  → release the pin so auto-resolution resumes
      - POST delete        → remove a review row entirely
    The write happens on the server under the service-role client; the admin only
    supplies the slug + URL from the browser. */
@@ -10,6 +11,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { invalidateReviewCache } from "@/lib/product-review-engine";
+import type { ProductImageSource } from "@/lib/product-review-types";
+
+type ReviewImageFields = {
+  imageUrl?: string | null;
+  imageSource?: ProductImageSource;
+  imageConfidence?: number | null;
+  imageLocked?: boolean;
+};
 
 async function requireAdmin(): Promise<{ ok: true; email: string } | { ok: false; status: number }> {
   const supabase = await createClient();
@@ -26,7 +35,14 @@ export async function GET() {
 
   const { data, error } = await createAdminClient()
     .from("product_reviews")
-    .select("product_slug, product_name, brand, image_url, reviewed_at")
+    // Image provenance (source/confidence/locked) lives inside the result JSON;
+    // pull just those fields via JSON selectors so the audit column is cheap.
+    .select(
+      "product_slug, product_name, brand, image_url, reviewed_at, " +
+      "image_source:result->review->>imageSource, " +
+      "image_confidence:result->review->>imageConfidence, " +
+      "image_locked:result->review->>imageLocked",
+    )
     .order("reviewed_at", { ascending: false })
     .limit(400);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -53,14 +69,37 @@ export async function POST(req: NextRequest) {
       .from("product_reviews").select("result").eq("product_slug", slug).maybeSingle();
     if (error || !data) return NextResponse.json({ error: error?.message ?? "review not found" }, { status: 404 });
 
-    const result = data.result as { review?: { imageUrl?: string | null } } | null;
-    if (result?.review) result.review.imageUrl = imageUrl;
+    // Pin the admin's choice: lock it and tag the source so a fresh re-review
+    // reuses it (see getPinnedImage in the engine) instead of re-resolving.
+    const result = data.result as { review?: ReviewImageFields } | null;
+    if (result?.review) {
+      result.review.imageUrl = imageUrl;
+      result.review.imageSource = "manual";
+      result.review.imageConfidence = null;
+      result.review.imageLocked = true;
+    }
     const { error: upErr } = await db
       .from("product_reviews").update({ image_url: imageUrl, result }).eq("product_slug", slug);
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
 
     invalidateReviewCache(slug);
     return NextResponse.json({ ok: true, action, slug, imageUrl });
+  }
+
+  if (action === "unlock-image") {
+    // Release the pin so the next re-review resolves the image automatically again.
+    const { data, error } = await db
+      .from("product_reviews").select("result").eq("product_slug", slug).maybeSingle();
+    if (error || !data) return NextResponse.json({ error: error?.message ?? "review not found" }, { status: 404 });
+
+    const result = data.result as { review?: ReviewImageFields } | null;
+    if (result?.review) result.review.imageLocked = false;
+    const { error: upErr } = await db
+      .from("product_reviews").update({ result }).eq("product_slug", slug);
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+
+    invalidateReviewCache(slug);
+    return NextResponse.json({ ok: true, action, slug });
   }
 
   if (action === "delete") {

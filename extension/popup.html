@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>The Clean Sheet</title>
+  </head>
+  <body>
+    <header class="hd">
+      <img class="hd-mark" src="icons/icon48.png" alt="" />
+      <div class="hd-text">
+        <span class="hd-name">The Clean Sheet</span>
+        <span class="hd-tag">Product Analyser</span>
+      </div>
+    </header>
+
+    <!-- Auto-detected product on the current page -->
+    <section id="detect" class="detect" hidden>
+      <p class="detect-label">On this page</p>
+      <p id="detect-name" class="detect-name"></p>
+      <button id="detect-btn" class="btn btn-primary">Analyse this page</button>
+    </section>
+
+    <!-- Manual search -->
+    <section class="search">
+      <input
+        id="q"
+        class="search-input"
+        type="text"
+        placeholder="Product name or link"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="go" class="btn btn-primary">Analyse</button>
+    </section>
+
+    <!-- Result surface: one state visible at a time -->
+    <section id="result" class="result" aria-live="polite"></section>
+
+    <footer class="ft">
+      <a id="site-link" href="https://thecleansheet.in/review" target="_blank" rel="noopener"
+        >Open the full analyser →</a
+      >
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

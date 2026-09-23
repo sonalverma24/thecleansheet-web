@@ -266,7 +266,7 @@ Search for its official product page and marketplace listings (Nykaa, Amazon.in,
   }
   if (!scrapedImage) {
     const imgQuery = [parsed.brand, parsed.productName].filter((s) => typeof s === "string" && s).join(" ");
-    scrapedImage = await searchProductImage(imgQuery || q);
+    scrapedImage = (await searchProductImage(imgQuery || q))?.url ?? null;
   }
 
   const sanitised = sanitiseClaims(parsed.claims as unknown[]);
