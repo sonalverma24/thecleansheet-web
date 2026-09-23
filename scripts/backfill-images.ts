@@ -22,11 +22,23 @@ async function main() {
   console.log(`${data?.length ?? 0} products missing photos`);
   let fixed = 0;
   for (const row of data ?? []) {
-    let img = await findProductImageKeyless(row.brand as string, row.product_name as string);
-    if (!img) { try { img = (await resolveINCI(`${row.brand} ${row.product_name}`)).chosen?.imageUrl ?? null; } catch {} }
+    const pick = await findProductImageKeyless(row.brand as string, row.product_name as string);
+    let img: string | null = pick?.url ?? null;
+    let source: string | null = pick?.source ?? null;
+    let confidence: number | null = pick?.confidence ?? null;
+    if (!img) {
+      try {
+        const inci = (await resolveINCI(`${row.brand} ${row.product_name}`)).chosen?.imageUrl ?? null;
+        if (inci) { img = inci; source = "inci"; confidence = null; }
+      } catch {}
+    }
     if (img) {
-      const result = row.result as { review?: { imageUrl?: string | null } };
-      if (result?.review) result.review.imageUrl = img;
+      const result = row.result as { review?: { imageUrl?: string | null; imageSource?: string; imageConfidence?: number | null } };
+      if (result?.review) {
+        result.review.imageUrl = img;
+        if (source) result.review.imageSource = source;
+        result.review.imageConfidence = confidence;
+      }
       await db.from("product_reviews").update({ image_url: img, result }).eq("product_slug", row.product_slug);
       fixed++;
       console.log(`✓ ${row.brand} ${row.product_name}`);

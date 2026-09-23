@@ -9,15 +9,40 @@
      4. Caller may fall back to scraped-markdown images (Jina)
 ──────────────────────────────────────────────────────────────── */
 
-export const IMAGE_URL_BLOCKLIST = /logo|icon|sprite|favicon|banner|payment|whatsapp|instagram|facebook|youtube|twitter|pixel|badge|flag|arrow|star|rating|cart|search|menu|avatar|placeholder|loader|spinner|\.svg|\.gif/i;
+import type { ProductImageSource } from "@/lib/product-review-types";
+
+/** A resolved image plus its provenance, so the engine can store which strategy
+    won and how confident the match was (see /admin/repository audit column). */
+export interface ImagePick {
+  url: string;
+  source: ProductImageSource;
+  /** 0-1 match score when the resolver scored it; null for trusted sources. */
+  confidence: number | null;
+}
+
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+export const IMAGE_URL_BLOCKLIST = /logo|icon|sprite|favicon|banner|payment|whatsapp|instagram|facebook|youtube|twitter|pixel|badge|flag|arrow|star|rating|cart|search|menu|avatar|placeholder|loader|spinner|51HCHFclmmL|\.svg|\.gif/i;
+// ^ 51HCHFclmmL = Amazon.in's generic share placeholder, served as og:image on
+//   product pages when it bot-walls a scraper. It is NOT a product photo, so it
+//   must never win (several unrelated products otherwise resolve to it).
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
+/** Test the blocklist against the URL's PATH + query only, not the hostname —
+    otherwise a CDN host like rukminim2.flixcart.com trips on "cart" and every
+    real Flipkart product image is wrongly rejected. */
+function isBlockedImage(rawUrl: string): boolean {
+  let s = rawUrl;
+  try { const u = new URL(rawUrl); s = `${u.pathname}${u.search}`; } catch { /* keep raw */ }
+  return IMAGE_URL_BLOCKLIST.test(s);
+}
 
 function clean(url: string | undefined | null): string | null {
   if (!url) return null;
   const u = url.replace(/\\\//g, "/").replace(/&amp;/g, "&").trim();
   if (!/^https?:\/\//i.test(u)) return null;
-  if (IMAGE_URL_BLOCKLIST.test(u)) return null;
+  if (isBlockedImage(u)) return null;
   return u;
 }
 
@@ -116,7 +141,7 @@ interface CseItem {
   image?: { contextLink?: string };
 }
 
-export async function searchProductImage(query: string, brand = ""): Promise<string | null> {
+export async function searchProductImage(query: string, brand = ""): Promise<ImagePick | null> {
   const key = process.env.GOOGLE_CSE_API_KEY;
   const cx = process.env.GOOGLE_CSE_CX;
   if (!key || !cx || !query.trim()) return null;
@@ -152,12 +177,29 @@ export async function searchProductImage(query: string, brand = ""): Promise<str
       candidates = branded;
     }
 
-    // 1. Image hosted on / found via a trusted marketplace listing
-    const trusted = candidates.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d)));
-    if (trusted) return trusted.url;
+    // Product gate: the context/title must mention the product itself, not just the
+    // brand — otherwise a right-brand, wrong-variant photo wins on brand alone.
+    // Score each survivor by how many product-specific tokens (query minus brand)
+    // its context covers, and drop anything under half. Precision over recall: no
+    // context-confirmed match is better than a plausible-but-wrong variant.
+    const productTok = tokens(query).filter((t) => !brandTok.includes(t));
+    if (productTok.length) {
+      const scored = candidates
+        .map((c) => ({ ...c, score: productTok.filter((t) => c.context.includes(t)).length / productTok.length }))
+        .filter((c) => c.score >= 0.5)
+        .sort((a, b) => b.score - a.score);
+      if (!scored.length) return null;
+      // Among the best-matching results, still prefer a trusted marketplace listing.
+      const top = scored[0].score;
+      const best = scored.filter((c) => c.score === top);
+      const chosen = best.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))) ?? best[0];
+      return { url: chosen.url, source: "cse", confidence: round2(chosen.score) };
+    }
 
-    // 2. First clean survivor (Google image relevance for a specific product name is strong)
-    return candidates[0]?.url ?? null;
+    // Brand-only query (no product-specific tokens): fall back to trusted-first.
+    const trusted = candidates.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d)));
+    const chosen = trusted ?? candidates[0];
+    return chosen ? { url: chosen.url, source: "cse", confidence: null } : null;
   } catch {
     return null;
   }
@@ -172,11 +214,34 @@ export function imageFromMarkdown(markdown: string): string | null {
 }
 
 /* ─── Keyless product-image search (no Google CSE) ───
-   Scrapes retailer search results via the Jina reader and lifts the first
-   real product photo. Amazon.in is the primary source (its search page is
-   server-rendered enough for the /images/I/ product images to survive). */
+   Scrapes retailer search results and lifts the best-matching product photo.
+   Fetch order per source: Firecrawl (renders JS + gets past bot walls) then the
+   Jina reader as a free fallback. Nykaa is the reliable source — its search page
+   lazy-loads images that only a JS-rendering fetch (Firecrawl) exposes; Amazon.in
+   is bot-walled to both readers today, so it is a cheap best-effort first try. */
 
 const JINA = "https://r.jina.ai/";
+const FIRECRAWL = "https://api.firecrawl.dev/v1/scrape";
+
+/** JS-rendered scrape via Firecrawl. No-op (null) when FIRECRAWL_API_KEY is unset. */
+async function firecrawlMarkdown(url: string): Promise<string | null> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return null;
+  try {
+    const res = await fetch(FIRECRAWL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: false }),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const md = data?.data?.markdown;
+    return typeof md === "string" && md.length ? md : null;
+  } catch {
+    return null;
+  }
+}
 
 async function jinaText(url: string): Promise<string | null> {
   try {
@@ -207,12 +272,16 @@ export async function isLiveImage(url: string): Promise<boolean> {
   }
 }
 
-/** Build a clean search query, avoiding "Brand Brand Product" duplication. */
+/** Build a clean search query, avoiding "Brand Brand Product" duplication. The
+    product name is trimmed to its CORE (everything before the first pipe, comma
+    or paren) so a long marketing string like "…Face Wash, Salicylic & Green Tea,
+    Acne & Oil Control" doesn't starve the ≥50%-token-overlap gate in the matcher. */
 function imageQuery(brand: string, productName: string): string {
   const b = (brand || "").trim();
-  const n = (productName || "").trim();
-  if (!b) return n;
-  return n.toLowerCase().startsWith(b.toLowerCase()) ? n : `${b} ${n}`;
+  const full = (productName || "").trim();
+  const core = full.split(/[|(]/)[0].split(",")[0].trim() || full;
+  if (!b) return core;
+  return core.toLowerCase().startsWith(b.toLowerCase()) ? core : `${b} ${core}`;
 }
 
 const STOP = new Set(["the", "and", "with", "for", "of", "ml", "gm", "gr", "pack", "oz", "kind", "to"]);
@@ -220,52 +289,153 @@ function tokens(s: string): string[] {
   return (s.toLowerCase().match(/[a-z0-9]+/g) || []).filter((t) => t.length > 1 && !STOP.has(t));
 }
 
-/** From Amazon search markdown, pick the ![alt](image) whose ALT best matches
-    the query — never the first image (Amazon injects sponsored items there).
+/** Shared per-image matcher for scraped retailer search markdown. Walks every
+    ![alt](url) pair, keeps only URLs the `accept` predicate normalises (host +
+    extension gate), and scores each by how much of the query its ALT text covers.
+    Never returns the first image on a page: results pages lead with banners and
+    sponsored neighbours, so a photo only wins on real alt-text evidence.
     A wrong-brand photo (e.g. Dot & Key for a Uriage query) is worse than none,
     so the alt text MUST contain the brand before token overlap is even scored. */
-export function bestAmazonMatch(md: string, query: string, brand: string): string | null {
+function bestMarkdownMatch(
+  md: string,
+  query: string,
+  brand: string,
+  accept: (rawUrl: string) => string | null,
+): { url: string; score: number } | null {
   const qTok = tokens(query);
   if (!qTok.length) return null;
   const brandTok = tokens(brand);
   let best: { url: string; score: number } | null = null;
-  for (const m of md.matchAll(/!\[[^\]]*?:?\s*([^\]]{4,120})\]\((https:\/\/m\.media-amazon\.com\/images\/I\/[^)\s]+\.(?:jpe?g|png|webp))\)/gi)) {
-    const alt = m[1];
-    const url = amazonFullRes(m[2]);
-    if (IMAGE_URL_BLOCKLIST.test(url)) continue;
-    const aTok = new Set(tokens(alt));
+  for (const m of md.matchAll(/!\[[^\]]*?:?\s*([^\]]{4,120})\]\((https?:\/\/[^)\s]+)\)/gi)) {
+    const raw = m[2].replace(/\\\//g, "/").replace(/&amp;/g, "&");
+    const url = accept(raw);
+    if (!url || isBlockedImage(url)) continue;
+    const aTok = new Set(tokens(m[1]));
     // Brand gate: when we know the brand, at least one brand token must appear.
     if (brandTok.length && !brandTok.some((t) => aTok.has(t))) continue;
     const overlap = qTok.filter((t) => aTok.has(t)).length / qTok.length;
     if (overlap >= 0.5 && (!best || overlap > best.score)) best = { url, score: overlap };
   }
-  return best?.url ?? null;
+  return best;
 }
 
-export async function findProductImageKeyless(brand: string, productName: string): Promise<string | null> {
+const acceptAmazon = (u: string): string | null =>
+  /^https:\/\/m\.media-amazon\.com\/images\/I\/[^)\s]+\.(?:jpe?g|png|webp)/i.test(u) ? amazonFullRes(u) : null;
+
+const acceptNykaa = (u: string): string | null =>
+  /^https:\/\/[^)\s]*(?:nykaa|adn-static|images-static)[^)\s]*\.(?:jpe?g|png|webp)/i.test(u) ? u : null;
+
+/** From Amazon search markdown, pick the ![alt](image) whose ALT best matches
+    the query — never the first image (Amazon injects sponsored items there). */
+export function bestAmazonMatch(md: string, query: string, brand: string): string | null {
+  return bestMarkdownMatch(md, query, brand, acceptAmazon)?.url ?? null;
+}
+
+/** From Nykaa search markdown, pick the ![alt](image) whose ALT best matches the
+    query. Same brand + token-overlap discipline as Amazon: matching the specific
+    product beats grabbing the first CDN image the results page happens to expose. */
+export function bestNykaaMatch(md: string, query: string, brand: string): string | null {
+  return bestMarkdownMatch(md, query, brand, acceptNykaa)?.url ?? null;
+}
+
+export async function findProductImageKeyless(brand: string, productName: string): Promise<ImagePick | null> {
   const q = imageQuery(brand, productName);
   if (!q) return null;
   const enc = encodeURIComponent(q);
 
-  // 1 — Amazon.in search: match the image whose alt-title matches the product
-  //     AND carries the brand (guards against same-category, wrong-brand photos).
+  // 1 — Amazon.in search via the free Jina reader (bot-walled today, but cheap to
+  //     try in case it recovers). Match the image whose alt-title carries the brand
+  //     AND the product (guards against same-category, wrong-brand photos).
   const amazon = await jinaText(`https://www.amazon.in/s?k=${enc}`);
   if (amazon) {
-    const url = bestAmazonMatch(amazon, q, brand);
-    if (url && (await isLiveImage(url))) return url;
+    const pick = bestMarkdownMatch(amazon, q, brand, acceptAmazon);
+    if (pick && (await isLiveImage(pick.url))) return { url: pick.url, source: "amazon", confidence: round2(pick.score) };
   }
 
-  // 2 — Nykaa search (fallback; sometimes exposes CDN images). Only trust it when
-  //     the brand appears on the results page, so we don't grab a neighbour's image.
-  const nykaa = await jinaText(`https://www.nykaa.com/search/result/?q=${enc}`);
+  // 2 — Nykaa search via Firecrawl (Jina drops Nykaa's lazy-loaded images; the
+  //     JS-rendered fetch exposes the catalog CDN photos). Match the specific
+  //     product by ALT text (brand + token overlap), never the first image — the
+  //     results page leads with brand logos and sponsored neighbours.
+  const nykaa = await firecrawlMarkdown(`https://www.nykaa.com/search/result/?q=${enc}`)
+    ?? await jinaText(`https://www.nykaa.com/search/result/?q=${enc}`);
   if (nykaa) {
-    const brandTok = tokens(brand);
-    const brandPresent = !brandTok.length || brandTok.some((t) => nykaa.toLowerCase().includes(t));
-    const img = clean(imageFromMarkdown(nykaa));
-    if (brandPresent && img && /nykaa|adn-static|images-static/i.test(img) && !IMAGE_URL_BLOCKLIST.test(img) && (await isLiveImage(img))) {
-      return img;
-    }
+    const pick = bestMarkdownMatch(nykaa, q, brand, acceptNykaa);
+    if (pick && (await isLiveImage(pick.url))) return { url: pick.url, source: "nykaa", confidence: round2(pick.score) };
   }
 
+  // 3 — Web search via Firecrawl: finds the product on ANY Indian retailer
+  //     (Amazon.in, Flipkart, Meesho…) and lifts its og:image. This is the catch-all
+  //     for niche, Amazon-only brands that Nykaa doesn't carry and Amazon bot-walls.
+  const viaSearch = await findProductImageViaSearch(brand, productName);
+  if (viaSearch) return viaSearch;
+
+  return null;
+}
+
+/* Retailer domains we trust for a web-search og:image result. Kept to Indian
+   storefronts (+ common marketplaces) so a US/wrong-country listing can't win.
+   Amazon.in is deliberately EXCLUDED: it bot-walls scrapers and serves a generic
+   placeholder as og:image, so its listings never yield a real product photo. */
+const SEARCH_RETAILERS = [
+  "flipkart.com", "nykaa.com", "myntra.com", "purplle.com",
+  "meesho.com", "tirabeauty.com", "tatacliq.com", "ajio.com", "shopsy.in",
+];
+
+interface FcSearchItem {
+  url?: string;
+  title?: string;
+  metadata?: { ogImage?: string; "og:image"?: string };
+}
+
+/** Firecrawl web search; returns scraped results (with og:image metadata). No-op
+    ([]) when FIRECRAWL_API_KEY is unset. */
+async function firecrawlSearch(query: string): Promise<FcSearchItem[]> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return [];
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ query, limit: 8, scrapeOptions: { formats: ["markdown"] } }),
+      signal: AbortSignal.timeout(90000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data?.data) ? (data.data as FcSearchItem[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Resolve a product image by web-searching trusted Indian retailers and taking
+    the best-matching listing's og:image. Same brand + token discipline as the
+    markdown matchers: the listing title/URL must carry the brand and clear the
+    ≥50% product-token bar, so a same-category neighbour can't win. */
+export async function findProductImageViaSearch(brand: string, productName: string): Promise<ImagePick | null> {
+  const q = imageQuery(brand, productName);
+  if (!q) return null;
+  const items = await firecrawlSearch(`${q} buy online`);
+  if (!items.length) return null;
+
+  const brandTok = tokens(brand);
+  const prodTok = tokens(q);
+  if (!prodTok.length) return null;
+
+  let best: { url: string; score: number } | null = null;
+  for (const it of items) {
+    const url = (it.url ?? "").toLowerCase();
+    if (!SEARCH_RETAILERS.some((d) => url.includes(d))) continue; // trusted storefronts only
+    // Prefer https so the image renders on the https site; upgrade http CDNs.
+    const rawOg = it.metadata?.ogImage ?? it.metadata?.["og:image"];
+    const og = clean(rawOg)?.replace(/^http:\/\//i, "https://");
+    if (!og || isBlockedImage(og)) continue;
+    const hay = `${it.title ?? ""} ${url}`.toLowerCase();
+    if (brandTok.length && !brandTok.some((t) => hay.includes(t))) continue; // brand gate
+    const overlap = prodTok.filter((t) => hay.includes(t)).length / prodTok.length;
+    if (overlap >= 0.5 && (!best || overlap > best.score)) best = { url: og, score: overlap };
+  }
+  if (best && (await isLiveImage(best.url))) {
+    return { url: best.url, source: "search", confidence: round2(best.score) };
+  }
   return null;
 }

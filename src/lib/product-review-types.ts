@@ -171,6 +171,10 @@ export interface ProductReviewDataSource {
   userSentiment: string;
 }
 
+/** Which strategy resolved a product image, best-trust first. "manual" = an
+    admin pinned it via /admin/repository. */
+export type ProductImageSource = "inci" | "page" | "amazon" | "nykaa" | "cse" | "search" | "manual";
+
 export interface ProductReview {
   type: "product-review";
   productName: string;
@@ -210,6 +214,12 @@ export interface ProductReview {
 
   /* Added by the engine, not the LLM */
   imageUrl?: string | null;
+  /** Which resolver produced imageUrl (audit trail for wrong-image debugging). */
+  imageSource?: ProductImageSource;
+  /** Match confidence 0-1 for imageUrl, when the resolver scored it (null = trusted source). */
+  imageConfidence?: number | null;
+  /** True when an admin pinned the image: a fresh re-review must not overwrite it. */
+  imageLocked?: boolean;
   methodologyVersion?: string;
   reviewedAt?: string;
   /** Resolved INCI (ground truth used for grading), for display. */
