@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { TileChip } from "./TileChip";
-import { resolveTier, TileTierMark } from "@/components/scorecards/pillar-ui";
+import { resolveTier } from "@/components/scorecards/pillar-ui";
+import { ClaimCheckMeter } from "@/components/scorecards/ClaimCheckMeter";
 import type { ProductScorecard } from "@/data/brands/types";
 import { getTileChips } from "@/data/badges/resolver";
 import { getProductCategoryLabel } from "@/lib/product-card-helpers";
@@ -32,14 +33,12 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
-          {/* Tier mark - top right (Approved = branded seal) */}
-          <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
-            <TileTierMark tier={resolveTier(product)} />
-          </div>
+          {/* Claim check meter - bottom edge of the square */}
+          <ClaimCheckMeter score={product.score} tier={resolveTier(product)} />
 
           {/* Category pill - bottom left */}
           <div
-            className="absolute bottom-2 left-2 max-w-[calc(100%-16px)] overflow-hidden"
+            className="absolute bottom-3 left-2 max-w-[calc(100%-16px)] overflow-hidden"
             style={{
               background: "rgba(255,255,255,0.88)",
               backdropFilter: "blur(8px)",

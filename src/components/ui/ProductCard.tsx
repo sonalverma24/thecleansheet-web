@@ -1,5 +1,7 @@
 import React from 'react';
 import { Pill } from './Pill';
+import { ClaimCheckMeter } from '@/components/scorecards/ClaimCheckMeter';
+import { scoreToTier } from '@/components/scorecards/pillar-ui';
 
 interface ProductCardProps {
   brand: string;
@@ -12,24 +14,15 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ brand, name, category, score, imageUrl, pills, hasExternalLinks }: ProductCardProps) {
-  const getScoreColorClass = () => {
-    if (score >= 90) return 'bg-[var(--color-primary)] text-white';
-    if (score >= 75) return 'bg-[var(--color-lime)] text-[var(--color-charcoal)]';
-    if (score >= 60) return 'bg-[#F59E0B] text-white'; // Amber for fair
-    return 'bg-[var(--color-coral)] text-white';
-  };
-
   return (
     <div className="flex flex-col border border-[var(--color-warm-gray)] bg-white h-full">
       {/* Image Area */}
       <div className="relative aspect-square p-4 flex items-center justify-center border-b border-[var(--color-surface-subtle)]">
         <img src={imageUrl} alt={name} className="object-contain w-full h-full" />
-        
-        {/* Score Badge */}
-        <div className={`absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center font-display text-xl ${getScoreColorClass()}`}>
-          {score}
-        </div>
-        
+
+        {/* Claim check meter - bottom edge of the square */}
+        <ClaimCheckMeter score={score} tier={scoreToTier(score)} />
+
         {/* External Link Indicator */}
         {hasExternalLinks && (
           <div className="absolute top-4 left-4 bg-white/90 px-2 py-1 text-[10px] uppercase tracking-widest border border-[var(--color-warm-gray)]">

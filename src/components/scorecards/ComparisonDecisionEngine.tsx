@@ -1,5 +1,6 @@
 "use client";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
+import { ClaimCheckMeterInline } from "@/components/scorecards/ClaimCheckMeter";
 
 import { useMemo } from "react";
 import Image from "next/image";
@@ -181,8 +182,9 @@ export function ComparisonDecisionEngine({ products, onClose }: ComparisonDecisi
                     <div className="flex items-center justify-between pt-1">
                       <div>
                         <p className="text-[10px] text-ink-400 uppercase tracking-wide">Clean Sheet Standing</p>
-                        <div className="mt-1">
+                        <div className="mt-1 flex flex-col items-start gap-1.5">
                           <TierBadge tier={resolveTier(p)} size="sm" />
+                          <ClaimCheckMeterInline score={p.score} />
                         </div>
                       </div>
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${concernStyle.bg} ${concernStyle.text} ${concernStyle.border}`}>
@@ -283,7 +285,10 @@ export function ComparisonDecisionEngine({ products, onClose }: ComparisonDecisi
                     products={products}
                     bestId={bestId}
                     render={(p) => (
-                      <TierBadge tier={resolveTier(p)} size="sm" />
+                      <div className="flex flex-col items-center gap-1.5">
+                        <TierBadge tier={resolveTier(p)} size="sm" />
+                        <ClaimCheckMeterInline score={p.score} />
+                      </div>
                     )}
                   />
                 </tbody>
@@ -298,7 +303,12 @@ export function ComparisonDecisionEngine({ products, onClose }: ComparisonDecisi
                   { label: "Price per ml",             render: (p: ProductScorecard) => <span className="text-xs text-ink-700">{getPricePerMlDisplay(p)}</span> },
                   { label: "Formulation quality",      render: (p: ProductScorecard) => { const q = getFormulationQuality(p); return <span className={`text-xs ${QUALITY_STYLE[q]}`}>{q}</span>; } },
                   { label: "Ingredients of concern",   render: (p: ProductScorecard) => { const v = getIngredientsOfConcern(p); return <span className={`text-xs ${v === "None major" ? "text-teal-600" : "text-coral-600"}`}>{v}</span>; } },
-                  { label: "Clean Sheet standing",        render: (p: ProductScorecard) => <TierBadge tier={resolveTier(p)} size="sm" /> },
+                  { label: "Clean Sheet standing",        render: (p: ProductScorecard) => (
+                    <div className="flex flex-col items-start gap-1.5">
+                      <TierBadge tier={resolveTier(p)} size="sm" />
+                      <ClaimCheckMeterInline score={p.score} />
+                    </div>
+                  ) },
                 ] as { label: string; render: (p: ProductScorecard) => React.ReactNode }[]
               ).map(({ label, render }) => (
                 <div key={label} className="px-4 py-3">

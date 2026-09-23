@@ -12,8 +12,8 @@ import Link from "next/link";
 import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
-import { resolveTier, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
-import type { ReviewTier } from "@/lib/product-review-types";
+import { resolveTier } from "@/components/scorecards/pillar-ui";
+import { ClaimCheckMeter } from "@/components/scorecards/ClaimCheckMeter";
 import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
 import { HeroActions } from "./HeroActions";
 
@@ -736,28 +736,6 @@ function formatAnalysedDate(isoDate: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sub-component: Circular Score Badge
-// ─────────────────────────────────────────────────────────────────────────────
-
-function ScoreBadge({ tier, size = 116, animate = true }: { tier: ReviewTier; size?: number; animate?: boolean }) {
-  // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
-  if (tier === "approved") {
-    return (
-      <div className="flex-shrink-0">
-        <ApprovedStamp size={size} animate={animate} />
-      </div>
-    );
-  }
-
-  // Other tiers: the rubber-stamp band (same ink-stamp language, no logo disc).
-  return (
-    <div className="flex-shrink-0">
-      <TierStamp tier={tier} size={size} animate={animate} />
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Sub-component: Pillar dots row
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -845,6 +823,7 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
                       className="object-contain p-2"
                     />
                   )}
+                  <ClaimCheckMeter score={product.score} tier={resolveTier(product)} height={5} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <span className="block text-[10px] font-medium text-[#248179] uppercase tracking-widest truncate">
@@ -857,9 +836,6 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
                     {product.productName}
                   </h1>
                   <span className="mt-1 inline-block text-[11px] text-[#b0a8a4]">{categoryLabel}</span>
-                </div>
-                <div className="flex-shrink-0 -mt-1">
-                  <ScoreBadge tier={resolveTier(product)} size={62} animate={false} />
                 </div>
               </div>
             </div>
@@ -999,8 +975,8 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
               <ellipse cx="90" cy="30" rx="70" ry="60" fill="#d6ff3e" opacity="0.55" transform="rotate(-20 90 30)" />
             </svg>
 
-            {/* Product image + score badge */}
-            <div className="relative rounded-2xl bg-white border border-[#efe9e0] flex items-center justify-center overflow-visible" style={{ minHeight: 200 }}>
+            {/* Product image + claim check meter */}
+            <div className="relative rounded-2xl bg-white border border-[#efe9e0] flex items-center justify-center overflow-hidden" style={{ minHeight: 200 }}>
               {product.image ? (
                 <Image
                   src={product.image}
@@ -1016,14 +992,9 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
                   <span className="text-[10px]">Image pending</span>
                 </div>
               )}
-              {/* Score badge - overlapping bottom-right */}
-              <div className="absolute -bottom-8 -right-6 z-10">
-                <ScoreBadge tier={resolveTier(product)} />
-              </div>
+              {/* Claim check meter - bottom edge of the image */}
+              <ClaimCheckMeter score={product.score} tier={resolveTier(product)} height={8} />
             </div>
-
-            {/* Spacer for badge overlap */}
-            <div className="h-8" />
 
             {/* Live review actions (Add Review button + rating display) */}
             <HeroActions productId={`${brandSlug}/${product.slug}`} />

@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { mockProducts, Product } from '@/data/mockProducts';
+import { ClaimCheckMeter } from '@/components/scorecards/ClaimCheckMeter';
+import { scoreToTier } from '@/components/scorecards/pillar-ui';
 
 interface MobileShopProps {
   onNavigate: (screen: any, productId?: string) => void;
@@ -129,10 +131,6 @@ export function MobileShop({
           <div className="grid grid-cols-2 gap-3.5">
             {filtered.map((product) => {
               const score = product.scores.total;
-              let scoreColor = "bg-[#248179]"; // 90+
-              if (score < 90 && score >= 75) scoreColor = "bg-[#248179]/85";
-              if (score < 75 && score >= 60) scoreColor = "bg-[#d2ff34] text-[#282828]";
-              if (score < 60) scoreColor = "bg-[#fd6158]";
 
               return (
                 <div 
@@ -147,11 +145,9 @@ export function MobileShop({
                       className="w-full aspect-square bg-[#f9f8f7] border border-[#b0a8a4]/15 rounded overflow-hidden relative cursor-pointer"
                     >
                       <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                      
-                      {/* Score Badge */}
-                      <span className={`absolute top-2 left-2 text-[10px] w-6 h-6 rounded-full flex items-center justify-center font-sans text-white z-10 ${scoreColor}`}>
-                        {score}
-                      </span>
+
+                      {/* Claim check meter - bottom edge of the square */}
+                      <ClaimCheckMeter score={score} tier={scoreToTier(score)} />
                     </div>
 
                     {/* Meta */}
