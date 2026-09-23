@@ -77,12 +77,21 @@ export function parseMaxPct(s?: string): number | null {
 }
 
 /* Prohibition detection: EU Annex II (prohibited list) or an explicit
-   prohibited status. Deliberately conservative and negation-aware. */
+   prohibited status. Deliberately conservative and negation-aware: a status
+   clause like "not restricted or prohibited" must NOT trigger a hit just
+   because the word "prohibited" appears in it, so each match is checked for
+   a negation cue earlier in its own clause (split on ; , .) before counting. */
 function statusProhibited(s?: string): boolean {
   const t = (s || "").toLowerCase();
   if (!t) return false;
-  if (/permitted|not specifically|not listed|no specific|no restriction|standard/.test(t) && !/\bprohibited\b|\bbanned\b/.test(t)) return false;
-  return /\bprohibited\b|\bbanned\b/.test(t);
+  const re = /\b(prohibited|banned)\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(t))) {
+    const clauseStart = Math.max(t.lastIndexOf(";", m.index), t.lastIndexOf(",", m.index), t.lastIndexOf(".", m.index)) + 1;
+    const clause = t.slice(clauseStart, m.index);
+    if (!/\b(not|non|no|nor|never|isn't|aren't|wasn't|weren't)\b/.test(clause)) return true;
+  }
+  return false;
 }
 export function isProhibited(r: Ingredient): boolean {
   if (!rowLooksValid(r)) return false;
