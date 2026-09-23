@@ -7,6 +7,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { ALL_INGREDIENTS } from "@/lib/ingredient-utils";
+import { hasUnnegatedMatch } from "@/lib/text-negation";
 import type { IngredientEntry, KeyActive, GlobalScreen } from "@/data/brands/types";
 
 type DBRow = (typeof ALL_INGREDIENTS)[number] & Record<string, string>;
@@ -111,15 +112,16 @@ function authorityLine(inci: string[], test: (r: DBRow) => string | null, cleanM
   return hits.length ? hits.slice(0, 4).join("; ") + (hits.length > 4 ? `; +${hits.length - 4} more` : "") : cleanMsg;
 }
 
-/* Conservative: only a clear prohibition counts, never a negated phrase
-   like "not specifically restricted" or "standard framework applies". */
-function restricted(s?: string): boolean {
-  const t = (s || "").toLowerCase();
-  if (!t || /permitted|standard|not specifically|not listed|no specific|not identified|not classified|no restriction|no therapeutic/.test(t)) {
-    // still allow an explicit prohibition to override the soft language
-    return /\bprohibited\b|\bbanned\b|annex\s*ii\b/.test(t);
-  }
-  return /\bprohibited\b|\brestricted\b|\bbanned\b|annex\s*ii\b|not permitted for/.test(t);
+/* Conservative: only a clear, unnegated prohibition/restriction counts.
+   Previously this pre-filtered on soft language ("permitted", "not
+   specifically", ...) and only re-armed on prohibited/banned/annex ii,
+   which meant "restricted" was never checked at all in the common case
+   (most DB rows start with "Permitted..."), and the pre-filter itself was
+   fooled by phrasing like "not restricted or prohibited" - see
+   hasUnnegatedMatch for why. Delegates to the same clause-level negation
+   check used by the ingredient database's own prohibition screen. */
+export function restricted(s?: string): boolean {
+  return hasUnnegatedMatch(s, /\b(prohibited|banned|restricted)\b|annex\s*ii\b|not permitted for/);
 }
 
 export function buildGlobalScreen(inci: string[]): GlobalScreen {

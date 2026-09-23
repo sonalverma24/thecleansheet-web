@@ -13,6 +13,8 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { ALL_INGREDIENTS, type Ingredient } from "@/lib/ingredient-utils";
+import { hasUnnegatedMatch } from "@/lib/text-negation";
+export { hasUnnegatedMatch };
 
 /* Case/format-insensitive key. Handles "Aqua/Water", "Aqua (Water)",
    zero-width chars, punctuation. */
@@ -77,21 +79,10 @@ export function parseMaxPct(s?: string): number | null {
 }
 
 /* Prohibition detection: EU Annex II (prohibited list) or an explicit
-   prohibited status. Deliberately conservative and negation-aware: a status
-   clause like "not restricted or prohibited" must NOT trigger a hit just
-   because the word "prohibited" appears in it, so each match is checked for
-   a negation cue earlier in its own clause (split on ; , .) before counting. */
+   prohibited status, via the shared negation-aware scan (see
+   text-negation.ts for why a naive keyword search is wrong here). */
 function statusProhibited(s?: string): boolean {
-  const t = (s || "").toLowerCase();
-  if (!t) return false;
-  const re = /\b(prohibited|banned)\b/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(t))) {
-    const clauseStart = Math.max(t.lastIndexOf(";", m.index), t.lastIndexOf(",", m.index), t.lastIndexOf(".", m.index)) + 1;
-    const clause = t.slice(clauseStart, m.index);
-    if (!/\b(not|non|no|nor|never|isn't|aren't|wasn't|weren't)\b/.test(clause)) return true;
-  }
-  return false;
+  return hasUnnegatedMatch(s, /\b(prohibited|banned)\b/);
 }
 export function isProhibited(r: Ingredient): boolean {
   if (!rowLooksValid(r)) return false;

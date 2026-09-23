@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search, X, ChevronDown, ChevronUp, ExternalLink, Filter } from "lucide-react";
+import { hasUnnegatedMatch } from "@/lib/text-negation";
 
 function toSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
@@ -85,11 +86,13 @@ function FlagBadge({ label, active }: { label: string; active: boolean }) {
   );
 }
 
+/* Negation-aware: a status like "not restricted or prohibited" must read as
+   Permitted, not Banned, just because the word "prohibited" appears in it. */
 function StatusCell({ status }: { status: string }) {
   if (!status || status === "Not evaluated") return <span className="text-slate-300 text-xs">-</span>;
-  if (status.toLowerCase().includes("banned") || status.toLowerCase().includes("prohibited"))
+  if (hasUnnegatedMatch(status, /\b(banned|prohibited)\b/))
     return <span className="text-red-600 text-xs font-medium">Banned</span>;
-  if (status.toLowerCase().includes("restricted"))
+  if (hasUnnegatedMatch(status, /\brestricted\b/))
     return <span className="text-amber-600 text-xs font-normal">Restricted</span>;
   if (status.toLowerCase().includes("permitted"))
     return <span className="text-green-700 text-xs">Permitted</span>;
