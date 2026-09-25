@@ -17,7 +17,7 @@ import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
-import { bannedIngredientsInInci } from "@/lib/ingredient-db";
+import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
 import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource } from "@/lib/product-review-types";
 
@@ -446,6 +446,16 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const banned = bannedIngredientsInInci(inci);
   const hasBannedIngredient = banned.length > 0;
 
+  // Endocrine-activity flag: legal-but-flagged (e.g. certain chemical UV
+  // filters, longer-chain parabens), not a prohibition. It must not silently
+  // disappear the way it previously did - so it cannot reach the top
+  // "Clean Sheet Recommended" stamp (below), but it also does not hard-fail
+  // the safety gate or drag a product down to "Not Recommended", consistent
+  // with how the rest of the site treats a legal-but-flagged concern as
+  // context rather than a condemnation.
+  const endocrineFlagged = endocrineFlaggedInInci(inci);
+  const hasEndocrineFlag = endocrineFlagged.length > 0;
+
   // The banned-ingredient screen can only clear a product it can actually read.
   // With NO retrieved INCI (common for Indian / newly-launched brands not on
   // INCIDecoder and without a scrapable PDP list), bannedIngredientsInInci([])
@@ -473,7 +483,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
         ? `Contains an ingredient prohibited in cosmetics: ${banned.map((b) => b.name).join(", ")}`
         : !safetyVerifiable
           ? "No ingredient list could be retrieved, so the safety screen could not run - approval is withheld until an INCI is available"
-          : "No ingredient prohibited in cosmetics found in the retrieved list",
+          : hasEndocrineFlag
+            ? `No ingredient prohibited in cosmetics found, but contains an ingredient flagged for endocrine activity (legal at its permitted concentration): ${endocrineFlagged.map((e) => e.name).join(", ")}`
+            : "No ingredient prohibited in cosmetics found in the retrieved list",
     },
     {
       id: "claims",
@@ -527,7 +539,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       ? "not-recommended"
       : boundaryFlags > 0
         ? "can-do-better"
-        : total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable
+        : total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable && !hasEndocrineFlag
           ? "approved"
           : total >= 65
             ? "mostly-clean"
@@ -549,7 +561,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
       : tier === "not-recommended" && fairnessFlags > 0 && contradictionFlags === 0
         ? "Makes a skin-whitening or fairness claim, a category India (ASCI) treats as misleading and harmful."
-        : TIER_META[tier].headline;
+        : tier === "mostly-clean" && hasEndocrineFlag && total >= APPROVAL_BAR
+          ? `A well-made, transparent product that would otherwise earn Clean Sheet Recommended, but it contains an ingredient flagged for endocrine activity${endocrineFlagged[0] ? ` (${endocrineFlagged[0].name})` : ""} - legal at its permitted concentration, so this caps it at Good Standing rather than the top stamp.`
+          : TIER_META[tier].headline;
 
   return {
     status: tier === "approved" ? "approved" : "not_approved",

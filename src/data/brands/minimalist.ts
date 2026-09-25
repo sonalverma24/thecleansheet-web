@@ -763,15 +763,16 @@ pass_badges: ["INCI Verified", "Fragrance-Free", "Broad-Spectrum SPF 50", "PA+++
     priceRange: "₹332-₹349",
     productType: "leave-on",
     concern: "Hydration, barrier repair, post-treatment recovery",
-    summary: "A barrier-repair moisturiser with Panthenol (Vitamin B5) at a brand-confirmed 10% concentration, one of the highest Panthenol concentrations found in any OTC cosmetic. Panthenol appears at INCI position 3, confirming the high concentration claim. Cyclopentasiloxane (a volatile cyclic silicone) is at position 2, the second major component, creating a distinctive silicone-dominant vehicle. The Aquaxyl complex (Xylitylglucoside + Anhydroxylitol + Xylitol, positions 12-14) is a Seppic-patented prebiotic moisture complex. A mineral antioxidant trio (Copper Gluconate, Zinc Gluconate, Magnesium Aspartate) at positions 10, 16, 15 provides free-radical scavenging support. The BASF-sourced D-Panthenol USP is disclosed by the brand, a supply chain transparency note.",
-    score: 90,
-    scoreLabel: "Excellent",
+    summary: "A barrier-repair moisturiser with Panthenol (Vitamin B5) at a brand-confirmed 10% concentration, one of the highest Panthenol concentrations found in any OTC cosmetic. Panthenol appears at INCI position 3, confirming the high concentration claim. Cyclopentasiloxane (a volatile cyclic silicone flagged for endocrine activity in the ingredient database) is at position 2, the second major component, creating a distinctive silicone-dominant vehicle - legal in leave-on cosmetics, but a functional-concentration presence that keeps this out of the top tier. The Aquaxyl complex (Xylitylglucoside + Anhydroxylitol + Xylitol, positions 12-14) is a Seppic-patented prebiotic moisture complex. A mineral antioxidant trio (Copper Gluconate, Zinc Gluconate, Magnesium Aspartate) at positions 10, 16, 15 provides free-radical scavenging support. The BASF-sourced D-Panthenol USP is disclosed by the brand, a supply chain transparency note.",
+    score: 82,
+    scoreLabel: "Good",
+    reviewTier: "mostly-clean",
     image: "https://beminimalist.co/cdn/shop/products/B5Moisturizer1200-2-min.png",
     pillars: [
       {
         name: "Safety & Toxicity",
-        score: 47, max: 50,
-        note: "No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no acids, no retinoids. Panthenol at 10% is one of the most well-tolerated cosmetic ingredients available - sensitisation risk is near zero at any concentration. The second major ingredient in this formula is Cyclopentasiloxane (D5), a volatile cyclic silicone. The EU has restricted D5 below 0.1% in wash-off products due to its persistence in aquatic environments, but the equivalent restriction for leave-on products is not yet in force. Human health risk at cosmetic concentrations is considered low by regulators. Copper Gluconate, present later in the list as a trace antioxidant, is well within safe cosmetic concentrations. PEG/PPG-18/18 Dimethicone is a silicone-based emulsifier present as a single compound.",
+        score: 39, max: 50,
+        note: "No synthetic fragrance, no parabens, no SLES, no formaldehyde releasers, no acids, no retinoids. Panthenol at 10% is one of the most well-tolerated cosmetic ingredients available - sensitisation risk is near zero at any concentration. However, the second major ingredient in this formula (INCI position 2, ahead of the 10% Panthenol) is Cyclopentasiloxane (D5), a volatile cyclic silicone flagged for endocrine activity in the ingredient database, with a precautionary note against high-frequency leave-on use during pregnancy. It is legal in leave-on cosmetics at any concentration in both the EU and India - the EU's 0.1% cap applies only to wash-off products - but its functional-concentration presence here (not a trace amount) keeps this pillar below top marks. Human health risk at typical cosmetic exposure is considered low by regulators, but not zero. Copper Gluconate, present later in the list as a trace antioxidant, is well within safe cosmetic concentrations. PEG/PPG-18/18 Dimethicone is a silicone-based emulsifier present as a single compound.",
       },
       {
         name: "Formulation Quality",
@@ -798,7 +799,7 @@ pass_badges: ["INCI Verified", "Fragrance-Free", "Broad-Spectrum SPF 50", "PA+++
     ],
     ingredients: [
       { name: "Water/Aqua",                   note: "Solvent base",                                                                                                              flag: "ok"   },
-      { name: "Cyclopentasiloxane",            note: "Volatile cyclic silicone (D5), position 2 (dominant secondary ingredient); EU restricts in wash-off; leave-on restriction not yet in force; persistent aquatic pollutant", flag: "warn" },
+      { name: "Cyclopentasiloxane",            note: "Volatile cyclic silicone (D5), position 2 (dominant secondary ingredient); flagged for endocrine activity in the ingredient database (caution advised during pregnancy); EU restricts in wash-off, leave-on restriction not yet in force; also a persistent aquatic pollutant", flag: "warn" },
       { name: "Panthenol",                     note: "Brand-confirmed 10% D-Panthenol USP (BASF Germany), barrier repair, wound healing, moisture retention",                  flag: "ok"   },
       { name: "PEG/PPG-18/18 Dimethicone",    note: "Silicone emulsifier, provides smooth application; leave-on use is globally permitted; single PEG-silicone compound in this formula",                                    flag: "info" },
       { name: "Glycerin",                      note: "Humectant, moisture retention",                                                                                           flag: "ok"   },
@@ -820,7 +821,7 @@ pass_badges: ["INCI Verified", "Fragrance-Free", "Broad-Spectrum SPF 50", "PA+++
       { name: "Carbomer",                      note: "Polymer gelling agent, low concern at neutralised cosmetic use",                                                          flag: "ok"   },
       { name: "Ethylhexylglycerin",            note: "Preservative booster, low concern",                                                                                       flag: "ok"   },
     ],
-        cleanSheetNote: "Provitamin B5 (Panthenol) at 10% is genuinely high for a moisturiser - most products use 1-5%. It is one of the best-tolerated barrier-repair and wound-healing ingredients in skincare, suitable post-procedure and for compromised or reactive skin. Fragrance-free, acid-free, alcohol-free - a safe choice when the skin barrier is already stressed. Works well under SPF and as a base for actives.",
+        cleanSheetNote: "Provitamin B5 (Panthenol) at 10% is genuinely high for a moisturiser - most products use 1-5%. It is one of the best-tolerated barrier-repair and wound-healing ingredients in skincare, suitable post-procedure and for compromised or reactive skin. Fragrance-free, acid-free, alcohol-free - a safe choice when the skin barrier is already stressed. Works well under SPF and as a base for actives. Its second-largest ingredient, Cyclopentasiloxane (D5), is flagged for endocrine activity in our ingredient database - legal in leave-on products, but present here in functional concentration (INCI position 2), not trace amounts. That keeps this product at Good Standing rather than Clean Sheet Recommended; those avoiding D5 specifically (e.g. during pregnancy) should choose a different barrier-repair moisturiser.",
     claimsCheck: [
       { claim: "Vitamin B5 10% (Panthenol, D-Panthenol USP grade from BASF Germany)", evidenceStatus: "Evidence visible", decision: "Publicly supported", note: "The brand confirms 10% concentration and explicitly names the supplier (BASF Germany, D-Panthenol USP). Panthenol appears at INCI position 3, consistent with this high concentration." },
       { claim: "Barrier repair and wound healing", evidenceStatus: "Evidence visible", decision: "Publicly supported", note: "Panthenol at 10% is well above the typical cosmetic use range (1-5%); clinical literature supports panthenol for wound healing, barrier restoration, and moisture retention at these concentrations." },
@@ -829,7 +830,7 @@ pass_badges: ["INCI Verified", "Fragrance-Free", "Broad-Spectrum SPF 50", "PA+++
       { claim: "Suitable for sensitive and post-treatment skin", evidenceStatus: "Evidence visible", decision: "Publicly supported", note: "The formula has no irritating actives, no fragrance, and no acids. Panthenol's near-zero sensitisation risk makes this appropriate for compromised barrier states." },
     ],
 pass_badges: ["INCI Verified", "Fragrance-Free", "Paraben-Free", "Acid-Free", "Sensitive Skin Friendly", "Dry / Normal Skin", "Post-Treatment Recovery"],
-    warn_badges: ["High Silicone Load (D5 Dominant Vehicle)", "Environmental Concern: Cyclopentasiloxane"],
+    warn_badges: ["High Silicone Load (D5 Dominant Vehicle)", "Endocrine-Flagged: Cyclopentasiloxane (D5)", "Environmental Concern: Cyclopentasiloxane"],
     info_badges: ["Contains Silicones", "Aquaxyl Prebiotic Complex"],
     indiaContext: "Vitamin B5 at 10% is particularly valuable in Indian conditions for post-sun repair, post-acid-exfoliant recovery, and barrier support after prolonged air-conditioning exposure (a common Indian urban lifestyle factor that strips skin moisture). The silicone vehicle creates a protective film that works well in air-conditioned environments. In very humid climates, the silicone base may feel heavier, adjust usage quantity accordingly.",
     analyzedAt: "2026-05-20",

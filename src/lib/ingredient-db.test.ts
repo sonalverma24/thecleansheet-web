@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasUnnegatedMatch, isProhibited, lookupIngredient } from "@/lib/ingredient-db";
+import { endocrineFlaggedInInci, hasUnnegatedMatch, isProhibited, lookupIngredient } from "@/lib/ingredient-db";
 import type { Ingredient } from "@/lib/ingredient-utils";
 
 describe("hasUnnegatedMatch - shared negation-aware trigger scan", () => {
@@ -131,5 +131,21 @@ describe("isProhibited - real database regression cases", () => {
     const r = lookupIngredient("Polyacrylamide");
     expect(r).toBeDefined();
     expect(isProhibited(r!)).toBe(false);
+  });
+});
+
+describe("endocrineFlaggedInInci - the Minimalist Vitamin B5 regression", () => {
+  it("flags Cyclopentasiloxane (D5), a permitted-but-endocrine-flagged silicone", () => {
+    const hits = endocrineFlaggedInInci(["Water", "Cyclopentasiloxane", "Panthenol"]);
+    expect(hits.map((h) => h.name)).toContain("Cyclopentasiloxane");
+  });
+
+  it("returns nothing for an INCI list with no endocrine-flagged ingredient", () => {
+    expect(endocrineFlaggedInInci(["Water", "Glycerin", "Panthenol"])).toEqual([]);
+  });
+
+  it("does not double-report the same ingredient twice", () => {
+    const hits = endocrineFlaggedInInci(["Cyclopentasiloxane", "Water", "Cyclopentasiloxane"]);
+    expect(hits.length).toBe(1);
   });
 });
