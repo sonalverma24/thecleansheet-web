@@ -762,7 +762,7 @@ The Canadian regulatory requirement (SOR/2024-63, effective 12 April 2026) is se
 | Moisturising / hydrating | Level B |
 | Anti-ageing / anti-wrinkle / firming | Level A or B with validated method |
 | Brightening / pigmentation / even skin tone | Level A or Level B (spectrophotometric) |
-| Sunscreen SPF [value] | In vitro SPF test per ISO 24444; UVA per ISO 24443 |
+| Sunscreen SPF [value] | In vivo SPF test per ISO 24444; UVA per ISO 24443 (in vitro) or ISO 24442 (in vivo) |
 | Oil control / pore minimising | Level B (sebumeter or equivalent) |
 | "Clinically tested" | Level A (clinical trial); if Level B, state method used |
 | "Dermatologically tested" | Level B; panel includes minimum 3 dermatologists |
@@ -794,7 +794,7 @@ The Canadian regulatory requirement (SOR/2024-63, effective 12 April 2026) is se
 
 ## Article 28: Category-Specific Claim Standards
 
-**28.1 Sunscreens:** SPF claims shall be substantiated by in vitro SPF testing per ISO 24444 and UVA testing per ISO 24443 or equivalent. "Broad-spectrum" claims require UVA/UVB ratio demonstrating adequate UVA protection. Water-resistance claims require ISO 16474 testing.
+**28.1 Sunscreens:** SPF claims shall be substantiated by in vivo SPF testing per ISO 24444 and UVA testing per ISO 24443 (in vitro) or ISO 24442 (in vivo), or equivalent. "Broad-spectrum" claims require UVA/UVB ratio demonstrating adequate UVA protection. Water-resistance claims require testing per ISO 16217 (water immersion procedure) with the percentage of water resistance determined per ISO 18861.
 
 **28.2 "Clean beauty":** Any product certified under this Standard may use the TCS certification mark in connection with claims of "clean" formulation, subject to the TCS Brand Licence Agreement. Without TCS certification, the term "clean" in a beauty context is not regulated under this Standard; however, it is subject to ASCI Code requirements in India.
 
@@ -828,7 +828,7 @@ The Canadian regulatory requirement (SOR/2024-63, effective 12 April 2026) is se
 
 | Product category | Additional required tests |
 |---|---|
-| Sunscreen / SPF products | In vitro SPF per ISO 24444; UVA per ISO 24443; water resistance per ISO 16474 if claim made; photostability assessment |
+| Sunscreen / SPF products | In vivo SPF per ISO 24444; UVA per ISO 24443 (in vitro) or ISO 24442 (in vivo); water resistance per ISO 16217 and ISO 18861 if claim made; photostability assessment |
 | Eye area products (mascara, kajal, eye shadow, eye cream) | Ocular irritation assessment per OECD TG 492 (EpiOcular) or equivalent in vitro method |
 | Lip products | Oral safety assessment for ingestion scenario; heavy metals at threshold given frequent ingestion risk |
 | Baby products (0–36 months) | Extended microbial testing; acute dermal irritation assessment; MoS ≥ 1,000 documented; no formaldehyde releasers; no confirmed fragrance allergens in leave-on |
@@ -922,8 +922,8 @@ Brands placing oxidative hair colour products on the market shall ensure that th
 | Laboratory | Location | Capability | Notes |
 |---|---|---|---|
 | DSM Firmenich | Basel, Switzerland (samples shipped) | In vivo SPF (ISO 24444); UVA-PF (ISO 24442/24443); photostability; critical wavelength | Leading global SPF testing service |
-| Eurofins India | Bengaluru | In vitro SPF (ISO 24443) | In vitro only; for formulation development and supporting data |
-| Intertek India | Mumbai | In vitro SPF (ISO 24443) | In vitro only |
+| Eurofins India | Bengaluru | In vitro UVA-PF (ISO 24443) | In vitro only; for formulation development and supporting data |
+| Intertek India | Mumbai | In vitro UVA-PF (ISO 24443) | In vitro only |
 
 **Clinical and dermatological testing (India):**
 
@@ -1012,7 +1012,7 @@ Brands placing oxidative hair colour products on the market shall ensure that th
 | ISO 22716:2007 | Good Manufacturing Practice |
 | SCCS Notes of Guidance (SCCS/1647/22) | Safety assessment methodology |
 | ISO 11930:2019 | Preservative efficacy testing |
-| ISO 24444, 24443, 16474 | Sun protection testing |
+| ISO 24444, 24443, 24442, 16217, 18861 | Sun protection testing |
 | OECD Test Guidelines (relevant TGs) | Ingredient safety testing methods |
 | ASCI (Advertising Standards Council of India) Code | Claims and advertising — India |
 | COSMOS Standard (v3.0) | Natural and organic cosmetics claims |
@@ -1550,7 +1550,7 @@ The TCS Permitted Preservatives List is based on EU Cosmetics Regulation Annex V
 | Microbial quality | ISO 21149; ISO 22717; ISO 21150; ISO 22718 | All products |
 | pH | ISO 4316 | All products |
 | Packaging compatibility | Supplier migration data or simulated use | All products |
-| SPF in vitro | ISO 24444 | Sunscreens only |
+| SPF in vivo | ISO 24444 | Sunscreens only |
 | UVA protection | ISO 24443 | Sunscreens only |
 | Ocular irritation | OECD TG 492 (EpiOcular) or equivalent in vitro | Eye area products |
 | SPF photostability | COLIPA/CTFA photostability method | Sunscreens only |

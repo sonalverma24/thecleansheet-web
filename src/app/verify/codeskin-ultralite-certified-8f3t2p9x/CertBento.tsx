@@ -133,7 +133,7 @@ export default function CertBento() {
               Independent lab test. The product delivers more protection than labelled.
             </p>
             <DetailPanel open={!!open.spf} light>
-              <Row label="Test method"        value="ISO 24444 in-vitro"               light />
+              <Row label="Test method"        value="ISO 24444 in vivo"                light />
               <Row label="Sample selection"   value="Randomised, no brand involvement"  light />
               <Row label="Label claim"        value="SPF 50+"                           light />
               <Row label="Tested result"      value="SPF 59.92"                         light />
