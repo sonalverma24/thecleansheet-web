@@ -8,6 +8,14 @@ import {
 import { Reveal, TitleReveal, HeroReveal } from "@/components/motion/Motion";
 import OpenFormButton from "@/components/OpenFormButton";
 import { ApprovedStamp } from "@/components/scorecards/pillar-ui";
+import { getSiteStats, fmt, type SiteStats } from "@/lib/site-stats";
+
+// Home quotes live product / brand / ingredient counts; refresh them every 5 minutes.
+export const revalidate = 300;
+
+export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in" },
+};
 
 /* ─────────────────────────────────────────────
    HERO
@@ -244,7 +252,7 @@ function TheProblem() {
    VISUAL PROOF, 3 image cards
 ───────────────────────────────────────────── */
 /* ── Card graphic 1: Ingredient database ── */
-function GraphicDatabase() {
+function GraphicDatabase({ ingredientCount }: { ingredientCount: number }) {
   const pills = [
     { label: "Parabens", color: "#ef4444" }, { label: "Retinol", color: "#10b981" },
     { label: "Niacinamide", color: "#10b981" }, { label: "DMDM Hydantoin", color: "#ef4444" },
@@ -265,8 +273,8 @@ function GraphicDatabase() {
       ))}
       {/* Central counter */}
       <div className="relative z-10 text-center mb-3">
-        <div className="text-5xl font-semibold text-white tracking-tight leading-none">25k<span className="text-teal-400">+</span></div>
-        <div className="text-teal-300/70 text-[10px] font-normal uppercase tracking-[0.2em] mt-1">Ingredients scored</div>
+        <div className="text-5xl font-semibold text-white tracking-tight leading-none">{fmt(ingredientCount)}</div>
+        <div className="text-teal-300/70 text-[10px] font-normal uppercase tracking-[0.2em] mt-1">Ingredients in the directory</div>
       </div>
       {/* Pill cloud */}
       <div className="relative z-10 flex flex-wrap justify-center gap-1.5 max-w-[280px]">
@@ -389,12 +397,12 @@ function GraphicCertification() {
   );
 }
 
-function VisualProof() {
+function VisualProof({ ingredientCount }: { ingredientCount: number }) {
   const cards = [
     {
-      graphic: <GraphicDatabase />,
-      heading: "25,000+ ingredients. Read, not marketed.",
-      body: "We pull the product's real INCI and read it against 25,000+ ingredients cross-referenced to EU, India, US & Korea, so 'fragrance-free' and 'contains actives' claims are checked against fact.",
+      graphic: <GraphicDatabase ingredientCount={ingredientCount} />,
+      heading: `${fmt(ingredientCount)} ingredients. Read, not marketed.`,
+      body: `We pull the product's real INCI and read it against our directory of ${fmt(ingredientCount)} ingredients, with EU, India, US & Korea status where it is listed, so 'fragrance-free' and 'contains actives' claims are checked against fact.`,
     },
     {
       graphic: <GraphicNaturalSynthetic />,
@@ -815,14 +823,14 @@ function HowItWorks() {
 /* ─────────────────────────────────────────────
    FAQ SECTION, SEO / featured snippets
 ───────────────────────────────────────────── */
-const HOME_FAQS = [
+const buildHomeFaqs = (stats: SiteStats) => [
   {
     q: "How do I check if a beauty product is safe in India?",
     a: "The easiest way is The Clean Sheet's free Product Review tool. Paste a product name or URL and it finds every marketing claim, grades each against real evidence and the actual ingredient list, checks India's advertising and drug-boundary rules, and gives you one clear Clean Sheet standing.",
   },
   {
     q: "What is The Clean Sheet?",
-    a: "The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide an AI-powered Product Review tool that checks marketing claims against evidence, a reviewed product registry, a database of 25,000+ cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.",
+    a: `The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide an AI-powered Product Review tool that checks marketing claims against evidence, a reviewed product registry (${fmt(stats.products)} products from ${fmt(stats.brands)} brands so far), a directory of ${fmt(stats.ingredients)} cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.`,
   },
   {
     q: "Is The Clean Sheet's ingredient analysis free?",
@@ -846,7 +854,7 @@ const HOME_FAQS = [
   },
 ];
 
-function HomeFAQ() {
+function HomeFAQ({ faqs }: { faqs: { q: string; a: string }[] }) {
   return (
     <section className="py-12 sm:py-16 bg-teal-50/40 border-t border-teal-100">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -855,7 +863,7 @@ function HomeFAQ() {
           Everything you wanted to know about clean beauty in India
         </h2>
         <div className="space-y-0 divide-y divide-teal-100 border border-teal-100 rounded-2xl overflow-hidden bg-white">
-          {HOME_FAQS.map(({ q, a }) => (
+          {faqs.map(({ q, a }) => (
             <details key={q} className="group">
               <summary className="flex items-center justify-between gap-4 px-6 py-5 cursor-pointer list-none hover:bg-teal-50/60 transition-colors">
                 <span className="font-medium text-ink-900 text-sm sm:text-base">{q}</span>
@@ -872,15 +880,15 @@ function HomeFAQ() {
   );
 }
 
-const homeFaqJsonLd = {
+const buildHomeFaqJsonLd = (faqs: { q: string; a: string }[]) => ({
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: HOME_FAQS.map(({ q, a }) => ({
+  mainEntity: faqs.map(({ q, a }) => ({
     "@type": "Question",
     name: q,
     acceptedAnswer: { "@type": "Answer", text: a },
   })),
-};
+});
 
 /* ─────────────────────────────────────────────
    PAGE
@@ -965,12 +973,14 @@ function SensoryBand() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const stats = await getSiteStats();
+  const faqs = buildHomeFaqs(stats);
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeFaqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildHomeFaqJsonLd(faqs)) }}
       />
       <Hero />
       <CredibilityBand />
@@ -978,10 +988,10 @@ export default function HomePage() {
       <ConsumerHasChanged />
       <SensoryBand />
       <AnalyzerPreview />
-      <VisualProof />
+      <VisualProof ingredientCount={stats.ingredients} />
       <IngredientStrip />
       <ForBrands />
-      <HomeFAQ />
+      <HomeFAQ faqs={faqs} />
     </>
   );
 }

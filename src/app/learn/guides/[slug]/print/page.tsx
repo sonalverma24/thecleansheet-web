@@ -11,7 +11,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const guide = getGuideBySlug(slug);
   if (!guide) return {};
-  return { title: `The Clean Sheet™ Guide to ${guide.skinType}` };
+  return {
+    title: `The Clean Sheet™ Guide to ${guide.skinType}`,
+    // Print-only duplicate of /learn/guides/[slug]: keep it out of the index.
+    robots: { index: false, follow: true },
+    alternates: { canonical: `https://thecleansheet.in/learn/guides/${slug}` },
+  };
 }
 
 export default async function GuidePrintPage({ params }: { params: Promise<{ slug: string }> }) {

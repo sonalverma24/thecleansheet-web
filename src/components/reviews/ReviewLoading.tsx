@@ -102,12 +102,15 @@ export function ReviewLoading() {
         <path className="tcs-drip-b" d="M70 198 c 3 4 3 7 0 7 c -3 0 -3 -3 0 -7 Z" fill={TEAL} />
       </svg>
 
-      <h1
+      {/* A status line, not an <h1>: this skeleton is streamed into the HTML of every
+          review and product page, which already has its own single <h1>. */}
+      <p
+        role="status"
         className="font-display mt-8 text-[22px] sm:text-[26px] leading-snug"
         style={{ color: INK, maxWidth: 420 }}
       >
         Getting you a comprehensive review of the product
-      </h1>
+      </p>
 
       <p
         className="mt-3 text-[14px] sm:text-[15px] transition-opacity duration-300"

@@ -12,6 +12,7 @@ import { BLOG_POSTS } from "@/lib/blog-posts";
 ──────────────────────────────────────────────────────────────── */
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/education" },
   title: "Education",
   description:
     "Plain-language education on beauty and personal care: ingredients, claims, testing and standards, product use, and industry analysis from The Clean Sheet.",

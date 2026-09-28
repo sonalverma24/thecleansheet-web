@@ -9,6 +9,7 @@ import { AccreditationLine } from "@/components/standard/Disclosures";
 ──────────────────────────────────────────────────────────────── */
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/about" },
   title: "About",
   description:
     "The Clean Sheet is building independent evidence infrastructure for beauty and personal care, so shoppers can see the evidence behind a product, not just its marketing.",

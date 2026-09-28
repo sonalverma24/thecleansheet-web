@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   description:
     'An illustrative example of the public proof page issued after an SPF Proof Report. The product shown is invented and no brand has been verified.',
   robots: { index: false, follow: false },
+  // Own URL, so it does not inherit /spf's canonical from the parent layout.
+  alternates: { canonical: 'https://thecleansheet.in/spf/sample' },
 };
 
 const TEAL = '#248179';

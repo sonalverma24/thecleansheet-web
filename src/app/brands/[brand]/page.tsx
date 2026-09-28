@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, ExternalLink, FlaskConical } from "lucide-react"
 import { getBrandBySlug, getAllBrandSummaries } from "@/data/brands";
 import { BrandProductCard } from "@/components/scorecards/BrandProductCard";
 import { scoreToTier, TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { clipDescription } from "@/lib/seo";
 
 export function generateStaticParams() {
   return getAllBrandSummaries().map((b) => ({ brand: b.slug }));
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   const tierLabel = TIER_STYLES[scoreToTier(brand.avgScore)].label;
   return {
     title: `${brand.name} Skincare Review · ${tierLabel}`,
-    description: `Is ${brand.name} clean beauty? Science-backed reviews for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`,
+    description: clipDescription(`Is ${brand.name} clean beauty? Science-backed reviews for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`),
     keywords: [
       `${brand.name} review India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
       `${brand.name} products score`, `${brand.name} skincare India`, `${brand.name} ingredient analysis`,
@@ -142,7 +143,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
             <h3 className="font-medium text-ink-950 mb-1">Don't see a {brand.name} product?</h3>
             <p className="text-ink-500 text-sm">Paste any {brand.name} product URL or ingredient list and get a full scorecard in seconds.</p>
           </div>
-          <Link href="/analyzer"
+          <Link href="/review"
             className="flex-shrink-0 inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
             Analyse a product <ArrowRight size={14} />
           </Link>

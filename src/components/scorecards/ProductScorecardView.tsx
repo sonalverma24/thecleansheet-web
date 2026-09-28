@@ -619,11 +619,12 @@ function SafetyScreen({ analysis }: { analysis: AnalysisReport }) {
    one place — only the grouping differs. IDs are `m-`-prefixed to stay unique
    alongside the desktop stack (both live in the DOM, one hidden per breakpoint). */
 function buildMobileTabs({
-  product, brand, brandSlug, analysis, relatedProducts, proofCards, atAGlance,
+  product, brand, brandSlug, brandPageExists, analysis, relatedProducts, proofCards, atAGlance,
 }: {
   product: ProductScorecard;
   brand: Brand;
   brandSlug: string;
+  brandPageExists: boolean;
   analysis?: AnalysisReport;
   relatedProducts: ProductScorecard[];
   proofCards: ProofCard[];
@@ -985,8 +986,8 @@ function buildMobileTabs({
     );
   }
   method.push(
-    <Link key="back" href={`/brands/${brandSlug}`} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
-      <ArrowLeft size={14} /> Back to {brand.name}
+    <Link key="back" href={brandPageExists ? `/brands/${brandSlug}` : "/brands"} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
+      <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all reviews"}
     </Link>,
   );
 
@@ -1006,12 +1007,16 @@ export function ProductScorecardView({
   product,
   brand,
   brandSlug,
+  brandPageExists = true,
   relatedProducts = [],
   analysis,
 }: {
   product: ProductScorecard;
   brand: Brand;
   brandSlug: string;
+  /** False for repository-reviewed products whose brand has no /brands/[brand]
+      page: the back link then goes to /brands instead of a 404. */
+  brandPageExists?: boolean;
   relatedProducts?: ProductScorecard[];
   /** Category-driven qualitative screen (live reviews only; undefined for
       static catalogue products). Adds the safety screen + flags, no scores. */
@@ -1491,10 +1496,10 @@ export function ProductScorecardView({
 
         {/* Back link */}
         <Link
-          href={`/brands/${brandSlug}`}
+          href={brandPageExists ? `/brands/${brandSlug}` : "/brands"}
           className="inline-flex items-center gap-2 text-sm text-[#b0a8a4] hover:text-[#282828] transition-colors"
         >
-          <ArrowLeft size={14} /> Back to {brand.name}
+          <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all reviews"}
         </Link>
       </div>
 
@@ -1504,7 +1509,7 @@ export function ProductScorecardView({
       <ScorecardTabs
         className="lg:hidden"
         tabs={buildMobileTabs({
-          product, brand, brandSlug, analysis, relatedProducts,
+          product, brand, brandSlug, brandPageExists, analysis, relatedProducts,
           proofCards, atAGlance,
         })}
       />

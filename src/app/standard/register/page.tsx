@@ -5,6 +5,7 @@ import RegisterTable from "./RegisterTable";
 import { STANDARDS_REGISTER } from "@/data/standard";
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/standard/register" },
   title: "Live Standards Register",
   description:
     "Every standard, method and rule The Clean Sheet relies on, with its current edition, what it covers, how we use it, where it stops being enough, and a link to the official source.",

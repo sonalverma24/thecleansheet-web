@@ -5,7 +5,8 @@ import {
   getAllIngredientSlugs, toSlug,
   ALL_INGREDIENTS, concernColor, statusBadge,
 } from "@/lib/ingredient-utils";
-import { getDirectoryIngredientBySlug } from "@/lib/ingredient-directory";
+import { getDirectoryIngredientBySlug, isPlaceholderIngredient } from "@/lib/ingredient-directory";
+import { NOINDEX, clipDescription } from "@/lib/seo";
 import { getProductsWithIngredient } from "@/lib/ingredient-product-index";
 import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
 
@@ -17,7 +18,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ing = await getDirectoryIngredientBySlug(slug);
+  const ing = await getDirectoryIngredientBySlug(slug, { strict: true });
   if (!ing) return {};
 
   const concern = ing.Concern_Level_TCS?.toLowerCase();
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       : "High concern, flagged for safety review.";
 
   const title = `${ing.INCI_Name}, Safety, Uses & Regulatory Status`;
-  const description = `Is ${ing.INCI_Name} safe? ${safetyLine} See TCS concern level, India/EU/US regulatory status, allergen flags, concentration limits, and safety notes, backed by science.`;
+  const description = clipDescription(`Is ${ing.INCI_Name} safe? ${safetyLine} See TCS concern level, India/EU/US regulatory status, allergen flags, concentration limits, and safety notes, backed by science.`);
 
   return {
     title,
@@ -40,11 +41,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       ing.Chemical_Name, `${ing.Category_Name} ingredients`, "INCI ingredient safety",
       "cosmetic ingredient checker India",
     ].filter(Boolean),
-    alternates: { canonical: `https://thecleansheet.in/ingredients/${slug}` },
+    // Canonical slug is derived from the INCI name (what the directory and sitemap
+    // link to), so a discovered ingredient reachable under its stored DB slug too
+    // still has exactly one canonical URL.
+    alternates: { canonical: `https://thecleansheet.in/ingredients/${toSlug(ing.INCI_Name)}` },
+    // Stub profiles (discovered from a scan, not yet enriched) are thin: keep them
+    // out of the index until they have real content.
+    ...(isPlaceholderIngredient(ing) ? { robots: NOINDEX } : {}),
     openGraph: {
       title: `${ing.INCI_Name}, Is it Safe? | The Clean Sheet™`,
       description,
-      url: `https://thecleansheet.in/ingredients/${slug}`,
+      url: `https://thecleansheet.in/ingredients/${toSlug(ing.INCI_Name)}`,
       type: "website",
     },
     twitter: {
@@ -76,7 +83,7 @@ function FlagBadge({ value, label }: { value: string; label: string }) {
 
 export default async function IngredientDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const ing = await getDirectoryIngredientBySlug(slug);
+  const ing = await getDirectoryIngredientBySlug(slug, { strict: true });
   if (!ing) notFound();
 
   const concern = concernColor(ing.Concern_Level_TCS);
@@ -376,17 +383,35 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                   { market: "Korea (MFDS)", status: ing.Korea_Status },
                   ...(ing.Australia_TGA_Status ? [{ market: "Australia (TGA)", status: ing.Australia_TGA_Status }] : []),
                   ...(ing.Canada_NHPID_Status ? [{ market: "Canada (NHPID)", status: ing.Canada_NHPID_Status }] : []),
-                ].map(({ market, status }) => (
-                  <div key={market} className="flex items-center justify-between gap-2">
-                    <span className="text-sm text-ink-600">{market}</span>
-                    <div className="flex items-center gap-1.5">
-                      <StatusIcon status={status} />
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(status)}`}>
-                        {status || "-"}
-                      </span>
+                ].map(({ market, status }) => {
+                  // Most markets carry a short status word ("Permitted"), which reads
+                  // well as a pill. Australia/Canada usually carry a full sentence
+                  // instead, which would blow a rounded-full pill into a huge oval,
+                  // so those render as plain wrapped text under the market name.
+                  const isLong = (status?.length ?? 0) > 24;
+                  if (isLong) {
+                    return (
+                      <div key={market} className="pb-0.5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <StatusIcon status={status} />
+                          <span className="text-sm text-ink-600">{market}</span>
+                        </div>
+                        <p className="text-xs text-ink-500 leading-relaxed pl-[21px]">{status}</p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={market} className="flex items-center justify-between gap-2">
+                      <span className="text-sm text-ink-600">{market}</span>
+                      <div className="flex items-center gap-1.5">
+                        <StatusIcon status={status} />
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusBadge(status)}`}>
+                          {status || "Not specified"}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {ing.EU_Annex && (
                   <p className="text-xs text-ink-400 pt-1">EU Annex: {ing.EU_Annex}</p>
                 )}
@@ -418,7 +443,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                 Want to check if your product contains {ing.INCI_Name}?
               </p>
               <Link
-                href="/analyzer"
+                href="/review"
                 className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors w-full"
               >
                 Analyse a Product <ArrowRight size={14} />

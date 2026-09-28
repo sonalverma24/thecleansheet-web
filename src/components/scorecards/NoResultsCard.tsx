@@ -12,8 +12,8 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
   const [showForm, setShowForm] = useState(false);
 
   const analyzerHref = query
-    ? `/analyzer?product=${encodeURIComponent(query)}`
-    : "/analyzer";
+    ? `/review?q=${encodeURIComponent(query)}`
+    : "/review";
 
   return (
     <div className="col-span-full py-12 flex flex-col items-center text-center max-w-lg mx-auto">

@@ -14,6 +14,7 @@ import {
 ──────────────────────────────────────────────────────────────── */
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/standard" },
   title: "The Standard",
   description:
     "The Clean Sheet Product Standards Framework 2026: the checks every product must pass, the rules for each kind of product, what every claim has to prove, and a live list of the standards we use.",

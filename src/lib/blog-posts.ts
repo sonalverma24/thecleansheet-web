@@ -129,7 +129,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Follow product instructions, avoid deliberately breathing sprays and use effective ventilation when styling. Do not assume that a product marketed for heat protection has also been shown to minimise airborne emissions." },
       { type: "paragraph", text: "If choosing an alternative, evaluate the replacement formula. “Silicone free” does not demonstrate better preservation, lower irritation, better performance or a smaller environmental footprint." },
       { type: "paragraph", text: ["The Clean Sheet's ", { text: "Claims Library", href: "/standard/claims" }, " explains the broader principle: an ingredient absence claim cannot carry every other promise a buyer might attach to it."] },
-      { type: "cta", text: "See whether a product's silicone content and claims hold up against the evidence.", href: "/analyzer", label: "Analyse a Product Now" },
+      { type: "cta", text: "See whether a product's silicone content and claims hold up against the evidence.", href: "/review", label: "Analyse a Product Now" },
 
       { type: "heading", level: 2, text: "What India should ask of regulators and brands" },
       { type: "bullets", items: [
@@ -338,8 +338,8 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "heading", level: 2, text: "Verify any beauty product in seconds" },
       { type: "paragraph", text: "The five-step process works. It also takes time most shoppers do not have while standing in a store aisle or scrolling through a checkout screen. That is the gap The Clean Sheet is built to close." },
       { type: "paragraph", text: ["Every product in our ", { text: "verified brand registry", href: "/brands" }, " is graded against the same evidence ladder used throughout this guide, with a clear Clean Sheet standing so you can see, at a glance, whether a claim holds up. No editorial endorsements. No brand advocacy. Just independent verification of what a product actually substantiates."] },
-      { type: "paragraph", text: ["Search a brand you are considering, run a specific product through the ", { text: "free analyser", href: "/analyzer" }, ", and decide with the evidence in front of you. That is what ingredient-conscious buying looks like when the platform does the audit work for you."] },
-      { type: "cta", text: "Check any product's claims against the evidence, free.", href: "/analyzer", label: "Analyse a Product Now" },
+      { type: "paragraph", text: ["Search a brand you are considering, run a specific product through the ", { text: "free analyser", href: "/review" }, ", and decide with the evidence in front of you. That is what ingredient-conscious buying looks like when the platform does the audit work for you."] },
+      { type: "cta", text: "Check any product's claims against the evidence, free.", href: "/review", label: "Analyse a Product Now" },
 
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "sources", items: [
@@ -1328,7 +1328,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Certification is the new competitive advantage. The Clean Sheet founding cohort is open now.",
-        href: "/certification",
+        href: "/standard",
         label: "Apply for Certification",
       },
     ],
@@ -1731,7 +1731,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Is your brand ready for the next phase of Indian beauty? The Clean Sheet founding cohort is open now.",
-        href: "/certification",
+        href: "/standard",
         label: "Apply for Certification",
       },
     ],
@@ -2035,7 +2035,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Is your active skincare verified at the concentration you claim? The Clean Sheet founding cohort is open now.",
-        href: "/certification",
+        href: "/standard",
         label: "Apply for Certification",
       },
     ],
@@ -2173,7 +2173,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to know if the products in your routine are actually doing anything?",
-        href: "/analyzer",
+        href: "/review",
         label: "Ask Clean, Check Your Ingredients",
       },
     ],
@@ -2297,7 +2297,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Not sure what's actually in your products?",
-        href: "/analyzer",
+        href: "/review",
         label: "Ask Clean, Check Your Ingredients",
       },
     ],
@@ -2537,7 +2537,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to check a specific baby product?",
-        href: "/analyzer",
+        href: "/review",
         label: "Ask Clean, Check Any Product",
       },
     ],
@@ -2627,7 +2627,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Skip the guesswork, check any product in seconds.",
-        href: "/analyzer",
+        href: "/review",
         label: "Check Your Product Now",
       },
     ],
@@ -2707,7 +2707,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to check the preservative system in your product?",
-        href: "/analyzer",
+        href: "/review",
         label: "Analyse Your Product for Free",
       },
     ],
@@ -2785,7 +2785,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Check your sunscreen's UV filters for free.",
-        href: "/analyzer",
+        href: "/review",
         label: "Analyse Your Sunscreen Now",
       },
     ],

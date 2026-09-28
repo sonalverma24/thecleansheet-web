@@ -16,7 +16,6 @@ import {
   Search,
   CheckCircle2,
   FileText,
-  Download,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -112,18 +111,11 @@ export default function PitchPage() {
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
-              href="/certification"
+              href="/for-brands"
               className="inline-flex items-center gap-2 bg-white text-teal-950 font-medium text-sm px-6 py-3 rounded-xl hover:bg-teal-50 transition-colors"
             >
               Apply for certification <ArrowUpRight size={14} />
             </Link>
-            <a
-              href="/Certification-for-Brands.pdf"
-              target="_blank"
-              className="inline-flex items-center gap-2 border border-teal-600 text-teal-300 font-medium text-sm px-6 py-3 rounded-xl hover:bg-teal-900/50 transition-colors"
-            >
-              <Download size={14} /> Download deck (PDF)
-            </a>
           </div>
         </div>
       </section>
@@ -385,18 +377,11 @@ export default function PitchPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 mb-10">
             <Link
-              href="/certification"
+              href="/for-brands"
               className="inline-flex items-center gap-2 bg-white text-teal-950 font-medium text-sm px-6 py-3 rounded-xl hover:bg-teal-50 transition-colors"
             >
               Apply for certification <ArrowUpRight size={14} />
             </Link>
-            <a
-              href="/Certification-for-Brands.pdf"
-              target="_blank"
-              className="inline-flex items-center gap-2 border border-teal-600 text-teal-300 font-medium text-sm px-6 py-3 rounded-xl hover:bg-teal-900/50 transition-colors"
-            >
-              <Download size={14} /> Download full deck
-            </a>
           </div>
           <div className="border-t border-teal-800 pt-8 max-w-sm mx-auto">
             <p className="text-teal-400 text-sm font-medium mb-1">sonal@thecleansheet.in</p>

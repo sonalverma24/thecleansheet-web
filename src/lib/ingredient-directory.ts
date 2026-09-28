@@ -33,6 +33,16 @@ export interface DiscoveredRow {
 const slugify = (s: string) =>
   s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-");
 
+/** Function label of a discovered ingredient that has not been enriched yet. */
+export const PENDING_FUNCTION = "Profile being compiled";
+
+/** True for a stub page (discovered from a scan, no profile yet). These render
+    at indexable URLs but carry almost no content, so the page marks them noindex
+    until enrichment fills them in. */
+export function isPlaceholderIngredient(i: Ingredient): boolean {
+  return i.Function === PENDING_FUNCTION;
+}
+
 /** Map a discovered DB row into the rich `Ingredient` display shape, so the
     directory renders core and discovered ingredients uniformly. Unknown fields
     are marked as pending rather than faked. */
@@ -44,7 +54,7 @@ export function discoveredToIngredient(r: DiscoveredRow): Ingredient {
     CAS_Number: "",
     EC_Number: "",
     Chemical_Name: "",
-    Function: r.function ?? "Profile being compiled",
+    Function: r.function ?? PENDING_FUNCTION,
     Category_Code: "",
     Category_Name: r.function ?? "",
     Ingredient_Origin: "",
@@ -61,17 +71,25 @@ export function discoveredToIngredient(r: DiscoveredRow): Ingredient {
   } as Ingredient;
 }
 
-/** Read every discovered ingredient from the table. */
+/** Read every discovered ingredient from the table. Pages through it: PostgREST
+    silently caps one response at 1,000 rows, and the table is already near that. */
 export async function getDiscoveredIngredients(): Promise<Ingredient[]> {
+  const PAGE = 1000;
+  const rows: DiscoveredRow[] = [];
   try {
-    const { data } = await createAdminClient()
-      .from("ingredients")
-      .select("inci_name, slug, common_names, function, description, concern_level, why_used, why_matters, regulatory_note")
-      .order("inci_name", { ascending: true });
-    return (data ?? []).map((r) => discoveredToIngredient(r as DiscoveredRow));
-  } catch {
-    return [];
-  }
+    const db = createAdminClient();
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await db
+        .from("ingredients")
+        .select("inci_name, slug, common_names, function, description, concern_level, why_used, why_matters, regulatory_note")
+        .order("inci_name", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error || !data) break;
+      rows.push(...(data as DiscoveredRow[]));
+      if (data.length < PAGE) break;
+    }
+  } catch { /* table unavailable: return what we have */ }
+  return rows.map(discoveredToIngredient);
 }
 
 /** The full directory: curated core (rich) + discovered (deduped by INCI name).
@@ -88,17 +106,23 @@ const DISCOVERED_COLS = "inci_name, slug, common_names, function, description, c
 /** One ingredient by URL slug, from the curated core first, then the discovered
     table (matched on the stored slug, then on toSlug of the name as a fallback so
     a link generated from the display name still resolves). null when unknown. */
-export async function getDirectoryIngredientBySlug(slug: string): Promise<Ingredient | null> {
+export async function getDirectoryIngredientBySlug(slug: string, opts?: { strict?: boolean }): Promise<Ingredient | null> {
   const core = ALL_INGREDIENTS.find((i) => toSlug(i.INCI_Name) === slug);
   if (core) return core;
+  // `strict` rethrows a database error instead of returning null. The ingredient
+  // page is ISR-cached, so a transient outage must fail the render (Next keeps the
+  // last good page) rather than be cached as a 404 for 5 minutes.
   try {
     const db = createAdminClient();
-    const { data: exact } = await db.from("ingredients").select(DISCOVERED_COLS).eq("slug", slug).maybeSingle();
+    const { data: exact, error: e1 } = await db.from("ingredients").select(DISCOVERED_COLS).eq("slug", slug).maybeSingle();
+    if (e1 && opts?.strict) throw e1;
     if (exact) return discoveredToIngredient(exact as DiscoveredRow);
-    const { data: all } = await db.from("ingredients").select(DISCOVERED_COLS);
+    const { data: all, error: e2 } = await db.from("ingredients").select(DISCOVERED_COLS).range(0, 4999);
+    if (e2 && opts?.strict) throw e2;
     const hit = (all ?? []).find((r) => toSlug(String((r as DiscoveredRow).inci_name)) === slug);
     return hit ? discoveredToIngredient(hit as DiscoveredRow) : null;
-  } catch {
+  } catch (e) {
+    if (opts?.strict) throw e;
     return null;
   }
 }

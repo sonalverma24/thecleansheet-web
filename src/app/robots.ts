@@ -1,9 +1,17 @@
 import type { MetadataRoute } from "next";
 
-// Paths kept out of every crawler's index (thin, gated, or print-only).
+// Paths crawlers should not waste requests on: the admin area and gated/private
+// URLs. /api/ is deliberately NOT blanket-blocked: public pages fetch
+// /api/reviews and /api/verified-products while rendering, and Googlebot needs
+// those to render them. Pages that must stay OUT OF THE INDEX are handled with a
+// noindex meta tag instead (see src/lib/seo.ts), never robots.txt alone: Google
+// cannot see a noindex on a blocked URL and may still list it URL-only. That is
+// why the guide print pages (/learn/guides/*/print) are deliberately not listed
+// here: they carry noindex and must stay crawlable so Google can read it.
 const DISALLOW = [
+  "/admin/",
+  "/api/admin/",
   "/courses/skincare-101/welcome-9x4k2mq7/",
-  "/learn/guides/*/print/",
   "/preview/",
 ];
 

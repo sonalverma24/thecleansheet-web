@@ -20,8 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const guide = getGuideBySlug(slug);
   if (!guide) return {};
   return {
-    title: `${guide.title} | The Clean Sheet™`,
+    title: guide.title,
     description: guide.tagline,
+    alternates: { canonical: `https://thecleansheet.in/learn/guides/${slug}` },
   };
 }
 

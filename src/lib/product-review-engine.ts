@@ -19,6 +19,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
+import { findTaxonomyMatch, getTaxonomyItem } from "@/data/taxonomy";
+import { revalidatePath } from "next/cache";
 import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -613,6 +615,10 @@ const RETRACTED_SLUGS = new Set<string>([
   // row never saw those claims and derived Approved. Same INCI, same product.
   // The "be-minimalist-..." row (real image + INCI source) is the keeper.
   "minimalist-cph-complex-oligopeptide-0-8-anti-dandruff-serum",
+  // Duplicate Kay Beauty Hydra Creme Lipstick (doubled brand prefix in the slug). The
+  // other row is the keeper: it cites its INCIDecoder source URL, a consistent
+  // Rs.799 brand/Nykaa price, and a rating not drawn from a single shade.
+  "kay-beauty-kay-beauty-hydra-creme-lipstick",
 ]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
@@ -626,27 +632,33 @@ function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
   return { ...r, review, verdict: deriveVerdict(review) };
 }
 
-async function getStored(slug: string): Promise<ProductReviewResult | null> {
+async function getStored(slug: string, strict = false): Promise<ProductReviewResult | null> {
   if (RETRACTED_SLUGS.has(slug)) return null;
   const mem = REVIEW_CACHE.get(slug);
   if (mem && Date.now() - mem.at < REVIEW_CACHE_TTL_MS) return withFreshVerdict(mem.result);
   try {
-    const { data } = await createAdminClient()
+    const { data, error } = await createAdminClient()
       .from("product_reviews").select("result, rubric_rev")
       .eq("product_slug", slug).maybeSingle();
+    if (error && strict) throw error;
     if (data?.result && data.rubric_rev === RUBRIC_REV) {
       const r = data.result as ProductReviewResult;
       REVIEW_CACHE.set(slug, { result: r, at: Date.now() });
       return withFreshVerdict(r);
     }
-  } catch { /* repository unavailable */ }
+  } catch (e) {
+    if (strict) throw e;
+    /* repository unavailable */
+  }
   return null;
 }
 
 /** Public: fetch a stored review by canonical slug WITHOUT re-running the engine.
-    Powers the permanent /reviews/[slug] product page for repository products. */
-export async function getStoredReview(slug: string): Promise<ProductReviewResult | null> {
-  return getStored(slug);
+    Powers the permanent /reviews/[slug] product page for repository products.
+    `strict` rethrows a database error instead of returning null: the ISR-cached
+    review page uses it so a transient outage is never cached as a 404. */
+export async function getStoredReview(slug: string, opts?: { strict?: boolean }): Promise<ProductReviewResult | null> {
+  return getStored(slug, opts?.strict);
 }
 
 /** An admin-pinned image must survive a fresh re-review, so we read it straight
@@ -734,6 +746,90 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
   }
 }
 
+/** Every published review's slug, name, brand and reviewed date, for the sitemap
+    and the crawlable /brands directory. Pages through
+    the table because PostgREST silently caps one response at 1,000 rows, so a
+    single `.limit(5000)` would quietly truncate the sitemap once the repository
+    grows past that. Same gating as listStoredReviews (current rubric, not retracted). */
+export async function listReviewIndex(): Promise<{ slug: string; productName: string; brand: string; reviewedAt: string }[]> {
+  const PAGE = 1000;
+  const out: { slug: string; productName: string; brand: string; reviewedAt: string }[] = [];
+  try {
+    const db = createAdminClient();
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await db
+        .from("product_reviews")
+        .select("product_slug, product_name, brand, reviewed_at")
+        .eq("rubric_rev", RUBRIC_REV)
+        .order("product_slug", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error || !data) break;
+      for (const r of data) {
+        if (!RETRACTED_SLUGS.has(String(r.product_slug))) {
+          out.push({
+            slug: String(r.product_slug),
+            productName: String(r.product_name ?? ""),
+            brand: String(r.brand ?? ""),
+            reviewedAt: String(r.reviewed_at ?? ""),
+          });
+        }
+      }
+      if (data.length < PAGE) break;
+    }
+  } catch { /* repository unavailable: return what we have */ }
+  return out;
+}
+
+/** Lifetime repository totals for the /brands stats strip. Deliberately
+    decoupled from listRepositoryCatalogueProducts's `limit` (default 60): that
+    limit caps the tiles actually rendered, so deriving "products analysed"
+    from that same capped array makes the count plateau once the repository
+    grows past it. This queries brand/slug only (no `result` jsonb) across the
+    whole table, so it stays cheap even as the count grows. */
+export async function getRepositoryStats(): Promise<{ productCount: number; brandSlugs: string[] }> {
+  try {
+    const { data } = await createAdminClient()
+      .from("product_reviews")
+      .select("product_slug, brand")
+      .eq("rubric_rev", RUBRIC_REV);
+    const rows = (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug)));
+    const brandSlugs = new Set(rows.map((r) => slugify(String(r.brand ?? ""), "")));
+    return { productCount: rows.length, brandSlugs: [...brandSlugs] };
+  } catch {
+    return { productCount: 0, brandSlugs: [] };
+  }
+}
+
+/** Resolve a live review's free-text `category` against the controlled
+    taxonomy, so /brands filters (which only recognise exact taxonomy labels)
+    can pick these products up. Returns the normalized category label plus a
+    subCategory when the match happens to land on a specific product type
+    rather than its parent category. */
+function normalizeReviewCategory(raw: string): { category: string; subCategory?: string } {
+  const matched = findTaxonomyMatch(raw);
+  if (!matched) return { category: raw };
+  if (matched.family === "product_type") {
+    const parent = matched.parent_id ? getTaxonomyItem(matched.parent_id) : undefined;
+    return { category: parent?.label ?? raw, subCategory: matched.label };
+  }
+  if (matched.family === "product_category") {
+    return { category: matched.label };
+  }
+  return { category: raw };
+}
+
+/** Normalize free-text phrases (e.g. consumerSuitability.bestFor/avoidIf) into
+    controlled taxonomy labels for a given family, dropping anything that
+    doesn't resolve - the filter panel only recognises exact taxonomy labels. */
+function taxonomyLabelsForFamily(raw: string[], family: "suitability" | "caution"): string[] {
+  const out = new Set<string>();
+  for (const phrase of raw) {
+    const matched = findTaxonomyMatch(phrase);
+    if (matched?.family === family) out.add(matched.label);
+  }
+  return [...out];
+}
+
 /** Repository products mapped into the static-catalogue tile format, so live
     reviews sit in the /brands grid exactly like curated products. Tiles link
     to the stored review (there is no static detail page for them). */
@@ -767,6 +863,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       const codeScore = reconcileReviewScores(rv).scores.total;
       const tier = deriveVerdict(rv).tier;
       const newArrival = idx < 5 && Date.now() - new Date(String(row.reviewed_at ?? 0)).getTime() < THIRTY_DAYS;
+      const { category, subCategory } = normalizeReviewCategory(rv.category ?? "");
       return [{
         productName: rv.productName,
         slug: String(row.product_slug),
@@ -781,14 +878,21 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         targetUser: rv.targetUser ?? "",
         image: rv.imageUrl ?? "",
         pillars: [],
-        keyActives: [],
+        keyActives: (rv.keyActivesRead ?? []).map((a) => ({
+          name: a.name,
+          function: a.function,
+          concentrationConfidence: a.concentrationConfidence,
+        })),
         ingredients: (rv.inciIngredients ?? []).map((name) => ({ name, note: "", flag: "ok" as const })),
+        suitabilityTags: taxonomyLabelsForFamily(rv.consumerSuitability?.bestFor ?? [], "suitability"),
+        cautionTags: taxonomyLabelsForFamily(rv.consumerSuitability?.avoidIf ?? [], "caution"),
         pass_badges: [],
         warn_badges: [],
         info_badges: [],
         indiaContext: "",
         analyzedAt: rv.reviewedAt ?? String(row.reviewed_at ?? ""),
-        category: rv.category,
+        category,
+        subCategory,
         price: num(rv.lowestPrice) ?? num(rv.priceRange),
         pricePerUnit: num(rv.pricePerMl),
         sizeUnit: "ml",
@@ -1024,6 +1128,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // repeat paste this session is instant, but it never reaches the directory DB.
   if (productIdentified) {
     await store(canonicalSlug, result);
+    // /brands is ISR-cached for 5 minutes (see revalidate export on that page);
+    // invalidate it now so a fresh analysis shows up in the grid, filters, and
+    // stats strip on the very next visit instead of waiting out the window.
+    try { revalidatePath("/brands"); } catch { /* best-effort, never blocks the response */ }
   } else {
     REVIEW_CACHE.set(canonicalSlug, { result, at: Date.now() });
   }

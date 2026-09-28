@@ -1,6 +1,7 @@
 import { BLOG_POSTS } from "@/lib/blog-posts";
 import { SKIN_GUIDES } from "@/lib/skin-guides";
 import { ALL_BRANDS } from "@/data/brands";
+import { getSiteStats, fmt } from "@/lib/site-stats";
 
 /**
  * /llms.txt — a curated, plain-text map of the site for AI answer engines
@@ -15,13 +16,14 @@ const BASE = "https://thecleansheet.in";
 export const dynamic = "force-static";
 export const revalidate = 86400; // rebuild daily
 
-export function GET() {
+export async function GET() {
+  const stats = await getSiteStats();
   const lines: string[] = [];
 
   lines.push("# The Clean Sheet");
   lines.push("");
   lines.push(
-    "> India's first independent, science-backed clean beauty standard. We check every marketing claim on a beauty product against real evidence and the actual INCI ingredient list, then give one clear verdict. Free AI ingredient analyser, a directory of independently reviewed products and brands, and a 25,000+ cosmetic ingredient safety database with India, EU, US and Korea regulatory status.",
+    `> India's first independent, science-backed clean beauty standard. We check every marketing claim on a beauty product against real evidence and the actual INCI ingredient list, then give one clear verdict. Free AI ingredient analyser, a directory of independently reviewed products and brands, and a cosmetic ingredient safety database of ${fmt(stats.ingredients)} ingredients with India, EU, US and Korea regulatory status.`,
   );
   lines.push("");
   lines.push(
@@ -31,19 +33,19 @@ export function GET() {
 
   lines.push("## Core tools");
   lines.push(
-    `- [Ingredient Analyser](${BASE}/analyzer): Paste a product name, URL or INCI list to get a full ingredient safety breakdown.`,
+    `- [Ingredient Analyser](${BASE}/review): Paste a product name, URL or INCI list to get a full ingredient safety breakdown.`,
   );
   lines.push(
     `- [Product Review](${BASE}/review): Get one clear Clean Sheet standing for any product, with every claim checked against evidence.`,
   );
   lines.push(
-    `- [Ingredient Directory](${BASE}/ingredients): Search 25,000+ cosmetic ingredients for safety, allergen flags and regulatory limits.`,
+    `- [Ingredient Directory](${BASE}/ingredients): Search ${fmt(stats.ingredients)} cosmetic ingredients for safety, allergen flags and regulatory limits.`,
   );
   lines.push(
-    `- [Certified Products](${BASE}/certified): Products that have passed The Clean Sheet certification.`,
+    `- [Certified Products](${BASE}/verify): Products that have passed The Clean Sheet certification.`,
   );
   lines.push(
-    `- [Brand Scorecards](${BASE}/brands): Independently reviewed beauty brands sold in India, ranked by verdict.`,
+    `- [Brand Scorecards](${BASE}/brands): Independently reviewed beauty brands sold in India, ranked by verdict. ${fmt(stats.products)} products from ${fmt(stats.brands)} brands reviewed so far.`,
   );
   lines.push("");
 
@@ -70,7 +72,7 @@ export function GET() {
 
   lines.push("## About & method");
   lines.push(`- [About The Clean Sheet](${BASE}/about)`);
-  lines.push(`- [Scoring methodology](${BASE}/methodology): How verdicts and the 5-pillar score are calculated.`);
+  lines.push(`- [Scoring methodology](${BASE}/standard): How verdicts and the 5-pillar score are calculated.`);
   lines.push(`- [Certification standard](${BASE}/certification)`);
   lines.push("");
 

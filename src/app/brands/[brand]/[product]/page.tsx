@@ -3,6 +3,7 @@ import { getBrandBySlug, getProductBySlug, getAllBrandSummaries } from "@/data/b
 import type { Brand, ProductScorecard } from "@/data/brands";
 import { resolveTier, TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
+import { clipDescription } from "@/lib/seo";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FAQ builder — phrased as the questions people actually ask an AI assistant
@@ -102,7 +103,7 @@ export async function generateMetadata({
   const tierLabel = TIER_STYLES[resolveTier(product)].label;
   return {
     title: `${product.productName} Review · ${tierLabel}`,
-    description: `Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`,
+    description: clipDescription(`Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`),
     keywords: [
       `${product.productName} review`,
       `${product.productName} India`,
@@ -117,7 +118,7 @@ export async function generateMetadata({
     },
     openGraph: {
       title: `${product.productName} · ${tierLabel}`,
-      description: `${tierLabel}. ${product.summary.slice(0, 150)}...`,
+      description: clipDescription(`${tierLabel}. ${product.summary}`),
       url: `https://thecleansheet.in/brands/${brandSlug}/${productSlug}`,
       type: "article",
       images: [{ url: product.image, width: 800, height: 800, alt: product.productName }],

@@ -1,6 +1,7 @@
 import { BLOG_POSTS } from "@/lib/blog-posts";
 import { SKIN_GUIDES } from "@/lib/skin-guides";
 import { ALL_BRANDS } from "@/data/brands";
+import { getSiteStats, fmt } from "@/lib/site-stats";
 import { resolveTier, TIER_STYLES } from "@/components/scorecards/pillar-ui";
 import type { ProductScorecard } from "@/data/brands";
 
@@ -15,7 +16,7 @@ import type { ProductScorecard } from "@/data/brands";
  * Clean Sheet approve <product>?" — so we serve it pre-extracted rather than
  * making the model reconstruct it from HTML.
  *
- * We deliberately do NOT dump the 25,000-ingredient database here (that lives
+ * We deliberately do NOT dump the ingredient database here (that lives
  * behind /ingredients and /sitemap.xml). This feed is the verdict corpus: the
  * opinionated, human-reviewed content that exists nowhere else.
  */
@@ -84,7 +85,8 @@ function productBlock(lines: string[], product: ProductScorecard) {
   }
 }
 
-export function GET() {
+export async function GET() {
+  const stats = await getSiteStats();
   const lines: string[] = [];
 
   lines.push("# The Clean Sheet — Full Content Feed");
@@ -113,7 +115,7 @@ export function GET() {
   );
   lines.push("");
   lines.push(
-    `Full scoring methodology: ${BASE}/methodology. A claim marked "Not publicly supported" means we could not find public evidence for it, not that it is necessarily false.`,
+    `Full scoring methodology: ${BASE}/standard. A claim marked "Not publicly supported" means we could not find public evidence for it, not that it is necessarily false.`,
   );
   lines.push("");
 
@@ -155,9 +157,9 @@ export function GET() {
 
   lines.push("## More");
   lines.push(`- Curated site map for AI: ${BASE}/llms.txt`);
-  lines.push(`- Ingredient directory (25,000+ ingredients, India/EU/US/Korea status): ${BASE}/ingredients`);
+  lines.push(`- Ingredient directory (${fmt(stats.ingredients)} ingredients, with India/EU/US/Korea status where listed): ${BASE}/ingredients`);
   lines.push(`- Complete URL index: ${BASE}/sitemap.xml`);
-  lines.push(`- About & method: ${BASE}/about · ${BASE}/methodology`);
+  lines.push(`- About & method: ${BASE}/about · ${BASE}/standard`);
   lines.push("");
 
   return new Response(lines.join("\n"), {

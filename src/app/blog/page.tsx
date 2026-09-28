@@ -10,7 +10,8 @@ import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
 ──────────────────────────────────────────────────────────────── */
 
 export const metadata = {
-  title: "Reads, The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/blog" },
+  title: "Reads",
   description: "Science, regulation, and transparency in beauty. Insights on skincare ingredients, cosmetic law, and what it really means to be clean.",
 };
 

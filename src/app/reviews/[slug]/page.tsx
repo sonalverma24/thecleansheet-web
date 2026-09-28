@@ -5,23 +5,37 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStoredReview } from "@/lib/product-review-engine";
+import { getBrandBySlug } from "@/data/brands";
+import { cataloguePathFor } from "@/lib/catalogue-dedupe";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
+import { clipDescription } from "@/lib/seo";
 
 export const revalidate = 300;
 
+// Empty on purpose: no review is pre-rendered at build time (the set lives in the
+// database and grows), but declaring generateStaticParams turns this route from
+// fully dynamic (private, no-store, a Supabase render on EVERY request, including
+// every Googlebot hit) into on-demand ISR, so `revalidate` actually applies:
+// rendered on first request, then served from cache and refreshed every 5 minutes.
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const result = await getStoredReview(slug);
+  const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") return {};
   const { review, verdict } = result;
   const tierLabel = TIER_STYLES[verdict.tier].label;
   return {
     title: `${review.productName} Review · ${tierLabel}`,
-    description: `${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`.slice(0, 300),
-    alternates: { canonical: `https://thecleansheet.in/reviews/${slug}` },
+    description: clipDescription(`${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
+    // A product that also has a curated catalogue page is the same content at two
+    // URLs: the catalogue page is the canonical one.
+    alternates: { canonical: `https://thecleansheet.in${cataloguePathFor(review.brand, review.productName) ?? `/reviews/${slug}`}` },
     openGraph: {
       title: `${review.productName} · ${tierLabel} | The Clean Sheet`,
       description: review.verdict?.cleanSheetTakeaway ?? "",
@@ -32,7 +46,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function StoredReviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const result = await getStoredReview(slug);
+  const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") notFound();
 
   const { product, brand, brandSlug } = reviewToScorecard(result.review, result.verdict);
@@ -45,7 +59,7 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
-          { "@type": "ListItem", position: 2, name: "Reviews", item: "https://thecleansheet.in/reviews" },
+          { "@type": "ListItem", position: 2, name: "Product Reviews", item: "https://thecleansheet.in/brands" },
           { "@type": "ListItem", position: 3, name: product.productName, item: url },
         ],
       },
@@ -74,7 +88,7 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} analysis={runAnalysis(result.review)} />
+      <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} brandPageExists={!!getBrandBySlug(brandSlug)} analysis={runAnalysis(result.review)} />
     </>
   );
 }

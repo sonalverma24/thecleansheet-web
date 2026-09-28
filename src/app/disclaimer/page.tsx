@@ -2,7 +2,8 @@ import Link from "next/link";
 import BackButton from "@/components/BackButton";
 
 export const metadata = {
-  title: "Disclaimer | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/disclaimer" },
+  title: "Disclaimer",
   description: "Disclaimer for The Clean Sheet™: scope and limitations of our analysis, scores, and certifications.",
 };
 

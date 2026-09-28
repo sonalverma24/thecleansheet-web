@@ -2,7 +2,8 @@ import Link from "next/link";
 import BackButton from "@/components/BackButton";
 
 export const metadata = {
-  title: "Terms of Use | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/terms-of-use" },
+  title: "Terms of Use",
   description: "Terms of Use for The Clean Sheet™ website and services.",
 };
 

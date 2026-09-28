@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Calendar, Clock, Users, Star } from "lucide-react";
 
 export const metadata = {
-  title: "Courses | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/courses" },
+  title: "Courses",
   description: "Learn the science of skincare with expert-led courses from The Clean Sheet.",
 };
 

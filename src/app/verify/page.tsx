@@ -6,6 +6,7 @@ import { AccreditationLine } from "@/components/standard/Disclosures";
 import { PROOF_FIELDS } from "@/data/certificates";
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/verify" },
   title: "Verify a Certificate",
   description:
     "The Clean Sheet Certified Product Registry. Only certified products appear here. Each one has a public proof page showing exactly what was checked, in which market, and what the certificate does and does not cover.",

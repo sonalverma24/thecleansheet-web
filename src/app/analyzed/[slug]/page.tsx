@@ -40,6 +40,10 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://thecleansheet.in/analyzed/${slug}`,
     },
+    // Cached AI scans of arbitrary products (legacy /100 score, not the current
+    // review standard, not in the sitemap): never index. The reviewed version of
+    // a product lives at /reviews/[slug] or /brands/[brand]/[product].
+    robots: { index: false, follow: true },
     openGraph: {
       title: `${data.product_name}, Score ${sc.score ?? 0}/100 | The Clean Sheet`,
       description: `${sc.scoreLabel ?? "Fair"} rating. ${(sc.summary ?? "").slice(0, 150)}...`,

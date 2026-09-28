@@ -4,7 +4,9 @@ import { getAllBrandSummaries, ALL_BRANDS } from "@/data/brands";
 import BackButton from "@/components/BackButton";
 import { ScorecardDiscovery } from "@/components/scorecards/ScorecardDiscovery";
 import { HeroReviewBar } from "@/components/scorecards/HeroReviewBar";
-import { listRepositoryCatalogueProducts } from "@/lib/product-review-engine";
+import { listRepositoryCatalogueProducts, listReviewIndex } from "@/lib/product-review-engine";
+import { getSiteStats } from "@/lib/site-stats";
+import { CrawlableIndex, type IndexGroup } from "@/components/seo/CrawlableIndex";
 
 /* The live-review repository grows continuously — refresh the page every 5 min. */
 export const revalidate = 300;
@@ -35,22 +37,62 @@ const pageJsonLd = {
   publisher: { "@type": "Organization", name: "The Clean Sheet", url: "https://thecleansheet.in" },
 };
 
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+// Kept outside the component: the render-purity lint rule (correctly) flags a
+// Date.now() call inside a component body, and this server page is revalidated
+// every 5 minutes so "new in the last 30 days" is evaluated per revalidation.
+function isWithinThirtyDays(iso: string): boolean {
+  return Date.now() - new Date(iso).getTime() < THIRTY_DAYS_MS;
+}
+
 export default async function BrandsPage() {
   // Live repository products join the catalogue in the same tile format,
   // newest first, skipping any product the curated catalogue already covers.
-  const repoProducts = await listRepositoryCatalogueProducts(60);
+  // Stats are fetched separately (uncapped) so "products analysed" keeps
+  // climbing past the 60-tile grid cap instead of plateauing at it.
+  const [repoProducts, siteStats, reviewIndex] = await Promise.all([
+    listRepositoryCatalogueProducts(60),
+    getSiteStats(),
+    listReviewIndex(),
+  ]);
   const brands = getAllBrandSummaries();
   const staticProducts = ALL_BRANDS.flatMap((b) => b.products);
   const known = new Set(staticProducts.map((p) => `${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()));
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
   const freshProducts = repoProducts
     .filter((p) => !known.has(`${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()))
     // NEW badge: only the latest 5 arrivals actually visible in the grid (30-day cap)
     .map((p, idx) => ({
       ...p,
-      newArrival: idx < 5 && Date.now() - new Date(p.analyzedAt).getTime() < THIRTY_DAYS,
+      newArrival: idx < 5 && isWithinThirtyDays(p.analyzedAt),
     }));
   const allProducts = [...freshProducts, ...staticProducts];
+
+  // Crawlable link index (the discovery grid above is client-rendered, so its
+  // server HTML links to nothing): every catalogue brand and product, then every
+  // repository review grouped by brand. Same name-dedupe as the grid.
+  const norm = (brand: string, name: string) => `${brand} ${name}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const indexGroups: IndexGroup[] = ALL_BRANDS.map((b) => ({
+    label: b.name,
+    href: `/brands/${b.slug}`,
+    links: b.products.map((p) => ({ href: `/brands/${b.slug}/${p.slug}`, text: p.productName })),
+  }));
+  const reviewsByBrand = new Map<string, IndexGroup>();
+  for (const r of reviewIndex) {
+    if (!r.productName || known.has(norm(r.brand, r.productName))) continue;
+    const label = r.brand || "Other brands";
+    const g = reviewsByBrand.get(label) ?? { label, links: [] };
+    g.links.push({ href: `/reviews/${r.slug}`, text: r.productName });
+    reviewsByBrand.set(label, g);
+  }
+  indexGroups.push(...[...reviewsByBrand.values()].sort((a, b) => a.label.localeCompare(b.label)));
+
+  // Live counts come from one shared helper so every page quotes the same numbers.
+  const statsOverride = {
+    totalProducts: siteStats.products,
+    brandsScored: siteStats.brands,
+    ingredients: siteStats.ingredients,
+  };
 
   return (
     <div className="bg-white min-h-screen">
@@ -132,8 +174,15 @@ export default async function BrandsPage() {
 
       {/* ── Content (client interactive) — catalogue + live repository products merged ── */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <ScorecardDiscovery brands={brands} products={allProducts} />
+        <ScorecardDiscovery brands={brands} products={allProducts} statsOverride={statsOverride} />
       </div>
+
+      <CrawlableIndex
+        id="all-reviews"
+        heading="All reviewed brands and products"
+        intro="Every product The Clean Sheet has reviewed, listed by brand."
+        groups={indexGroups}
+      />
     </div>
   );
 }

@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, XCircle, BookOpen, ArrowRight, FlaskConical, Shield, Microscope } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { getSiteStats, fmt } from "@/lib/site-stats";
+
+// Quotes the live ingredient count; refresh every 5 minutes.
+export const revalidate = 300;
 
 export const metadata = {
-  title: "Learn | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/learn" },
+  title: "Learn",
   description: "Ingredient education, skin type guides, and courses, everything you need to make smarter decisions about your skincare.",
 };
 
@@ -166,7 +171,8 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function LearnPage() {
+export default async function LearnPage() {
+  const { ingredients: ingredientCount } = await getSiteStats();
   return (
     <div className="bg-white">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
@@ -218,7 +224,7 @@ export default function LearnPage() {
               {/* Stats */}
               <div className="mt-12 flex flex-wrap gap-6">
                 {[
-                  { n: "25k+", label: "Ingredients evaluated" },
+                  { n: fmt(ingredientCount), label: "Ingredients in the directory" },
                   { n: "4",    label: "Regulatory markets" },
                   { n: "Free", label: "Skin guides" },
                 ].map(({ n, label }) => (
@@ -243,7 +249,7 @@ export default function LearnPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div>
-              <div className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-4">25,000+ Ingredients &amp; growing</div>
+              <div className="text-teal-600 text-xs font-normal uppercase tracking-widest mb-4">{fmt(ingredientCount)} ingredients &amp; growing</div>
               <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight mb-5">
                 Ingredient Directory.
               </h2>

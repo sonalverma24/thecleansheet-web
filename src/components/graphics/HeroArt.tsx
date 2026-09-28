@@ -18,7 +18,7 @@ const PILLS: { label: string; color: string }[] = [
   { label: "Retinol", color: "#10b981" },
 ];
 
-/** Dark lab-grid panel with floating ingredient pills (the "25k+" card language). */
+/** Dark lab-grid panel with floating ingredient pills (the ingredient-count card language). */
 export function IngredientLattice({ className = "" }: { className?: string }) {
   return (
     <div

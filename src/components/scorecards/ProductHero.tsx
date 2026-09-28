@@ -874,13 +874,17 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
               <span className="text-[11px] text-[#b0a8a4]">{categoryLabel}</span>
             </div>
 
-            {/* Product name (desktop) */}
-            <h1
+            {/* Product name (desktop). The mobile header above owns the page's one <h1>
+                tag (both copies live in the DOM, one hidden per breakpoint); this
+                copy is an ARIA level-1 heading so crawlers see a single <h1>. */}
+            <div
+              role="heading"
+              aria-level={1}
               className="hidden lg:block text-[2.1rem] text-[#282828] leading-tight tracking-tight mb-3"
               style={{ fontFamily: "'Cooper BT', Georgia, serif" }}
             >
               {product.productName}
-            </h1>
+            </div>
 
             {/* Verdict / summary */}
             <p className="text-sm text-[#282828]/65 leading-relaxed mb-5 max-w-xl">

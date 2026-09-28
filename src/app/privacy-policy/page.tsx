@@ -2,7 +2,8 @@ import Link from "next/link";
 import BackButton from "@/components/BackButton";
 
 export const metadata = {
-  title: "Privacy Policy | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/privacy-policy" },
+  title: "Privacy Policy",
   description: "Privacy Policy for The Clean Sheet™: how we collect, use, and protect your personal data.",
 };
 

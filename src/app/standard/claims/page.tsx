@@ -5,6 +5,7 @@ import ClaimsLibrary from "./ClaimsLibrary";
 import { CLAIMS } from "@/data/standard";
 
 export const metadata = {
+  alternates: { canonical: "https://thecleansheet.in/standard/claims" },
   title: "Public Claims Library",
   description:
     "What every beauty marketing claim has to prove: clinically proven, dermatologist tested, fragrance-free, reef-safe, recyclable and more. The evidence we need, what doesn't count, and the wording that's actually allowed.",

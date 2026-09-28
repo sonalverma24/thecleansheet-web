@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Mail, Phone, Globe, MessageSquare, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Contact | The Clean Sheet™",
+  alternates: { canonical: "https://thecleansheet.in/contact" },
+  title: "Contact",
   description: "Get in touch with The Clean Sheet™ for brand certification enquiries, consumer questions, or press.",
 };
 

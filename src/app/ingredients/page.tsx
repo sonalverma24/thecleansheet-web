@@ -1,30 +1,34 @@
 import type { Metadata } from "next";
 import IngredientDirectory from "./IngredientDirectory";
 import BackButton from "@/components/BackButton";
-import { getDirectoryIngredients } from "@/lib/ingredient-directory";
+import { getDirectoryIngredients, isPlaceholderIngredient } from "@/lib/ingredient-directory";
+import { toSlug } from "@/lib/ingredient-utils";
+import { CrawlableIndex, type IndexGroup } from "@/components/seo/CrawlableIndex";
 
 // The directory merges the curated core with ingredients discovered from every
 // scanned product, so it must render server-side against the live table.
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Cosmetic Ingredient Directory, 25,000+ Ingredients",
-  description:
-    "Search 25,000+ cosmetic ingredients. Get safety ratings, regulatory status across India, EU, US and Korea, allergen and CMR flags, all backed by science. Free to use.",
-  keywords: [
-    "cosmetic ingredient list", "INCI ingredient safety", "parabens in skincare India",
-    "is niacinamide safe", "fragrance allergy ingredients", "CMR cosmetic ingredients",
-    "EU cosmetics regulation India", "ingredient checker", "skin-safe ingredients",
-  ],
-  alternates: { canonical: "https://thecleansheet.in/ingredients" },
-  openGraph: {
-    title: "Cosmetic Ingredient Directory, 25,000+ Ingredients | The Clean Sheet™",
-    description:
-      "Check safety, regulatory status, and allergen flags for any cosmetic ingredient. India's most comprehensive ingredient database.",
-    url: "https://thecleansheet.in/ingredients",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Quote the real directory size (core + discovered), never a fixed marketing figure.
+  const n = (await getDirectoryIngredients()).length.toLocaleString("en-IN");
+  return {
+    title: "Cosmetic Ingredient Directory",
+    description: `Browse ${n} cosmetic ingredients. Get safety ratings, regulatory status across India, EU, US and Korea where listed, allergen and CMR flags, all backed by science. Free to use.`,
+    keywords: [
+      "cosmetic ingredient list", "INCI ingredient safety", "parabens in skincare India",
+      "is niacinamide safe", "fragrance allergy ingredients", "CMR cosmetic ingredients",
+      "EU cosmetics regulation India", "ingredient checker", "skin-safe ingredients",
+    ],
+    alternates: { canonical: "https://thecleansheet.in/ingredients" },
+    openGraph: {
+      title: "Cosmetic Ingredient Directory | The Clean Sheet™",
+      description: `Check safety, regulatory status, and allergen flags across ${n} cosmetic ingredients.`,
+      url: "https://thecleansheet.in/ingredients",
+      type: "website",
+    },
+  };
+}
 
 const datasetJsonLd = {
   "@context": "https://schema.org",
@@ -52,6 +56,30 @@ const datasetJsonLd = {
 
 export default async function IngredientsPage() {
   const ingredients = await getDirectoryIngredients();
+
+  // Crawlable A-Z index: the directory below paginates in JS (60 per page), so its
+  // server HTML links to only a fraction of the profiles. Lists every profile that
+  // is indexable (curated core + discovered profiles that have been enriched), the
+  // same set the ingredients sitemap lists. Stub profiles are noindex, so they are
+  // left out until enrichment fills them in.
+  const byLetter = new Map<string, Map<string, string>>();
+  for (const ing of ingredients) {
+    if (isPlaceholderIngredient(ing)) continue;
+    const slug = toSlug(ing.INCI_Name);
+    if (!slug) continue;
+    const first = ing.INCI_Name.trim()[0]?.toUpperCase() ?? "#";
+    const letter = /[A-Z]/.test(first) ? first : "0-9";
+    const bucket = byLetter.get(letter) ?? new Map<string, string>();
+    if (!bucket.has(slug)) bucket.set(slug, ing.INCI_Name);
+    byLetter.set(letter, bucket);
+  }
+  const azGroups: IndexGroup[] = [...byLetter.entries()]
+    .sort(([a], [b]) => (a === "0-9" ? -1 : b === "0-9" ? 1 : a.localeCompare(b)))
+    .map(([label, bucket]) => ({
+      label,
+      links: [...bucket].sort((a, b) => a[1].localeCompare(b[1])).map(([slug, name]) => ({ href: `/ingredients/${slug}`, text: name })),
+    }));
+
   return (
     <div>
       <script
@@ -81,6 +109,13 @@ export default async function IngredientsPage() {
       </div>
 
       <IngredientDirectory ingredients={ingredients} />
+
+      <CrawlableIndex
+        id="ingredient-index"
+        heading="Every ingredient profile, A to Z"
+        intro="Open any ingredient for its full safety profile, regulatory status and the reviewed products that contain it."
+        groups={azGroups}
+      />
     </div>
   );
 }

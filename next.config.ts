@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
+// Next.js streams <title>/<meta>/canonical into <body> for user agents that are
+// not on its "limited bots" list, and Googlebot is (by design) not on the default
+// list. For dynamic pages (notably /reviews/[slug]) that pushes the canonical
+// hundreds of KB into the document. Add Googlebot so it always gets metadata in
+// <head>. This is Next's own default list (next/dist/shared/lib/router/utils/html-bots)
+// plus Googlebot; re-check it when upgrading Next.
+const HTML_LIMITED_BOTS =
+  /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i;
+
 const nextConfig: NextConfig = {
+  htmlLimitedBots: HTML_LIMITED_BOTS,
   // Allows CI/sandbox builds to write outside the project dir (defaults to .next)
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
@@ -30,6 +40,14 @@ const nextConfig: NextConfig = {
       { source: "/services", destination: "/for-brands", permanent: true },
       { source: "/certified", destination: "/verify", permanent: true },
       { source: "/consumers", destination: "/verify", permanent: true },
+      // The analyzer moved to /review. Permanent (308) so Google consolidates onto
+      // /review; /brands still links here as /analyzer?product=<query>, which /review
+      // reads as ?q=.
+      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/review?q=:product", permanent: true },
+      { source: "/analyzer", destination: "/review", permanent: true },
+      { source: "/analyser", destination: "/review", permanent: true },
+      // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
+      { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/reviews/kay-beauty-hydra-creme-lipstick", permanent: true },
     ];
   },
 };

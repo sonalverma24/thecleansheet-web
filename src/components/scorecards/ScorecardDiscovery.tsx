@@ -338,9 +338,10 @@ function MobileSortSheet({
 interface InnerProps {
   brands: BrandSummary[];
   products: ProductScorecard[];
+  statsOverride?: { totalProducts: number; brandsScored: number; ingredients?: number };
 }
 
-function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
+function ScorecardDiscoveryInner({ brands, products, statsOverride }: InnerProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -519,20 +520,20 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
   const hasPriceData = products.some((p) => !!p.price);
   const hasActiveFilters = Object.values(filters).some((a) => a.length > 0);
 
-  // Stats reflect the full merged catalogue actually shown (curated + live
-  // repository), so both counts grow as the repository does — not just the
-  // static curated list.
-  const totalProducts = products.length;
-  const brandsScored = new Set(products.map((p) => p.brandSlug)).size;
+  // Stats prefer statsOverride (a lifetime count from the page, uncapped by
+  // however many products/tiles were actually fetched for the grid) and fall
+  // back to counting `products` directly when no override is given.
+  const totalProducts = statsOverride?.totalProducts ?? products.length;
+  const brandsScored = statsOverride?.brandsScored ?? new Set(products.map((p) => p.brandSlug)).size;
 
   return (
     <>
       {/* ── Stats strip ── */}
       <div className="bg-white border border-ink-100 rounded-2xl shadow-sm mt-3 mb-4 grid grid-cols-3 divide-x divide-ink-100">
         {[
-          { label: "Brands scored",       value: brandsScored.toString()   },
-          { label: "Products analysed",   value: totalProducts.toString()  },
-          { label: "Ingredients checked", value: "25,000+"                 },
+          { label: "Brands scored",           value: brandsScored.toString()   },
+          { label: "Products analysed",       value: totalProducts.toString()  },
+          { label: "Ingredients in directory", value: (statsOverride?.ingredients ?? 0).toLocaleString("en-IN") },
         ].map(({ label, value }) => (
           <div key={label} className="px-4 sm:px-8 py-3 text-center">
             <div className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight">{value}</div>
@@ -716,9 +717,15 @@ function ScorecardDiscoveryInner({ brands, products }: InnerProps) {
 interface ScorecardDiscoveryProps {
   brands: BrandSummary[];
   products: ProductScorecard[];
+  /** Lifetime stats for the top strip. Optional: when omitted, both figures
+      fall back to counting `products` directly. Pass these when `products`
+      is capped (e.g. only the newest N live-repository reviews are fetched
+      for the grid) so the stats strip keeps climbing instead of plateauing
+      at the cap. */
+  statsOverride?: { totalProducts: number; brandsScored: number; ingredients?: number };
 }
 
-export function ScorecardDiscovery({ brands, products }: ScorecardDiscoveryProps) {
+export function ScorecardDiscovery({ brands, products, statsOverride }: ScorecardDiscoveryProps) {
   return (
     <Suspense
       fallback={
@@ -733,7 +740,7 @@ export function ScorecardDiscovery({ brands, products }: ScorecardDiscoveryProps
         </div>
       }
     >
-      <ScorecardDiscoveryInner brands={brands} products={products} />
+      <ScorecardDiscoveryInner brands={brands} products={products} statsOverride={statsOverride} />
     </Suspense>
   );
 }
