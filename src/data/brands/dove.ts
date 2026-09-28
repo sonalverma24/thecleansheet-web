@@ -178,7 +178,7 @@ const products: ProductScorecard[] = [
     cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-09",
     category: "Body Care",
-    subCategory: "Body Cream",
+    subCategory: "Body Butter",
     price: 525,
     sizeValue: 300,
     sizeUnit: "ml",

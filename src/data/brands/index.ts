@@ -13,11 +13,15 @@ import { aqualogicaBrand } from "./aqualogica";
 import { foxtaleBrand } from "./foxtale";
 import { dermacoBrand } from "./dermaco";
 import { lotusHerbalsBrand } from "./lotus-herbals";
+import { ceraveBrand } from "./cerave";
+import { doveBrand } from "./dove";
+import { himalayaBrand } from "./himalaya";
+import { mcaffeineBrand } from "./mcaffeine";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand, mamaearthBrand, codeskinBrand, deconstructBrand, aqualogicaBrand, foxtaleBrand, dermacoBrand, lotusHerbalsBrand];
+export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand, mamaearthBrand, codeskinBrand, deconstructBrand, aqualogicaBrand, foxtaleBrand, dermacoBrand, lotusHerbalsBrand, ceraveBrand, doveBrand, himalayaBrand, mcaffeineBrand];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);

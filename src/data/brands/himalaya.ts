@@ -159,7 +159,7 @@ const products: ProductScorecard[] = [
     indiaContext: "At ₹299 for 200ml, this is one of the most accessible body creams available in India with a publicly verifiable INCI, making it a strong value option for normal to dry skin on the arms and legs. Isopropyl Myristate is listed high in the formula, which is worth noting for users in India's tropical climate who apply body cream to the chest, upper back, or shoulders, where heat-induced sweat and occlusion can exacerbate follicular congestion. The Olivem 1000 emulsifier system is a better-quality choice than is typical at this price tier. The unspecified fragrance is a concern for the Fitzpatrick III-V skin types that make up most of India's population, as these skin tones can be more reactive to fragrance-induced sensitisation. No CDSCO recall or ban was identified for this product.",
     analyzedAt: "2026-06-09",
     category: "Body Care",
-    subCategory: "Body Cream",
+    subCategory: "Body Butter",
     price: 299,
     sizeValue: 200,
     sizeUnit: "ml",

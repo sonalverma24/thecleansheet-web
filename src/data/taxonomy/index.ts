@@ -222,6 +222,15 @@ const VALID_EVIDENCE_LABELS = new Set(EVIDENCE_STATUS.map((e) => e.label));
 const VALID_CATEGORY_LABELS = new Set(PRODUCT_CATEGORIES.map((c) => c.label));
 const ALL_TYPE_LABELS = new Set(PRODUCT_TYPES.map((t) => t.label));
 
+// certificationStatus is stored on products as a slug ("tcs-certified", "under-review",
+// "not-certified") but the taxonomy's controlled labels are "TCS Certified" etc. - normalize
+// before validating, mirroring the same slug->label map used for filtering results.
+const CERT_SLUG_TO_LABEL: Record<string, string> = {
+  "tcs-certified": "TCS Certified",
+  "under-review": "Under Review",
+  "not-certified": "Not Certified",
+};
+
 /** Validate a product object against the controlled taxonomy. */
 export function validateProductTaxonomy(product: {
   category?: string;
@@ -249,8 +258,11 @@ export function validateProductTaxonomy(product: {
     errors.push(`Product type "${product.subCategory}" is not in the approved taxonomy.`);
   }
 
-  if (product.certificationStatus && !VALID_CERT_LABELS.has(product.certificationStatus)) {
-    errors.push(`Certification status "${product.certificationStatus}" is not in the approved taxonomy.`);
+  if (product.certificationStatus) {
+    const normalized = CERT_SLUG_TO_LABEL[product.certificationStatus] ?? product.certificationStatus;
+    if (!VALID_CERT_LABELS.has(normalized)) {
+      errors.push(`Certification status "${product.certificationStatus}" is not in the approved taxonomy.`);
+    }
   }
 
   // Data limited (allow upload but flag)
@@ -304,6 +316,10 @@ export function buildControlledFilterOptions(products: {
   const VALID_CAUTION = new Set(CAUTION.map((c) => c.label));
   const VALID_CONCERN = new Set(CONCERNS.map((c) => c.label));
   const VALID_ACTIVE = new Set(ACTIVE_INGREDIENTS.filter((a) => a.is_filterable).map((a) => a.label));
+
+  function normCertLabel(raw: string): string {
+    return CERT_SLUG_TO_LABEL[raw] ?? raw;
+  }
 
   // Active matching: normalize raw active names to taxonomy labels
   function normActiveLabel(raw: string): string | null {
@@ -364,11 +380,11 @@ export function buildControlledFilterOptions(products: {
       )
     ),
     certificationStatus: count(
-      products.flatMap((p) =>
-        p.certificationStatus && VALID_CERT_LABELS.has(p.certificationStatus)
-          ? [p.certificationStatus]
-          : []
-      )
+      products.flatMap((p) => {
+        if (!p.certificationStatus) return [];
+        const label = normCertLabel(p.certificationStatus);
+        return VALID_CERT_LABELS.has(label) ? [label] : [];
+      })
     ),
     priceRanges: count(
       products.flatMap((p) => {
