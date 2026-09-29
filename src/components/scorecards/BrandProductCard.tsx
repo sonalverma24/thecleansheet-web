@@ -32,7 +32,7 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
 
-          {/* Tier mark - top right (Approved = branded seal) */}
+          {/* Tier mark - top right */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>
             <TileTierMark tier={resolveTier(product)} />
           </div>

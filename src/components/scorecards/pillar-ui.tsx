@@ -40,8 +40,12 @@ export function PillarDots({ score, max }: { score: number; max: number }) {
 
 import type { ReviewTier } from "@/lib/product-review-types";
 
+/* "approved" is kept as an internal key (still earned by the same stricter bar
+   in deriveVerdict/STAMPS.md) but no longer gets its own badge - it now reads
+   and renders identically to "mostly-clean", so "Good Standing" is the highest
+   standing a product visibly carries. See resolveTier below. */
 export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: string; border: string }> = {
-  "approved":         { label: "Clean Sheet Recommended", bg: "rgba(210,255,52,0.16)", fg: "#3f6212", border: "#a3c614" },
+  "approved":         { label: "Good Standing",           bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
   "mostly-clean":     { label: "Good Standing",           bg: "rgba(36,129,121,0.10)", fg: "#248179", border: "rgba(36,129,121,0.35)" },
   "can-do-better":    { label: "Room to Improve",         bg: "rgba(201,162,39,0.12)", fg: "#8a6d14", border: "rgba(201,162,39,0.45)" },
   "not-recommended":  { label: "Not Recommended",         bg: "rgba(253,97,88,0.10)",  fg: "#c2362f", border: "rgba(253,97,88,0.4)" },
@@ -49,16 +53,19 @@ export const TIER_STYLES: Record<ReviewTier, { label: string; bg: string; fg: st
 };
 
 export function scoreToTier(score: number): ReviewTier {
-  return score >= 85 ? "approved" : score >= 65 ? "mostly-clean" : "can-do-better";
+  return score >= 65 ? "mostly-clean" : "can-do-better";
 }
 
 /* The single source of truth for a product's displayed tier. Prefer the
    pre-computed verdict (`reviewTier`, which can be "not-recommended");
    fall back to the score only for products with no verdict (static catalogue).
+   Collapses "approved" into "mostly-clean" - the two now share one badge
+   ("Good Standing"), the highest standing shown on a product.
    Every badge/seal/label/title must use this so the tile and the detail page
    never disagree. */
 export function resolveTier(product: { reviewTier?: ReviewTier; score: number }): ReviewTier {
-  return product.reviewTier ?? scoreToTier(product.score);
+  const tier = product.reviewTier ?? scoreToTier(product.score);
+  return tier === "approved" ? "mostly-clean" : tier;
 }
 
 /* Maps the *visible* verdict tier to a schema.org Rating (0-5 scale) for
@@ -68,7 +75,7 @@ export function resolveTier(product: { reviewTier?: ReviewTier; score: number })
    carries the exact on-page label so the star rating and the badge agree. */
 const TIER_RATING: Record<Exclude<ReviewTier, "not-assessed">, number> = {
   "approved": 5,
-  "mostly-clean": 4,
+  "mostly-clean": 5,
   "can-do-better": 2.5,
   "not-recommended": 1.5,
 };
@@ -87,55 +94,10 @@ export function tierToRating(tier: ReviewTier) {
   };
 }
 
-/* The TCS logo with an angled "APPROVED" rubber stamp across its lower third -
-   overflowing the edge, never hiding the wordmark. Scales from tile corners
-   (54px) to the product-page hero (120px+). */
-export function ApprovedStamp({ size = 54, animate = false }: { size?: number; animate?: boolean }) {
-  const s = size / 54; // proportional scale from the tile design
-  return (
-    <span
-      className="relative inline-block"
-      style={{ width: size, height: size, ...(animate ? { animation: "tcs-stamp 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) 0.35s both" } : {}) }}
-      aria-label="Clean Sheet Recommended"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo.png"
-        alt=""
-        width={size}
-        height={size}
-        style={{ width: size, height: size }}
-        className="object-cover rounded-full shadow-md bg-white"
-      />
-      <span
-        className="absolute uppercase select-none"
-        style={{
-          bottom: 7 * s,
-          left: -9 * s,
-          transform: "rotate(-9deg)",
-          fontSize: 6 * s,
-          fontWeight: 800,
-          letterSpacing: "0.02em",
-          lineHeight: 1,
-          color: "#1d6a5f",
-          background: "rgba(255,255,255,0.94)",
-          border: `${Math.max(1.5 * s, 1.5)}px solid #1d6a5f`,
-          borderRadius: 3 * s,
-          padding: `${2 * s}px ${4 * s}px`,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.14)",
-          fontFamily: "Helvetica, Arial, sans-serif",
-        }}
-      >
-        Recommended
-      </span>
-    </span>
-  );
-}
-
-/* The rubber-stamp band on its own - same ink-stamp language as the "APPROVED"
-   mark, but without the TCS logo disc. Used for Good Standing / Room to Improve /
-   Not Recommended so every tier reads as one consistent stamp family. */
-export function TierStamp({ tier, size = 116, animate = false }: { tier: Exclude<ReviewTier, "approved">; size?: number; animate?: boolean }) {
+/* The rubber-stamp band - the ink-stamp language shared by every standing
+   (Good Standing / Room to Improve / Not Recommended / Licensed Drug), so no
+   tier gets its own distinct seal anymore. */
+export function TierStamp({ tier, size = 116, animate = false }: { tier: ReviewTier; size?: number; animate?: boolean }) {
   const t = TIER_STYLES[tier];
   const s = size / 116;
   const words = t.label.replace(/^Clean Sheet\s+/i, "").toUpperCase().split(" ");
@@ -170,10 +132,8 @@ export function TierStamp({ tier, size = 116, animate = false }: { tier: Exclude
   );
 }
 
-/* Tile corner mark: Approved products carry the stamped logo;
-   other tiers show the compact pill so cautions stay visible. */
+/* Tile corner mark: the compact pill for every tier. */
 export function TileTierMark({ tier }: { tier: ReviewTier }) {
-  if (tier === "approved") return <ApprovedStamp size={54} />;
   return (
     <span
       className="inline-block rounded-full"

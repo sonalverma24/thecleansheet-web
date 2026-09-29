@@ -102,10 +102,7 @@ export async function GET() {
 
   lines.push("## What the verdicts mean");
   lines.push(
-    "- Clean Sheet Recommended: passes on ingredient safety, regulatory compliance and claim substantiation — our highest standing.",
-  );
-  lines.push(
-    "- Good Standing: broadly sound with minor gaps (e.g. a claim that is plausible but not publicly proven).",
+    "- Good Standing: passes on ingredient safety, regulatory compliance and claim substantiation — our highest standing. Broadly sound, sometimes with minor gaps (e.g. a claim that is plausible but not publicly proven).",
   );
   lines.push(
     "- Room to Improve: real concerns — unproven claims, transparency gaps, or formulation issues a buyer should weigh.",

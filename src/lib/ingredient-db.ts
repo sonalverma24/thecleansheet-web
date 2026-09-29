@@ -180,9 +180,9 @@ export function bannedIngredientsInInci(inci: string[]): { name: string; note: s
     endocrine-activity flag (permitted-but-flagged, e.g. certain UV filters
     and longer-chain parabens - see Endocrine_Flag in the DB). This is a
     legal-but-flagged concern, not a prohibition: it must stay visible on the
-    stamp (so "Clean Sheet Recommended" and the safety screen never silently
-    disagree) without hard-failing a product to "Not Recommended" over an
-    ingredient that is lawful at its permitted concentration. */
+    stamp (so "Good Standing" and the safety screen never silently disagree)
+    without hard-failing a product to "Not Recommended" over an ingredient that
+    is lawful at its permitted concentration. */
 export function endocrineFlaggedInInci(inci: string[]): { name: string; note: string }[] {
   const out: { name: string; note: string }[] = [];
   const seen = new Set<string>();

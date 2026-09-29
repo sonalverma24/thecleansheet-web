@@ -6,14 +6,22 @@ assigned. The stamp is **computed in code** (`deriveVerdict` in
 product always earns the same stamp and the model can never talk a product up or
 down a tier.
 
-Order, best to worst:
+Displayed order, best to worst:
 
-1. **Clean Sheet Approved**
-2. **Mostly Clean**
-3. **Can Do Better**
-4. **Not Recommended**
+1. **Good Standing** (highest)
+2. **Room to Improve**
+3. **Not Recommended**
 
-Internal tier keys: `approved`, `mostly-clean`, `can-do-better`, `not-recommended`.
+"Good Standing" is a single badge shown for two internal tiers: `approved` (the
+stricter bar, still gated on claim evidence - see below) and `mostly-clean`.
+They render identically - same label, same colour, same seal - so a shopper
+never sees a distinct "Clean Sheet Approved" stamp above Good Standing. The
+`approved` key and its stricter bar still exist in code (it still determines,
+for example, whether a headline calls out that a product met the strictest
+evidence bar), it just no longer carries its own visible badge.
+
+Internal tier keys: `approved`, `mostly-clean`, `can-do-better` (displayed as
+"Room to Improve"), `not-recommended`.
 
 ---
 
@@ -30,28 +38,28 @@ The critical rule that prevents false negatives: **missing evidence lands in "Ca
 
 Inputs (from the scored review): `total` /100, `claimEvidence` /20, `formulaLogic` /15, and `hardFlags` (count of claims that survive both guardrails below).
 
-### 1. Clean Sheet Approved
+### 1a. Good Standing — internal key `approved`
 > "Claims hold up to the evidence."
 
-Safe, honest, **and** the headline claims are actually proven on the finished product.
+Safe, honest, **and** the headline claims are actually proven on the finished product. This is the strictest bar, but it displays exactly the same "Good Standing" badge as 1b below - it does not get its own stamp.
 
 **Earned when:** `hardFlags === 0` **AND** `total >= 85` **AND** `claimEvidence >= 15`.
 
-### 2. Mostly Clean
+### 1b. Good Standing — internal key `mostly-clean`
 > "A well-made, transparent product - some claims rest on ingredient evidence rather than finished-product proof."
 
 Safe and honest, but the proof leans on ingredient-level research, not finished-product tests.
 
-**Earned when:** `hardFlags === 0` **AND** `total >= 65`, but it misses the Approved bar (either `total < 85` or `claimEvidence < 15`).
+**Earned when:** `hardFlags === 0` **AND** `total >= 65`, but it misses the stricter `approved` bar (either `total < 85` or `claimEvidence < 15`).
 
-### 3. Can Do Better
+### 2. Room to Improve — internal key `can-do-better`
 > "Nothing wrong here, but the proof and transparency don't yet match the claims."
 
 Nothing is wrong. The brand simply hasn't shown enough: thin disclosure, or claims that outrun their public evidence. **This is where a safe-but-underproven product sits.**
 
 **Earned when:** `hardFlags === 0` **AND** `total < 65`.
 
-### 4. Not Recommended
+### 3. Not Recommended
 > "Makes a claim that isn't permitted in India, or one the product's own ingredient list contradicts."
 
 A real, code-verified problem exists. This is the only stamp that names a brand negatively, so it carries the highest evidence bar and every negative call keeps a stored evidence trail.
@@ -90,16 +98,27 @@ Name-only queries have no page corpus, so guardrail 2 is skipped for them (claim
 ## Score-band fallback (static catalogue only)
 
 Curated products with no derived verdict fall back to bands (`scoreToTier`):
-`score >= 85` → Approved, `>= 65` → Mostly Clean, else → Can Do Better. A static
-product is never auto-assigned "Not Recommended" - that requires a live review's
-code-verified hard flag.
+`score >= 65` → Good Standing (`mostly-clean`), else → Room to Improve
+(`can-do-better`). A static product has no `claimEvidence` figure to test
+against the stricter `approved` bar, so this fallback never distinguishes 1a
+from 1b - both already display identically, so this has no visible effect. A
+static product is never auto-assigned "Not Recommended" - that requires a live
+review's code-verified hard flag.
 
 ---
 
 ## Versioning
 
-`RUBRIC_REV` in `product-review-engine.ts` is bumped whenever these rules change,
-so stored reviews from an older rubric are not served stale. This change is
-`r6`. The verdict itself is re-derived on every read, so tier-rule changes apply
-to already-stored reviews without re-running the model; guardrail-2 corroboration
-only re-applies on a fresh run.
+`RUBRIC_REV` in `product-review-engine.ts` is bumped whenever the EARNING rules
+above change (thresholds, guardrails, hard-flag logic), so stored reviews from
+an older rubric are not served stale. Current: `r7`.
+
+**"Good Standing" badge merge (Sept 2026) did NOT bump the rubric.** It only
+changed what label/seal each already-computed tier displays - `approved` and
+`mostly-clean` now both render "Good Standing" instead of `approved` getting
+its own "Clean Sheet Approved"/"Clean Sheet Recommended" stamp. The underlying
+`tier` value, thresholds and guardrails are unchanged, so no re-derivation or
+backfill was needed; every already-stored review picks up the new label on its
+next read, since `tierLabel` and the badge are computed fresh on every serve
+(never persisted as text). Only bump `RUBRIC_REV` for an actual EARNING-rule
+change, not a label/display change.

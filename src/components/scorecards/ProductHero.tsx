@@ -12,7 +12,7 @@ import Link from "next/link";
 import type { ProductScorecard, Brand } from "@/data/brands/types";
 import { resolveBadges } from "@/data/badges/resolver";
 import type { BadgeDefinition } from "@/data/badges/taxonomy";
-import { resolveTier, ApprovedStamp, TierStamp } from "@/components/scorecards/pillar-ui";
+import { resolveTier, TierStamp } from "@/components/scorecards/pillar-ui";
 import type { ReviewTier } from "@/lib/product-review-types";
 import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
 import { HeroActions } from "./HeroActions";
@@ -740,16 +740,6 @@ function formatAnalysedDate(isoDate: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ScoreBadge({ tier, size = 116, animate = true }: { tier: ReviewTier; size?: number; animate?: boolean }) {
-  // Approved: the stamped TCS logo (same mark as catalogue tiles), stamping down on entry.
-  if (tier === "approved") {
-    return (
-      <div className="flex-shrink-0">
-        <ApprovedStamp size={size} animate={animate} />
-      </div>
-    );
-  }
-
-  // Other tiers: the rubber-stamp band (same ink-stamp language, no logo disc).
   return (
     <div className="flex-shrink-0">
       <TierStamp tier={tier} size={size} animate={animate} />

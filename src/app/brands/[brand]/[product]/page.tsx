@@ -17,7 +17,7 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
   const name = product.productName;
 
   const approvedLead: Record<typeof tier, string> = {
-    "approved": `Yes. ${name} is Clean Sheet Recommended — it passes our independent checks on ingredient safety, regulatory compliance and claim substantiation.`,
+    "approved": `Yes. ${name} is in Good Standing with The Clean Sheet — it passes our independent checks on ingredient safety, regulatory compliance and claim substantiation.`,
     "mostly-clean": `${name} is in Good Standing with The Clean Sheet: broadly sound, with only minor gaps such as a claim that is plausible but not publicly proven.`,
     "can-do-better": `Not quite. ${name} is rated "Room to Improve" by The Clean Sheet — we found real concerns a buyer should weigh, such as unproven claims or transparency gaps.`,
     "not-recommended": `No. ${name} is Not Recommended by The Clean Sheet, based on issues with safety, regulatory compliance or claim honesty.`,
@@ -26,7 +26,7 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
 
   const faqs: ({ q: string; a: string } | null)[] = [
     {
-      q: `Is ${name} Clean Sheet Recommended?`,
+      q: `Is ${name} in Good Standing with The Clean Sheet?`,
       a: `${approvedLead[tier]} ${product.summary}`.trim(),
     },
     product.cleanSheetNote
@@ -103,7 +103,7 @@ export async function generateMetadata({
   const tierLabel = TIER_STYLES[resolveTier(product)].label;
   return {
     title: `${product.productName} Review · ${tierLabel}`,
-    description: clipDescription(`Is ${product.productName} safe? Science-backed ingredient analysis: ${tierLabel}. Full INCI review, regulatory compliance, and India-specific skin context. ${product.concern}.`),
+    description: clipDescription(`Is ${product.productName} safe? Science-backed review: ingredient safety, regulatory compliance, and formulation analysis. Targets ${product.concern.toLowerCase()}.`),
     keywords: [
       `${product.productName} review`,
       `${product.productName} India`,

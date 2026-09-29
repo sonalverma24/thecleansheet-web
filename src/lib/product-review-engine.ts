@@ -118,7 +118,7 @@ function isIngredientClaim(t: string): boolean {
    is actually licensed to make. Salicylic acid, niacinamide, zinc pyrithione,
    piroctone olamine, climbazole and the like are cosmetic actives and are NOT on
    this list. */
-const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string }[] = [
+const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: number }[] = [
   { re: /ketoconazole/i, name: "Ketoconazole" },
   { re: /\bminoxidil\b/i, name: "Minoxidil" },
   { re: /selenium\s+sul(f|ph)ide/i, name: "Selenium sulfide" },
@@ -133,13 +133,44 @@ const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string }[] = [
   { re: /\bterbinafine\b/i, name: "Terbinafine" },
   { re: /\bfluconazole\b/i, name: "Fluconazole" },
   { re: /\bpermethrin\b/i, name: "Permethrin" },
+  // Azelaic acid is dual-use: at ~10% and below it is a widely sold cosmetic
+  // brightening/exfoliating serum active (Minimalist, Dot & Key, The Ordinary -
+  // see the Hyphen/Foxtale entries where it sits undisclosed/low-dose as a
+  // supporting active). At 15%+ it is the clinically studied prescription
+  // strength sold in India as a Schedule-H drug (Finacea 15%, Aziderm/Azelex
+  // 20%). Gate on concentration so it isn't a blanket drug flag.
+  { re: /azelaic\s+acid/i, name: "Azelaic acid", minConcentration: 15 },
 ];
 
-/** Drug actives found in the retrieved INCI. Empty when none (or no INCI). */
-function licensedDrugActivesInInci(inci: string[]): string[] {
+/** Best-effort concentration (%) for a given active, read from the product
+    name (e.g. "Aziderm cream 20%", "Finacea 15% Gel"). Prefers a % found
+    right next to the active's own name over a bare % elsewhere in the title,
+    so a multi-active name doesn't misattribute another ingredient's dose.
+    Returns null when no percentage can be found - callers must treat that as
+    "unknown", never as "high enough to gate on". */
+function activeConcentrationFromName(productName: string, activeRe: RegExp): number | null {
+  const near = new RegExp(`${activeRe.source}[^%\\d]{0,25}(\\d{1,2}(?:\\.\\d+)?)\\s*%`, "i");
+  const before = new RegExp(`(\\d{1,2}(?:\\.\\d+)?)\\s*%[^%]{0,25}${activeRe.source}`, "i");
+  const bare = /(\d{1,2}(?:\.\d+)?)\s*%/;
+  const m = productName.match(near) ?? productName.match(before) ?? productName.match(bare);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Drug actives found in the retrieved INCI. Empty when none (or no INCI).
+    Concentration-gated actives (see minConcentration above) also need the
+    product name to confirm they're dosed at prescription strength - an
+    undisclosed or sub-threshold concentration stays cosmetic. */
+function licensedDrugActivesInInci(inci: string[], productName: string): string[] {
   if (!inci.length) return [];
   const joined = inci.join(" · ");
-  return LICENSED_DRUG_ACTIVES.filter((d) => d.re.test(joined)).map((d) => d.name);
+  return LICENSED_DRUG_ACTIVES.filter((d) => {
+    if (!d.re.test(joined)) return false;
+    if (d.minConcentration == null) return true;
+    const pct = activeConcentrationFromName(productName, d.re);
+    return pct != null && pct >= d.minConcentration;
+  }).map((d) => d.name);
 }
 
 /* Common words that don't identify what a claim is ABOUT - ignored when we test
@@ -207,11 +238,14 @@ async function marketplaceListingCorpus(brand: string, productName: string): Pro
 }
 
 /* ═══════════════ Derived standing (computed in code) ═══════════════
-   Four standings, best → worst. "Clean Sheet Recommended" must mean the CLAIMS
-   themselves hold up - not just a good blended score - so the top tier is gated
-   on the claim-evidence dimension. "Not Recommended" is the ONLY negative-naming
-   tier and requires a code-verified problem. Missing proof is "Room to Improve",
-   never "Not Recommended". Full definitions in STAMPS.md. */
+   Four displayed standings, best → worst: Good Standing, Room to Improve, Not
+   Recommended, Licensed Drug. Internally the strict "approved" bar still exists
+   and gates on the claim-evidence dimension - the CLAIMS themselves must hold
+   up, not just a good blended score - but it no longer carries its own badge:
+   "approved" and "mostly-clean" both display as "Good Standing", the highest
+   standing a product visibly carries. "Not Recommended" is the ONLY
+   negative-naming tier and requires a code-verified problem. Missing proof is
+   "Room to Improve", never "Not Recommended". Full definitions in STAMPS.md. */
 export const APPROVAL_BAR = 85;
 const CLAIM_EVIDENCE_BAR = 15; // out of 20 - headline claims carry finished-product / clinical proof
 
@@ -450,11 +484,13 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 
   // Endocrine-activity flag: legal-but-flagged (e.g. certain chemical UV
   // filters, longer-chain parabens), not a prohibition. It must not silently
-  // disappear the way it previously did - so it cannot reach the top
-  // "Clean Sheet Recommended" stamp (below), but it also does not hard-fail
-  // the safety gate or drag a product down to "Not Recommended", consistent
-  // with how the rest of the site treats a legal-but-flagged concern as
-  // context rather than a condemnation.
+  // disappear the way it previously did - so it cannot reach the internal
+  // strict "approved" bar (below; not that it would show a different badge
+  // now - both "approved" and "mostly-clean" display as "Good Standing" - but
+  // the distinction still matters for the headline note), and it also does not
+  // hard-fail the safety gate or drag a product down to "Not Recommended",
+  // consistent with how the rest of the site treats a legal-but-flagged
+  // concern as context rather than a condemnation.
   const endocrineFlagged = endocrineFlaggedInInci(inci);
   const hasEndocrineFlag = endocrineFlagged.length > 0;
 
@@ -523,7 +559,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   // make treatment claims a cosmetic could not, so scoring it on the Clean Sheet
   // cosmetic standard would be a category error. Detect it and exclude it with a
   // note rather than condemning it. This gate wins over every cosmetic tier below.
-  const drugActives = licensedDrugActivesInInci(inci);
+  const drugActives = licensedDrugActivesInInci(inci, r.productName ?? "");
   const isDrug = drugActives.length > 0;
 
   /* Cosmetic standing ladder (best → worst). Two changes from the old rule:
@@ -550,7 +586,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   const tier: DerivedVerdict["tier"] = isDrug ? "not-assessed" : cosmeticTier;
 
   const TIER_META: Record<DerivedVerdict["tier"], { label: string; headline: string }> = {
-    "approved":         { label: "Clean Sheet Recommended", headline: "Claims hold up to the evidence." },
+    "approved":         { label: "Good Standing",           headline: "Claims hold up to the evidence." },
     "mostly-clean":     { label: "Good Standing",           headline: "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof." },
     "can-do-better":    { label: "Room to Improve",         headline: "Nothing wrong here, but the proof and transparency don't yet match the claims." },
     "not-recommended":  { label: "Not Recommended",         headline: "Makes a claim its own ingredient list contradicts, or contains an ingredient prohibited in cosmetics." },
@@ -564,7 +600,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       : tier === "not-recommended" && fairnessFlags > 0 && contradictionFlags === 0
         ? "Makes a skin-whitening or fairness claim, a category India (ASCI) treats as misleading and harmful."
         : tier === "mostly-clean" && hasEndocrineFlag && total >= APPROVAL_BAR
-          ? `A well-made, transparent product that would otherwise earn Clean Sheet Recommended, but it contains an ingredient flagged for endocrine activity${endocrineFlagged[0] ? ` (${endocrineFlagged[0].name})` : ""} - legal at its permitted concentration, so this caps it at Good Standing rather than the top stamp.`
+          ? `A well-made, transparent product, but it contains an ingredient flagged for endocrine activity${endocrineFlagged[0] ? ` (${endocrineFlagged[0].name})` : ""} - legal at its permitted concentration, which keeps it from meeting our strictest bar even though it still earns Good Standing.`
           : TIER_META[tier].headline;
 
   return {
