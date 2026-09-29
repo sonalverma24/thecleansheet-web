@@ -282,6 +282,36 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           )}
         </div>
       </section>
+
+      {/* Brand outreach line */}
+      <section className="bg-white border-t border-ink-100 px-5 py-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <p className="text-ink-500 text-xs leading-relaxed">
+            Want to verify your sunscreen to The Clean Sheet&rsquo;s standard? Reach out:{" "}
+            <a href="mailto:hello@thecleansheet.in" className="text-teal-700 hover:text-teal-900 font-medium">
+              hello@thecleansheet.in
+            </a>
+            {" "}&middot;{" "}
+            <a
+              href="https://instagram.com/thecleansheet.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-700 hover:text-teal-900 font-medium"
+            >
+              Instagram
+            </a>
+            {" "}&middot;{" "}
+            <a
+              href="https://www.linkedin.com/company/thecleansheet"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-700 hover:text-teal-900 font-medium"
+            >
+              LinkedIn
+            </a>
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

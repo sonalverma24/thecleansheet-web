@@ -99,4 +99,17 @@ export interface SunscreenEvidenceRecord {
   sourcesNote?: string;
   notAccessible?: string;
   researchDisclosure: string;
+  /**
+   * TCS's own conclusion / recommended next step (e.g. "request the full
+   * report before any verification mark"). This is judgement, not a
+   * documented fact, so it is kept for internal reference only — the
+   * public checksheet does not render it.
+   */
+  internalConclusion?: string;
+  /**
+   * Other internal-only notes and action items (things to ask the brand,
+   * follow-ups to run) that were trimmed out of public-facing findings
+   * because they are recommendations, not facts. Not rendered publicly.
+   */
+  internalNotes?: string[];
 }

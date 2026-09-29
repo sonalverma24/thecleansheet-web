@@ -85,11 +85,6 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       value:
         "Brand advises avoiding during pregnancy and lactation (octocrylene). Contains linoleic/linolenic acid and PEG-100 stearate, commonly flagged for fungal acne. Not water or sweat resistant. Brand global page still lists Vitamin A although retinol is absent from the current INCI",
     },
-    {
-      label: "TCS conclusion",
-      value:
-        "SPF protection is well supported for a mass market Indian sunscreen. UVA, broad spectrum and all skin claims remain brand declared. Request the full SPF and UVA reports, batch numbers and the formula change log before any verification mark",
-    },
   ],
 
   sections: [
@@ -245,8 +240,8 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
           items: [
             "The certificate covers SPF only. PA++++ appears in the product name but no UVA-PF result or method is on it.",
             "Tested product is named “Minimalist SPF 50 Sunscreen”, not “Multi-Vitamin”. Link between batch 11830 and the current INCI is unconfirmed.",
-            "Two document numbers on one page: header ends REP.REV, footer ends ADD.REV2. Ask which revision is final and what the addendum changed.",
-            "The lab's own footer states that when its report supports a commercial claim, the sponsor should provide the report in its entirety. Request the full report from Minimalist.",
+            "Two document numbers on one page: header ends REP.REV, footer ends ADD.REV2.",
+            "The lab's own footer states that when its report supports a commercial claim, the sponsor should provide the report in its entirety.",
             "ISO 9001 is a quality management certification, not a testing competence accreditation (ISO/IEC 17025).",
           ],
         },
@@ -475,7 +470,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       blocks: [
         {
           kind: "paragraph",
-          text: "NA. Reddit could not be accessed from this research environment, and search engines returned no indexed threads. Recommend a manual pass on r/IndianSkincareAddicts and r/IndianBeautyTalks. All fields in this section: NA.",
+          text: "NA. Reddit could not be accessed from this research environment, and search engines returned no indexed threads. All fields in this section: NA.",
         },
       ],
     },
@@ -669,4 +664,11 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
   sourcesNote:
     "Added 29 Sep 2026: SPF certificate from Advanced Science Laboratories, Inc. (Study No. MS22.SPF.A1015.UPPL.ISO24444.ST15.REP.REV, certificate dated 10 Apr 2023), published on the brand product page (beminimalist.co/products/multi-vitamin-spf-50). Source type: Lab report via brand website. Reliability: Primary source.",
   notAccessible: "Amazon.in listing, Reddit, misspatakha.com.",
+
+  internalConclusion:
+    "SPF protection is well supported for a mass market Indian sunscreen. UVA, broad spectrum and all skin claims remain brand declared. Request the full SPF and UVA reports, batch numbers and the formula change log before any verification mark.",
+  internalNotes: [
+    "D1 SPF certificate: ask Minimalist which revision is final (header reads REP.REV, footer reads ADD.REV2) and what the addendum changed. Request the full report from Minimalist.",
+    "M. Reddit and community sentiment: recommend a manual pass on r/IndianSkincareAddicts and r/IndianBeautyTalks.",
+  ],
 };
