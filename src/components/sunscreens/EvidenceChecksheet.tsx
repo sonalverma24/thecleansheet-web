@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowUpRight, ShoppingBag, ChevronDown } from "lucide-react";
 import type { SunscreenEvidenceRecord, SectionBlock } from "@/data/sunscreens/types";
 import { STATUS_TONE_STYLES } from "./status";
 
@@ -9,6 +10,25 @@ const STAMP_BORDER: Record<string, string> = {
   available: "var(--color-teal-600)",
   unavailable: "var(--color-coral-600)",
 };
+
+/**
+ * A sidebar TOC row: a growing accent dot + a sliding highlight make it
+ * obvious the row is clickable the moment the cursor lands on it, without
+ * resorting to a letter code the reader has to decode first.
+ */
+function TocLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <li>
+      <a
+        href={href}
+        className="group relative flex items-center gap-2.5 py-1.5 pl-2.5 pr-2 -mx-2.5 rounded-lg text-ink-600 hover:text-teal-700 hover:bg-teal-50 transition-colors duration-150"
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-ink-200 group-hover:bg-teal-500 group-hover:scale-125 transition-all duration-200 flex-shrink-0" />
+        <span className="leading-snug">{children}</span>
+      </a>
+    </li>
+  );
+}
 
 function Block({ block }: { block: SectionBlock }) {
   if (block.kind === "paragraph") {
@@ -190,75 +210,52 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </div>
       </section>
 
-      {/* Section nav — horizontal chip rail on mobile, sticky sidebar on desktop */}
-      <div className="lg:hidden border-b border-ink-100 bg-white sticky top-0 z-20">
-        <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto px-5 py-3">
-          <a href="#summary" className="flex-shrink-0 whitespace-nowrap text-xs text-ink-600 bg-ink-50 border border-ink-100 px-3 py-1.5 rounded-full">
-            Summary
-          </a>
-          {record.sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#section-${s.id}`}
-              className="flex-shrink-0 whitespace-nowrap text-xs text-ink-600 bg-ink-50 border border-ink-100 px-3 py-1.5 rounded-full"
-            >
-              {s.id}
-            </a>
-          ))}
-        </div>
-      </div>
-
       <div className="max-w-5xl mx-auto px-5 py-8 sm:py-12 flex flex-col lg:flex-row gap-10">
-        {/* Table of contents — desktop only */}
-        <nav className="hidden lg:block lg:w-48 flex-shrink-0">
+        {/* Table of contents — desktop only, plain-English titles with a reactive hover state */}
+        <nav className="hidden lg:block lg:w-56 flex-shrink-0">
           <div className="lg:sticky lg:top-6">
             <p className="text-[10px] tracking-[0.14em] uppercase text-ink-400 mb-3">On this record</p>
-            <ul className="space-y-1.5 text-xs">
-              <li><a href="#summary" className="text-ink-600 hover:text-teal-700 transition-colors">Consumer summary</a></li>
+            <ul className="text-sm">
+              <TocLink href="#summary">Consumer summary</TocLink>
               {record.sections.map((s) => (
-                <li key={s.id}>
-                  <a href={`#section-${s.id}`} className="text-ink-600 hover:text-teal-700 transition-colors">
-                    {s.id}. {s.title.replace(/^[A-Z]\d*\.\s*/, "")}
-                  </a>
-                </li>
+                <TocLink key={s.id} href={`#section-${s.id}`}>
+                  {s.title.replace(/^[A-Z]\d*\.\s*/, "")}
+                </TocLink>
               ))}
             </ul>
           </div>
         </nav>
 
-        {/* Body */}
-        <div className="flex-1 min-w-0 space-y-10 sm:space-y-14">
-          {/* T. Consumer facing summary */}
-          <section id="summary" className="scroll-mt-16">
-            <SectionHeading id="T" title="Consumer facing summary" />
+        {/* Body — a one-line-per-section accordion on mobile, a flowing document on desktop */}
+        <div className="flex-1 min-w-0 space-y-0 lg:space-y-14">
+          {/* T. Consumer facing summary — open by default, it's the TL;DR */}
+          <AccordionSection anchorId="summary" letter="T" title="Consumer facing summary" defaultOpen>
             <p className="text-sm text-ink-800 leading-relaxed mb-4">
               <span className="font-semibold">TCS status: {record.tcsStatus}.</span> {record.statusSummary}
             </p>
             <Block block={{ kind: "kv", rows: record.summary }} />
-          </section>
+          </AccordionSection>
 
           {/* Lettered sections */}
           {record.sections.map((section) => (
-            <section id={`section-${section.id}`} key={section.id} className="scroll-mt-16">
-              <SectionHeading id={section.id} title={section.title} />
+            <AccordionSection key={section.id} anchorId={`section-${section.id}`} letter={section.id} title={section.title}>
               <div className="space-y-4">
                 {section.blocks.map((block, i) => (
                   <Block block={block} key={i} />
                 ))}
               </div>
-            </section>
+            </AccordionSection>
           ))}
 
           {/* S. Overall status, restated as a stamp */}
-          <section>
-            <SectionHeading id="S" title="Overall TCS status" />
+          <AccordionSection anchorId="section-S" letter="S" title="Overall TCS status">
             <div
               className="rounded-xl px-5 py-4 inline-block"
               style={{ border: `1.5px solid ${stampBorder}`, background: tone.bg }}
             >
               <p className="text-base font-semibold" style={{ color: tone.text }}>{record.overallStatus}</p>
             </div>
-          </section>
+          </AccordionSection>
         </div>
       </div>
 
@@ -316,16 +313,47 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
   );
 }
 
-function SectionHeading({ id, title }: { id: string; title: string }) {
+/**
+ * One record section. On mobile this is a native <details> accordion —
+ * closed by default, tap the title to open it — so the whole record reads
+ * as a compact one-line-per-section list instead of a long scroll. On
+ * desktop (lg+) the content is always shown, matching the original flowing
+ * document: the `lg:!block` override forces it open regardless of the
+ * `open` attribute, and the letter id (T, A, B1…) is desktop-only, since on
+ * mobile it reads as unexplained noise next to the plain-English title.
+ */
+function AccordionSection({
+  anchorId,
+  letter,
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  anchorId: string;
+  letter: string;
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
   const displayTitle = title.replace(/^[A-Z]\d*\.\s*/, "");
   return (
-    <div className="flex items-baseline gap-3 mb-4 pb-2 border-b border-ink-100">
-      <span className="font-display text-teal-600 flex-shrink-0" style={{ fontSize: "1.1rem" }}>
-        {id}
-      </span>
-      <h2 className="font-display text-ink-950 tracking-tight" style={{ fontSize: "1.3rem" }}>
-        {displayTitle}
-      </h2>
-    </div>
+    <details id={anchorId} open={defaultOpen} className="group scroll-mt-16 border-b border-ink-100 lg:border-0">
+      <summary
+        className="flex items-start justify-between gap-3 py-3.5 lg:py-0 lg:mb-4 lg:pb-2 lg:border-b lg:border-ink-100 cursor-pointer lg:cursor-default list-none [&::-webkit-details-marker]:hidden"
+      >
+        <span className="flex items-baseline gap-3 min-w-0">
+          <span className="hidden lg:inline font-display text-teal-600 flex-shrink-0" style={{ fontSize: "1.1rem" }}>
+            {letter}
+          </span>
+          <span className="font-display text-ink-950 tracking-tight" style={{ fontSize: "1.1rem" }}>
+            {displayTitle}
+          </span>
+        </span>
+        <ChevronDown size={18} className="text-ink-400 flex-shrink-0 mt-0.5 transition-transform duration-200 group-open:rotate-180 lg:hidden" />
+      </summary>
+      <div className="hidden group-open:block lg:!block pb-4 lg:pb-0">
+        {children}
+      </div>
+    </details>
   );
 }

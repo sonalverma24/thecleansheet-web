@@ -1,7 +1,7 @@
 /**
  * TCS Evidence Record: Minimalist Multi-Vitamin SPF 50
  *
- * Desk research from public sources only, compiled 29 Sep 2026.
+ * Sourced from publicly available data only, compiled 29 Sep 2026.
  * NA = not found or not verifiable publicly. This is an evidence audit,
  * not a certification: nothing here has been submitted to TCS.
  */
@@ -27,7 +27,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
   claimsReviewed: 11,
   claimsVerified: 2,
   claimsGap: 7,
-  researchDisclosure: "Desk research from public sources only. NA = not found or not verifiable publicly.",
+  researchDisclosure: "Sourced from publicly available data only. NA = not found or not verifiable publicly.",
   overallStatus: "Evidence Partially Available.",
 
   productPageUrl: "https://beminimalist.co/products/multi-vitamin-spf-50",

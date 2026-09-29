@@ -47,8 +47,8 @@ export default function SunscreensPage() {
           <p className="text-ink-600 text-base leading-relaxed max-w-2xl">
             SPF, PA and broad spectrum are the claims most worth checking and hardest for a shopper to verify.
             Each record below audits one sunscreen against what is actually public: lab certificates, batch
-            numbers, formula history and consumer reports, with the gaps stated plainly. Desk research from
-            public sources only. This is not certification.
+            numbers, formula history and consumer reports, with the gaps stated plainly. Sourced from publicly
+            available data only. This is not certification.
           </p>
         </div>
       </section>
