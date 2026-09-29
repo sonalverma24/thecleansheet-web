@@ -23,8 +23,11 @@ export default function CoursesPage() {
 
         <div className="grid sm:grid-cols-2 gap-6">
 
-          {/* Skincare 101 Card, ended, greyed out */}
-          <div className="relative rounded-3xl border border-ink-100 bg-ink-50 overflow-hidden opacity-70">
+          {/* Skincare 101 Card, ended, greyed out, links to recording */}
+          <Link
+            href="/courses/skincare-101"
+            className="relative rounded-3xl border border-ink-100 bg-ink-50 overflow-hidden opacity-70 hover:opacity-100 transition-opacity block"
+          >
 
             {/* Rating badge */}
             <div className="absolute top-4 right-4 flex items-center gap-1 bg-yellow-400 text-ink-900 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm z-10">
@@ -70,8 +73,10 @@ export default function CoursesPage() {
                   <span>Session completed</span>
                 </div>
               </div>
+
+              <p className="text-teal-600 text-sm font-medium">View recording →</p>
             </div>
-          </div>
+          </Link>
 
           {/* Coming Soon Card */}
           <div className="relative rounded-3xl border-2 border-dashed border-teal-200 bg-teal-50/40 overflow-hidden flex flex-col items-center justify-center text-center p-10 min-h-[300px]">
