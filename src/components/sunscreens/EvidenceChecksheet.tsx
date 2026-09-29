@@ -101,10 +101,10 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </div>
       </div>
 
-      {/* Hero — compact, image centred toward the bottom, same on every breakpoint */}
+      {/* Hero — compact and centred on mobile, a larger side-by-side layout on desktop */}
       <section className="grain-overlay bg-teal-950 overflow-hidden">
-        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-5 sm:pt-8 sm:pb-6">
-          <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:text-left gap-3 lg:gap-12">
+        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-5 sm:pt-8 sm:pb-6 lg:py-14">
+          <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:text-left gap-3 lg:gap-14">
             {/* Identity */}
             <div className="min-w-0 lg:flex-1 lg:order-1">
               <p className="text-teal-600 text-[10px] tracking-[0.2em] uppercase mb-1.5 animate-fade-up font-medium">
@@ -129,11 +129,11 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
               </div>
             </div>
 
-            {/* Product image — centred, bottom-anchored, one size for every breakpoint */}
+            {/* Product image — small and centred on mobile, larger on the right on desktop */}
             <div className="flex-shrink-0 lg:order-2 animate-fade-up delay-200">
               <div className="animate-float">
                 <div
-                  className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden mx-auto"
+                  className="relative w-20 h-24 sm:w-24 sm:h-28 lg:w-48 lg:h-60 rounded-xl overflow-hidden mx-auto"
                   style={{
                     background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
                     boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
@@ -143,7 +143,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
                     src={record.image}
                     alt={`${record.brand} ${record.productName}`}
                     fill
-                    className="object-contain p-2.5"
+                    className="object-contain p-2.5 lg:p-6"
                     unoptimized
                   />
                 </div>
@@ -152,7 +152,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           </div>
 
           {/* Buy links — horizontal scroll rail, app-style */}
-          <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto mt-4 animate-fade-up delay-400 justify-center lg:justify-start">
+          <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto mt-4 lg:mt-6 animate-fade-up delay-400 justify-center lg:justify-start">
             {record.buyLinks.map((link) => (
               <a
                 key={link.retailer}
