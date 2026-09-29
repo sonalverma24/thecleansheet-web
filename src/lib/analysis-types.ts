@@ -52,6 +52,13 @@ export interface CheckResult {
       context in the screen, never in the alarming "worth knowing" callout. Keeps
       the read evidence-based rather than fear-based. */
   hard?: boolean;
+  /** The Safety & compliance screen hides plain "not-disclosed" rows (most of them
+      are boilerplate - "no lab document is public for this"). A "not-disclosed"
+      result sets this when it reports a concrete, confirmed fact rather than an
+      absence of data - e.g. "this INCI is fragranced, but the umbrella term hides
+      which of the 26 EU allergens are in it" is knowable and worth a consumer's
+      attention, unlike "no CoA is published". Ignored for every other state. */
+  forceShow?: boolean;
 }
 
 export interface AnalysisReport {

@@ -525,9 +525,10 @@ function LicensedDrugBody({ product }: { product: ProductScorecard }) {
 
 /* ── Category-driven qualitative screen (no scores) ── */
 const SCREEN_META: Record<string, { label: string; dot: string; fg: string }> = {
-  verified:  { label: "Clear",        dot: "#248179", fg: "#7fb0a6" },
-  disclosed: { label: "Brand-stated", dot: "#caa53a", fg: "#b79a52" },
-  adverse:   { label: "Note",         dot: "#fd6158", fg: "#d1897f" },
+  verified:      { label: "Clear",         dot: "#248179", fg: "#7fb0a6" },
+  disclosed:     { label: "Brand-stated",  dot: "#caa53a", fg: "#b79a52" },
+  adverse:       { label: "Note",          dot: "#fd6158", fg: "#d1897f" },
+  "not-disclosed": { label: "Not disclosed", dot: "#caa53a", fg: "#b79a52" },
 };
 const SCREEN_PILLARS = [
   "Ingredient Safety & Toxicity",
@@ -537,8 +538,14 @@ const SCREEN_PILLARS = [
   "Sustainability & Ethics",
 ] as const;
 /* The screen shows only what we confirmed or the brand states. Adverse findings
-   are NOT repeated here - they lead the page in the "Worth knowing" callout. */
-const isShownFinding = (c: CheckResult) => c.state === "verified" || c.state === "disclosed" || (c.state === "adverse" && !c.hard);
+   are NOT repeated here - they lead the page in the "Worth knowing" callout. A
+   "not-disclosed" row is shown only when the check itself marks it forceShow -
+   i.e. it reports a concrete fact (fragranced, but the 26 named allergens are
+   hidden behind "Parfum") rather than plain absence of a lab document. Without
+   this, a fragranced product's allergen-risk pillar renders with nothing about
+   fragrance at all, reading as "clear" when the review's own verdict is calling
+   the brand's fragrance-free claim out as misleading. */
+const isShownFinding = (c: CheckResult) => c.state === "verified" || c.state === "disclosed" || (c.state === "adverse" && !c.hard) || (c.state === "not-disclosed" && !!c.forceShow);
 
 /** "What to know before you buy" - only real flags. Calm, not alarmist:
     a warm hairline card, a quiet eyebrow, one clean line per flag. */

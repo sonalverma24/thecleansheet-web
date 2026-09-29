@@ -85,7 +85,7 @@ interface Ctx {
   db: DbFindings;
 }
 
-type Eval = { state: CheckState; detail: string; source?: string; penalty?: number };
+type Eval = { state: CheckState; detail: string; source?: string; penalty?: number; forceShow?: boolean };
 
 interface CheckDef {
   id: string;
@@ -193,7 +193,7 @@ const CHECKS: CheckDef[] = [
       const a = c.db.allergens;
       if (a.length) return { state: "disclosed", detail: `Declares ${a.length} known allergen(s) (${a.slice(0, 6).join(", ")}${a.length > 6 ? "…" : ""}). Reactive skin should note these.` };
       return c.isFragranced
-        ? { state: "not-disclosed", detail: "Fragranced, but individual allergens are hidden behind 'Parfum' rather than declared." }
+        ? { state: "not-disclosed", forceShow: true, detail: "Fragranced, but individual allergens are hidden behind 'Parfum' rather than declared." }
         : { state: "verified", detail: "No EU-declarable or database-flagged allergen found in the list." };
     } },
   { id: "preservative_sensitivity", pillar: "Irritation & Allergen Risk", subCategory: "Ingredient Level", label: "Preservative sensitivity (MI / MCI etc.)", axis: "safety", obtainability: "public",
@@ -337,7 +337,7 @@ export function runAnalysis(review: ProductReview): AnalysisReport {
       return { result: { ...base, state: "not-applicable" as CheckState, detail: "Not applicable to this product type." }, penalty: 0 };
     }
     const ev = def.evaluate(ctx);
-    const result: CheckResult = { ...base, state: ev.state, detail: ev.detail, source: ev.source };
+    const result: CheckResult = { ...base, state: ev.state, detail: ev.detail, source: ev.source, forceShow: ev.forceShow };
     const penalty = ev.state === "adverse" && def.axis === "safety" && def.obtainability !== "private" ? (ev.penalty ?? 15) : 0;
     return { result, penalty };
   });
