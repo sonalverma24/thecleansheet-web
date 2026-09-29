@@ -51,6 +51,18 @@ export interface SourceRow {
 
 export type EvidenceStatusTone = "partial" | "available" | "unavailable";
 
+export interface BuyLink {
+  retailer: string;
+  url: string;
+}
+
+export interface HeroStat {
+  value: string;
+  unit: string;
+  label: string;
+  context: string;
+}
+
 export interface SunscreenEvidenceRecord {
   slug: string;
   productName: string;
@@ -69,11 +81,20 @@ export interface SunscreenEvidenceRecord {
   claimsReviewed: number;
   claimsVerified: number;
   claimsGap: number;
+  /** Brand product page, and marketplace links a shopper can actually buy from. */
+  productPageUrl: string;
+  buyLinks: BuyLink[];
+  /** Headline figures shown in the hero, e.g. the two measured SPF values. */
+  heroStats: HeroStat[];
   /** Section T, the consumer-facing summary shown at the top of the page. */
   summary: KVRow[];
   /** Sections A through R (and Q/S), in publication order. */
   sections: EvidenceSection[];
   overallStatus: string;
+  /**
+   * Section P, the source register. Kept for internal reference only.
+   * The public checksheet does not render this — see EvidenceChecksheet.
+   */
   sources: SourceRow[];
   sourcesNote?: string;
   notAccessible?: string;

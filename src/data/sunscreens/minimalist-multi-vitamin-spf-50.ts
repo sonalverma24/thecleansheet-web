@@ -30,6 +30,22 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
   researchDisclosure: "Desk research from public sources only. NA = not found or not verifiable publicly.",
   overallStatus: "Evidence Partially Available.",
 
+  productPageUrl: "https://beminimalist.co/products/multi-vitamin-spf-50",
+  buyLinks: [
+    { retailer: "Minimalist", url: "https://beminimalist.co/products/multi-vitamin-spf-50" },
+    { retailer: "Nykaa", url: "https://www.nykaa.com/minimalist-multi-vitamin-spf-50-pa-sunscreen-for-complete-sun-protection/p/2812174" },
+    { retailer: "Amazon.in", url: "https://www.amazon.in/Minimalist-Sunscreen-Multi-Vitamins-Cream/dp/B09FPS9D5T" },
+    { retailer: "Zepto", url: "https://www.zepto.com/pn/minimalist-spf-50-multi-vitamin-sunscreen-in-vivo-tested/pvid/f919fded-c33f-4fd1-ab98-0efe3d08eee4" },
+    { retailer: "Smytten", url: "https://smytten.com/shop/product/face-sunscreen/spf-50-pa-sunscreen-with-multi-vitamin-for-reducing-photoaging/MIN0018AB1" },
+    { retailer: "Cureka", url: "https://www.cureka.com/shop/skin-care/sun-screen/minimalist-multi-vitamin-spf-50-pa-sunscreen-for-complete-sun-protection-50g/" },
+  ],
+  heroStats: [
+    { value: "56.6", unit: "SPF", label: "In vivo, ISO 24444", context: "Advanced Science Laboratories certificate, batch 11830, 15 subjects, dated 10 Apr 2023." },
+    { value: "78.54", unit: "SPF", label: "Independent test", context: "MS Clinical Research, Bengaluru, commissioned by influencer Nitin Joshi, Oct 2025." },
+    { value: "2", unit: "of 11", label: "Claims verified", context: "Fragrance free is verified; SPF 50 is verified with qualification. The rest are brand declared." },
+    { value: "7", unit: "claims", label: "Need more evidence", context: "PA++++, broad spectrum, photostable, acne safe, non-comedogenic, dermatologist tested, white cast free." },
+  ],
+
   summary: [
     {
       label: "What this sunscreen claims",
@@ -210,13 +226,13 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
               "ISO 9001 certified quality system (SAI Global mark on certificate). ISO/IEC 17025 lab accreditation: NA",
               "NA",
             ],
-            ["Test date", "Certificate dated 10 Apr 2023. Test execution date NA", "NA (results published 19 Oct 2025)"],
+            ["Test date", "Certificate dated 10 Apr 2023. Test execution date NA", "NA"],
             [
               "Report number",
               "Study No. MS22.SPF.A1015.UPPL.ISO24444.ST15.REP.REV; Lab No. A-1015. Page footer reads MS22.SPF.A1015.UPPL.ISO24444.ST15.ADD.REV2",
               "NA",
             ],
-            ["Batch tested", "Batch No. 11830 (product named “Minimalist SPF 50 Sunscreen, PA ++++”)", "NA (retail purchase presumed)"],
+            ["Batch tested", "Batch No. 11830 (product named “Minimalist SPF 50 Sunscreen, PA ++++”)", "NA"],
             ["Number of subjects", "15", "NA"],
             ["Measured SPF", "Mean SPF 56.6 (confidence interval and SD not shown)", "78.54"],
             ["Labelled SPF", "50", "50"],
@@ -246,7 +262,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             { label: "UVA testing conducted", value: "Unknown (PA++++ stated, no UVA method disclosed)" },
             { label: "Method / Laboratory / Date / Batch", value: "NA" },
             { label: "UVA-PF result", value: "NA" },
-            { label: "PA rating supported", value: "NA (PA++++ requires UVA-PF of 16 or more)" },
+            { label: "PA rating supported", value: "NA" },
             { label: "Critical wavelength", value: "NA" },
             { label: "Evidence supports claim", value: "Unable to determine" },
             { label: "Evidence status", value: "Public claim only" },
@@ -265,8 +281,8 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             ["Photostability", "Unknown (claimed, no test cited)", "NA", "No"],
             ["Water resistance", "Not claimed", "Not applicable", "Not applicable"],
             ["Stability (accelerated / real time)", "Unknown", "Shelf life 24 months declared; duration, temperatures, results NA", "No"],
-            ["Microbiological / preservative efficacy", "Unknown", "NA (preserved with phenoxyethanol + ethylhexylglycerin)", "No"],
-            ["Packaging compatibility", "Unknown", "Packaging type NA (a reviewer noted a packaging change in Oct 2022); results NA", "No"],
+            ["Microbiological / preservative efficacy", "Unknown", "NA", "No"],
+            ["Packaging compatibility", "Unknown", "NA", "No"],
           ],
         },
       ],
@@ -343,7 +359,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
           kind: "kv",
           rows: [
             { label: "Current formula launch date", value: "NA" },
-            { label: "Last known formula update", value: "NA (change occurred after Oct 2021; exact date NA)" },
+            { label: "Last known formula update", value: "NA" },
             { label: "Previous formulation exists", value: "Yes" },
             {
               label: "Known changes",
@@ -374,7 +390,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             { label: "GMP evidence available", value: "Unknown" },
             { label: "GMP standard", value: "NA" },
             { label: "Certificate validity", value: "NA" },
-            { label: "Batch traceability available", value: "NA (batch number printed on pack presumed; not checked)" },
+            { label: "Batch traceability available", value: "NA" },
             { label: "Finished product COA", value: "NA" },
             { label: "Raw material COAs", value: "NA" },
             { label: "Change control procedure", value: "Unknown" },
@@ -414,7 +430,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
           rows: [
             { label: "Brand says suitable for", value: "Dry/normal, oily/combination, sensitive, acne prone skin. Age 16+. Not recommended in pregnancy or lactation" },
             { label: "Supported by evidence for", value: "NA" },
-            { label: "Evidence type", value: "NA (only a brand-declared patch test)" },
+            { label: "Evidence type", value: "NA" },
             { label: "Frequently liked by", value: "Normal to dry skin; budget and fragrance-free seekers" },
             { label: "Frequently disliked by", value: "Some oily and breakout-prone users (oiliness, breakouts)" },
             { label: "Recurring skin type concerns", value: "Oiliness in humid conditions; fungal acne ingredients flagged by third party tools" },
@@ -476,7 +492,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             ["Brand site (global)", "3.9 / 5 (68% recommend)", "355", "NA"],
             ["GoPicky", "3.8 / 5", "6", "NA"],
             ["Skinsort", "2.3 / 5", "NA", "NA"],
-            ["Amazon.in", "NA (page blocked)", "NA", "NA"],
+            ["Amazon.in", "NA", "NA", "NA"],
           ],
         },
         {
