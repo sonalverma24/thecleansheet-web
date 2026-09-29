@@ -134,13 +134,13 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-teal-800 pt-8">
           <p className="text-teal-500 text-xs leading-relaxed max-w-3xl mb-6">
-            Private certification framework. Not currently accredited. The Clean Sheet is an
-            independent private certification scheme being designed in alignment with ISO/IEC 17065
-            and ISO/IEC 17067. The certification framework is currently under independent expert validation.
+            Private certification framework. The Clean Sheet is an
+            independent private certification designed in alignment with ISO/IEC 17065
+            and ISO/IEC 17067. The certification framework is independently validated with industry experts.
           </p>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <p className="text-teal-600 text-xs text-center sm:text-left">
-              © {new Date().getFullYear()} The Clean Sheet™. All rights reserved. Est. 2025, India.
+              © {new Date().getFullYear()} The Clean Sheet™. All rights reserved.
             </p>
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
               <Link href="/contact" className="text-teal-600 hover:text-teal-400 text-xs transition-colors">Contact</Link>

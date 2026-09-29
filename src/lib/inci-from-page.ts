@@ -69,6 +69,14 @@ const LABEL =
 const ANCHOR =
   /\b(aqua|water|glycerin|glycerine|butylene glycol|niacinamide|cetearyl alcohol|phenoxyethanol|dimethicone|centella|sodium|tocopherol|caprylic\/capric|cetyl)\b/i;
 
+/* A retailer feature bullet ("8 Hours Water Resistant", "Dermatologically
+   Tested") can satisfy ANCHOR by accident - "water" is a substring of a claim,
+   not a real "Water"/"Aqua" ingredient entry. If most of the accepted run
+   reads like ad copy rather than ingredient names, it is rejected outright
+   rather than mis-stored as the product's INCI. */
+const MARKETING_PHRASE_RE =
+  /\b(free|resistant|protection|enriched|tested|proven|clinically|dermatologically|hours?|finish|non[\s-]?comedogenic|hypoallergenic|broad[\s-]spectrum|all skin types|suitable for)\b/i;
+
 function looksLikeIngredient(t: string): boolean {
   const s = t.trim();
   if (s.length < 2 || s.length > 70) return false;
@@ -133,6 +141,8 @@ export function extractInciFromText(text: string): string[] {
 
   if (best.length < 5) return [];
   if (!best.some((x) => ANCHOR.test(x))) return [];
+  const marketingHits = best.filter((x) => MARKETING_PHRASE_RE.test(x)).length;
+  if (marketingHits / best.length >= 0.5) return [];
   // De-dupe consecutive repeats (some pages print the list twice back-to-back).
   return best.filter((x, i) => i === 0 || x.toLowerCase() !== best[i - 1].toLowerCase());
 }
