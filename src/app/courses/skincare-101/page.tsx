@@ -2,8 +2,10 @@
 import Image from "next/image";
 import {
   CheckCircle2, Clock, Calendar, Users, BookOpen, Star,
-  Shield, FlaskConical, Zap, Sparkles, AlertTriangle
+  Shield, FlaskConical, Zap, Sparkles, AlertTriangle, PlayCircle
 } from "lucide-react";
+
+const RECORDING_YOUTUBE_ID = "OqmVpMOShFc";
 
 /* ─── Session Ended Notice ─── */
 function SessionEndedNotice({ className }: { className?: string }) {
@@ -89,7 +91,10 @@ export default function Skincare101Page() {
       {/* ── Session Ended Strip ── */}
       <div className="bg-teal-950 text-white text-center py-2.5 px-4 text-xs sm:text-sm font-medium sticky top-0 z-50">
         <span className="text-teal-300 font-medium">This session has ended.</span>
-        <span className="opacity-70 ml-2">Registrations are closed · Stay tuned for the next one</span>
+        <span className="opacity-70 ml-2">Registrations are closed</span>
+        <a href="#recording" className="ml-2 underline underline-offset-2 text-teal-300 hover:text-white">
+          View recording
+        </a>
       </div>
 
       {/* ── Hero ── */}
@@ -119,6 +124,27 @@ export default function Skincare101Page() {
           </div>
 
           <SessionEndedNotice className="flex justify-center mt-4" />
+        </div>
+      </section>
+
+      {/* ── Event Recording ── */}
+      <section id="recording" className="px-4 py-10 bg-white scroll-mt-14">
+        <div className="max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium px-4 py-1.5 rounded-full mb-4">
+            <PlayCircle size={14} /> This event has ended · Watch the recording
+          </div>
+          <h2 className="text-xl sm:text-2xl font-medium text-ink-950 mb-4">Catch up on Skincare 101</h2>
+          <div className="relative w-full overflow-hidden rounded-2xl border border-teal-100 shadow-sm aspect-video bg-teal-950">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube-nocookie.com/embed/${RECORDING_YOUTUBE_ID}`}
+              title="Skincare 101 · The Clean Sheet — Event Recording"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
         </div>
       </section>
 
