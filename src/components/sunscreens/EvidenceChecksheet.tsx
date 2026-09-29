@@ -197,7 +197,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           <div className="md:hidden flex items-center gap-4 mt-4 animate-fade-up delay-200">
             <div className="flex-shrink-0">
               <div
-                className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden"
+                className="relative w-28 h-32 sm:w-32 sm:h-36 rounded-xl overflow-hidden"
                 style={{
                   background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
                   boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
@@ -207,19 +207,19 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
                   src={record.image}
                   alt={`${record.brand} ${record.productName}`}
                   fill
-                  className="object-contain p-2.5"
+                  className="object-contain p-3"
                   unoptimized
                 />
               </div>
             </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5">
               {record.buyLinks.map((link) => (
                 <a
                   key={link.retailer}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="inline-flex items-center justify-center gap-1.5 text-xs text-teal-950 bg-teal-300 hover:bg-teal-200 font-medium px-3 py-1.5 rounded-full transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs text-teal-950 bg-teal-300 hover:bg-teal-200 font-medium px-2.5 py-1.5 rounded-full transition-colors"
                 >
                   <ShoppingBag size={11} className="flex-shrink-0" />
                   {link.retailer}
