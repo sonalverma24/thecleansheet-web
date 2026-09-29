@@ -36,7 +36,8 @@ export interface SitemapEntry {
 const PAGES = [
   "/", "/review", "/brands", "/ingredients", "/standard", "/standard/claims",
   "/standard/register", "/verify", "/education", "/learn", "/courses",
-  "/for-brands", "/spf", "/blog", "/about", "/contact",
+  "/for-brands", "/spf", "/sunscreens", "/sunscreens/minimalist-multi-vitamin-spf-50",
+  "/blog", "/about", "/contact",
   "/disclaimer", "/privacy-policy", "/terms-of-use",
 ];
 
