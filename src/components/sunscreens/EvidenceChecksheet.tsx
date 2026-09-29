@@ -193,11 +193,11 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
             </div>
           </div>
 
-          {/* Mobile only — thumbnail on the left, buy links stacked on the right */}
-          <div className="md:hidden flex items-center gap-4 mt-4 animate-fade-up delay-200">
-            <div className="flex-shrink-0">
+          {/* Mobile only — thumbnail fills the left half of the hero, buy links stack flush right */}
+          <div className="md:hidden flex items-center gap-3 mt-4 animate-fade-up delay-200">
+            <div className="w-1/2 flex-shrink-0">
               <div
-                className="relative w-28 h-32 sm:w-32 sm:h-36 rounded-xl overflow-hidden"
+                className="relative w-full aspect-[4/5] rounded-xl overflow-hidden"
                 style={{
                   background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
                   boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
@@ -207,12 +207,12 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
                   src={record.image}
                   alt={`${record.brand} ${record.productName}`}
                   fill
-                  className="object-contain p-3"
+                  className="object-contain p-4"
                   unoptimized
                 />
               </div>
             </div>
-            <div className="flex-1 min-w-0 flex flex-col items-start gap-1.5">
+            <div className="flex-1 min-w-0 flex flex-col items-end gap-1.5">
               {record.buyLinks.map((link) => (
                 <a
                   key={link.retailer}
