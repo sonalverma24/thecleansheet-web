@@ -149,11 +149,11 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
               </div>
             </div>
 
-            {/* Product image — small and centred on mobile, larger on the right on desktop */}
-            <div className="flex-shrink-0 lg:order-2 animate-fade-up delay-200">
+            {/* Product image — desktop only here; mobile gets its own left/right row below */}
+            <div className="hidden lg:block flex-shrink-0 lg:order-2 animate-fade-up delay-200">
               <div className="animate-float">
                 <div
-                  className="relative w-20 h-24 sm:w-24 sm:h-28 lg:w-48 lg:h-60 rounded-xl overflow-hidden mx-auto"
+                  className="relative w-48 h-60 rounded-xl overflow-hidden mx-auto"
                   style={{
                     background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
                     boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
@@ -163,7 +163,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
                     src={record.image}
                     alt={`${record.brand} ${record.productName}`}
                     fill
-                    className="object-contain p-2.5 lg:p-6"
+                    className="object-contain p-6"
                     unoptimized
                   />
                 </div>
@@ -171,8 +171,43 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
             </div>
           </div>
 
-          {/* Buy links — horizontal scroll rail, app-style */}
-          <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto mt-4 lg:mt-6 animate-fade-up delay-400 justify-center lg:justify-start">
+          {/* Mobile only — thumbnail on the left, buy links stacked on the right */}
+          <div className="lg:hidden flex items-center gap-4 mt-4 animate-fade-up delay-200">
+            <div className="flex-shrink-0">
+              <div
+                className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden"
+                style={{
+                  background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
+                  boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
+                }}
+              >
+                <Image
+                  src={record.image}
+                  alt={`${record.brand} ${record.productName}`}
+                  fill
+                  className="object-contain p-2.5"
+                  unoptimized
+                />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+              {record.buyLinks.map((link) => (
+                <a
+                  key={link.retailer}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs text-teal-950 bg-teal-300 hover:bg-teal-200 font-medium px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <ShoppingBag size={11} className="flex-shrink-0" />
+                  {link.retailer}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Buy links — desktop only, horizontal row under the text */}
+          <div className="hidden lg:flex gap-2 mt-6 animate-fade-up delay-400 justify-start">
             {record.buyLinks.map((link) => (
               <a
                 key={link.retailer}
