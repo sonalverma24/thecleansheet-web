@@ -101,106 +101,83 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </div>
       </div>
 
-      {/* Hero */}
+      {/* Hero — compact, image centred toward the bottom, same on every breakpoint */}
       <section className="grain-overlay bg-teal-950 overflow-hidden">
-        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-12 pb-0">
-          <div className="flex flex-col lg:flex-row items-end gap-8 lg:gap-14">
+        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-5 sm:pt-8 sm:pb-6">
+          <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:text-left gap-3 lg:gap-12">
             {/* Identity */}
-            <div className="flex-1 min-w-0 pb-10 lg:pb-14">
-              <p className="text-teal-600 text-[10px] tracking-[0.2em] uppercase mb-3 animate-fade-up font-medium">
-                TCS Evidence Record &middot; {record.brand}
+            <div className="min-w-0 lg:flex-1 lg:order-1">
+              <p className="text-teal-600 text-[10px] tracking-[0.2em] uppercase mb-1.5 animate-fade-up font-medium">
+                {record.brand} &middot; TCS Evidence Record
               </p>
               <h1
-                className="font-medium text-white leading-[1.05] tracking-tight mb-3 animate-fade-up delay-100"
-                style={{ fontSize: "clamp(2rem, 5vw, 3.1rem)" }}
+                className="font-medium text-white leading-[1.05] tracking-tight mb-1 animate-fade-up delay-100"
+                style={{ fontSize: "clamp(1.5rem, 5vw, 2.5rem)" }}
               >
                 {record.productName}
               </h1>
-              <p className="text-teal-400 text-lg mb-5 animate-fade-up delay-200">{record.variant}</p>
+              <p className="text-teal-400 text-sm sm:text-base mb-2.5 animate-fade-up delay-200">{record.variant}</p>
 
-              <div className="animate-fade-up delay-300 mb-6">
+              <div className="animate-fade-up delay-300 mb-3 flex justify-center lg:justify-start">
                 <span
-                  className="inline-flex items-center gap-2 rounded-lg px-3.5 py-2"
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
                   style={{ border: `1.5px solid ${stampBorder}`, background: "rgba(255,255,255,0.03)" }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: stampBorder }} />
-                  <span className="text-sm font-medium" style={{ color: "#F3D889" }}>{record.tcsStatus}</span>
+                  <span className="text-xs font-medium" style={{ color: "#F3D889" }}>{record.tcsStatus}</span>
                 </span>
-              </div>
-
-              <p className="text-teal-300 text-sm leading-relaxed max-w-md mb-7 animate-fade-up delay-400">
-                {record.statusSummary}
-              </p>
-
-              {/* Buy links */}
-              <div className="flex flex-wrap gap-2 animate-fade-up delay-400">
-                {record.buyLinks.map((link) => (
-                  <a
-                    key={link.retailer}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="inline-flex items-center gap-1.5 text-xs text-teal-950 bg-teal-300 hover:bg-teal-200 font-medium px-3.5 py-2 rounded-full transition-colors"
-                  >
-                    <ShoppingBag size={11} />
-                    {link.retailer}
-                  </a>
-                ))}
               </div>
             </div>
 
-            {/* Product image */}
-            <div className="hidden lg:block flex-shrink-0 self-end animate-fade-up delay-200">
+            {/* Product image — centred, bottom-anchored, one size for every breakpoint */}
+            <div className="flex-shrink-0 lg:order-2 animate-fade-up delay-200">
               <div className="animate-float">
                 <div
-                  className="relative w-52 h-64 rounded-t-2xl overflow-hidden"
+                  className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden mx-auto"
                   style={{
                     background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
-                    boxShadow: "0 -16px 48px -8px rgba(36,129,121,0.15), 0 40px 80px -20px rgba(0,0,0,0.9)",
+                    boxShadow: "0 14px 32px -12px rgba(0,0,0,0.6)",
                   }}
                 >
                   <Image
                     src={record.image}
                     alt={`${record.brand} ${record.productName}`}
                     fill
-                    className="object-contain p-6"
+                    className="object-contain p-2.5"
                     unoptimized
                   />
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Mobile image */}
-            <div className="lg:hidden flex-shrink-0 self-start animate-fade-up delay-200">
-              <div
-                className="relative w-28 h-36 rounded-2xl overflow-hidden"
-                style={{
-                  background: "linear-gradient(160deg, #0F2C2A 0%, #174039 50%, #1D5550 100%)",
-                  boxShadow: "0 24px 48px -12px rgba(0,0,0,0.6)",
-                }}
+          {/* Buy links — horizontal scroll rail, app-style */}
+          <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto mt-4 animate-fade-up delay-400 justify-center lg:justify-start">
+            {record.buyLinks.map((link) => (
+              <a
+                key={link.retailer}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-flex items-center gap-1.5 text-xs text-teal-950 bg-teal-300 hover:bg-teal-200 font-medium px-3.5 py-2 rounded-full transition-colors flex-shrink-0 whitespace-nowrap"
               >
-                <Image
-                  src={record.image}
-                  alt={`${record.brand} ${record.productName}`}
-                  fill
-                  className="object-contain p-3"
-                  unoptimized
-                />
-              </div>
-            </div>
+                <ShoppingBag size={11} />
+                {link.retailer}
+              </a>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Hero stats */}
-      <section className="bg-white border-b border-ink-100 px-5 py-12">
+      <section className="bg-white border-b border-ink-100 px-5 py-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
-          <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-8">The numbers that hold up</p>
+          <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-5">The numbers that hold up</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-ink-100 rounded-2xl overflow-hidden">
             {record.heroStats.map(({ value, unit, label, context }) => (
-              <div key={label} className="bg-white px-5 py-7 sm:px-6">
-                <div className="mb-2.5 leading-none">
-                  <span className="font-medium text-ink-950" style={{ fontSize: "clamp(2rem, 4.5vw, 2.8rem)" }}>
+              <div key={label} className="bg-white px-4 py-5 sm:px-6 sm:py-7">
+                <div className="mb-2 leading-none">
+                  <span className="font-medium text-ink-950" style={{ fontSize: "clamp(1.7rem, 4.5vw, 2.8rem)" }}>
                     {value}
                   </span>
                   <span className="text-teal-600 text-sm ml-1.5 align-middle">{unit}</span>
@@ -213,9 +190,27 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-5 py-12 flex flex-col lg:flex-row gap-10">
-        {/* Table of contents */}
-        <nav className="lg:w-48 flex-shrink-0 order-2 lg:order-1">
+      {/* Section nav — horizontal chip rail on mobile, sticky sidebar on desktop */}
+      <div className="lg:hidden border-b border-ink-100 bg-white sticky top-0 z-20">
+        <div className="no-scrollbar snap-x-rail flex gap-2 overflow-x-auto px-5 py-3">
+          <a href="#summary" className="flex-shrink-0 whitespace-nowrap text-xs text-ink-600 bg-ink-50 border border-ink-100 px-3 py-1.5 rounded-full">
+            Summary
+          </a>
+          {record.sections.map((s) => (
+            <a
+              key={s.id}
+              href={`#section-${s.id}`}
+              className="flex-shrink-0 whitespace-nowrap text-xs text-ink-600 bg-ink-50 border border-ink-100 px-3 py-1.5 rounded-full"
+            >
+              {s.id}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-5 py-8 sm:py-12 flex flex-col lg:flex-row gap-10">
+        {/* Table of contents — desktop only */}
+        <nav className="hidden lg:block lg:w-48 flex-shrink-0">
           <div className="lg:sticky lg:top-6">
             <p className="text-[10px] tracking-[0.14em] uppercase text-ink-400 mb-3">On this record</p>
             <ul className="space-y-1.5 text-xs">
@@ -232,9 +227,9 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </nav>
 
         {/* Body */}
-        <div className="flex-1 min-w-0 order-1 lg:order-2 space-y-14">
+        <div className="flex-1 min-w-0 space-y-10 sm:space-y-14">
           {/* T. Consumer facing summary */}
-          <section id="summary">
+          <section id="summary" className="scroll-mt-16">
             <SectionHeading id="T" title="Consumer facing summary" />
             <p className="text-sm text-ink-800 leading-relaxed mb-4">
               <span className="font-semibold">TCS status: {record.tcsStatus}.</span> {record.statusSummary}
@@ -244,7 +239,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
 
           {/* Lettered sections */}
           {record.sections.map((section) => (
-            <section id={`section-${section.id}`} key={section.id}>
+            <section id={`section-${section.id}`} key={section.id} className="scroll-mt-16">
               <SectionHeading id={section.id} title={section.title} />
               <div className="space-y-4">
                 {section.blocks.map((block, i) => (
