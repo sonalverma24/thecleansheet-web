@@ -470,7 +470,49 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       blocks: [
         {
           kind: "paragraph",
-          text: "NA. Reddit could not be accessed from this research environment, and search engines returned no indexed threads. All fields in this section: NA.",
+          text: "Three threads were reviewed: r/IndianSkincareAddicts “Is Minimalist SPF 50 actually overrated? These skin type scores are concerning” (48 comments shown, 18 upvotes, posted approximately 7 months before this record) and “Minimalist Sunscreen Review” (53 comments shown, 110 upvotes, posted approximately 4 years before this record); and “Does Minimalist SPF 50 sunscreen really works?” (107 comments shown, 38 upvotes, posted approximately 5 years before this record, subreddit not shown in the capture reviewed). Findings below are drawn from the comments visible in the capture, not every reply in each thread.",
+        },
+        {
+          kind: "paragraph",
+          text: "Caution: all three threads also discuss other Minimalist sunscreens sold alongside the Multi-Vitamin SPF 50, including an SPF 60 variant, a sunscreen stick, and Minimalist Light Fluid Sunscreen. Comments that did not name a specific variant are excluded below.",
+        },
+        {
+          kind: "kv",
+          rows: [
+            { label: "Overall sentiment (SPF 50 Multi-Vitamin comments)", value: "Mixed, skewed negative on texture and application" },
+            {
+              label: "Most common positives",
+              value: "No breakouts reported by several commenters; no white cast reported by several commenters with lighter skin; well liked in cooler, drier weather; called budget friendly",
+            },
+            {
+              label: "Most common complaints",
+              value: "Pilling, raised in nearly every thread and the single most repeated complaint; eye stinging or irritation; greasy or sweaty feel in heat and humidity; occasional breakouts reported by some commenters; one commenter with darker skin reported a visible cast",
+            },
+            {
+              label: "Water or sweat resistance",
+              value: "One commenter noted it is “not sweat or water resistant,” consistent with this record's Section C finding",
+            },
+            {
+              label: "Retinol",
+              value:
+                "Multiple commenters in the two older threads (4 to 5 years before this record) state the SPF 50 variant contains retinol, and one links an INCIDecoder page. This is consistent with Section H: an Oct 2021 INCI capture included retinol, which is absent from the current brand-listed INCI. These comments predate the reformulation and cannot be assumed to describe the current formula",
+            },
+            {
+              label: "Third-party rating cited in-thread",
+              value:
+                "One commenter linked a site (ryfoya.com) rating “Minimalist SPF 50 Sunscreen” at approximately 45% for oily, dry and combination skin and approximately 25% for sensitive skin, citing irritation, eye stinging and retinol content. Other commenters in the same thread disputed the site's credibility. TCS has not reviewed ryfoya.com's methodology or data",
+            },
+            {
+              label: "Shift toward a different SKU",
+              value:
+                "In the more recent thread (7 months before this record), most replies redirect from the SPF 50 Multi-Vitamin to recommending Minimalist Light Fluid Sunscreen instead, a separate product not covered by this record",
+            },
+            {
+              label: "TCS assessment",
+              value:
+                "Treated as unverified consumer reports, the same reliability tier as the marketplace reviews in Section N. Individual account authenticity and any undisclosed sponsorship could not be checked",
+            },
+          ],
         },
       ],
     },

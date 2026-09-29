@@ -1,9 +1,30 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, ShoppingBag, ChevronDown } from "lucide-react";
 import type { SunscreenEvidenceRecord, SectionBlock } from "@/data/sunscreens/types";
 import { STATUS_TONE_STYLES } from "./status";
+
+/**
+ * Whether sections should render fully open regardless of their `open`
+ * attribute — true on any real desktop/tablet browser window (md and up),
+ * false on a narrow phone. Defaults to true so server-rendered HTML (and a
+ * no-JS reader) sees everything expanded; a mount-time media query narrows
+ * it down for small screens once we're in the browser.
+ */
+function useAlwaysOpenSections() {
+  const [alwaysOpen, setAlwaysOpen] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setAlwaysOpen(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return alwaysOpen;
+}
 
 const STAMP_BORDER: Record<string, string> = {
   partial: "#D69A1F",
@@ -106,6 +127,7 @@ function Block({ block }: { block: SectionBlock }) {
 export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord }) {
   const tone = STATUS_TONE_STYLES[record.statusTone];
   const stampBorder = STAMP_BORDER[record.statusTone];
+  const alwaysOpen = useAlwaysOpenSections();
 
   return (
     <div className="bg-white min-h-screen">
@@ -123,10 +145,10 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
 
       {/* Hero — compact and centred on mobile, a larger side-by-side layout on desktop */}
       <section className="grain-overlay bg-teal-950 overflow-hidden">
-        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-5 sm:pt-8 sm:pb-6 lg:py-14">
-          <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:text-left gap-3 lg:gap-14">
+        <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-5 sm:pt-8 sm:pb-6 md:py-14">
+          <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left gap-3 md:gap-14">
             {/* Identity */}
-            <div className="min-w-0 lg:flex-1 lg:order-1">
+            <div className="min-w-0 md:flex-1 md:order-1">
               <p className="text-teal-600 text-[10px] tracking-[0.2em] uppercase mb-1.5 animate-fade-up font-medium">
                 {record.brand} &middot; TCS Evidence Record
               </p>
@@ -138,7 +160,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
               </h1>
               <p className="text-teal-400 text-sm sm:text-base mb-2.5 animate-fade-up delay-200">{record.variant}</p>
 
-              <div className="animate-fade-up delay-300 mb-3 flex justify-center lg:justify-start">
+              <div className="animate-fade-up delay-300 mb-3 flex justify-center md:justify-start">
                 <span
                   className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
                   style={{ border: `1.5px solid ${stampBorder}`, background: "rgba(255,255,255,0.03)" }}
@@ -150,7 +172,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
             </div>
 
             {/* Product image — desktop only here; mobile gets its own left/right row below */}
-            <div className="hidden lg:block flex-shrink-0 lg:order-2 animate-fade-up delay-200">
+            <div className="hidden md:block flex-shrink-0 md:order-2 animate-fade-up delay-200">
               <div className="animate-float">
                 <div
                   className="relative w-48 h-60 rounded-xl overflow-hidden mx-auto"
@@ -172,7 +194,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           </div>
 
           {/* Mobile only — thumbnail on the left, buy links stacked on the right */}
-          <div className="lg:hidden flex items-center gap-4 mt-4 animate-fade-up delay-200">
+          <div className="md:hidden flex items-center gap-4 mt-4 animate-fade-up delay-200">
             <div className="flex-shrink-0">
               <div
                 className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden"
@@ -207,7 +229,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           </div>
 
           {/* Buy links — desktop only, horizontal row under the text */}
-          <div className="hidden lg:flex gap-2 mt-6 animate-fade-up delay-400 justify-start">
+          <div className="hidden md:flex gap-2 mt-6 animate-fade-up delay-400 justify-start">
             {record.buyLinks.map((link) => (
               <a
                 key={link.retailer}
@@ -228,7 +250,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
       <section className="bg-white border-b border-ink-100 px-5 py-8 sm:py-10">
         <div className="max-w-5xl mx-auto">
           <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-5">The numbers that hold up</p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-ink-100 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-ink-100 rounded-2xl overflow-hidden">
             {record.heroStats.map(({ value, unit, label, context }) => (
               <div key={label} className="bg-white px-4 py-5 sm:px-6 sm:py-7">
                 <div className="mb-2 leading-none">
@@ -245,10 +267,10 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto px-5 py-8 sm:py-12 flex flex-col lg:flex-row gap-10">
+      <div className="max-w-5xl mx-auto px-5 py-8 sm:py-12 flex flex-col md:flex-row gap-10">
         {/* Table of contents — desktop only, plain-English titles with a reactive hover state */}
-        <nav className="hidden lg:block lg:w-56 flex-shrink-0">
-          <div className="lg:sticky lg:top-6">
+        <nav className="hidden md:block md:w-56 flex-shrink-0">
+          <div className="md:sticky md:top-6">
             <p className="text-[10px] tracking-[0.14em] uppercase text-ink-400 mb-3">On this record</p>
             <ul className="text-sm">
               <TocLink href="#summary">Consumer summary</TocLink>
@@ -262,9 +284,9 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
         </nav>
 
         {/* Body — a one-line-per-section accordion on mobile, a flowing document on desktop */}
-        <div className="flex-1 min-w-0 space-y-0 lg:space-y-14">
+        <div className="flex-1 min-w-0 space-y-0 md:space-y-14">
           {/* T. Consumer facing summary — open by default, it's the TL;DR */}
-          <AccordionSection anchorId="summary" letter="T" title="Consumer facing summary" defaultOpen>
+          <AccordionSection anchorId="summary" letter="T" title="Consumer facing summary" defaultOpen alwaysOpen={alwaysOpen}>
             <p className="text-sm text-ink-800 leading-relaxed mb-4">
               <span className="font-semibold">TCS status: {record.tcsStatus}.</span> {record.statusSummary}
             </p>
@@ -273,7 +295,13 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
 
           {/* Lettered sections */}
           {record.sections.map((section) => (
-            <AccordionSection key={section.id} anchorId={`section-${section.id}`} letter={section.id} title={section.title}>
+            <AccordionSection
+              key={section.id}
+              anchorId={`section-${section.id}`}
+              letter={section.id}
+              title={section.title}
+              alwaysOpen={alwaysOpen}
+            >
               <div className="space-y-4">
                 {section.blocks.map((block, i) => (
                   <Block block={block} key={i} />
@@ -283,7 +311,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
           ))}
 
           {/* S. Overall status, restated as a stamp */}
-          <AccordionSection anchorId="section-S" letter="S" title="Overall TCS status">
+          <AccordionSection anchorId="section-S" letter="S" title="Overall TCS status" alwaysOpen={alwaysOpen}>
             <div
               className="rounded-xl px-5 py-4 inline-block"
               style={{ border: `1.5px solid ${stampBorder}`, background: tone.bg }}
@@ -349,46 +377,62 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
 }
 
 /**
- * One record section. On mobile this is a native <details> accordion —
- * closed by default, tap the title to open it — so the whole record reads
- * as a compact one-line-per-section list instead of a long scroll. On
- * desktop (lg+) the content is always shown, matching the original flowing
- * document: the `lg:!block` override forces it open regardless of the
- * `open` attribute, and the letter id (T, A, B1…) is desktop-only, since on
- * mobile it reads as unexplained noise next to the plain-English title.
+ * One record section. Below the `md` breakpoint (narrow phones) this is a
+ * native <details> accordion — closed by default, tap the title to open it —
+ * so the record reads as a compact one-line-per-section list instead of a
+ * long scroll. From `md` up (768px+, any real desktop or tablet browser
+ * window, not just wide ones) `alwaysOpen` is true, which genuinely sets the
+ * `open` attribute rather than fighting the browser's rendering of a closed
+ * <details> with CSS — a closed <details>' children are unpaintable no
+ * matter what display value they compute to, so this has to be the real DOM
+ * state, not an override. The `key` forces a clean remount whenever
+ * `alwaysOpen` flips (e.g. the window crosses the breakpoint), and the
+ * summary's click is swallowed while alwaysOpen so a stray click never
+ * collapses a section that's meant to stay open. The letter id (T, A, B1…)
+ * is md-and-up only, since on a narrow phone it reads as unexplained noise
+ * next to the plain-English title.
  */
 function AccordionSection({
   anchorId,
   letter,
   title,
   defaultOpen = false,
+  alwaysOpen,
   children,
 }: {
   anchorId: string;
   letter: string;
   title: string;
   defaultOpen?: boolean;
+  alwaysOpen: boolean;
   children: ReactNode;
 }) {
   const displayTitle = title.replace(/^[A-Z]\d*\.\s*/, "");
+  const open = alwaysOpen || defaultOpen;
   return (
-    <details id={anchorId} open={defaultOpen} className="group scroll-mt-16 border-b border-ink-100 lg:border-0">
+    <details
+      key={alwaysOpen ? "open" : "closed"}
+      id={anchorId}
+      open={open}
+      className="group scroll-mt-16 border-b border-ink-100 md:border-0"
+    >
       <summary
-        className="flex items-start justify-between gap-3 py-3.5 lg:py-0 lg:mb-4 lg:pb-2 lg:border-b lg:border-ink-100 cursor-pointer lg:cursor-default list-none [&::-webkit-details-marker]:hidden"
+        onClick={(e) => {
+          if (alwaysOpen) e.preventDefault();
+        }}
+        className="flex items-start justify-between gap-3 py-3.5 md:py-0 md:mb-4 md:pb-2 md:border-b md:border-ink-100 cursor-pointer md:cursor-default list-none [&::-webkit-details-marker]:hidden"
       >
         <span className="flex items-baseline gap-3 min-w-0">
-          <span className="hidden lg:inline font-display text-teal-600 flex-shrink-0" style={{ fontSize: "1.1rem" }}>
+          <span className="hidden md:inline font-display text-teal-600 flex-shrink-0" style={{ fontSize: "1.1rem" }}>
             {letter}
           </span>
           <span className="font-display text-ink-950 tracking-tight" style={{ fontSize: "1.1rem" }}>
             {displayTitle}
           </span>
         </span>
-        <ChevronDown size={18} className="text-ink-400 flex-shrink-0 mt-0.5 transition-transform duration-200 group-open:rotate-180 lg:hidden" />
+        <ChevronDown size={18} className="text-ink-400 flex-shrink-0 mt-0.5 transition-transform duration-200 group-open:rotate-180 md:hidden" />
       </summary>
-      <div className="hidden group-open:block lg:!block pb-4 lg:pb-0">
-        {children}
-      </div>
+      <div className="pb-4 md:pb-0">{children}</div>
     </details>
   );
 }
