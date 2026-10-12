@@ -38,6 +38,7 @@ const nextConfig: NextConfig = {
       { source: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
       { source: "/reviews/conscious-chemist-100-mineral-sunscreen-ultra-light-fluid-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
       { source: "/reviews/conscious-chemist-conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-mineral-sunscreen", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
       // Legacy pages retired into the new information architecture (Standard | Education | Verify | About).
       { source: "/certification", destination: "/standard", permanent: true },
       { source: "/methodology", destination: "/standard", permanent: true },
