@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
       { source: "/analyser", destination: "/review", permanent: true },
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
       { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/reviews/kay-beauty-hydra-creme-lipstick", permanent: true },
+      { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },
     ];
   },
 };

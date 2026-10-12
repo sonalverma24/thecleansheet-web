@@ -12,6 +12,7 @@ import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiv
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
+import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
@@ -1024,6 +1025,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   ];
   let parsed: Record<string, unknown> | null = null;
   for (const p of prompts) {
+      // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
+      // the text scrape; a vision pass transcribes them so they count as evidence.
+      evidenceBlock += await imageEvidenceBlock(q);
     parsed = parseJSON(await generateResilient(PRODUCT_REVIEW_SYSTEM_PROMPT, p));
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     if (isValidProductReview(parsed)) break;

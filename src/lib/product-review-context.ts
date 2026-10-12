@@ -275,6 +275,8 @@ Sunscreen:
   - SPF claim REQUIRES ISO 24444-compliant test evidence - no exceptions
   - UVA claim requires PA or UVA-PF methodology disclosed
   - Water resistance claim needs specific water resistance testing
+  - In-vitro SPF/PA reports (spectrophotometric, e.g. Mascot Spincontrol) are real finished-product evidence (Level 4, Level 5 if independent lab) but are not ISO 24444 in-vivo: credit them, and note the method gap rather than saying evidence is absent
+  - Compare the report's MEASURED SPF and PA/UVA-PF to the label claim. If measured is lower than labelled (e.g. SPF 47 / PA+++ vs label SPF 50+ / PA++++), cite both numbers and treat the label as ahead of its proof
 
 Shampoo / Hair wash:
   - Primary surfactants determine mildness: SLS (harsh), SLES (moderate), coco-glucoside/lauryl glucoside (mild)
