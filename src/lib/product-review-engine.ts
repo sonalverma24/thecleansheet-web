@@ -15,11 +15,12 @@ import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinks
 import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
+import { isSameProduct, sanitizeInciList } from "@/lib/product-identity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
-import { findTaxonomyMatch, getTaxonomyItem } from "@/data/taxonomy";
+import { findTaxonomyMatch, getTaxonomyItem, PRODUCT_TYPES, CONCERNS } from "@/data/taxonomy";
 import { revalidatePath } from "next/cache";
 import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource } from "@/lib/product-review-types";
 
@@ -1073,6 +1074,33 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (existing) return existing;
   }
 
+  /* The slug is built from the model's wording, which varies run to run ("… SPF 50
+     PA++++ Ultra Light Fluid" vs "… Ultra Light Fluid SPF 50 PA++++"), so slug
+     matching alone lets the same product through as a twin. Second pass: compare
+     against every stored review of the same brand by order-insensitive name tokens,
+     backed by the ingredient list when one name contains the other. */
+  const incoming = {
+    productName: review.productName,
+    brand: review.brand,
+    inci: inci?.ingredients ?? pageInci?.ingredients ?? review.inciIngredients ?? review.ingredientReads?.map((r) => r.name) ?? [],
+  };
+  try {
+    const { data: sameBrand } = await createAdminClient()
+      .from("product_reviews").select("product_slug, product_name, brand, result")
+      .in("brand", brandNameVariants(review.brand));
+    for (const row of sameBrand ?? []) {
+      const rslug = String(row.product_slug);
+      if (rslug === canonicalSlug || rslug === slug) continue;
+      const rr = (row.result as ProductReviewResult | null);
+      const rinci = rr && rr.type === "product-review"
+        ? (rr.review.inciIngredients ?? rr.review.ingredientReads?.map((r) => r.name) ?? []) : [];
+      if (isSameProduct(incoming, { productName: String(row.product_name), brand: String(row.brand), inci: rinci })) {
+        const existing = await getStored(rslug);
+        if (existing) return existing;
+      }
+    }
+  } catch { /* de-dupe is best-effort; never block a review */ }
+
   // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
   // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
   // Every candidate is checked for liveness before it is stored: a 404 or
@@ -1118,6 +1146,15 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     review.inciSourceUrl = pageInci.source;
   } else if (!review.inciIngredients?.length && review.ingredientReads?.length) {
     review.inciIngredients = review.ingredientReads.map((r) => r.name).filter(Boolean);
+  }
+  /* A model-transcribed list can arrive garbled ("Zinc Oxide and Coco-Caprylate",
+     sentence fragments). Repair joined items; if the list is still not credible,
+     drop it so the review reports the INCI as unavailable rather than grading
+     garbage. Lists from INCIDecoder / the brand page are left as scraped. */
+  if (review.inciIngredients?.length && !inci && !pageInci) {
+    const check = sanitizeInciList(review.inciIngredients);
+    if (check.issues.length) console.warn(`[review] INCI sanity (${review.brand} ${review.productName}):`, check.issues.slice(0, 5));
+    review.inciIngredients = check.ok ? check.list : [];
   }
 
   // Auto-grow the ingredient directory: any ingredient of this product that is

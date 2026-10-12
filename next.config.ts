@@ -34,6 +34,10 @@ const nextConfig: NextConfig = {
       { source: "/verify/codeskin-ultralite-proof-q3w5e7r2", destination: "/verify", permanent: true },
       { source: "/verify/codeskin-ultralite-full-v2-p5r7k2", destination: "/verify", permanent: true },
       { source: "/verify/tcs-in-2026-048291-b7f2a9c1e5d3", destination: "/verify", permanent: true },
+      // Duplicate Conscious Chemist Ultra Light Fluid reviews merged into one.
+      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-ultra-light-fluid-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
       // Legacy pages retired into the new information architecture (Standard | Education | Verify | About).
       { source: "/certification", destination: "/standard", permanent: true },
       { source: "/methodology", destination: "/standard", permanent: true },
