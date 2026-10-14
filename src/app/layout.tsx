@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import SiteChrome from "@/components/layout/SiteChrome";
+import AnalyticsScripts from "@/components/layout/AnalyticsScripts";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 
 /* Playfair Display, fallback for Cooper BT if browser hasn't loaded
@@ -86,34 +86,8 @@ export default function RootLayout({
   return (
     <html lang="en-IN" className={`${playfair.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen flex flex-col antialiased">
-        {/* Google Analytics */}
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-DXHG8FBXQT" strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-DXHG8FBXQT');
-        `}</Script>
-
-        {/* Meta Pixel */}
-        <Script id="meta-pixel" strategy="afterInteractive">{`
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window,document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init','1864272357580009');
-          fbq('track','PageView');
-        `}</Script>
-        <noscript>
-          <img height="1" width="1" style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=1864272357580009&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
+        {/* Google Analytics + Meta Pixel (skipped on the private /x/* pitch route) */}
+        <AnalyticsScripts />
         {/* Structured data, Organization + WebSite with SearchAction */}
         <script
           type="application/ld+json"

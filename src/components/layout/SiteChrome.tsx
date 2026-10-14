@@ -8,12 +8,13 @@ import WhatsAppBubble from '@/components/WhatsAppBubble';
 import FormModal from '@/components/FormModal';
 
 /* Wraps page content with the site's global chrome (nav, footer, bubbles).
-   On standalone routes (e.g. private client previews under /preview/*) the
+   On standalone routes (private client previews under /preview/* and the
+   retailer pitch demo under /x/*) the
    chrome is suppressed so the page renders clean, without Clean Sheet
    branding. */
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const standalone = pathname?.startsWith('/preview/') ?? false;
+  const standalone = (pathname?.startsWith('/preview/') || pathname?.startsWith('/x/')) ?? false;
 
   if (standalone) {
     return <main className="flex-1">{children}</main>;
