@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSameProduct, sanitizeInciList } from "@/lib/product-identity";
+import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
 
 const B = "Conscious Chemist";
 const full = ["Aqua", "Zinc Oxide", "Glycerin", "Niacinamide", "Squalane", "Bisabolol", "Allantoin", "Phenoxyethanol", "Carnauba Wax", "Resveratrol"];
@@ -22,6 +22,22 @@ describe("isSameProduct", () => {
   it("keeps different SPF or brand apart", () => {
     expect(isSameProduct({ productName: "Sunscreen SPF 30", brand: B }, { productName: "Sunscreen SPF 50", brand: B })).toBe(false);
     expect(isSameProduct({ productName: "Sunscreen SPF 50", brand: B }, { productName: "Sunscreen SPF 50", brand: "Other" })).toBe(false);
+  });
+});
+
+describe("titleIdentifiesProduct", () => {
+  const C = "Cetaphil";
+  it("accepts a storefront title that carries the product's own name", () => {
+    expect(titleIdentifiesProduct("Cetaphil Gentle Skin Cleanser For Normal, Dry Skin Hydrates 125ml", C, "Cetaphil Gentle Skin Cleanser")).toBe(true);
+    expect(titleIdentifiesProduct("Buy Gentle Skin Cleansers Online", C, "Gentle Skin Cleanser")).toBe(true);
+  });
+  it("rejects a sibling product of the same brand", () => {
+    expect(titleIdentifiesProduct("Cetaphil Gentle Skin Cleanser For Normal, Dry Skin 125ml", C, "Cetaphil Facial Cleanser")).toBe(false);
+  });
+  it("rejects a search page, a missing title and an empty product name", () => {
+    expect(titleIdentifiesProduct("Buy Cosmetics Products & Beauty Products Online in India at Best Price | Nykaa", C, "Cetaphil Facial Cleanser")).toBe(false);
+    expect(titleIdentifiesProduct(null, C, "Cetaphil Facial Cleanser")).toBe(false);
+    expect(titleIdentifiesProduct("Cetaphil", C, "Cetaphil")).toBe(false);
   });
 });
 
