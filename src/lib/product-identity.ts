@@ -60,6 +60,19 @@ export function isSameProduct(a: IdentityCandidate, b: IdentityCandidate): boole
   return !!a.inci?.length && !!b.inci?.length && inciSimilarity(a.inci, b.inci) >= 0.95;
 }
 
+/** Does a marketplace page title name THIS product? Used before a scraped listing is
+    allowed to corroborate a claim: "Cetaphil Gentle Skin Cleanser …" must not stand
+    in for "Cetaphil Facial Cleanser". At least 75% of the product's own name words
+    (brand, filler and a trailing plural "s" ignored) must appear in the title. */
+export function titleIdentifiesProduct(title: string | null | undefined, brand: string, productName: string): boolean {
+  if (!title) return false;
+  const stem = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
+  const want = [...nameTokens(productName, brand)].map(stem);
+  if (!want.length) return false;
+  const have = new Set([...nameTokens(title, brand)].map(stem));
+  return want.filter((w) => have.has(w)).length / want.length >= 0.75;
+}
+
 /* ── INCI sanity ─────────────────────────────────────────────── */
 
 export interface InciCheck {

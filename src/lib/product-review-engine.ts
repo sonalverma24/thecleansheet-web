@@ -16,7 +16,7 @@ import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
-import { isSameProduct, sanitizeInciList } from "@/lib/product-identity";
+import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
@@ -183,12 +183,25 @@ const CLAIM_STOP = new Set([
   "proven", "results", "visible", "reduces", "improves",
 ]);
 
+/** Does `text` (lower-cased) actually ASSERT "free from <subject>"? A bare mention of
+    the word is not an assertion: the product's own ingredient list names the very
+    thing a free-from claim denies ("…Panthenol, Fragrance, Sodium Benzoate…"), so a
+    word match would let the contradiction vouch for the claim it contradicts.
+    Accepts "fragrance-free", "free from/of … fragrance", "without/no/zero … fragrance",
+    with the second form kept inside one sentence. */
+function corpusAssertsFreeFrom(text: string, subject: string): boolean {
+  const stem = subject.replace(/s$/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/^sul(?:ph|f)/, "sul(?:ph|f)");
+  return new RegExp(`${stem}\\w*[\\s-]*(?:free|less)\\b|\\b(?:free\\s+(?:from|of)|without|zero|devoid\\s+of|no)\\b[^.;\\n]{0,80}?${stem}`).test(text);
+}
+
 /** Guardrail 2. When a real text corpus was scraped, mark each hard-flag
     candidate claim as corroborated only if its distinctive subject word(s)
     actually appear in that text. A substantial corpus that never mentions the
-    claim's subject ⇒ corroborated=false (likely fabricated). No/short corpus
-    (e.g. a name-only query) ⇒ left undefined (assumed made). Mutates in place. */
-function markClaimCorroboration(review: ProductReview, corpus: string): void {
+    claim's subject ⇒ corroborated=false (likely fabricated). A free-from claim
+    needs the text to assert it (see corpusAssertsFreeFrom), not merely name the
+    subject. No/short corpus (e.g. a name-only query) ⇒ left undefined (assumed
+    made). Mutates in place. */
+export function markClaimCorroboration(review: ProductReview, corpus: string): void {
   const text = corpus.toLowerCase();
   if (text.replace(/\s+/g, " ").trim().length < 400) return; // too little to judge
 
@@ -199,7 +212,9 @@ function markClaimCorroboration(review: ProductReview, corpus: string): void {
       .sort((a, b) => b.length - a.length)
       .slice(0, 2);
     if (!distinctive.length) continue; // nothing distinctive to test - leave as made
-    c.corroborated = distinctive.some((t) => text.includes(t));
+    c.corroborated = isFreeFromClaim(c.text)
+      ? distinctive.some((t) => corpusAssertsFreeFrom(text, t))
+      : distinctive.some((t) => text.includes(t));
   }
 }
 
@@ -211,9 +226,17 @@ function markClaimCorroboration(review: ProductReview, corpus: string): void {
    the same way a shopper would and scrapes it, so a name query corroborates hard
    flags against a source we actually read - just like the URL path. Best-effort
    and keyless: on a miss it returns "", and the caller falls back to the prior
-   name-query behaviour. Amazon + Nykaa run in parallel to bound latency. */
+   name-query behaviour. Amazon + Nykaa run in parallel to bound latency.
+
+   Only a product page whose title names THIS product counts. A search-results page
+   is never used: it carries blurbs for sibling products and the storefront's own
+   navigation, so "Fragrance-free" was once "corroborated" for a Cetaphil cleanser
+   by another Cetaphil product's listing plus Nykaa's "Fragrance" menu. A miss is
+   safe: a free-from contradiction needs corroborated === true (see deriveVerdict),
+   so with no page about this product it cannot force "Not Recommended". */
 async function marketplaceListingCorpus(brand: string, productName: string): Promise<string> {
-  const query = [brand, productName].filter(Boolean).join(" ").trim();
+  // The product name usually repeats the brand already ("Cetaphil Gentle Skin Cleanser").
+  const query = (productName.toLowerCase().includes(brand.toLowerCase()) ? productName : `${brand} ${productName}`).trim();
   if (!query) return "";
   const enc = encodeURIComponent(query);
   const sources: { search: string; pdp: RegExp }[] = [
@@ -223,17 +246,14 @@ async function marketplaceListingCorpus(brand: string, productName: string): Pro
   const parts = await Promise.all(
     sources.map(async ({ search, pdp }) => {
       const searchMd = await fetchPageMarkdown(search, 30000);
-      if (!searchMd) return "";
-      // Prefer the actual product page (full claim text); the top result for a
-      // "[brand] [product]" search is almost always this product. If we grab a
-      // near-miss, the hard-flag claim simply won't be found there and is voided
-      // - erring toward NOT condemning, the safe direction.
-      const url = searchMd.match(pdp)?.[0];
-      if (url) {
-        const pdpMd = await fetchPageMarkdown(url, 40000);
-        if (pdpMd) return productBodyExcerpt(pdpMd, 4000);
-      }
-      return productBodyExcerpt(searchMd, 2500); // fall back to search-page blurbs
+      const url = searchMd?.match(pdp)?.[0];
+      if (!url) return "";
+      const pdpMd = await fetchPageMarkdown(url, 40000);
+      // The top hit for a "[brand] [product]" search is often a sibling product
+      // (no listing for this one, or a different pack): read it only if its title
+      // names this product.
+      if (!pdpMd || !titleIdentifiesProduct(titleFromMarkdown(pdpMd), brand, productName)) return "";
+      return productBodyExcerpt(pdpMd, 4000);
     }),
   );
   return parts.filter(Boolean).join("\n---\n");
@@ -657,6 +677,24 @@ const RETRACTED_SLUGS = new Set<string>([
   // other row is the keeper: it cites its INCIDecoder source URL, a consistent
   // Rs.799 brand/Nykaa price, and a rating not drawn from a single shade.
   "kay-beauty-kay-beauty-hydra-creme-lipstick",
+  // Cetaphil Facial Cleanser: a composite of three different products. Ingredients
+  // are a user-uploaded INCIDecoder entry for a non-Indian formula (Parfum,
+  // Methylparaben, SLES); the claims are cetaphil.in Gentle Skin Cleanser copy; the
+  // "Fragrance-free" flag was "corroborated" by a Nykaa search page (see
+  // marketplaceListingCorpus). Cetaphil India lists no product by this name, so
+  // there is no verified formula to review. Not a duplicate of the Gentle Skin
+  // Cleanser review, so no redirect.
+  "cetaphil-facial-cleanser",
+  // Da Membrane Daily Brightening Face Toner: the brand page makes no "Fragrance Free"
+  // claim (its only "fragrance" is the ingredient in its own INCI), so the Not
+  // Recommended verdict rested on a claim the model invented and the corroboration
+  // check "found" in the ingredient list itself. Pending re-review.
+  "da-membrane-da-membrane-daily-brightening-face-toner-with-niacinamide-and-cica-1",
+  // Nat Habit Multi Nut Shea Omega3 Malai: the stored INCI (60+ botanicals plus Glycerin,
+  // Phenoxyethanol) is not the brand's list (raw milk, shea, walnut, almond, coconut,
+  // clove, Geogard/Nipaguard; no glycerin). It made the brand's own "glycerin-free"
+  // claim look false. Pending re-review.
+  "nat-habit-nat-habit-multi-nut-shea-omega3-malai-body-butter-for-dry-skin-body-ac",
 ]);
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
