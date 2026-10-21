@@ -19,6 +19,14 @@ import { fetchPageMarkdown } from "@/lib/scrape";
 export interface PageINCI {
   ingredients: string[];
   source: string; // the URL the list was read from
+  /** The raw text span the accepted list was read from (whitespace collapsed). A quote
+      proves the text was captured as stated, not that the formula is true or current. */
+  quote?: string;
+  /** The page's own titles (title tag, og:title, first heading), best first. Kept so a
+      later re-anchor can check the page names the product the review is about. */
+  pageTitles?: string[];
+  /** The page's og:site_name, when it states one. */
+  siteName?: string | null;
 }
 
 const UA =
@@ -91,60 +99,224 @@ function looksLikeIngredient(t: string): boolean {
 const cleanTok = (s: string): string =>
   s.replace(/\s+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s*-\s*/g, "-").trim();
 
-/** Parse the longest INCI-looking comma list out of flat page text. Empty if
-    no confident list is found. Deterministic — never invents an ingredient. */
-export function extractInciFromText(text: string): string[] {
-  // Comma-split, re-joining numeric CAS-style fragments ("1" + "2-Hexanediol").
-  const rawParts = text.split(",");
-  const parts: string[] = [];
-  for (let i = 0; i < rawParts.length; i++) {
-    let p = rawParts[i].trim();
-    while (/^[0-9]+$/.test(p) && i + 1 < rawParts.length) p = `${p},${rawParts[++i].trim()}`;
-    parts.push(p);
+/** The accepted list together with the raw text it was read from. */
+export interface InciExtraction {
+  /** Exactly what extractInciFromText returns for the same text. */
+  ingredients: string[];
+  /** The text span from the first to the last accepted entry, whitespace collapsed. */
+  quote: string;
+}
+
+/* One comma-separated piece of the page text, with the offset in the ORIGINAL text of
+   each of its characters. A numeric fragment re-joined across a comma ("1" + "2-Hexanediol")
+   keeps the original offsets, so the quote is always a real slice of the page text. */
+interface Part { text: string; map: number[] }
+
+function splitParts(text: string): Part[] {
+  const pieces: { t: string; start: number; comma: number }[] = [];
+  let pos = 0;
+  for (const piece of text.split(",")) {
+    const lead = piece.length - piece.trimStart().length;
+    pieces.push({ t: piece.trim(), start: pos + lead, comma: pos + piece.length });
+    pos += piece.length + 1;
   }
+  const mapOf = (t: string, start: number) => Array.from({ length: t.length }, (_, k) => start + k);
+  const parts: Part[] = [];
+  for (let i = 0; i < pieces.length; i++) {
+    let text0 = pieces[i].t;
+    let map = mapOf(pieces[i].t, pieces[i].start);
+    let lastComma = pieces[i].comma;
+    while (/^[0-9]+$/.test(text0) && i + 1 < pieces.length) {
+      const next = pieces[++i];
+      text0 = `${text0},${next.t}`;
+      map = [...map, lastComma, ...mapOf(next.t, next.start)];
+      lastComma = next.comma;
+    }
+    parts.push({ text: text0, map });
+  }
+  return parts;
+}
+
+/* Words that end in a full stop inside an INCI name, so the stop is not the end of a sentence:
+   botanical ranks ("Vaccinum Sect. Cyanococcus", "Subsp.", "Ssp.", "Var.", "Spp.", "Sp.",
+   "Cv.", "F."), colour index and strength wording ("Ci 60730/Ext. Violet 2", "Eq. To 15%
+   Vitamin C"), "St. John's Wort", and the INCI name "Alcohol Denat.". A dotted abbreviation
+   such as "q.s." is recognised by its inner stop. */
+const DOT_ABBREVIATIONS = new Set([
+  "sect", "subsp", "ssp", "spp", "sp", "var", "cv", "f", "ext", "eq", "denat", "st",
+]);
+
+/** Whether the text before a full stop ends in a word whose stop is part of the name: one of the
+    abbreviations above, or a dotted form such as "q.s.". */
+function endsInAbbreviation(beforeStop: string): boolean {
+  const word = /([A-Za-z]+(?:\.[A-Za-z]+)*)$/.exec(beforeStop)?.[1];
+  return !!word && (word.includes(".") || DOT_ABBREVIATIONS.has(word.toLowerCase()));
+}
+
+/** The [start, end) ranges of the sentences in a piece of text. A full stop ends a
+    sentence only when it follows a letter, digit or closing bracket, is followed by
+    whitespace and a capital letter, and the word before it is not an abbreviation. The
+    stop and the whitespace after it belong to no range. Decimals ("0.5") and a lower case
+    word after the stop never split. Empty text has no sentences. */
+export function sentenceSpans(text: string): [number, number][] {
+  const spans: [number, number][] = [];
+  let start = 0;
+  for (const m of text.matchAll(/(?<=[A-Za-z0-9)])\.\s+(?=[A-Z])/g)) {
+    const stop = m.index;
+    if (endsInAbbreviation(text.slice(start, stop))) continue;
+    spans.push([start, stop]);
+    start = stop + m[0].length;
+  }
+  if (text.length > 0) spans.push([start, text.length]);
+  return spans;
+}
+
+/* A piece split at its sentence ends, each sentence keeping the original offsets of its
+   characters, so the quote is still a real slice of the page text. */
+function splitSentences(p: Part): Part[] {
+  const spans = sentenceSpans(p.text);
+  if (spans.length < 2) return [p];
+  return spans.map(([a, b]) => ({ text: p.text.slice(a, b), map: p.map.slice(a, b) }));
+}
+
+/** Where the last entry of a list ends inside text the entry rules reject whole, or 0 when the
+    text holds none. Such text is a list's last entry printed with a full stop and followed by a
+    sentence or a section header ("Citric Acid, Phenoxyethanol. How to Use ..."), or closing the
+    page. The entry is the text before the first sentence end, or all of the text but a final
+    stop. A final stop that belongs to an abbreviation ("Alcohol Denat.", "Aqua q.s.") stays in
+    the entry. The entry must still pass looksLikeIngredient, so prose is not taken for one. */
+function closingEntryEnd(t: string): number {
+  const spans = sentenceSpans(t);
+  if (spans.length > 1) {
+    const end = spans[0][1];
+    return looksLikeIngredient(t.slice(0, end)) ? end : 0;
+  }
+  const stop = /(?<=[A-Za-z0-9)])\.$/.exec(t)?.index;
+  if (stop === undefined || !looksLikeIngredient(t.slice(0, stop))) return 0;
+  return endsInAbbreviation(t.slice(0, stop)) ? t.length : stop;
+}
+
+/** Where the entry after an "Ingredients" label starts in text, or -1 when no label is followed by
+    something that can be an entry. LABEL alone takes the first label word of the text, so an earlier
+    "ingredient(s)" word in the same piece ("Every ingredient serves a function. ... View all other
+    ingredients Glycerin") makes the capture long and looksLikeIngredient rejects it, and the real first
+    entry is lost. The next label words are tried in turn, nearest first, and the first capture that can
+    be an entry is the one taken. A first capture that can be an entry is used as before. */
+function labelledEntryStart(text: string): number {
+  const label = new RegExp(LABEL.source, "gi");
+  for (let m = label.exec(text); m; m = label.exec(text)) {
+    if (looksLikeIngredient(m[1])) return m.index + m[0].length - m[1].length;
+    label.lastIndex = m.index + 1;
+  }
+  return -1;
+}
+
+/** Parse the longest INCI-looking comma list out of flat page text, and the raw text
+    span it came from. Null if no confident list is found. Deterministic, never invents
+    an ingredient. This is the single decision procedure: extractInciFromText below is
+    a thin wrapper, so the quote can never come from a different list than the one
+    accepted. */
+export function extractInciWithQuote(text: string): InciExtraction | null {
+  const parts = splitParts(text);
 
   // Walk the tokens, keeping the longest contiguous run of ingredient-like items.
   let best: string[] = [];
+  let bestSpan: [number, number] | null = null;
   let cur: string[] = [];
+  let curSpan: [number, number] | null = null;
+  const push = (token: string, span: [number, number]) => {
+    cur.push(token);
+    curSpan = curSpan ? [curSpan[0], span[1]] : span;
+  };
   const flush = () => {
-    if (cur.length > best.length) best = cur.slice();
+    if (cur.length > best.length) { best = cur.slice(); bestSpan = curSpan; }
     cur = [];
+    curSpan = null;
+  };
+  // Original-text span of p.text[from, to).
+  const spanOf = (p: Part, from: number, to: number): [number, number] => [p.map[from], p.map[to - 1] + 1];
+
+  /* Take p.text[from, to), which the rules above already accepted as one entry, into the run.
+     When it holds a sentence end, the entry is page prose glued to ingredient text ("Xanthan
+     Gum. Care Instructions Store in a cool", "especially after bathing. Ingredients Aqua"). A
+     full stop that starts a new sentence ends the entry: each sentence is its own entry, the
+     run ends at the stop, and the sentence after it starts a new candidate run (the longest
+     run still wins, so prose never rides along with a list). A sentence after a stop that
+     carries an "Ingredients" label starts at the ingredient after the label. Only entries
+     accepted whole are looked at here; a piece the rules reject is rejected as before, apart
+     from the last entry it may close the run with (pushClosing). */
+  const pushEntry = (p: Part, from: number, to: number) => {
+    const whole: Part = { text: p.text.slice(from, to), map: p.map.slice(from, to) };
+    const sentences = splitSentences(whole);
+    if (sentences.length === 1) {
+      push(cleanTok(whole.text), spanOf(p, from, to));
+      return;
+    }
+    sentences.forEach((sentence, k) => {
+      let entry = sentence;
+      if (k > 0) {
+        flush();
+        const lm = LABEL.exec(sentence.text);
+        if (lm && looksLikeIngredient(lm[1])) {
+          const at = lm.index + lm[0].length - lm[1].length;
+          entry = { text: sentence.text.slice(at), map: sentence.map.slice(at) };
+        }
+      }
+      if (looksLikeIngredient(entry.text)) push(cleanTok(entry.text), spanOf(entry, 0, entry.text.length));
+    });
+  };
+
+  /* p.text[0, to) was rejected whole by the rules above. When it holds the last entry of the run
+     in progress printed with a full stop ("Phenoxyethanol. How to Use ..."), the entry joins the
+     run; the caller then ends the run, as a stop ends a list. */
+  const pushClosing = (p: Part, to: number) => {
+    const end = closingEntryEnd(p.text.slice(0, to));
+    if (end > 0) push(cleanTok(p.text.slice(0, end)), spanOf(p, 0, end));
   };
 
   for (const p of parts) {
-    const stopM = STOP.exec(p);
+    const stopM = STOP.exec(p.text);
     if (stopM) {
       // A section header ends the current list. Keep any ingredient text before
       // it; a fresh "Ingredients:" label after it can start a new run.
-      const head = p.slice(0, stopM.index).trim();
-      if (looksLikeIngredient(head)) cur.push(cleanTok(head));
+      const head = p.text.slice(0, stopM.index).trim();
+      if (looksLikeIngredient(head)) pushEntry(p, 0, head.length);
+      else pushClosing(p, head.length);
       flush();
-      const lm = LABEL.exec(p);
-      if (lm && looksLikeIngredient(lm[1])) cur.push(cleanTok(lm[1]));
+      const at = labelledEntryStart(p.text);
+      if (at >= 0) pushEntry(p, at, p.text.length);
       continue;
     }
-    if (looksLikeIngredient(p)) {
-      cur.push(cleanTok(p));
+    if (looksLikeIngredient(p.text)) {
+      pushEntry(p, 0, p.text.length);
       continue;
     }
-    // Rejected token: if it ends with an "Ingredients:" label, begin the run at
-    // the trailing ingredient (so a leading "Water" glued to the label survives).
-    const lm = LABEL.exec(p);
-    if (lm && looksLikeIngredient(lm[1])) {
-      flush();
-      cur.push(cleanTok(lm[1]));
-    } else {
-      flush();
-    }
+    // Rejected token: a last entry printed with a full stop closes the run. If it ends
+    // with an "Ingredients:" label, begin the next run at the trailing ingredient (so a
+    // leading "Water" glued to the label survives).
+    pushClosing(p, p.text.length);
+    flush();
+    const at = labelledEntryStart(p.text);
+    if (at >= 0) pushEntry(p, at, p.text.length);
   }
   flush();
 
-  if (best.length < 5) return [];
-  if (!best.some((x) => ANCHOR.test(x))) return [];
+  if (best.length < 5 || !bestSpan) return null;
+  if (!best.some((x) => ANCHOR.test(x))) return null;
   const marketingHits = best.filter((x) => MARKETING_PHRASE_RE.test(x)).length;
-  if (marketingHits / best.length >= 0.5) return [];
+  if (marketingHits / best.length >= 0.5) return null;
+  const [from, to] = bestSpan as [number, number];
   // De-dupe consecutive repeats (some pages print the list twice back-to-back).
-  return best.filter((x, i) => i === 0 || x.toLowerCase() !== best[i - 1].toLowerCase());
+  return {
+    ingredients: best.filter((x, i) => i === 0 || x.toLowerCase() !== best[i - 1].toLowerCase()),
+    quote: text.slice(from, to).replace(/\s+/g, " ").trim(),
+  };
+}
+
+/** Parse the longest INCI-looking comma list out of flat page text. Empty if
+    no confident list is found. Deterministic, never invents an ingredient. */
+export function extractInciFromText(text: string): string[] {
+  return extractInciWithQuote(text)?.ingredients ?? [];
 }
 
 /** Extract the INCI from a page's HTML. */
@@ -152,21 +324,71 @@ export function extractInciFromHtml(html: string): string[] {
   return extractInciFromText(stripTags(html));
 }
 
+/* ── The page's own titles ────────────────────────────────────── */
+
+const ENTITIES: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ndash: "-", mdash: "-",
+  rsquo: "'", lsquo: "'", ldquo: '"', rdquo: '"', trade: "", reg: "", copy: "",
+};
+
+function decodeEntities(s: string): string {
+  return s.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, body: string) => {
+    if (body[0] === "#") {
+      const code = body[1].toLowerCase() === "x" ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code < 0x110000 ? String.fromCodePoint(code) : " ";
+    }
+    return ENTITIES[body.toLowerCase()] ?? m;
+  });
+}
+
+const tidy = (s: string): string => decodeEntities(s).replace(/\s+/g, " ").trim();
+
+function metaContent(html: string, key: string): string | null {
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    const attrs: Record<string, string> = {};
+    for (const a of tag.matchAll(/([a-zA-Z:_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) attrs[a[1].toLowerCase()] = a[2] ?? a[3] ?? "";
+    if ((attrs.property ?? attrs.name ?? "").toLowerCase() === key && attrs.content) return tidy(attrs.content) || null;
+  }
+  return null;
+}
+
+/** The titles a product page gives itself, best first (title tag, og:title, first
+    h1), and its og:site_name. Markup only: nothing is guessed from the body text. */
+export function extractPageMeta(html: string): { titles: string[]; siteName: string | null } {
+  const titleTag = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1];
+  const titles = [titleTag ? tidy(titleTag) : "", metaContent(html, "og:title") ?? "", h1 ? stripTags(h1) : ""].filter(Boolean);
+  return { titles: [...new Set(titles)], siteName: metaContent(html, "og:site_name") };
+}
+
+/** The same, from a markdown scrape: its "Title:" line and the first heading. */
+export function extractMarkdownTitles(md: string): string[] {
+  const titleLine = md.match(/^Title:\s*(.+)$/m)?.[1];
+  const heading = md.match(/^#\s+(.+)$/m)?.[1]?.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
+  return [...new Set([titleLine, heading].map((t) => (t ? tidy(t) : "")).filter(Boolean))];
+}
+
 /** Resolve a product page URL to its published INCI. Tries the raw HTML first
     (keeps accordion content the Jina reader collapses), then the keyless Jina
     reader as a fallback for bot-protected storefronts. Null if neither yields a
-    confident list. */
+    confident list. Also returns the raw text span the list was read from and the
+    page's own titles; neither changes which list is accepted. */
 export async function fetchInciFromProductPage(url: string): Promise<PageINCI | null> {
   const html = await fetchRawHtml(url);
   if (html) {
-    const ingredients = extractInciFromHtml(html);
-    if (ingredients.length >= 5) return { ingredients, source: url };
+    const ex = extractInciWithQuote(stripTags(html));
+    if (ex && ex.ingredients.length >= 5) {
+      const meta = extractPageMeta(html);
+      return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: meta.titles, siteName: meta.siteName };
+    }
   }
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ingredients = extractInciFromText(md);
-    if (ingredients.length >= 5) return { ingredients, source: url };
+    const ex = extractInciWithQuote(md);
+    if (ex && ex.ingredients.length >= 5) {
+      return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
+    }
   }
   return null;
 }

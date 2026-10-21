@@ -171,6 +171,33 @@ export interface ProductReviewDataSource {
   userSentiment: string;
 }
 
+/** Provenance of a review's ingredient list: the evidence envelope. `captureTrust`
+    says how reliably the source TEXT is captured (1 unanchored model output, 2 retailer,
+    3 reference database, 4 brand page, 5 physical pack). It is not authority over the
+    formula: a quote proves the text was captured as stated, not that the formula is
+    true, current for this SKU, or valid for this region or version. An empty `quote`
+    means the list cannot be audited. `matchedTitle` is the source's own product title. */
+export interface InciEvidence {
+  sourceUrl: string;
+  captureTrust: 1 | 2 | 3 | 4 | 5;
+  quote: string;
+  retrievedAt: string;
+  matchedTitle?: string;
+}
+
+/** What the model searched and cited while producing a review (Google Search grounding).
+    A record of the research behind the review, not evidence that anything it found is
+    true. `grounded: false` means the call that produced the review did no search, so an
+    empty list is never "searched and found nothing". `sourceUris` are usually Google
+    redirect links; the domain is in `sourceTitles`. */
+export interface ResearchLog {
+  grounded: boolean;
+  webSearchQueries: string[];
+  sourceUris: string[];
+  sourceTitles: string[];
+  recordedAt: string;
+}
+
 /** Which strategy resolved a product image, best-trust first. "manual" = an
     admin pinned it via /admin/repository. */
 export type ProductImageSource = "inci" | "page" | "amazon" | "nykaa" | "cse" | "search" | "manual";
@@ -229,6 +256,12 @@ export interface ProductReview {
   keyActivesRead?: KeyActiveRead[];
   regulatoryScreen?: RegulatoryScreen;
   inciSourceUrl?: string;
+  /** Where the ingredient list came from, the source text it was read from, and when.
+      Absent on reviews stored before evidence capture (see review-verifier.ts). */
+  inciEvidence?: InciEvidence;
+  /** The searches the model ran and the sources it cited for this review. Set by the
+      engine from the grounding metadata, never authored by the model. Absent on older reviews. */
+  researchLog?: ResearchLog;
   /** India-specific read (climate, price positioning, ASCI/CDSCO posture). */
   indiaContext?: string;
   /** Canonical product key for the review repository. */

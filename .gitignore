@@ -62,3 +62,6 @@ tmp/
 /public/Videos/DNA skincare video.mp4
 /public/Videos/Review page.mp4
 /public/Videos/Serum dropping.mp4
+
+# Private map from TCS Panel reviewer references to people. Must never be committed.
+reviewer-register*.json

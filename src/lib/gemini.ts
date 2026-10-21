@@ -8,6 +8,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { ResearchLog } from "@/lib/product-review-types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -15,7 +16,53 @@ export class TransientModelError extends Error {}
 
 const TRANSIENT = /503|429|UNAVAILABLE|overloaded|high demand|quota|RESOURCE_EXHAUSTED|fetch failed|timed? ?out|ECONNRESET/i;
 
-export async function generateResilient(systemInstruction: string, prompt: string): Promise<string> {
+/** What Google Search grounding reported for one call. A record of what the model
+    searched and which sources it cited, not evidence that any of it is true. */
+export interface GroundingRecord {
+  webSearchQueries: string[];
+  /** Cited source URIs in the order given, without repeats. The API usually returns Google
+      redirect links here, so the domain is only known from `sourceTitles`. */
+  sourceUris: string[];
+  sourceTitles: string[];
+}
+
+export interface ResilientResult {
+  text: string;
+  /** Null when the call that produced the text was not grounded, or reported nothing. */
+  groundingMetadata: GroundingRecord | null;
+}
+
+interface GroundingLike {
+  webSearchQueries?: string[];
+  groundingChunks?: { web?: { uri?: string; title?: string } }[];
+}
+
+const uniq = (xs: (string | undefined)[]): string[] => [...new Set(xs.filter((x): x is string => typeof x === "string" && x.trim().length > 0))];
+
+/** The queries and cited sources out of a response's grounding metadata, or null when it carries none. */
+export function groundingRecordFrom(meta: GroundingLike | undefined | null): GroundingRecord | null {
+  if (!meta) return null;
+  const record: GroundingRecord = {
+    webSearchQueries: uniq(meta.webSearchQueries ?? []),
+    sourceUris: uniq((meta.groundingChunks ?? []).map((c) => c.web?.uri)),
+    sourceTitles: uniq((meta.groundingChunks ?? []).map((c) => c.web?.title)),
+  };
+  return record.webSearchQueries.length || record.sourceUris.length ? record : null;
+}
+
+/** The persisted form of a call's grounding. `grounded` is false when the call that
+    produced the review was not grounded, so an empty log is never read as "searched, found nothing". */
+export function researchLogFrom(record: GroundingRecord | null, recordedAt: string): ResearchLog {
+  return {
+    grounded: record !== null,
+    webSearchQueries: record?.webSearchQueries ?? [],
+    sourceUris: record?.sourceUris ?? [],
+    sourceTitles: record?.sourceTitles ?? [],
+    recordedAt,
+  };
+}
+
+export async function generateResilientWithMeta(systemInstruction: string, prompt: string): Promise<ResilientResult> {
   const key = process.env.GOOGLE_AI_API_KEY;
   if (!key) throw new TransientModelError("GOOGLE_AI_API_KEY not set");
   const genAI = new GoogleGenerativeAI(key);
@@ -43,7 +90,9 @@ export async function generateResilient(systemInstruction: string, prompt: strin
     try {
       const result = await mk(step.search).generateContent(prompt);
       const text = result.response.text().trim();
-      if (text) return text;
+      if (text) {
+        return { text, groundingMetadata: step.search ? groundingRecordFrom(result.response.candidates?.[0]?.groundingMetadata) : null };
+      }
       lastErr = new Error("empty model response"); // grounded calls occasionally return empty; fall through to the next attempt
     } catch (err) {
       lastErr = err;
@@ -52,6 +101,10 @@ export async function generateResilient(systemInstruction: string, prompt: strin
     }
   }
   throw new TransientModelError(lastErr instanceof Error ? lastErr.message : "Model unavailable");
+}
+
+export async function generateResilient(systemInstruction: string, prompt: string): Promise<string> {
+  return (await generateResilientWithMeta(systemInstruction, prompt)).text;
 }
 
 export const busyResponse = () =>

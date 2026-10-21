@@ -10,6 +10,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin, Pill } from "lucide-react";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
+import { buildAtAGlance } from "@/lib/at-a-glance";
+import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
@@ -388,65 +390,6 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
   }
 
   return cards.slice(0, 8);
-}
-
-function buildAtAGlance(product: ProductScorecard): { label: string; value: boolean }[] {
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
-  const warn = product.warn_badges.map((b) => b.toLowerCase());
-  const items: { label: string; value: boolean }[] = [];
-
-  // Fragrance free
-  const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
-  const hasFragAllergen = warn.some((b) =>
-    b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
-    b.includes("benzyl alcohol") || b.includes("parfum")
-  );
-  if (fragFree) items.push({ label: "Fragrance free", value: true });
-  else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
-
-  // Essential oil free
-  const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
-  if (eoFree) items.push({ label: "Essential oil free", value: true });
-
-  // Alcohol free (check ingredient list)
-  const hasAlcohol = product.ingredients.some((i) => {
-    const n = i.name.toLowerCase();
-    return n === "alcohol" || n.includes("alcohol denat");
-  });
-  const alcoholWarn = warn.some((b) => b.includes("denatured alcohol") || b.includes("alcohol denat"));
-  if (hasAlcohol || alcoholWarn) items.push({ label: "Alcohol free", value: false });
-  else items.push({ label: "Alcohol free", value: true });
-
-  // Paraben free
-  const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
-  items.push({ label: "Paraben free", value: !hasParaben });
-
-  // Non-comedogenic
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    items.push({ label: "Non-comedogenic", value: true });
-  }
-
-  // Dermatologist tested
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    items.push({ label: "Dermatologist tested", value: true });
-  }
-
-  // Vegan
-  const isVegan = pass.some((b) => b.includes("vegan"));
-  const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
-  if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
-  else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
-
-  // Sunscreen-specific
-  if (product.productType === "sunscreen") {
-    const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
-    items.push({ label: "SPF verified", value: spfVerified });
-
-    const reefSafe = pass.some((b) => b.includes("reef-safe") || b.includes("reef safe"));
-    if (reefSafe) items.push({ label: "Reef safe", value: true });
-  }
-
-  return items.slice(0, 8);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1034,7 +977,7 @@ export function ProductScorecardView({
   const infoCount = product.ingredients.filter((i) => i.flag === "info").length;
 
   const proofCards = buildProofCards(product);
-  const atAGlance = buildAtAGlance(product);
+  const atAGlance = buildAtAGlance(product, { ontology: isFlagOn(ANALYSER_FLAGS.ontologyTicks) });
 
   return (
     <div className="bg-white min-h-screen">
