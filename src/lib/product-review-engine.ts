@@ -658,6 +658,12 @@ const REVIEW_CACHE = new Map<string, { result: ProductReviewResult; at: number }
 const REVIEW_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min, matches the page's ISR revalidate
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
 export const RUBRIC_REV = "r7"; // r7: total code-summed from sections + claimEvidence capped to the finished-product evidence actually in claimMap + approval requires a retrieved INCI; r6: 4-tier stamp rename + code-verified hard-flag guardrails
+/** Revisions a stored review may carry and still be served. A row is served when its `rubric_rev` is in
+    this list, not only when it equals the current RUBRIC_REV, so a revision change can be deployed first
+    and the rows re-stamped by `scripts/backfill-reviews.mts` afterwards without hiding any review in
+    between. Today it holds only the current revision, so nothing changes. */
+export const ACCEPTED_RUBRIC_REVS: readonly string[] = [RUBRIC_REV];
+export const isAcceptedRubricRev = (rev: unknown): boolean => typeof rev === "string" && ACCEPTED_RUBRIC_REVS.includes(rev);
 
 /* Reviews pulled from the site. Suppressed on every read path (getStored,
    listings, catalogue); the stored row is left intact so it can be restored or
@@ -718,7 +724,7 @@ async function getStored(slug: string, strict = false): Promise<ProductReviewRes
       .from("product_reviews").select("result, rubric_rev")
       .eq("product_slug", slug).maybeSingle();
     if (error && strict) throw error;
-    if (data?.result && data.rubric_rev === RUBRIC_REV) {
+    if (data?.result && isAcceptedRubricRev(data.rubric_rev)) {
       const r = data.result as ProductReviewResult;
       REVIEW_CACHE.set(slug, { result: r, at: Date.now() });
       return withFreshVerdict(r);
@@ -786,7 +792,7 @@ export async function getStoredReviewTier(slug: string): Promise<string | null> 
   try {
     const { data } = await createAdminClient()
       .from("product_reviews").select("tier, rubric_rev").eq("product_slug", slug).maybeSingle();
-    return data?.rubric_rev === RUBRIC_REV ? (data.tier as string) : null;
+    return isAcceptedRubricRev(data?.rubric_rev) ? (data!.tier as string) : null;
   } catch {
     return null;
   }
@@ -807,7 +813,7 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
     const { data } = await createAdminClient()
       .from("product_reviews")
       .select("product_slug, product_name, brand, tier, image_url, reviewed_at")
-      .eq("rubric_rev", RUBRIC_REV)
+      .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
       .order("reviewed_at", { ascending: false })
       .limit(limit);
     return (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug))).map((r) => ({
@@ -837,7 +843,7 @@ export async function listReviewIndex(): Promise<{ slug: string; productName: st
       const { data, error } = await db
         .from("product_reviews")
         .select("product_slug, product_name, brand, reviewed_at")
-        .eq("rubric_rev", RUBRIC_REV)
+        .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
         .order("product_slug", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error || !data) break;
@@ -868,7 +874,7 @@ export async function getRepositoryStats(): Promise<{ productCount: number; bran
     const { data } = await createAdminClient()
       .from("product_reviews")
       .select("product_slug, brand")
-      .eq("rubric_rev", RUBRIC_REV);
+      .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS]);
     const rows = (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug)));
     const brandSlugs = new Set(rows.map((r) => slugify(String(r.brand ?? ""), "")));
     return { productCount: rows.length, brandSlugs: [...brandSlugs] };
@@ -915,7 +921,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
     const { data } = await createAdminClient()
       .from("product_reviews")
       .select("product_slug, result, reviewed_at")
-      .eq("rubric_rev", RUBRIC_REV)
+      .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
       .order("reviewed_at", { ascending: false })
       .limit(limit);
 
