@@ -2,138 +2,116 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { User } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import SkinGuidesPopup from '@/components/guides/SkinGuidesPopup';
+import MobileHeader from '@/components/layout/MobileHeader';
+import NavMenu from '@/components/layout/NavMenu';
+import { BRAND_MENU, CONSUMER_MENU } from '@/components/layout/nav-menus';
+import { GUIDES_OPEN_PARAM } from '@/lib/skin-guide-downloads';
 
-/* Reading-progress sweep across the bottom edge of the sticky header */
-function ScrollProgress() {
-  const [pct, setPct] = useState(0);
-  useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        setPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
-      });
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
-  }, []);
-  return (
-    <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-transparent" aria-hidden>
-      <div
-        className="h-full"
-        style={{
-          width: `${pct}%`,
-          background: 'linear-gradient(90deg, #248179 0%, #80d5cc 60%, #d2ff34 100%)',
-          transition: 'width 80ms linear',
-          borderRadius: '0 2px 2px 0',
-        }}
-      />
-    </div>
-  );
-}
+/* Site header: a dark guide banner, then a white sticky bar with two collapsible
+   menus (For consumers, For brands) and one green Log in button; on a phone, a
+   hamburger drawer with the same two groups (MobileHeader). Each menu's Community
+   item scrolls to that page's community write-up; the WhatsApp join buttons live
+   inside those write-ups. Reviews, Standard, Verify and About live in the footer,
+   the mobile tab bar and the "More from The Clean Sheet" row on the home page. */
 
 export function Navigation() {
   const pathname = usePathname();
   const { user, loading, signOut, openLoginModal } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
+  const [guidesOpen, setGuidesOpen] = useState(false);
+  const [menu, setMenu] = useState<'consumers' | 'brands' | null>(null);
+  const closeMenu = useCallback(() => setMenu(null), []);
+
+  // Coming back from the Google sign-in: reopen the guides popup, then tidy the URL.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get(GUIDES_OPEN_PARAM) !== 'open') return;
+    const id = window.setTimeout(() => {
+      setGuidesOpen(true);
+      url.searchParams.delete(GUIDES_OPEN_PARAM);
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    }, 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   if (pathname?.startsWith('/app')) {
     return null;
   }
 
+  const isUnder = (prefixes: string[]) => prefixes.some((p) => pathname === p || pathname?.startsWith(`${p}/`));
+  const login = () =>
+    openLoginModal({
+      returnPath: pathname,
+      title: 'Sign in to your account',
+      subtitle: 'Save products, compare formulations, build routines, and write reviews.',
+    });
+
   return (
     <>
-      {/* Desktop Top Nav · transparent at the top so the page gradient flows through, frosts on scroll */}
-      <nav className={`hidden md:block sticky top-0 z-50 relative transition-all duration-300 ${scrolled ? "bg-white/85 backdrop-blur-md border-b border-[var(--color-surface-subtle)] shadow-[0_1px_2px_rgba(40,40,40,0.05)]" : "bg-transparent"}`}>
-        <ScrollProgress />
-        <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex-shrink-0">
-            <img src="/images/logo.png" alt="The Clean Sheet" className="w-16 h-16 object-contain" />
-          </Link>
-          <div className="flex items-center gap-6 text-[var(--color-charcoal)] text-[14px] tracking-[0.05em] uppercase">
-            <Link href="/brands" className="hover:text-[var(--color-primary)] transition-colors">Reviews</Link>
-            <Link href="/standard" className="hover:text-[var(--color-primary)] transition-colors">Standard</Link>
-            <Link href="/education" className="hover:text-[var(--color-primary)] transition-colors">Education</Link>
-            <Link href="/verify" className="hover:text-[var(--color-primary)] transition-colors">Verify</Link>
-            <Link href="/about" className="hover:text-[var(--color-primary)] transition-colors">About</Link>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-[14px] tracking-[0.05em] uppercase">
-          <Link href="/for-brands" className="py-2 px-5 border border-[var(--color-charcoal)] rounded-full hover:bg-[var(--color-charcoal)] hover:text-white transition-colors">For brands</Link>
-          {!loading && (
-            user ? (
-              <button
-                onClick={() => signOut()}
-                title={user.email ?? undefined}
-                className="py-2 px-5 rounded-full bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
-              >
-                Sign Out
-              </button>
-            ) : (
-              <button
-                onClick={() => openLoginModal({
-                  returnPath: pathname,
-                  title: "Sign in to your account",
-                  subtitle: "Save products, compare formulations, build routines, and write reviews.",
-                })}
-                className="py-2 px-5 rounded-full bg-[var(--color-primary)] text-white hover:opacity-90 transition-opacity"
-              >
-                Login
-              </button>
-            )
-          )}
-        </div>
-        </div>
-      </nav>
+      {/* Banner · opens the skin-type guides popup (guides unlock after a Google sign-in) */}
+      <button
+        type="button"
+        onClick={() => setGuidesOpen(true)}
+        className="block w-full bg-[#282828] hover:bg-[#1f1f1f] transition-colors text-white text-center text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2.5 leading-relaxed"
+      >
+        Free guide <span className="text-[#b0a8a4]">·</span> Download your skin type guide{' '}
+        <span className="text-[#d2ff34] underline underline-offset-[3px]">here</span>
+      </button>
+      <SkinGuidesPopup open={guidesOpen} onClose={() => setGuidesOpen(false)} />
 
-      {/* Mobile Top Bar · minimal logo bar. Recedes on scroll so each page's own
-          sticky chrome (search app-bar, verdict tabs) takes the top edge, while
-          the fixed bottom tab bar (MobileBottomNav) handles primary nav. */}
-      <div className="md:hidden pt-safe bg-white/90 backdrop-blur-md border-b border-[var(--color-surface-subtle)]">
-        <div className="relative flex items-center justify-center h-[52px] px-4">
-          <Link href="/" aria-label="The Clean Sheet home" className="flex items-center">
-            <img src="/images/logo.png" alt="The Clean Sheet" className="w-9 h-9 object-contain" />
+      {/* Desktop header */}
+      <header className="hidden md:block sticky top-0 z-50 bg-white border-b border-[#e5dfd6]">
+        <div className="max-w-[1200px] mx-auto px-8 lg:px-12 py-4 flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-3 flex-none" aria-label="The Clean Sheet home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="" width={48} height={48} className="w-12 h-12 rounded-full" />
+            <span className="flex flex-col gap-0.5">
+              <span className="font-display font-light text-[22px] leading-none tracking-[-0.01em] text-[#282828] whitespace-nowrap">
+                The Clean Sheet
+              </span>
+              <span className="hidden lg:block text-[10px] font-normal uppercase tracking-[0.14em] text-[#248179] whitespace-nowrap">
+                Independent standard &amp; verification
+              </span>
+            </span>
           </Link>
+
+          <nav aria-label="Main" className="ml-auto flex items-center gap-[clamp(18px,2vw,32px)] text-[14px] text-[#282828] whitespace-nowrap">
+            <NavMenu
+              label="For consumers"
+              items={CONSUMER_MENU}
+              open={menu === 'consumers'}
+              active={isUnder(['/brands', '/education'])}
+              onToggle={() => setMenu(menu === 'consumers' ? null : 'consumers')}
+              onClose={closeMenu}
+            />
+            <span aria-hidden className="w-px self-stretch bg-[#e5dfd6]" />
+            <NavMenu
+              label="For brands"
+              items={BRAND_MENU}
+              open={menu === 'brands'}
+              active={isUnder(['/for-brands'])}
+              onToggle={() => setMenu(menu === 'brands' ? null : 'brands')}
+              onClose={closeMenu}
+            />
+          </nav>
+
+          {/* The one green button: Log in (Sign out once signed in). Nothing else lives here. */}
           {!loading && (
-            <div className="absolute right-3">
-              {user ? (
-                <button
-                  onClick={() => signOut()}
-                  title={user.email ?? undefined}
-                  aria-label="Sign out"
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-[11px] uppercase tracking-wide"
-                >
-                  {(user.email?.[0] ?? 'U').toUpperCase()}
-                </button>
-              ) : (
-                <button
-                  onClick={() => openLoginModal({
-                    returnPath: pathname,
-                    title: 'Sign in to your account',
-                    subtitle: 'Save products, compare formulations, build routines, and write reviews.',
-                  })}
-                  aria-label="Log in"
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-[var(--color-charcoal)]/15 text-[var(--color-charcoal)]"
-                >
-                  <User size={18} strokeWidth={1.5} />
-                </button>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={user ? () => signOut() : login}
+              title={user?.email ?? undefined}
+              className="flex-none inline-flex items-center bg-[#248179] hover:bg-[#1d6b64] active:scale-[0.98] text-white rounded-lg px-[22px] py-[11px] text-[14px] font-bold whitespace-nowrap transition-[background-color,transform]"
+            >
+              {user ? 'Sign out' : 'Log in'}
+            </button>
           )}
         </div>
-      </div>
+      </header>
+
+      <MobileHeader />
     </>
   );
 }

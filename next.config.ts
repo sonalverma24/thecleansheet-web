@@ -25,8 +25,19 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  // The skin-type guide PDFs live in /private/guides (not /public) and are read from disk by
+  // /api/guides/[slug]; tell the file tracer to ship them with that route.
+  outputFileTracingIncludes: {
+    "/api/guides/[slug]": ["./private/guides/**/*"],
+  },
   async redirects() {
     return [
+      // The skin-type guide PDFs moved behind a Google sign-in (/api/guides/[slug]). Old direct
+      // links land on the guide page, where signing in unlocks the download.
+      { source: "/guides/Oily_Skin_Care_Revised_v2.pdf", destination: "/learn/guides/oily-skin", permanent: true },
+      { source: "/guides/Dry_Skin_Care_Guide.pdf", destination: "/learn/guides/dry-skin", permanent: true },
+      { source: "/guides/Combination_Skin_Care_Guide.pdf", destination: "/learn/guides/combination-skin", permanent: true },
+      { source: "/guides/Normal_Skin_Care_Guide.pdf", destination: "/learn/guides/normal-skin", permanent: true },
       // Retired CodeSkin certification-style demo pages, superseded by the new registry.
       // Redirected (not deleted) so no page presents a product as certified.
       { source: "/verify/codeskin-ultralite-certified-8f3t2p9x", destination: "/verify", permanent: true },
@@ -45,12 +56,15 @@ const nextConfig: NextConfig = {
       { source: "/services", destination: "/for-brands", permanent: true },
       { source: "/certified", destination: "/verify", permanent: true },
       { source: "/consumers", destination: "/verify", permanent: true },
-      // The analyzer moved to /review. Permanent (308) so Google consolidates onto
-      // /review; /brands still links here as /analyzer?product=<query>, which /review
-      // reads as ?q=.
-      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/review?q=:product", permanent: true },
-      { source: "/analyzer", destination: "/review", permanent: true },
-      { source: "/analyser", destination: "/review", permanent: true },
+      // The analyser lives on /brands: searching a product there runs the review in place and
+      // opens its review page, so the old middle page (/review) is gone. Permanent (308) so
+      // Google consolidates onto /brands; a search in the old link (?q= / ?product=) is forwarded
+      // as ?review=<query>, which /brands runs on arrival.
+      { source: "/review", has: [{ type: "query", key: "q", value: "(?<q>.+)" }], destination: "/brands?review=:q", permanent: true },
+      { source: "/review", destination: "/brands", permanent: true },
+      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/brands?review=:product", permanent: true },
+      { source: "/analyzer", destination: "/brands", permanent: true },
+      { source: "/analyser", destination: "/brands", permanent: true },
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
       { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/reviews/kay-beauty-hydra-creme-lipstick", permanent: true },
       { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },

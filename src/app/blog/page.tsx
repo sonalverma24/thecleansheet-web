@@ -175,7 +175,7 @@ export default function BlogPage() {
               Read the label. Then read the evidence.
             </h2>
             <Link
-              href="/review"
+              href="/brands"
               className="mt-8 inline-flex items-center gap-3 rounded-full px-8 py-4 text-[15px] hover:opacity-90 transition-opacity"
               style={{ background: "var(--color-lime)", color: INK }}
             >

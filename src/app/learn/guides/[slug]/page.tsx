@@ -2,14 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Sparkles, Sun, Moon, FlaskConical } from "lucide-react";
 import { getGuideBySlug, getAllGuideSlugs } from "@/lib/skin-guides";
-import DownloadGuideButton from "@/components/DownloadGuideButton";
-
-const GUIDE_FILES: Record<string, string> = {
-  "oily-skin":        "/guides/Oily_Skin_Care_Revised_v2.pdf",
-  "dry-skin":         "/guides/Dry_Skin_Care_Guide.pdf",
-  "combination-skin": "/guides/Combination_Skin_Care_Guide.pdf",
-  "normal-skin":      "/guides/Normal_Skin_Care_Guide.pdf",
-};
+import GuideDownloadButton from "@/components/guides/GuideDownloadButton";
 
 export function generateStaticParams() {
   return getAllGuideSlugs().map((slug) => ({ slug }));
@@ -30,8 +23,6 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const guide = getGuideBySlug(slug);
   if (!guide) notFound();
-
-  const guideFile = GUIDE_FILES[slug] ?? "/guides/Oily_Skin_Care_Revised_v2.pdf";
 
   return (
     <div className="bg-white min-h-screen">
@@ -85,7 +76,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                 <strong className="font-normal">The upside: </strong>{guide.silverLining}
               </p>
             </div>
-            <DownloadGuideButton guideName={guide.skinType} guideFile={guideFile} guideSlug={slug} />
+            <GuideDownloadButton slug={slug} label={guide.skinType} />
           </div>
         </div>
       </section>
@@ -252,9 +243,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
               Run any product through Ask Clean. Our AI engine scores it in seconds.
             </p>
             <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-              <DownloadGuideButton guideName={guide.skinType} guideFile={guideFile} guideSlug={slug} />
+              <GuideDownloadButton slug={slug} label={guide.skinType} />
               <Link
-                href="/review"
+                href="/brands"
                 className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-xl transition-colors text-center whitespace-nowrap"
               >
                 Try Ask Clean →

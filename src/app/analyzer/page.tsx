@@ -1,14 +1,13 @@
 import { redirect } from "next/navigation";
+import { REVIEW_RUN_PARAM } from "@/lib/review-run";
 
-// The claims-first analyzer now lives at /review — the single canonical tool.
-// /brands links here as /analyzer?product=<query> for its "no scorecard yet"
-// CTA; /review reads the query as ?q=, so forward it under that name instead
-// of dropping it.
+// The analyser lives on /brands now. Old /analyzer?product=<query> links forward the
+// query as ?review=<query>, which /brands runs on arrival, instead of dropping it.
 export default async function AnalyzerRedirect({
   searchParams,
 }: {
   searchParams: Promise<{ product?: string }>;
 }) {
   const { product } = await searchParams;
-  redirect(product ? `/review?q=${encodeURIComponent(product)}` : "/review");
+  redirect(product ? `/brands?${REVIEW_RUN_PARAM}=${encodeURIComponent(product)}` : "/brands");
 }

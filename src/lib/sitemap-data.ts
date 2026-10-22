@@ -34,7 +34,7 @@ export interface SitemapEntry {
     /certified, /certification, /consumers and /methodology 308 to the pages
     below and must NOT be listed.) */
 const PAGES = [
-  "/", "/review", "/brands", "/ingredients", "/standard", "/standard/claims",
+  "/", "/brands", "/ingredients", "/standard", "/standard/claims",
   "/standard/register", "/verify", "/education", "/learn", "/courses",
   "/for-brands", "/spf", "/sunscreens", "/sunscreens/minimalist-multi-vitamin-spf-50",
   "/blog", "/about", "/contact",
