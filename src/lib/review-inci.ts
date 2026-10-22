@@ -39,7 +39,7 @@ function looksLikeMarketingCopy(items: string[]): boolean {
 }
 
 /** The product's ingredient list, from the best source the review carries. */
-export function reviewInciList(review: ProductReview): string[] {
+export function reviewInciList(review: Pick<ProductReview, "inciIngredients" | "ingredientReads">): string[] {
   const direct = review.inciIngredients ?? [];
   const fromReads = (review.ingredientReads ?? [])
     .map((r) => r.name)

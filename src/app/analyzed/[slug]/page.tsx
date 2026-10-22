@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { ProductScorecard, ScorePillar } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { simplifyPillarName } from "@/lib/pillar-display";
+import { buildAtAGlanceAnalyzedPage } from "@/lib/at-a-glance";
+import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata
@@ -303,53 +305,6 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
   return cards.slice(0, 8);
 }
 
-function buildAtAGlance(product: ProductScorecard): { label: string; value: boolean }[] {
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
-  const warn = product.warn_badges.map((b) => b.toLowerCase());
-  const items: { label: string; value: boolean }[] = [];
-
-  const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
-  const hasFragAllergen = warn.some((b) =>
-    b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
-    b.includes("benzyl alcohol") || b.includes("parfum")
-  );
-  if (fragFree) items.push({ label: "Fragrance free", value: true });
-  else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
-
-  const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
-  if (eoFree) items.push({ label: "Essential oil free", value: true });
-
-  const hasAlcohol = product.ingredients.some((i) => {
-    const n = i.name.toLowerCase();
-    return n === "alcohol" || n.includes("alcohol denat");
-  });
-  const alcoholWarn = warn.some((b) => b.includes("denatured alcohol") || b.includes("alcohol denat"));
-  if (hasAlcohol || alcoholWarn) items.push({ label: "Alcohol free", value: false });
-  else items.push({ label: "Alcohol free", value: true });
-
-  const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
-  items.push({ label: "Paraben free", value: !hasParaben });
-
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    items.push({ label: "Non-comedogenic", value: true });
-  }
-
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    items.push({ label: "Dermatologist tested", value: true });
-  }
-
-  const isVegan = pass.some((b) => b.includes("vegan"));
-  const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
-  if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
-  else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
-
-  if (product.productType === "sunscreen") {
-    const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
-    items.push({ label: "SPF verified", value: spfVerified });
-  }
-
-  return items.slice(0, 8);
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main page
@@ -418,7 +373,7 @@ export default async function AnalyzedProductPage({
   const infoCount = product.ingredients.filter((i) => i.flag === "info").length;
 
   const proofCards = buildProofCards(product);
-  const atAGlance = buildAtAGlance(product);
+  const atAGlance = buildAtAGlanceAnalyzedPage(product, { ontology: isFlagOn(ANALYSER_FLAGS.ontologyTicks) });
 
   return (
     <div className="bg-white min-h-screen">

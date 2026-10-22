@@ -7,7 +7,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
-import { generateResilient } from "@/lib/gemini";
+import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiveImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
@@ -17,6 +17,7 @@ import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
+import { makeInciEvidence } from "@/lib/review-verifier";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
@@ -663,7 +664,7 @@ export const RUBRIC_REV = "r7"; // r7: total code-summed from sections + claimEv
    hard-deleted later. Used for known-wrong source data pending re-review, and for
    removing duplicates (e.g. a second review of the same product created because
    the product couldn't be resolved to a canonical slug - see runProductReview). */
-const RETRACTED_SLUGS = new Set<string>([
+export const RETRACTED_SLUGS = new Set<string>([
   "la-roche-posay-cicaplast-balm",
   "moxie-curly-hair-shampoo", // duplicate Moxie shampoo review (AI-generated imagery); other Moxie review kept
   // Duplicate of the same product under the old brand name "Minimalist" (the
@@ -1062,17 +1063,21 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     `${userPrompt}\n\nYour previous output was not valid JSON. Return ONLY the complete, valid product-review JSON object.`,
   ];
   let parsed: Record<string, unknown> | null = null;
+  let grounding: GroundingRecord | null = null; // the research behind the attempt kept below
   for (const p of prompts) {
       // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
       // the text scrape; a vision pass transcribes them so they count as evidence.
       evidenceBlock += await imageEvidenceBlock(q);
-    parsed = parseJSON(await generateResilient(PRODUCT_REVIEW_SYSTEM_PROMPT, p));
+    const gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, p);
+    parsed = parseJSON(gen.text);
+    grounding = gen.groundingMetadata;
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     if (isValidProductReview(parsed)) break;
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
 
   const review = parsed as ProductReview;
+  review.researchLog = researchLogFrom(grounding, new Date().toISOString());
 
   /* Collapse historical brand names to one canonical identity BEFORE the slug is
      computed, so a rebrand (Minimalist → Be Minimalist) can't store the same
@@ -1197,6 +1202,17 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     const check = sanitizeInciList(review.inciIngredients);
     if (check.issues.length) console.warn(`[review] INCI sanity (${review.brand} ${review.productName}):`, check.issues.slice(0, 5));
     review.inciIngredients = check.ok ? check.list : [];
+  }
+
+  /* Evidence envelope: record where the list came from and the source text it was
+     read from, so the review can be audited later. Only INCIDecoder lists carry a
+     quote today; a brand-page list gets its tier but no quote, and a model-transcribed
+     list gets tier 1, so the verifier reports both as unanchored. Recording only: it
+     does not feed the verdict. */
+  if (review.inciIngredients?.length) {
+    review.inciEvidence = inci
+      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName)
+      : makeInciEvidence(pageInci?.source, undefined, review.reviewedAt ?? new Date().toISOString());
   }
 
   // Auto-grow the ingredient directory: any ingredient of this product that is

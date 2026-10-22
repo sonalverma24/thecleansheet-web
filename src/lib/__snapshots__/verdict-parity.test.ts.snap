@@ -1,0 +1,695 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ontology ticks preview (flag ANALYSER_ONTOLOGY_TICKS) > records legacy vs ontology ticks side by side 1`] = `
+{
+  "alcohol denat": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:false",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:false",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Paraben free:true",
+    ],
+  },
+  "bare Alcohol entry": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:false",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:false",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Paraben free:true",
+    ],
+  },
+  "benzyl alcohol": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Paraben free:true",
+    ],
+  },
+  "clean": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+  },
+  "ethyl hydroxybenzoate (not an alias)": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+  },
+  "fatty alcohols only": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+  },
+  "methylparaben": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "ontologyAnalyzedPage": [
+      "Alcohol free:true",
+    ],
+    "ontologyMain": [
+      "Alcohol free:true",
+    ],
+  },
+  "phenoxyethanol (contains the letters ethanol)": {
+    "legacyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "legacyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ontologyMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+  },
+}
+`;
+
+exports[`parity matrix: standing x catch-all x ingredient list > snapshot of current behaviour across the whole matrix 1`] = `
+{
+  "approved | catchAll=false | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 100,
+  },
+  "approved | catchAll=false | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "Claims hold up to the evidence.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "approved",
+    "tierLabel": "Good Standing",
+    "total": 100,
+  },
+  "approved | catchAll=true | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 100,
+  },
+  "approved | catchAll=true | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "Claims hold up to the evidence.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "approved",
+    "tierLabel": "Good Standing",
+    "total": 100,
+  },
+  "can-do-better | catchAll=false | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:false",
+      "formula:false",
+    ],
+    "headline": "Nothing wrong here, but the proof and transparency don't yet match the claims.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Room to Improve",
+      "bestRating": 5,
+      "ratingValue": 2.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "can-do-better",
+    "tierLabel": "Room to Improve",
+    "total": 42,
+  },
+  "can-do-better | catchAll=false | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:false",
+      "formula:false",
+    ],
+    "headline": "Nothing wrong here, but the proof and transparency don't yet match the claims.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Room to Improve",
+      "bestRating": 5,
+      "ratingValue": 2.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "can-do-better",
+    "tierLabel": "Room to Improve",
+    "total": 42,
+  },
+  "can-do-better | catchAll=true | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:false",
+      "formula:false",
+    ],
+    "headline": "Nothing wrong here, but the proof and transparency don't yet match the claims.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Room to Improve",
+      "bestRating": 5,
+      "ratingValue": 2.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "can-do-better",
+    "tierLabel": "Room to Improve",
+    "total": 42,
+  },
+  "can-do-better | catchAll=true | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:false",
+      "formula:false",
+    ],
+    "headline": "Nothing wrong here, but the proof and transparency don't yet match the claims.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Room to Improve",
+      "bestRating": 5,
+      "ratingValue": 2.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "can-do-better",
+    "tierLabel": "Room to Improve",
+    "total": 42,
+  },
+  "mostly-clean | catchAll=false | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "mostly-clean | catchAll=false | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "mostly-clean | catchAll=true | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "mostly-clean | catchAll=true | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "not-assessed | catchAll=false | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "not-assessed | catchAll=false | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "Regulated as a drug in India (contains Ketoconazole), so it is assessed as a licensed medicine, not against the Clean Sheet cosmetic standard.",
+    "jsonLdRating": null,
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "not-assessed",
+    "tierLabel": "Licensed Drug",
+    "total": 82,
+  },
+  "not-assessed | catchAll=true | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 82,
+  },
+  "not-assessed | catchAll=true | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:true",
+      "evidence:true",
+      "formula:true",
+    ],
+    "headline": "Regulated as a drug in India (contains Ketoconazole), so it is assessed as a licensed medicine, not against the Clean Sheet cosmetic standard.",
+    "jsonLdRating": null,
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "not-assessed",
+    "tierLabel": "Licensed Drug",
+    "total": 82,
+  },
+  "not-recommended | catchAll=false | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:false",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 68,
+  },
+  "not-recommended | catchAll=false | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:false",
+      "evidence:false",
+      "formula:true",
+    ],
+    "headline": "Makes a claim its own ingredient list contradicts, or contains an ingredient prohibited in cosmetics.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Not Recommended",
+      "bestRating": 5,
+      "ratingValue": 1.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "tier": "not-recommended",
+    "tierLabel": "Not Recommended",
+    "total": 68,
+  },
+  "not-recommended | catchAll=true | list=absent": {
+    "gates": [
+      "safety:false",
+      "claims:true",
+      "evidence:false",
+      "formula:true",
+    ],
+    "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Good Standing",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:true",
+    ],
+    "tier": "mostly-clean",
+    "tierLabel": "Good Standing",
+    "total": 68,
+  },
+  "not-recommended | catchAll=true | list=present": {
+    "gates": [
+      "safety:true",
+      "claims:false",
+      "evidence:false",
+      "formula:true",
+    ],
+    "headline": "Makes a claim its own ingredient list contradicts, or contains an ingredient prohibited in cosmetics.",
+    "jsonLdRating": {
+      "@type": "Rating",
+      "alternateName": "Not Recommended",
+      "bestRating": 5,
+      "ratingValue": 1.5,
+      "worstRating": 1,
+    },
+    "status": "not_approved",
+    "ticksAnalyzedPage": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "ticksMain": [
+      "Alcohol free:true",
+      "Paraben free:false",
+    ],
+    "tier": "not-recommended",
+    "tierLabel": "Not Recommended",
+    "total": 68,
+  },
+}
+`;

@@ -15,7 +15,24 @@ export interface INCIResult {
   tags: string[];        // e.g. "alcohol-free", "fragrance-free" (as INCIDecoder labels them)
   source: string;        // INCIDecoder product URL
   imageUrl: string | null; // product front photo hosted by INCIDecoder (no API key needed)
+  /** The ingredient line exactly as retrieved (markdown link targets removed), kept as
+      the quoted source text for the evidence envelope. */
+  sourceQuote?: string;
+  /** True when the quote cap or the parser's read window cut the ingredient line, so the
+      quote (and the parsed list) stop short of the full list and cannot anchor it. */
+  sourceQuoteTruncated?: boolean;
+  /** The product title INCIDecoder gives the page itself ("Title:" line, minus the site
+      suffix). Null when the page has none: `productName` then falls back to the slug,
+      which is not the page's own title and must not be used to match a product. */
+  pageTitle?: string | null;
+  /** The brand INCIDecoder links from the page heading, when present. */
+  pageBrand?: string | null;
 }
+
+/* The longest quote kept for an ingredient line, and how much of the page after the
+   "Ingredients overview" heading the parser reads. */
+const QUOTE_CAP = 2000;
+const SECTION_WINDOW = 8000;
 
 /* Same product word, different spelling. Without this, the real "Cicaplast
    Baume B5" does not group with a "Cicaplast Balm" query. */
@@ -54,17 +71,19 @@ const MIN_OVERLAP = 0.2;
 const BRAND_SKIP = new Set(["the", "and", "for", "with", "new", "pro", "our"]);
 
 /** Parse one INCIDecoder product page (Jina markdown) into its ingredient list. */
-function parseProductPage(page: string, slug: string): INCIResult | null {
+export function parseProductPage(page: string, slug: string): INCIResult | null {
   const idx = page.indexOf("## Ingredients overview");
   if (idx === -1) return null;
-  const section = page.slice(idx, idx + 8000);
+  const section = page.slice(idx, idx + SECTION_WINDOW);
 
   // The INCI line links each ingredient: [Name](…/ingredients/…)
-  const inciLine = section
-    .split("\n")
-    .map((l) => l.trim())
-    .find((l) => (l.match(/\/ingredients\//g) || []).length >= 3);
-  if (!inciLine) return null;
+  const sectionLines = section.split("\n").map((l) => l.trim());
+  const lineAt = sectionLines.findIndex((l) => (l.match(/\/ingredients\//g) || []).length >= 3);
+  if (lineAt === -1) return null;
+  const inciLine = sectionLines[lineAt];
+  // A list that runs to the end of a full window was cut by the window itself, so the
+  // parsed list is not the whole list on the page.
+  const windowCut = lineAt === sectionLines.length - 1 && section.length === SECTION_WINDOW && page.length > idx + SECTION_WINDOW;
 
   const ingredients = [...inciLine.matchAll(/\[([^\]]+)\]\([^)]*\/ingredients\/[^)]*\)/g)]
     .map((m) => m[1].replace(/​/g, "").replace(/\s+/g, " ").trim())
@@ -81,7 +100,46 @@ function parseProductPage(page: string, slug: string): INCIResult | null {
   const imgMatch = page.match(/https:\/\/incidecoder-content[^\s)"']+?(?:photo|front)[^\s)"']*\.(?:jpe?g|png|webp)/i);
   const imageUrl = imgMatch ? imgMatch[0] : null;
 
-  return { productName, slug, ingredients, tags, source: `https://incidecoder.com/products/${slug}`, imageUrl };
+  const quoteFull = inciLine.replace(/\]\([^)]*\)/g, "]").replace(/\s+/g, " ");
+  const sourceQuote = quoteFull.slice(0, QUOTE_CAP);
+
+  const brandMatch = page.match(/^#\s+\[([^\]]+)\]\(https?:\/\/(?:www\.)?incidecoder\.com\/brands\/[^)]*\)/m);
+  const pageBrand = brandMatch ? brandMatch[1].replace(/\u200b/g, "").replace(/\s+/g, " ").trim() || null : null;
+
+  return {
+    productName, slug, ingredients, tags, source: `https://incidecoder.com/products/${slug}`, imageUrl, sourceQuote,
+    sourceQuoteTruncated: quoteFull.length > QUOTE_CAP || windowCut,
+    pageTitle: titleMatch ? titleMatch[1].trim() || null : null,
+    pageBrand,
+  };
+}
+
+const PRODUCT_URL_RE = /^https?:\/\/(?:www\.)?incidecoder\.com\/products\/([a-z0-9-]+)\/?(?:[?#].*)?$/i;
+
+/** The product slug of an INCIDecoder product URL, or null for any other URL. */
+export function incidecoderProductSlug(url: string): string | null {
+  return PRODUCT_URL_RE.exec(url.trim())?.[1]?.toLowerCase() ?? null;
+}
+
+export type IncidecoderFetch =
+  | { status: "ok"; result: INCIResult }
+  /** The page could not be retrieved (network, HTTP error, rate limit). */
+  | { status: "fetch_failed" }
+  /** The page was retrieved but carries no ingredient list this parser accepts. */
+  | { status: "no_list" };
+
+/** Re-fetch one INCIDecoder product page and parse it with the same parser the review
+    engine uses. `fetchPage` is injectable so callers and tests can supply their own transport. */
+export async function fetchIncidecoderProduct(
+  url: string,
+  fetchPage: (url: string) => Promise<string | null> = fetchMarkdown,
+): Promise<IncidecoderFetch> {
+  const slug = incidecoderProductSlug(url);
+  if (!slug) return { status: "no_list" };
+  const page = await fetchPage(`https://incidecoder.com/products/${slug}`);
+  if (!page) return { status: "fetch_failed" };
+  const result = parseProductPage(page, slug);
+  return result ? { status: "ok", result } : { status: "no_list" };
 }
 
 export interface ProductCandidate {
