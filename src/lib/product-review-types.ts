@@ -301,6 +301,10 @@ export interface DerivedVerdict {
   drugActives?: string[];
   /** The four pillar results behind the standing. Present only when the pillar standing flag is on. */
   pillars?: PillarOutcome[];
+  /** Claim evidence as a percentage (0 to 100) of the code-capped claim-evidence points. Present only with
+      `pillars`. Surfaces that used the total out of 100 to describe evidence read this instead, because the
+      standing no longer follows the total. */
+  claimEvidencePct?: number;
 }
 
 /** One pillar's result: its graded score (0 to 100) and where it sits against the thresholds. */

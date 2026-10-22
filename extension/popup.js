@@ -165,7 +165,11 @@ function showVerdict(review, verdict) {
   const banner = el("div", `tier ${TIER_CLASS[tier] || TIER_CLASS["can-do-better"]}`);
   banner.append(el("span", "tier-label", verdict?.tierLabel || "Reviewed"));
   const total = review?.scores?.total;
-  if (typeof total === "number") {
+  // The total is left out when the verdict carries the four pillar results: it no longer decides the standing.
+  const showTotal = typeof TCSVerdictDisplay !== "undefined"
+    ? TCSVerdictDisplay.showTotal(review, verdict)
+    : typeof total === "number";
+  if (showTotal) {
     banner.append(el("span", "tier-score", `${total}/100`));
   }
   card.append(banner);

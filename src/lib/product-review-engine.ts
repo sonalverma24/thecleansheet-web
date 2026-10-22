@@ -666,7 +666,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       ? `${REVIEW_METHODOLOGY_VERSION} · four pillars · safety · irritation · transparency · compliance`
       : `${REVIEW_METHODOLOGY_VERSION} · safety · claims · evidence · formula`,
     ...(isDrug ? { isDrug, drugActives } : {}),
-    ...(pillars ? { pillars } : {}),
+    ...(pillars ? { pillars, claimEvidencePct: Math.round((evidencePts / 20) * 100) } : {}),
   };
 }
 
