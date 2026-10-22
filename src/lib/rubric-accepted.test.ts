@@ -25,4 +25,13 @@ describe("accepted rubric revisions", () => {
     expect(src).not.toMatch(/\.eq\(\s*"rubric_rev"/);
     expect(src).not.toMatch(/rubric_rev\s*===\s*RUBRIC_REV/);
   });
+
+  it("stamps written rows from the active rule, in the engine and in the scripts that re-stamp rows", () => {
+    expect(readFileSync("src/lib/product-review-engine.ts", "utf8")).toMatch(/rubric_rev:\s*activeRubricRev\(\)/);
+    for (const f of ["scripts/backfill-reviews.mts", "scripts/backfill-review-inci.mts", "scripts/rereview-hibiscus-velvet-spray.mts"]) {
+      const src = readFileSync(f, "utf8");
+      expect(src, f).toMatch(/rubric_rev:\s*activeRubricRev\(\)/);
+      expect(src, f).not.toMatch(/rubric_rev:\s*RUBRIC_REV/);
+    }
+  });
 });

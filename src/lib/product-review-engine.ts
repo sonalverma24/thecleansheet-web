@@ -21,10 +21,12 @@ import { makeInciEvidence } from "@/lib/review-verifier";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
+import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
+import { pillarStanding } from "@/lib/pillar-standing";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
 import { findTaxonomyMatch, getTaxonomyItem, PRODUCT_TYPES, CONCERNS } from "@/data/taxonomy";
 import { revalidatePath } from "next/cache";
-import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource } from "@/lib/product-review-types";
+import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource, PillarOutcome } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
@@ -595,7 +597,7 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
        claims-overreach flag, not a condemnation. Missing proof is never
        "not-recommended". */
   const claimsHoldUp = evidencePts >= CLAIM_EVIDENCE_BAR;
-  const cosmeticTier: DerivedVerdict["tier"] =
+  const legacyCosmeticTier: DerivedVerdict["tier"] =
     (contradictionFlags > 0 || fairnessFlags > 0 || hasBannedIngredient)
       ? "not-recommended"
       : boundaryFlags > 0
@@ -605,6 +607,32 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
           : total >= 65
             ? "mostly-clean"
             : "can-do-better";
+
+  /* Pillar standing (flag ANALYSER_PILLAR_STANDING, off by default). With the flag off, `legacyCosmeticTier`
+     above is used exactly as before. With it on, the standing follows the four pillars (src/lib/pillar-standing.ts,
+     STAMPS.md); the hard flags, the drug detection and the drug-boundary cap decided above still apply. Good
+     Standing keeps its internal split: `approved` only when the old strict bar also holds, so the headline
+     "Claims hold up to the evidence" and pitch-stamp eligibility are unchanged. */
+  let pillars: PillarOutcome[] | undefined;
+  let pillarReason: string | null = null;
+  let cosmeticTier: DerivedVerdict["tier"] = legacyCosmeticTier;
+  if (isFlagOn(ANALYSER_FLAGS.pillarStanding)) {
+    const hardOverride = contradictionFlags > 0 || fairnessFlags > 0 || hasBannedIngredient;
+    const result = pillarStanding({
+      review: r,
+      inci,
+      bannedCount: banned.length,
+      claimsOutcome: contradictionFlags > 0 || fairnessFlags > 0 ? "hard" : boundaryFlags > 0 ? "boundary" : "none",
+      hardOverride,
+      boundaryOnly: !hardOverride && boundaryFlags > 0,
+    });
+    pillars = result.pillars;
+    pillarReason = result.reason;
+    const strictBar = hardFlags === 0 && total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable && !hasEndocrineFlag;
+    cosmeticTier = result.standing === "Good Standing" ? (strictBar ? "approved" : "mostly-clean")
+      : result.standing === "Not Recommended" ? "not-recommended"
+      : "can-do-better";
+  }
 
   const tier: DerivedVerdict["tier"] = isDrug ? "not-assessed" : cosmeticTier;
 
@@ -622,7 +650,9 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
       ? `Contains an ingredient prohibited in cosmetics${banned[0] ? ` (${banned[0].name})` : ""}.`
       : tier === "not-recommended" && fairnessFlags > 0 && contradictionFlags === 0
         ? "Makes a skin-whitening or fairness claim, a category India (ASCI) treats as misleading and harmful."
-        : tier === "mostly-clean" && hasEndocrineFlag && total >= APPROVAL_BAR
+        : tier === "not-recommended" && pillarReason
+          ? pillarReason
+          : tier === "mostly-clean" && hasEndocrineFlag && total >= APPROVAL_BAR
           ? `A well-made, transparent product, but it contains an ingredient flagged for endocrine activity${endocrineFlagged[0] ? ` (${endocrineFlagged[0].name})` : ""} - legal at its permitted concentration, which keeps it from meeting our strictest bar even though it still earns Good Standing.`
           : TIER_META[tier].headline;
 
@@ -632,8 +662,11 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
     tierLabel: TIER_META[tier].label,
     headline,
     gates,
-    standard: `${REVIEW_METHODOLOGY_VERSION} · safety · claims · evidence · formula`,
+    standard: pillars
+      ? `${REVIEW_METHODOLOGY_VERSION} · four pillars · safety · irritation · transparency · compliance`
+      : `${REVIEW_METHODOLOGY_VERSION} · safety · claims · evidence · formula`,
     ...(isDrug ? { isDrug, drugActives } : {}),
+    ...(pillars ? { pillars } : {}),
   };
 }
 
@@ -662,7 +695,11 @@ export const RUBRIC_REV = "r7"; // r7: total code-summed from sections + claimEv
     this list, not only when it equals the current RUBRIC_REV, so a revision change can be deployed first
     and the rows re-stamped by `scripts/backfill-reviews.mts` afterwards without hiding any review in
     between. Today it holds only the current revision, so nothing changes. */
-export const ACCEPTED_RUBRIC_REVS: readonly string[] = [RUBRIC_REV];
+export const PILLAR_RUBRIC_REV = "r9"; // r9: standing from the four pillars (well 70, floor 50), see STAMPS.md
+export const ACCEPTED_RUBRIC_REVS: readonly string[] = [RUBRIC_REV, PILLAR_RUBRIC_REV];
+/** The revision to stamp on a row written now. It records which standing rule is in force: with the pillar
+    standing flag off a row is stamped exactly as before; with it on, r9. Both are served. */
+export const activeRubricRev = (): string => (isFlagOn(ANALYSER_FLAGS.pillarStanding) ? PILLAR_RUBRIC_REV : RUBRIC_REV);
 export const isAcceptedRubricRev = (rev: unknown): boolean => typeof rev === "string" && ACCEPTED_RUBRIC_REVS.includes(rev);
 
 /* Reviews pulled from the site. Suppressed on every read path (getStored,
@@ -778,7 +815,7 @@ async function store(slug: string, result: ProductReviewResult): Promise<void> {
         tier: result.verdict.tier,
         image_url: result.review.imageUrl ?? null,
         result,
-        rubric_rev: RUBRIC_REV,
+        rubric_rev: activeRubricRev(),
         reviewed_at: result.review.reviewedAt ?? new Date().toISOString(),
       },
       { onConflict: "product_slug" },

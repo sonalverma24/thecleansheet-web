@@ -25,6 +25,11 @@ const RA = "src/lib/reviewer-audit.ts";
 const R = "src/lib/inci-reanchor.ts";
 const F = "src/lib/inci-fetch.ts";
 const P = "src/lib/inci-from-page.ts";
+const PG = "src/lib/pillar-grade.ts";
+const PS = "src/lib/pillar-standing.ts";
+const CP = "src/lib/compliance-pillar.ts";
+const GS = "src/lib/global-screen.ts";
+const EN = "src/lib/product-review-engine.ts";
 
 const MUTATIONS: Mutation[] = [
   // normaliser
@@ -194,12 +199,64 @@ const MUTATIONS: Mutation[] = [
   { id: "RA6 owner-ignored", file: RA, find: "if (rec.isSiteOwner)", replace: "if (false)" },
   { id: "RA7 credential-ignored", file: RA, find: "if (!rec.credential?.trim())", replace: "if (false)" },
   { id: "RA8 qualified-entries-audited", file: RA, find: 'entry.strength === "definitive" && (entry.reviewRef', replace: "(entry.reviewRef" },
+
+  // pillar grading and thresholds
+  { id: "PGR1 hard-adverse-ignored", file: PG, find: "if (c.hard) hardFail = true;", replace: "if (false) hardFail = true;" },
+  { id: "PGR2 soft-adverse-free", file: PG, find: "points: params.deductSoft", replace: "points: 0" },
+  { id: "PGR3 brand-stated-free", file: PG, find: "if (params.deductDisclosed > 0) deductions.push(", replace: "if (false) deductions.push(" },
+  { id: "PGR4 not-disclosed-one-rate", file: PG, find: "const pts = params.deductNotDisclosed[c.obtainability];", replace: "const pts = params.deductNotDisclosed.public;" },
+  { id: "PGR5 not-applicable-counted", file: PG, find: 'c.pillar === pillar && c.state !== "not-applicable"', replace: "c.pillar === pillar" },
+  { id: "PGR6 empty-pillar-zero", file: PG, find: "mine.length === 0 ? 100 :", replace: "mine.length === 0 ? 0 :" },
+  { id: "PGR7 score-floor-unclamped", file: PG, find: "Math.max(0, Math.min(100,", replace: "Math.max(-100, Math.min(100," },
+  { id: "PGR8 hard-fail-keeps-score", file: PG, find: "score: hardFail ? 0 : score,", replace: "score," },
+  { id: "PGR9 well-cutoff-exclusive", file: PG, find: "!g.hardFail && g.score >= cutoff", replace: "!g.hardFail && g.score > cutoff" },
+  { id: "PGR10 well-ignores-hard-fail", file: PG, find: "!g.hardFail && g.score >= cutoff", replace: "g.score >= cutoff" },
+  { id: "PGR11 floor-inclusive", file: PG, find: ": boolean => g.hardFail || g.score < floor;", replace: ": boolean => g.hardFail || g.score <= floor;" },
+  { id: "PGR12 guard-adverse-dropped", file: PG, find: 'g.score < floor && g.deductions.some((d) => d.why === "soft-adverse")', replace: "g.score < floor" },
+  { id: "PGR13 one-failing-is-enough", file: PG, find: '.length >= 2) return "Not Recommended";', replace: '.length >= 1) return "Not Recommended";' },
+  { id: "PGR14 three-failing-needed", file: PG, find: '.length >= 2) return "Not Recommended";', replace: '.length >= 3) return "Not Recommended";' },
+  { id: "PGR15 any-well-is-enough", file: PG, find: "if (grades.every((g) => scoresWell(g, t.well))) return o.boundaryOnly", replace: "if (grades.some((g) => scoresWell(g, t.well))) return o.boundaryOnly" },
+  { id: "PGR16 boundary-cap-removed", file: PG, find: 'if (grades.every((g) => scoresWell(g, t.well))) return o.boundaryOnly ? "Room to Improve" : "Good Standing";', replace: 'if (grades.every((g) => scoresWell(g, t.well))) return "Good Standing";' },
+  { id: "PGR17 guard-option-ignored", file: PG, find: "const fails = opts.requireAdverse ? failsWithAdverse : failsPillar;", replace: "const fails = failsPillar;" },
+  { id: "PGR18 floor-above-well-allowed", file: PG, find: "if (t.floor > t.well) throw", replace: "if (false) throw" },
+  // pillar standing (the live composition)
+  { id: "PST1 no-list-guard-removed", file: PS, find: 'if (i.inci.length === 0 && !i.hardOverride) standing = "Room to Improve";', replace: 'if (false) standing = "Room to Improve";' },
+  { id: "PST2 no-list-guard-beats-hard-flag", file: PS, find: "if (i.inci.length === 0 && !i.hardOverride)", replace: "if (i.inci.length === 0)" },
+  { id: "PST3 failing-without-adverse", file: PS, find: "{ requireAdverse: true }", replace: "{ requireAdverse: false }" },
+  { id: "PST4 catchall-check-always-added", file: PS, find: "const extra: CheckLike[] = catchAll.length", replace: "const extra: CheckLike[] = 1" },
+  { id: "PST5 catchall-is-hard", file: PS, find: 'label: "Unnamed catch-all entries", state: "adverse", obtainability: "public"', replace: 'label: "Unnamed catch-all entries", state: "adverse", obtainability: "public", hard: true' },
+  { id: "PST6 reason-on-hard-flag", file: PS, find: 'standing === "Not Recommended" && !i.hardOverride && failing.length', replace: 'standing === "Not Recommended" && failing.length' },
+  { id: "PST7 status-ignores-guard", file: PS, find: 'failsWithAdverse(g, floor) ? "failing"', replace: 'g.score < floor ? "failing"' },
+  { id: "PST8 well-cutoff-60", file: PS, find: "  well: 70,", replace: "  well: 60," },
+  { id: "PST9 floor-40", file: PS, find: "  floor: 50,", replace: "  floor: 40," },
+  // the four compliance items
+  { id: "CMP1 banned-not-hard", file: CP, find: 'i.bannedCount > 0 ? mk("Regulatory screen", "adverse", true)', replace: 'i.bannedCount > 0 ? mk("Regulatory screen", "adverse")' },
+  { id: "CMP2 no-list-reads-clear", file: CP, find: ': !i.hasInci || !i.globalScreen ? mk("Regulatory screen", "not-disclosed")', replace: ': false ? mk("Regulatory screen", "not-disclosed")' },
+  { id: "CMP3 asci-always-applicable", file: CP, find: 'i.claimsAnalysed === 0 ? mk("ASCI screen", "not-applicable")', replace: 'false ? mk("ASCI screen", "not-applicable")' },
+  { id: "CMP4 contradiction-not-hard", file: CP, find: 'i.claimsOutcome === "hard" ? mk("Claims screen", "adverse", true)', replace: 'i.claimsOutcome === "hard" ? mk("Claims screen", "adverse")' },
+  { id: "CMP5 no-prefix-not-clear", file: CP, find: 't === "" || /^no\\b/.test(t) ||', replace: 't === "" ||' },
+  { id: "CMP6 label-unclear-is-adverse", file: CP, find: 'i.usageWarningsClear ? "verified" : "not-disclosed"', replace: 'i.usageWarningsClear ? "verified" : "adverse"' },
+  // the shared regulatory screen
+  { id: "GSC1 stale-screen-served", file: GS, find: "const stale = !rs || Object.values(rs).some((v) => STALE_RE.test(String(v)));", replace: "const stale = !rs;" },
+  { id: "GSC2 rebuild-from-one-ingredient", file: GS, find: "if (inci.length >= 3) return buildGlobalScreen(inci);", replace: "if (inci.length >= 1) return buildGlobalScreen(inci);" },
+  { id: "GSC3 model-screen-dropped", file: GS, find: "return rs ? fromReview(rs) : undefined;", replace: "return undefined;" },
+  // the engine wiring and stamping
+  { id: "ENG1 flag-always-on", file: EN, find: "  if (isFlagOn(ANALYSER_FLAGS.pillarStanding)) {", replace: "  if (true) {" },
+  { id: "ENG2 strict-bar-dropped", file: EN, find: "const strictBar = hardFlags === 0 && total >= APPROVAL_BAR && claimsHoldUp && safetyVerifiable && !hasEndocrineFlag;", replace: "const strictBar = true;" },
+  { id: "ENG3 hard-override-dropped", file: EN, find: "const hardOverride = contradictionFlags > 0 || fairnessFlags > 0 || hasBannedIngredient;", replace: "const hardOverride = false;" },
+  { id: "ENG4 boundary-cap-dropped", file: EN, find: "boundaryOnly: !hardOverride && boundaryFlags > 0,", replace: "boundaryOnly: false," },
+  { id: "ENG5 stamp-ignores-flag", file: EN, find: "(isFlagOn(ANALYSER_FLAGS.pillarStanding) ? PILLAR_RUBRIC_REV : RUBRIC_REV)", replace: "(false ? PILLAR_RUBRIC_REV : RUBRIC_REV)" },
+  { id: "ENG6 r9-not-accepted", file: EN, find: "[RUBRIC_REV, PILLAR_RUBRIC_REV];", replace: "[RUBRIC_REV];" },
+  { id: "ENG7 any-revision-accepted", file: EN, find: 'typeof rev === "string" && ACCEPTED_RUBRIC_REVS.includes(rev)', replace: "true" },
+  { id: "ENG8 store-stamps-constant", file: EN, find: "rubric_rev: activeRubricRev(),", replace: "rubric_rev: RUBRIC_REV," },
 ];
 
 const TESTS = [
   "src/lib/inci-normalise.test.ts", "src/lib/review-verifier.test.ts", "src/lib/identity-resolution.test.ts",
   "src/lib/claim-ontology.test.ts", "src/lib/verdict-parity.test.ts",
   "src/lib/inci-reanchor.test.ts", "src/lib/inci-from-page.test.ts", "src/lib/capture-evidence.test.ts", "src/lib/reviewer-audit.test.ts",
+  "src/lib/pillar-grade.test.ts", "src/lib/pillar-standing.test.ts", "src/lib/compliance-pillar.test.ts", "src/lib/global-screen.test.ts",
+  "src/lib/verdict-pillar.test.ts", "src/lib/rubric-accepted.test.ts",
 ];
 
 const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : "";

@@ -22,7 +22,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
-import { deriveVerdict, RUBRIC_REV } from "@/lib/product-review-engine";
+import { activeRubricRev, deriveVerdict } from "@/lib/product-review-engine";
 import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { buildGlobalScreen } from "@/lib/inci-enrich";
 import type { ProductReview, DerivedVerdict } from "@/lib/product-review-types";
@@ -58,7 +58,7 @@ const repairs: Record<string, string> =
 
 const { data, error } = await db.from("product_reviews").select("product_slug, result");
 if (error) { console.error("read failed:", error.message); process.exit(1); }
-console.log(`read ${data!.length} rows; target rubric = ${RUBRIC_REV}`);
+console.log(`read ${data!.length} rows; target rubric = ${activeRubricRev()}`);
 
 let fromReads = 0, fromPage = 0, screensRebuilt = 0, untouched = 0, stillMissing = 0;
 
@@ -116,7 +116,7 @@ for (const row of data!) {
   const verdict = deriveVerdict(review);
   const newResult = { ...result, review, verdict };
   const { error: upErr } = await db.from("product_reviews")
-    .update({ result: newResult, tier: verdict.tier, rubric_rev: RUBRIC_REV })
+    .update({ result: newResult, tier: verdict.tier, rubric_rev: activeRubricRev() })
     .eq("product_slug", slug);
   if (upErr) { console.error("update failed", slug, upErr.message); continue; }
 

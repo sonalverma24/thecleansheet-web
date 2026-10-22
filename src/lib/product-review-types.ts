@@ -299,4 +299,15 @@ export interface DerivedVerdict {
   isDrug?: boolean;
   /** The drug active(s) that make it a medicine (e.g. Ketoconazole). */
   drugActives?: string[];
+  /** The four pillar results behind the standing. Present only when the pillar standing flag is on. */
+  pillars?: PillarOutcome[];
+}
+
+/** One pillar's result: its graded score (0 to 100) and where it sits against the thresholds. */
+export interface PillarOutcome {
+  pillar: string;
+  score: number;
+  /** "well" at or above the well cutoff; "failing" only when below the floor with an adverse finding (or a hard failure); otherwise "middle". */
+  status: "well" | "middle" | "failing";
+  hardFail: boolean;
 }
