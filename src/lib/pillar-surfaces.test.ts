@@ -48,11 +48,40 @@ describe("flag on", () => {
       const review = buildStanding(t);
       const verdict = deriveVerdict(review);
       const { product } = reviewToScorecard(review, verdict);
-      const expected = (p: number) => (p >= 85 ? "Strong ingredient profile" : p >= 70 ? "Good public evidence" : p >= 50 ? "Limited public evidence" : "Weak public evidence");
+      const goodStanding = product.scoreLabel === "Excellent" || product.scoreLabel === "Good";
+      const expected = (p: number) =>
+        p >= 85
+          ? "Strong ingredient profile"
+          : p >= 70
+            ? "Good public evidence"
+            : goodStanding
+              ? "Claims rest on ingredient research, not finished-product tests"
+              : p >= 50
+                ? "Limited public evidence"
+                : "Weak public evidence";
       // a product with no badges so the band rules decide
       const line = generateScoreMeaning({ ...product, pass_badges: [], warn_badges: [] })[0];
       expect(line, t).toBe(expected(verdict.claimEvidencePct!));
     }
+  });
+
+  it("end to end: Good Standing with thin claim evidence gets the calm line; Not Recommended keeps 'weak'", () => {
+    on();
+    const calm = "Claims rest on ingredient research, not finished-product tests";
+    const hero = (t: StandingTarget) => {
+      const review = buildStanding(t);
+      const verdict = deriveVerdict(review);
+      const { product } = reviewToScorecard(review, verdict);
+      return { verdict, product, line: generateScoreMeaning({ ...product, pass_badges: [], warn_badges: [] })[0] };
+    };
+    const thin = hero("can-do-better"); // Good Standing on the pillars, claim evidence 25 percent
+    expect(["Excellent", "Good"]).toContain(thin.product.scoreLabel);
+    expect(thin.verdict.claimEvidencePct).toBeLessThan(70);
+    expect(thin.line).toBe(calm);
+    const bad = hero("not-recommended"); // 10 percent, but not Good Standing: wording unchanged
+    expect(bad.product.scoreLabel).toBe("Concern");
+    expect(bad.line).toBe("Weak public evidence");
+    expect(hero("approved").line).toBe("Strong ingredient profile");
   });
 
   it("a Good Standing review with a low total is no longer described by that total", () => {

@@ -229,6 +229,10 @@ export function generateScoreMeaning(product: ProductScorecard): [string, string
   // With the pillar standing, the total no longer decides the standing, so the evidence line reads claim
   // evidence (a percentage) instead. Without it, exactly as before.
   const basis = product.claimEvidencePct ?? product.score;
+  // A Good Standing review on the pillar path (claimEvidencePct is only set there) does not need finished-product
+  // proof to earn its standing, so thin proof is described calmly instead of as "limited" or "weak".
+  const pillarGoodStanding =
+    product.claimEvidencePct !== undefined && (product.scoreLabel === "Excellent" || product.scoreLabel === "Good");
 
   let evidence: string;
   if (pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")))) {
@@ -247,6 +251,8 @@ export function generateScoreMeaning(product: ProductScorecard): [string, string
     evidence = "Strong ingredient profile";
   } else if (basis >= 70) {
     evidence = "Good public evidence";
+  } else if (pillarGoodStanding) {
+    evidence = "Claims rest on ingredient research, not finished-product tests";
   } else if (basis >= 50) {
     evidence = "Limited public evidence";
   } else {

@@ -17,8 +17,18 @@ function legacyEvidence(pass_badges: string[], score: number): string {
   return "Weak public evidence";
 }
 
-const product = (over: { score: number; pass?: string[]; warn?: string[]; claimEvidencePct?: number }) =>
-  ({ score: over.score, pass_badges: over.pass ?? [], warn_badges: over.warn ?? [], ...(over.claimEvidencePct !== undefined ? { claimEvidencePct: over.claimEvidencePct } : {}) }) as unknown as ProductScorecard;
+type Label = ProductScorecard["scoreLabel"];
+const LABELS: Label[] = ["Excellent", "Good", "Fair", "Concern"];
+const CALM = "Claims rest on ingredient research, not finished-product tests";
+
+const product = (over: { score: number; pass?: string[]; warn?: string[]; claimEvidencePct?: number; label?: Label }) =>
+  ({
+    score: over.score,
+    pass_badges: over.pass ?? [],
+    warn_badges: over.warn ?? [],
+    ...(over.label ? { scoreLabel: over.label } : {}),
+    ...(over.claimEvidencePct !== undefined ? { claimEvidencePct: over.claimEvidencePct } : {}),
+  }) as unknown as ProductScorecard;
 
 const BADGE_SETS: string[][] = [
   [],
@@ -31,10 +41,20 @@ const BADGE_SETS: string[][] = [
 ];
 
 describe("flag off (no claimEvidencePct): exactly the original line", () => {
-  it("matches the original logic for every score from 0 to 100 and every badge combination", () => {
+  it("matches the original logic for every score from 0 to 100, every badge combination and every score label", () => {
     for (const pass of BADGE_SETS) {
-      for (let score = 0; score <= 100; score++) {
-        expect(generateScoreMeaning(product({ score, pass }))[0], `${JSON.stringify(pass)} @ ${score}`).toBe(legacyEvidence(pass, score));
+      for (const label of [undefined, ...LABELS]) {
+        for (let score = 0; score <= 100; score++) {
+          expect(generateScoreMeaning(product({ score, pass, label }))[0], `${JSON.stringify(pass)} ${label} @ ${score}`).toBe(legacyEvidence(pass, score));
+        }
+      }
+    }
+  });
+
+  it("never shows the calm line, even for a Good Standing label with a low total", () => {
+    for (const label of ["Excellent", "Good"] as Label[]) {
+      for (let score = 0; score < 70; score++) {
+        expect(generateScoreMeaning(product({ score, label }))[0], `${label} @ ${score}`).not.toBe(CALM);
       }
     }
   });
@@ -46,7 +66,9 @@ describe("flag off (no claimEvidencePct): exactly the original line", () => {
 });
 
 describe("with claimEvidencePct (the pillar standing): the line follows claim evidence, not the total", () => {
-  const line = (pct: number, score = 95, pass: string[] = []) => generateScoreMeaning(product({ score, pass, claimEvidencePct: pct }))[0];
+  // Fair and Concern are the Room to Improve and Not Recommended labels: they keep the four original bands.
+  const line = (pct: number, score = 95, pass: string[] = [], label: Label = "Fair") =>
+    generateScoreMeaning(product({ score, pass, label, claimEvidencePct: pct }))[0];
 
   it("uses the same four bands on the percentage, inclusive at the boundaries", () => {
     expect(line(100)).toBe("Strong ingredient profile");
@@ -72,8 +94,70 @@ describe("with claimEvidencePct (the pillar standing): the line follows claim ev
     expect(line(10, 10, ["Dermatologist tested", "Published test report"])).toBe("Good public evidence");
   });
 
+  it("keeps the badge rules ahead of the calm line for Good Standing too", () => {
+    for (const label of ["Excellent", "Good"] as Label[]) {
+      expect(line(10, 10, ["Published SPF test report"], label)).toBe("Strong public evidence");
+      expect(line(10, 10, ["Dermatologist tested", "Published test report"], label)).toBe("Good public evidence");
+    }
+  });
+
   it("leaves the second line (the caution note) untouched", () => {
     const warn = ["Contains fragrance allergen: Limonene"];
     expect(generateScoreMeaning(product({ score: 90, warn }))[1]).toBe(generateScoreMeaning(product({ score: 90, warn, claimEvidencePct: 10 }))[1]);
+  });
+});
+
+describe("Good Standing with thin claim evidence: a calm line instead of 'limited' or 'weak'", () => {
+  const GOOD: Label[] = ["Excellent", "Good"];
+  const line = (pct: number | undefined, label: Label | undefined, score = 80, pass: string[] = []) =>
+    generateScoreMeaning(product({ score, pass, label, claimEvidencePct: pct }))[0];
+
+  it("says exactly the agreed wording, with no em dash", () => {
+    expect(CALM).toBe("Claims rest on ingredient research, not finished-product tests");
+    expect(CALM).not.toMatch(/[\u2014\u2013]/);
+    for (const label of GOOD) expect(line(60, label)).toBe(CALM);
+  });
+
+  it("applies below 70 percent at every level down to 0, and not at 70 or above", () => {
+    for (const label of GOOD) {
+      for (let pct = 0; pct < 70; pct++) expect(line(pct, label), `${label} @ ${pct}`).toBe(CALM);
+      expect(line(70, label)).toBe("Good public evidence");
+      expect(line(84, label)).toBe("Good public evidence");
+      expect(line(85, label)).toBe("Strong ingredient profile");
+      expect(line(100, label)).toBe("Strong ingredient profile");
+    }
+  });
+
+  it("replaces both 'limited' and 'weak': neither is shown for Good Standing on the pillar path", () => {
+    for (const label of GOOD) {
+      for (let pct = 0; pct <= 100; pct++) {
+        expect(["Limited public evidence", "Weak public evidence"], `${label} @ ${pct}`).not.toContain(line(pct, label));
+      }
+    }
+  });
+
+  it("is decided by claim evidence, not by the total", () => {
+    for (const label of GOOD) {
+      expect(line(40, label, 99)).toBe(CALM);
+      expect(line(90, label, 20)).toBe("Strong ingredient profile");
+    }
+  });
+
+  it("does not apply to Room to Improve or Not Recommended (Fair, Concern) or to a missing label", () => {
+    for (const label of ["Fair", "Concern", undefined] as (Label | undefined)[]) {
+      expect(line(60, label)).toBe("Limited public evidence");
+      expect(line(49, label)).toBe("Weak public evidence");
+      expect(line(0, label)).toBe("Weak public evidence");
+    }
+  });
+
+  it("does not apply without claimEvidencePct, whatever the label", () => {
+    for (const label of GOOD) expect(line(undefined, label, 60)).toBe("Limited public evidence");
+  });
+
+  it("leaves the second line untouched", () => {
+    const warn = ["Contains fragrance allergen: Limonene"];
+    const base = generateScoreMeaning(product({ score: 80, label: "Good", warn }))[1];
+    expect(generateScoreMeaning(product({ score: 80, label: "Good", warn, claimEvidencePct: 10 }))[1]).toBe(base);
   });
 });

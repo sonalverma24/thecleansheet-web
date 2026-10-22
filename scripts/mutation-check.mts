@@ -267,6 +267,16 @@ const MUTATIONS: Mutation[] = [
   { id: "SRF9 popup-pillars-truthy-check", file: XD, find: "Array.isArray(verdict.pillars)", replace: "verdict.pillars" },
   { id: "SRF10 popup-asks-with-no-verdict", file: XP, find: "TCSVerdictDisplay.showTotal(review, verdict)", replace: "TCSVerdictDisplay.showTotal(review, null)" },
   { id: "SRF11 popup-fallback-removed", file: XP, find: ": typeof total === \"number\";", replace: ": false;" },
+  // the calm line for Good Standing with thin claim evidence (the 70 cutoff is the Good band's own, covered by SRF5)
+  { id: "SRF12 calm-for-every-standing", file: HR, find: '(product.scoreLabel === "Excellent" || product.scoreLabel === "Good")', replace: "true" },
+  { id: "SRF13 calm-excludes-good", file: HR, find: ' || product.scoreLabel === "Good")', replace: ")" },
+  { id: "SRF14 calm-excludes-excellent", file: HR, find: '(product.scoreLabel === "Excellent" || ', replace: "(" },
+  { id: "SRF15 calm-without-evidence-field", file: HR, find: "product.claimEvidencePct !== undefined && (product.scoreLabel", replace: "(product.scoreLabel" },
+  { id: "SRF16 calm-field-truthy-check", file: HR, find: "product.claimEvidencePct !== undefined && (product.scoreLabel", replace: "!!product.claimEvidencePct && (product.scoreLabel" },
+  { id: "SRF17 calm-wording-changed", file: HR, find: '"Claims rest on ingredient research, not finished-product tests"', replace: '"Claims rest on ingredient research"' },
+  { id: "SRF18 calm-eats-the-good-band", file: HR, find: "} else if (basis >= 85) {", replace: '} else if (pillarGoodStanding && basis < 85) { evidence = "x"; } else if (basis >= 85) {' },
+  { id: "SRF19 calm-ahead-of-badges", file: HR, find: 'if (pass.some((b) => b.includes("published spf")', replace: 'if (pillarGoodStanding) { evidence = "x"; } else if (pass.some((b) => b.includes("published spf")' },
+  { id: "SRF20 calm-line-removed", file: HR, find: "} else if (pillarGoodStanding) {", replace: "} else if (false) {" },
 ];
 
 const TESTS = [
