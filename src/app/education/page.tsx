@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Reveal, Stagger, Item } from "@/components/motion/Motion";
+import EducationHero from "@/components/education/EducationHero";
 import { EducationArt } from "@/components/illustrations/PageArt";
 import { GraduationCap, CalendarDays, FlaskConical, BadgeCheck, Microscope, Sparkles, LineChart, type LucideIcon } from "lucide-react";
 import { BLOG_POSTS } from "@/lib/blog-posts";
@@ -43,34 +44,7 @@ export default function EducationPage() {
     <div className="bg-white">
       {/* ═══ Hero · read the label ═══ */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pt-6 md:pt-8 pb-8">
-        <Reveal>
-          <div className="relative rounded-[2rem] overflow-hidden min-h-[440px] md:min-h-[520px] flex items-center">
-            <Image
-              src="/images/maria-lupan-9PnU-U7V6YE-unsplash.jpg"
-              alt="A lineup of serums with their ingredient labels"
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 1120px"
-            />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(11,36,34,0.94) 0%, rgba(11,36,34,0.66) 38%, rgba(11,36,34,0.18) 66%, rgba(11,36,34,0) 100%)" }} />
-            <div className="relative px-7 md:px-16 py-14 max-w-2xl">
-              <p className="text-[12px] uppercase" style={{ letterSpacing: "0.16em", color: "#80d5cc" }}>Education · Read the label</p>
-              <h1 className="font-display text-white text-[38px] md:text-[58px] leading-[1.04] tracking-[-0.02em] mt-5" style={DISPLAY_LIGHT}>
-                The answer is
-                <br />on the label.
-              </h1>
-              <p className="text-white/85 text-[16px] md:text-[17px] leading-[1.7] mt-6 max-w-lg">
-                The front of the pack sells a story. The back tells the truth. We teach you to read it,
-                ingredient by ingredient and claim by claim, so no marketing line goes unchecked.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/ingredients" className="rounded-full px-7 py-3.5 text-[15px] text-[#0b2422] bg-white hover:opacity-90 transition-opacity">Explore ingredients →</Link>
-                <Link href="/standard/claims" className="rounded-full px-7 py-3.5 text-[15px] text-white border border-white/40 hover:bg-white/10 transition-colors">What claims must prove</Link>
-              </div>
-            </div>
-          </div>
-        </Reveal>
+        <EducationHero priority />
       </section>
 
       {/* ═══ Latest reads ═══ */}
