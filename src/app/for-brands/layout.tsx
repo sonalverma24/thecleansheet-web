@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-// The page itself is a client component, so its metadata lives here.
+// Metadata for /for-brands.
 export const metadata: Metadata = {
   title: "For Brands: Certify Your Product",
   description:
