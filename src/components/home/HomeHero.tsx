@@ -18,9 +18,8 @@ export default function HomeHero({ popular }: { popular: { label: string; href: 
     <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 sm:pt-16 lg:pt-[88px] pb-10 sm:pb-12 lg:pb-[72px] grid grid-cols-1 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] gap-8 sm:gap-12 lg:gap-16 items-center">
       <div className="flex flex-col gap-5 md:gap-7">
         <HeroReveal>
-          <p className="flex items-center gap-2 text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">
-            <span aria-hidden className="md:hidden flex-none w-[7px] h-[7px] rounded-full border-2 border-[#248179]" />
-            Evidence led personal care &amp; beauty, made simple
+          <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">
+            Evidence led personal care &amp; beauty
           </p>
         </HeroReveal>
         <HeroReveal delay={0.05}>
@@ -52,10 +51,9 @@ export default function HomeHero({ popular }: { popular: { label: string; href: 
               ))}
             </div>
           )}
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-[13px] text-[#4a4a4a]">
-            <span><span className="text-[#248179]">✓</span> Free public product reviews</span>
-            <span><span className="text-[#248179]">✓</span> Independent certification is separate from reviews</span>
-          </div>
+          <p className="mt-4 text-[13px] leading-[1.5] text-[#4a4a4a] max-w-[520px]">
+            *Independent certification is separate from the web evidence checked through the analyser tool.
+          </p>
         </HeroReveal>
       </div>
 

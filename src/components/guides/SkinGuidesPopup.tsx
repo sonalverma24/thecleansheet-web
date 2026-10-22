@@ -91,9 +91,9 @@ export default function SkinGuidesPopup({ open, onClose }: { open: boolean; onCl
             </span>
             <div className="flex flex-wrap items-end justify-between gap-6 pr-10">
               <h2 id="guides-popup-title" className="font-display font-light text-[clamp(34px,5vw,56px)] leading-[1.02] tracking-[-0.02em] text-white">
-                Find your skin type.
+                Download our free guide
                 <br />
-                <span className="text-teal-300">Build your routine.</span>
+                <span className="text-teal-300">for your skin type.</span>
               </h2>
               <p className="text-[15px] leading-[1.6] text-teal-100/70 max-w-[300px]">
                 Science-backed guides for Indian skin. Practical, jargon-free, free to download.

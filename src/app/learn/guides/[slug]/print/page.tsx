@@ -609,7 +609,7 @@ export default async function GuidePrintPage({ params }: { params: Promise<{ slu
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>thecleansheet.in</div>
               <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
-                Analyze any product free · Ask Clean
+                Analyse any product free · The Clean Sheet analyser
               </div>
             </div>
           </div>

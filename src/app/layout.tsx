@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   keywords: [
     "clean beauty India", "ingredient safety checker", "cosmetic ingredient analysis",
     "skincare product review India", "INCI ingredient checker", "clean beauty certification",
-    "is this product safe", "beauty product ingredients India", "Ask Clean",
+    "is this product safe", "beauty product ingredients India",
     "The Clean Sheet", "skincare certification India", "clean beauty tool",
   ],
   authors: [{ name: "The Clean Sheet", url: "https://thecleansheet.in" }],

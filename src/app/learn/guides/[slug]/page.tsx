@@ -240,7 +240,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <Sparkles size={18} className="text-teal-500 flex-shrink-0 hidden sm:block" />
             <p className="text-ink-700 flex-1 text-sm leading-relaxed">
               <strong className="text-ink-900">Want to check if a product suits your skin?</strong>{" "}
-              Run any product through Ask Clean. Our AI engine scores it in seconds.
+              Run any product through the analyser. Our AI engine scores it in seconds.
             </p>
             <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
               <GuideDownloadButton slug={slug} label={guide.skinType} />
@@ -248,7 +248,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                 href="/brands"
                 className="flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white text-sm font-normal px-5 py-2.5 rounded-xl transition-colors text-center whitespace-nowrap"
               >
-                Try Ask Clean →
+                Try the analyser →
               </Link>
             </div>
           </div>

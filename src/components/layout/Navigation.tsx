@@ -56,8 +56,7 @@ export function Navigation() {
         onClick={() => setGuidesOpen(true)}
         className="block w-full bg-[#282828] hover:bg-[#1f1f1f] transition-colors text-white text-center text-[11px] font-bold uppercase tracking-[0.18em] px-4 py-2.5 leading-relaxed"
       >
-        Free guide <span className="text-[#b0a8a4]">·</span> Download your skin type guide{' '}
-        <span className="text-[#d2ff34] underline underline-offset-[3px]">here</span>
+        Download our <span className="text-[#d2ff34] underline underline-offset-[3px]">free guide</span> for your skin type
       </button>
       <SkinGuidesPopup open={guidesOpen} onClose={() => setGuidesOpen(false)} />
 

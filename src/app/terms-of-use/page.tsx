@@ -49,16 +49,16 @@ export default function TermsOfUsePage() {
             </ul>
           </Section>
 
-          <Section title="2. Ask Clean: AI Analyser">
+          <Section title="2. The AI Analyser">
             <p>
-              The Ask Clean analyser is an AI-powered tool that evaluates cosmetic products and ingredients
+              The analyser is an AI-powered tool that evaluates cosmetic products and ingredients
               based on publicly available data and The Clean Sheet™ proprietary scoring framework.
             </p>
             <ul className="list-disc pl-5 mt-3 space-y-1.5">
               <li>Outputs are <strong>informational only</strong> and do not constitute medical, dermatological, or regulatory advice.</li>
               <li>Results are based on available INCI data at the time of analysis and may not reflect real-time formulation changes.</li>
               <li>We do not guarantee the accuracy, completeness, or fitness for purpose of any analysis output.</li>
-              <li>You should not rely solely on Ask Clean outputs when making purchasing or health decisions.</li>
+              <li>You should not rely solely on analyser outputs when making purchasing or health decisions.</li>
             </ul>
           </Section>
 

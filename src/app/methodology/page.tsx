@@ -588,7 +588,7 @@ function CTA() {
             href="/brands"
             className="flex items-center gap-2 text-ink-700 hover:text-ink-950 font-medium text-base transition-colors"
           >
-            Or try Ask Clean, free →
+            Or try the analyser, free →
           </Link>
         </div>
       </div>

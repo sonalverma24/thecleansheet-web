@@ -214,7 +214,7 @@ export default async function LearnPage() {
                   Ingredient Directory <ArrowRight size={14} />
                 </a>
                 <a href="#skin-type-guides" className="flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-normal px-5 py-3 rounded-xl transition-all text-sm">
-                  Skin Type Guides
+                  Download our free guide for your skin type
                 </a>
                 <a href="#courses" className="flex items-center gap-2 border border-white/20 hover:border-white/40 text-white font-normal px-5 py-3 rounded-xl transition-all text-sm">
                   Courses
@@ -341,9 +341,9 @@ export default async function LearnPage() {
             </div>
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-2">
               <h2 className="text-4xl lg:text-5xl font-medium text-white tracking-tight">
-                Find your skin type.
+                Download our free guide
                 <br />
-                <span className="text-teal-300">Build your routine.</span>
+                <span className="text-teal-300">for your skin type.</span>
               </h2>
               <p className="text-teal-200/60 text-base leading-relaxed lg:max-w-xs">
                 Science-backed guides for Indian skin. Practical, jargon-free, free to download.
