@@ -25,8 +25,19 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+  // The skin-type guide PDFs live in /private/guides (not /public) and are read from disk by
+  // /api/guides/[slug]; tell the file tracer to ship them with that route.
+  outputFileTracingIncludes: {
+    "/api/guides/[slug]": ["./private/guides/**/*"],
+  },
   async redirects() {
     return [
+      // The skin-type guide PDFs moved behind a Google sign-in (/api/guides/[slug]). Old direct
+      // links land on the guide page, where signing in unlocks the download.
+      { source: "/guides/Oily_Skin_Care_Revised_v2.pdf", destination: "/learn/guides/oily-skin", permanent: true },
+      { source: "/guides/Dry_Skin_Care_Guide.pdf", destination: "/learn/guides/dry-skin", permanent: true },
+      { source: "/guides/Combination_Skin_Care_Guide.pdf", destination: "/learn/guides/combination-skin", permanent: true },
+      { source: "/guides/Normal_Skin_Care_Guide.pdf", destination: "/learn/guides/normal-skin", permanent: true },
       // Retired CodeSkin certification-style demo pages, superseded by the new registry.
       // Redirected (not deleted) so no page presents a product as certified.
       { source: "/verify/codeskin-ultralite-certified-8f3t2p9x", destination: "/verify", permanent: true },
