@@ -13,7 +13,7 @@ const h = vi.hoisted(() => {
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn() };
+  return { upserts, chain, generate: vi.fn(), imageEvidence: vi.fn() };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -26,7 +26,7 @@ vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/s
 vi.mock("@/lib/product-image", () => ({
   resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, isLiveImage: async () => false,
 }));
-vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
+vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: h.imageEvidence }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
@@ -40,6 +40,9 @@ const asModelText = (name: string) => JSON.stringify(makeReview({ productName: n
 beforeEach(() => {
   h.upserts.length = 0;
   h.generate.mockReset();
+  h.imageEvidence.mockReset().mockResolvedValue("");
+  delete process.env.ANALYSER_EVIDENCE_HARNESS_SHADOW;
+  delete process.env.ANALYSER_CAPTURE_MAX_AGE_MS;
 });
 
 describe("runProductReview: researchLog", () => {
@@ -94,5 +97,28 @@ describe("runProductReview: researchLog", () => {
       [PRODUCT_REVIEW_SYSTEM_PROMPT, `${userPrompt}\n\nReturn ONLY the product-review JSON, starting directly with { and ending with }. No prose, no code fence, no trailing commas.`],
       [PRODUCT_REVIEW_SYSTEM_PROMPT, `${userPrompt}\n\nYour previous output was not valid JSON. Return ONLY the complete, valid product-review JSON object.`],
     ]);
+  });
+});
+
+
+describe("evidence harness integration", () => {
+  it("records an uncertainty audit and replaces model-authored audit fields", async () => {
+    process.env.ANALYSER_EVIDENCE_HARNESS_SHADOW = "true";
+    const proposal = makeReview({ productName: "Shadow Evidence Cleanser", brand: "Harness Test" });
+    h.generate.mockResolvedValue({ text: JSON.stringify({ ...proposal, evidenceAudit: { decision: { endorsement: "approved" } } }), groundingMetadata: null });
+    const out = await runProductReview("Shadow Evidence Cleanser");
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
+    expect(out.review.evidenceAudit?.decision.endorsement).toBe("human_review_required");
+    expect(out.review.evidenceAudit?.decision.reasons).toContain("INCI_NOT_ANCHORED");
+    expect((h.upserts[0].result as typeof out).review.evidenceAudit).toEqual(out.review.evidenceAudit);
+  });
+  it("passes image transcription into prompts once, including retries", async () => {
+    h.imageEvidence.mockResolvedValue("\nIMAGE TRANSCRIPTION: synthetic report text");
+    h.generate.mockResolvedValueOnce({ text: "bad json", groundingMetadata: null })
+      .mockResolvedValueOnce({ text: asModelText("Image Evidence Cleanser"), groundingMetadata: null });
+    await runProductReview("Image Evidence Cleanser");
+    expect(h.imageEvidence).toHaveBeenCalledTimes(1);
+    for (const call of h.generate.mock.calls) expect(call[1]).toContain("IMAGE TRANSCRIPTION: synthetic report text");
   });
 });

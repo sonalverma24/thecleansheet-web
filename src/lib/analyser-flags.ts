@@ -12,6 +12,8 @@
    today. That promise is pinned by src/lib/verdict-parity.test.ts. */
 
 export const ANALYSER_FLAGS = {
+  /** Evidence harness observations only. Does not change public standings. */
+  evidenceHarnessShadow: "ANALYSER_EVIDENCE_HARNESS_SHADOW",
   /** 5a. At a glance ticks read the claim ontology instead of the substring logic. Needs reviewed aliases first. */
   ontologyTicks: "ANALYSER_ONTOLOGY_TICKS",
   /** 5b. Suppress a disputed tick and show "This claim is being checked." (not built yet) */

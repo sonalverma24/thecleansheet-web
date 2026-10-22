@@ -203,6 +203,8 @@ export interface ResearchLog {
 export type ProductImageSource = "inci" | "page" | "amazon" | "nykaa" | "cse" | "search" | "manual";
 
 export interface ProductReview {
+  /** Server-authored shadow audit, never evidence supplied by the model. */
+  evidenceAudit?: { decision: import("./neurosymbolic/harness").Assurance; captures: import("./neurosymbolic/harness").Capture[] };
   type: "product-review";
   productName: string;
   brand: string;
