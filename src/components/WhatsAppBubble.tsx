@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const WA_LINK = "https://chat.whatsapp.com/BUvEDcUj9Dh14dwSVRVvu4";
+import { WHATSAPP_COMMUNITY_URL as WA_LINK } from "@/lib/site-links";
 
 export default function WhatsAppBubble() {
   const [expanded, setExpanded] = useState(false);
