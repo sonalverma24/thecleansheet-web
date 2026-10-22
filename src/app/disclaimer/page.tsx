@@ -57,14 +57,14 @@ export default function DisclaimerPage() {
             </p>
           </Section>
 
-          <Section title="3. Ask Clean: AI Analyser">
+          <Section title="3. The AI Analyser">
             <p>
-              The Ask Clean AI analyser uses large language model technology and is subject to the inherent
+              The AI analyser uses large language model technology and is subject to the inherent
               limitations of AI, including occasional inaccuracies, hallucinations, or outdated information.
               Outputs should be treated as a starting point for research, not as definitive conclusions.
             </p>
             <p className="mt-3">
-              The Clean Sheet™ is not liable for decisions made based on Ask Clean outputs.
+              The Clean Sheet™ is not liable for decisions made based on analyser outputs.
             </p>
           </Section>
 

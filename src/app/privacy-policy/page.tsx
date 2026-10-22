@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
               The Clean Sheet™ (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) operates the website{" "}
               <a href="https://thecleansheet.in" className="text-teal-600 hover:underline">thecleansheet.in</a>{" "}
               and related services. This Privacy Policy explains how we collect, use, disclose, and safeguard
-              your information when you visit our website or use our services, including the Ask Clean AI
+              your information when you visit our website or use our services, including the AI
               analyser. Please read this carefully.
             </p>
             <p className="mt-3">
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
             <p>We may collect the following categories of personal data:</p>
             <ul className="list-disc pl-5 mt-3 space-y-1.5">
               <li><strong>Usage Data:</strong> IP address, browser type, pages visited, time spent, referring URLs, and device identifiers, collected automatically via server logs and analytics.</li>
-              <li><strong>Query Data:</strong> Product names, ingredient lists, or questions you submit to the Ask Clean analyser. These are processed to generate responses and are not stored long-term.</li>
+              <li><strong>Query Data:</strong> Product names, ingredient lists, or questions you submit to the analyser. These are processed to generate responses and are not stored long-term.</li>
               <li><strong>Communication Data:</strong> Name, email address, and message content when you contact us via email or forms.</li>
               <li><strong>Brand/Business Data:</strong> Company name, contact details, and product information submitted by brands applying for certification.</li>
             </ul>
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
 
           <Section title="2. How We Use Your Information">
             <ul className="list-disc pl-5 space-y-1.5">
-              <li>To operate, maintain, and improve the website and Ask Clean analyser</li>
+              <li>To operate, maintain, and improve the website and analyser</li>
               <li>To respond to enquiries, support requests, and certification applications</li>
               <li>To analyse usage patterns and improve user experience</li>
               <li>To send transactional communications (e.g. application confirmations)</li>
@@ -86,7 +86,7 @@ export default function PrivacyPolicyPage() {
           <Section title="5. Data Retention">
             <p>
               We retain personal data only for as long as necessary for the purpose it was collected, or as
-              required by applicable law. Query data submitted to the Ask Clean analyser is not retained beyond
+              required by applicable law. Query data submitted to the analyser is not retained beyond
               the session. Contact and application data is retained for up to 3 years or as required for
               certification records.
             </p>
