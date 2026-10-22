@@ -172,6 +172,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     concern: review.category ?? "",
     summary: review.verdict?.cleanSheetTakeaway ?? "",
     score: s.total,
+    ...(typeof verdict.claimEvidencePct === "number" ? { claimEvidencePct: verdict.claimEvidencePct } : {}),
     scoreLabel: verdict.tier === "approved" ? "Excellent" : verdict.tier === "mostly-clean" ? "Good" : verdict.tier === "not-recommended" ? "Concern" : "Fair",
     targetUser: review.targetUser ?? "",
     image: review.imageUrl ?? "",

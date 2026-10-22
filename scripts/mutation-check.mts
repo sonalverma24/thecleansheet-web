@@ -30,6 +30,10 @@ const PS = "src/lib/pillar-standing.ts";
 const CP = "src/lib/compliance-pillar.ts";
 const GS = "src/lib/global-screen.ts";
 const EN = "src/lib/product-review-engine.ts";
+const SC = "src/lib/review-to-scorecard.ts";
+const HR = "src/components/scorecards/ProductHero.tsx";
+const XD = "extension/verdict-display.js";
+const XP = "extension/popup.js";
 
 const MUTATIONS: Mutation[] = [
   // normaliser
@@ -249,6 +253,20 @@ const MUTATIONS: Mutation[] = [
   { id: "ENG6 r9-not-accepted", file: EN, find: "[RUBRIC_REV, PILLAR_RUBRIC_REV];", replace: "[RUBRIC_REV];" },
   { id: "ENG7 any-revision-accepted", file: EN, find: 'typeof rev === "string" && ACCEPTED_RUBRIC_REVS.includes(rev)', replace: "true" },
   { id: "ENG8 store-stamps-constant", file: EN, find: "rubric_rev: activeRubricRev(),", replace: "rubric_rev: RUBRIC_REV," },
+  { id: "ENG9 evidence-pct-wrong-scale", file: EN, find: "claimEvidencePct: Math.round((evidencePts / 20) * 100)", replace: "claimEvidencePct: Math.round(evidencePts * 20)" },
+  { id: "ENG10 evidence-pct-with-flag-off", file: EN, find: "...(pillars ? { pillars, claimEvidencePct: Math.round((evidencePts / 20) * 100) } : {}),", replace: "...(pillars ? { pillars } : {}), claimEvidencePct: Math.round((evidencePts / 20) * 100)," },
+  // the two surfaces that read the total
+  { id: "SRF1 scorecard-key-always-present", file: SC, find: "...(typeof verdict.claimEvidencePct === \"number\" ? { claimEvidencePct: verdict.claimEvidencePct } : {}),", replace: "claimEvidencePct: verdict.claimEvidencePct," },
+  { id: "SRF2 scorecard-drops-the-field", file: SC, find: "? { claimEvidencePct: verdict.claimEvidencePct } : {}", replace: "? {} : {}" },
+  { id: "SRF3 hero-ignores-evidence-pct", file: HR, find: "const basis = product.claimEvidencePct ?? product.score;", replace: "const basis = product.score;" },
+  { id: "SRF4 hero-zero-falls-back", file: HR, find: "const basis = product.claimEvidencePct ?? product.score;", replace: "const basis = product.claimEvidencePct || product.score;" },
+  { id: "SRF5 hero-good-band-60", file: HR, find: "} else if (basis >= 70) {", replace: "} else if (basis >= 60) {" },
+  { id: "SRF6 hero-strong-band-reads-total", file: HR, find: "} else if (basis >= 85) {", replace: "} else if (product.score >= 85) {" },
+  { id: "SRF7 popup-total-ignores-pillars", file: XD, find: " && !(verdict && Array.isArray(verdict.pillars))", replace: "" },
+  { id: "SRF8 popup-total-without-number", file: XD, find: 'return typeof total === "number" && !(verdict', replace: "return !(verdict" },
+  { id: "SRF9 popup-pillars-truthy-check", file: XD, find: "Array.isArray(verdict.pillars)", replace: "verdict.pillars" },
+  { id: "SRF10 popup-asks-with-no-verdict", file: XP, find: "TCSVerdictDisplay.showTotal(review, verdict)", replace: "TCSVerdictDisplay.showTotal(review, null)" },
+  { id: "SRF11 popup-fallback-removed", file: XP, find: ": typeof total === \"number\";", replace: ": false;" },
 ];
 
 const TESTS = [
@@ -257,6 +275,7 @@ const TESTS = [
   "src/lib/inci-reanchor.test.ts", "src/lib/inci-from-page.test.ts", "src/lib/capture-evidence.test.ts", "src/lib/reviewer-audit.test.ts",
   "src/lib/pillar-grade.test.ts", "src/lib/pillar-standing.test.ts", "src/lib/compliance-pillar.test.ts", "src/lib/global-screen.test.ts",
   "src/lib/verdict-pillar.test.ts", "src/lib/rubric-accepted.test.ts",
+  "src/lib/hero-score-meaning.test.ts", "src/lib/pillar-surfaces.test.ts", "src/lib/extension-verdict-display.test.ts",
 ];
 
 const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : "";

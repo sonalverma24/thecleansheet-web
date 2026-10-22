@@ -53,6 +53,9 @@ export type ProductScorecard = {
   concern: string;
   summary: string;
   score: number;
+  /** Claim evidence as a percentage (0 to 100). Set only for a review whose standing comes from the four
+      pillars; the hero's evidence line reads it in place of `score`, which no longer decides the standing. */
+  claimEvidencePct?: number;
   scoreLabel: "Excellent" | "Good" | "Fair" | "Concern"; // legacy - keep for backward compat
   publicDecisionLabel?: string; // new 5-pillar framework label
   targetUser?: string;

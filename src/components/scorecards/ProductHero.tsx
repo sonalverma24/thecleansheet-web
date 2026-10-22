@@ -226,6 +226,10 @@ export function generateScoreMeaning(product: ProductScorecard): [string, string
   const pass = product.pass_badges.map((b) => b.toLowerCase());
   const warn = product.warn_badges;
 
+  // With the pillar standing, the total no longer decides the standing, so the evidence line reads claim
+  // evidence (a percentage) instead. Without it, exactly as before.
+  const basis = product.claimEvidencePct ?? product.score;
+
   let evidence: string;
   if (pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")))) {
     evidence = "Strong public evidence";
@@ -239,11 +243,11 @@ export function generateScoreMeaning(product: ProductScorecard): [string, string
     ).length >= 2
   ) {
     evidence = "Good public evidence";
-  } else if (product.score >= 85) {
+  } else if (basis >= 85) {
     evidence = "Strong ingredient profile";
-  } else if (product.score >= 70) {
+  } else if (basis >= 70) {
     evidence = "Good public evidence";
-  } else if (product.score >= 50) {
+  } else if (basis >= 50) {
     evidence = "Limited public evidence";
   } else {
     evidence = "Weak public evidence";
