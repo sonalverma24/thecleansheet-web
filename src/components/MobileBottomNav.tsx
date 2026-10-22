@@ -17,7 +17,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   // Hide on admin, auth, onboarding, and analyzer full-screen pages
-  const hidden = ["/admin", "/auth", "/onboarding"].some(p => pathname.startsWith(p));
+  const hidden = ["/admin", "/auth", "/onboarding", "/for-brands"].some(p => pathname.startsWith(p));
   if (hidden) return null;
 
   return (
