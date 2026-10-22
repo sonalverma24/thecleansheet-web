@@ -26,6 +26,8 @@ export const ANALYSER_FLAGS = {
   policyAnchorRequired: "ANALYSER_POLICY_ANCHOR_REQUIRED",
   /** 5g. Only confirmed identity serves an existing review (not built yet) */
   strictIdentity: "ANALYSER_STRICT_IDENTITY",
+  /** Standing from the four pillars (well 70, floor 50) instead of the 7-section total; stamps rows r9. See STAMPS.md. */
+  pillarStanding: "ANALYSER_PILLAR_STANDING",
 } as const;
 
 export type AnalyserFlagName = (typeof ANALYSER_FLAGS)[keyof typeof ANALYSER_FLAGS];

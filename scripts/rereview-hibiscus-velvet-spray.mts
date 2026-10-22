@@ -34,7 +34,7 @@ const OFFTOPIC = /\b(hair\s*fall|hairfall|scalp|dandruff|frizz|follicle|hair gro
 
 async function main() {
   const { createAdminClient } = await import("../src/lib/supabase/admin");
-  const { runProductReview, deriveVerdict, RUBRIC_REV } = await import("../src/lib/product-review-engine");
+  const { runProductReview, deriveVerdict, activeRubricRev } = await import("../src/lib/product-review-engine");
   const db = createAdminClient();
 
   console.log("Regenerating review against:", PDP);
@@ -95,7 +95,7 @@ async function main() {
       tier: verdict.tier,
       image_url: review.imageUrl ?? null,
       result: { type: "product-review", review, verdict },
-      rubric_rev: RUBRIC_REV,
+      rubric_rev: activeRubricRev(),
       reviewed_at: new Date().toISOString(),
     },
     { onConflict: "product_slug" },

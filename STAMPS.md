@@ -25,6 +25,69 @@ Internal tier keys: `approved`, `mostly-clean`, `can-do-better` (displayed as
 
 ---
 
+## Standing from the four pillars (flag `ANALYSER_PILLAR_STANDING`, off by default)
+
+A different way to earn the same four standings, built behind a flag. **While the flag is off nothing below
+applies and every standing is earned exactly as described under "Definitions and exact conditions".** It
+turns on only after the preview is signed (see "Versioning").
+
+### The four pillars
+
+Each review is graded on four pillars, each out of 100 (`src/lib/pillar-grade.ts`, assembled in
+`src/lib/pillar-standing.ts`):
+
+| Pillar | Built from |
+| --- | --- |
+| Ingredient Safety & Toxicity | the analysis checks (`runAnalysis`): identity and purity, regulatory and toxicology screens, functional safety |
+| Irritation & Allergen Risk | the analysis checks: fragrance allergens, preservative sensitivity, surfactant irritation, product-level testing |
+| Ingredient Transparency | the analysis checks (full list, blends, percentages, supporting documents), plus one soft deduction when the list has an unnamed catch-all ("Soap Base", a bare "QS") |
+| Standards & Compliance | exactly four items: **label compliance, regulatory screen, ASCI screen, claims screen** (`src/lib/compliance-pillar.ts`) |
+
+A pillar's score is `100 x (1 - deductions / applicable checks)`. Per applicable check: verified 0;
+brand-stated 0.2; not disclosed 0.6, 0.35 or 0.15 (evidence we could decide from public data, only the brand
+can publish, or is essentially never public); a legal-but-flagged ("soft") adverse finding 1. A **hard**
+adverse finding (a banned ingredient, a contradicted claim) fails the pillar outright. Checks that do not
+apply to the product are left out. "Not disclosed" lowers a score but is never an adverse finding.
+
+### The rule
+
+A pillar scores **well** at 70 or above. It **fails** only below 50 *and* with at least one adverse finding,
+or on a hard failure; in between it is neither.
+
+| Pillars | Standing |
+| --- | --- |
+| all four well | Good Standing |
+| two or more failing | Not Recommended |
+| anything else | Room to Improve |
+
+Unchanged and still decided first, exactly as before: a licensed drug stays **Licensed Drug**; a hard flag
+(banned ingredient, a claim the product's own INCI contradicts, a skin-whitening or fairness claim) stays
+**Not Recommended**; drug-boundary treatment wording still caps the standing at **Room to Improve**.
+
+Two guards keep the principle that **missing proof is never a negative standing**:
+
+1. A pillar that is low only because evidence was not disclosed does not count as failing.
+2. A review with no ingredient list is never Good Standing, and never Not Recommended on that account: at most
+   Room to Improve, unless a hard flag already decided it.
+
+### What no longer decides the standing
+
+The standing stops reading the scored sections (claim evidence, price fairness, platform consistency and the
+rest) and the total out of 100. They stay on the page, unchanged, and the total is still computed and
+displayed. A product with thin claim evidence can therefore be Good Standing if its four pillars are sound.
+Claim evidence keeps one job: **Good Standing still splits internally.** It is `approved` only when the old
+strict bar also holds (no hard flag, total at least 85, claim evidence at least 15, a verifiable list, no
+endocrine flag), otherwise `mostly-clean`. Both display "Good Standing"; the split still decides the headline
+"Claims hold up to the evidence" and pitch-stamp eligibility, which are unchanged.
+
+### Not Recommended from the pillars
+
+The headline for a Not Recommended earned from the pillars alone (no hard flag) names the failing pillars:
+"Two or more areas of the review fall short: ...". It is not a statement that a claim was false or an
+ingredient prohibited, and the standing page says so.
+
+---
+
 ## The two axes every stamp reads
 
 - **Safety & Compliance** - is anything actually *wrong*? A code-verified drug-boundary crossing, or a claim the product's own INCI contradicts. Absence of a problem is a pass, never a gap.
@@ -34,7 +97,7 @@ The critical rule that prevents false negatives: **missing evidence lands in "Ca
 
 ---
 
-## Definitions and exact conditions
+## Definitions and exact conditions (the rules while the pillar flag is off)
 
 Inputs (from the scored review): `total` /100, `claimEvidence` /20, `formulaLogic` /15, and `hardFlags` (count of claims that survive both guardrails below).
 
@@ -112,6 +175,19 @@ review's code-verified hard flag.
 `RUBRIC_REV` in `product-review-engine.ts` is bumped whenever the EARNING rules
 above change (thresholds, guardrails, hard-flag logic), so stored reviews from
 an older rubric are not served stale. Current: `r7`.
+
+A stored review is served when its `rubric_rev` is in `ACCEPTED_RUBRIC_REVS`, not only when it equals the
+current revision, so a new revision can be deployed first and the rows re-stamped afterwards without hiding a
+review in between. That list is `r7` and `r9`.
+
+**`r9` is the pillar standing.** A row is stamped `r9` only while `ANALYSER_PILLAR_STANDING` is on, and `r7`
+otherwise (`activeRubricRev()`), so the revision records which standing rule was in force. With the flag off
+nothing is stamped `r9` and nothing a shopper sees changes. Order: deploy the code with the flag off; sign the
+preview (`scripts/pillar-preview.mts`, run from a checkout of main); set the flag and redeploy the same commit;
+run `scripts/backfill-reviews.mts` straight after, which re-stamps every row and refreshes the stored `tier`
+column that feeds listings. Standings recompute on every read, so a flip shows on pages at once; the stored
+column lags until the backfill. Rollback is the flag off, a redeploy and the backfill again. Do not run the
+backfill at the same time as a review rebuild; both write `product_reviews`.
 
 **"Good Standing" badge merge (Sept 2026) did NOT bump the rubric.** It only
 changed what label/seal each already-computed tier displays - `approved` and
