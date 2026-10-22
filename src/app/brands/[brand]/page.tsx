@@ -143,7 +143,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
             <h3 className="font-medium text-ink-950 mb-1">Don't see a {brand.name} product?</h3>
             <p className="text-ink-500 text-sm">Paste any {brand.name} product URL or ingredient list and get a full scorecard in seconds.</p>
           </div>
-          <Link href="/review"
+          <Link href="/brands"
             className="flex-shrink-0 inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all whitespace-nowrap">
             Analyse a product <ArrowRight size={14} />
           </Link>

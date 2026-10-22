@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The claims-first analyzer now lives at /review — the single canonical tool.
+// The analyser lives on /brands now: search a product there and its review opens directly.
 export default function AnalyserRedirect() {
-  redirect("/review");
+  redirect("/brands");
 }

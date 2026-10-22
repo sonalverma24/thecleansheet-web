@@ -129,7 +129,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Follow product instructions, avoid deliberately breathing sprays and use effective ventilation when styling. Do not assume that a product marketed for heat protection has also been shown to minimise airborne emissions." },
       { type: "paragraph", text: "If choosing an alternative, evaluate the replacement formula. “Silicone free” does not demonstrate better preservation, lower irritation, better performance or a smaller environmental footprint." },
       { type: "paragraph", text: ["The Clean Sheet's ", { text: "Claims Library", href: "/standard/claims" }, " explains the broader principle: an ingredient absence claim cannot carry every other promise a buyer might attach to it."] },
-      { type: "cta", text: "See whether a product's silicone content and claims hold up against the evidence.", href: "/review", label: "Analyse a Product Now" },
+      { type: "cta", text: "See whether a product's silicone content and claims hold up against the evidence.", href: "/brands", label: "Analyse a Product Now" },
 
       { type: "heading", level: 2, text: "What India should ask of regulators and brands" },
       { type: "bullets", items: [
@@ -250,8 +250,8 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "heading", level: 2, text: "What to do before you buy" },
       { type: "paragraph", text: "Find the complete list. Match it to the current product. Check personal triggers. Clarify any percentage or claim driving your decision." },
       { type: "paragraph", text: "When the brand cannot resolve an important question, choosing a more transparent alternative is reasonable. You do not have to prove that a product is dangerous before deciding against buying it." },
-      { type: "paragraph", text: ["For help organising the evidence, use ", { text: "The Clean Sheet's Product Review tool", href: "/review" }, ". Treat a review as support for your decision, with laboratory testing and individual medical assessment answering questions a public label cannot."] },
-      { type: "cta", text: "Turn a confusing ingredient list into a clear buying decision.", href: "/review", label: "Review a Product" },
+      { type: "paragraph", text: ["For help organising the evidence, use ", { text: "The Clean Sheet's Product Review tool", href: "/brands" }, ". Treat a review as support for your decision, with laboratory testing and individual medical assessment answering questions a public label cannot."] },
+      { type: "cta", text: "Turn a confusing ingredient list into a clear buying decision.", href: "/brands", label: "Review a Product" },
 
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "sources", items: [
@@ -338,8 +338,8 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "heading", level: 2, text: "Verify any beauty product in seconds" },
       { type: "paragraph", text: "The five-step process works. It also takes time most shoppers do not have while standing in a store aisle or scrolling through a checkout screen. That is the gap The Clean Sheet is built to close." },
       { type: "paragraph", text: ["Every product in our ", { text: "verified brand registry", href: "/brands" }, " is graded against the same evidence ladder used throughout this guide, with a clear Clean Sheet standing so you can see, at a glance, whether a claim holds up. No editorial endorsements. No brand advocacy. Just independent verification of what a product actually substantiates."] },
-      { type: "paragraph", text: ["Search a brand you are considering, run a specific product through the ", { text: "free analyser", href: "/review" }, ", and decide with the evidence in front of you. That is what ingredient-conscious buying looks like when the platform does the audit work for you."] },
-      { type: "cta", text: "Check any product's claims against the evidence, free.", href: "/review", label: "Analyse a Product Now" },
+      { type: "paragraph", text: ["Search a brand you are considering, run a specific product through the ", { text: "free analyser", href: "/brands" }, ", and decide with the evidence in front of you. That is what ingredient-conscious buying looks like when the platform does the audit work for you."] },
+      { type: "cta", text: "Check any product's claims against the evidence, free.", href: "/brands", label: "Analyse a Product Now" },
 
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "sources", items: [
@@ -453,7 +453,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "That changes the economics of credibility." },
       { type: "paragraph", text: "And I think founders building today should prepare for it before the dashboards arrive." },
 
-      { type: "cta", text: "A claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/review", label: "Review a product" },
+      { type: "cta", text: "A claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Review a product" },
 
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
@@ -612,7 +612,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "For “dermatologically tested”, identify the assessment and its findings. For “clinically proven”, identify the particular result the evidence establishes. Make the conditions understandable where the customer sees the claim." },
       { type: "paragraph", text: "Before approving the label, ask your team to point to the evidence for every part of the sentence. If a word goes further than the report, change the word or build the evidence." },
 
-      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product’s wording holds up against its evidence.", href: "/review", label: "Review a product" },
+      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product’s wording holds up against its evidence.", href: "/brands", label: "Review a product" },
 
       { type: "paragraph", text: "This article addresses claims on cosmetics sold in India. It separates Indian legal requirements, ASCI self regulation and recommended evidence review practices. Acceptability depends on the complete product, evidence and presentation; the examples are not individual label clearances." },
 
@@ -753,7 +753,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "A founder should be able to move from the pack to the manufacturer, from the manufacturer to the batch, and from the promise to the evidence without relying on someone’s memory." },
       { type: "paragraph", text: "Before your next production order, ask for the current licence, relevant product coverage and one complete example of a batch evidence file. Read them together." },
 
-      { type: "cta", text: "A licence proves who may manufacture. It does not prove a claim. See how a product holds up against the evidence behind it.", href: "/review", label: "Review a product" },
+      { type: "cta", text: "A licence proves who may manufacture. It does not prove a claim. See how a product holds up against the evidence behind it.", href: "/brands", label: "Review a product" },
 
       { type: "paragraph", text: "This article explains the national framework and uses selected state documents as examples. Confirm the current filing requirements with the authority responsible for your manufacturing premises." },
 
@@ -846,7 +846,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Because when an AI system recommends a product, the consumer's most important question should still be:" },
       { type: "callout", text: "Based on what?" },
       { type: "paragraph", text: "We are building the answer." },
-      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/review", label: "Review a product" },
+      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Review a product" },
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "paragraph", text: "This article references OpenAI's published descriptions of beauty as a research and comparison category within ChatGPT, and its work on structured product feeds for AI shopping experiences; Google's rollout of shopping journeys within AI Mode; the Advertising Standards Council of India (ASCI) code requirement that objective advertising claims be capable of substantiation; and the Cosmetics Rules, 2020, which prohibit false or misleading cosmetic claims in India." },
@@ -925,7 +925,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Beauty marketing trains us to inspect what skin looks like. Skin health often requires paying closer attention to how it behaves. And when that behaviour suddenly changes, resist the instinct to shop first." },
       { type: "bullets", items: ["Look for the trigger.", "Look at what you started using.", "Look at how frequently you are using it.", "Look at your weather, water and environment.", "Then look at the product claims."] },
       { type: "paragraph", text: "Because \"for sensitive skin\" printed on the front of a bottle is still only a claim. The real question is what the finished product can prove." },
-      { type: "cta", text: "\"For sensitive skin\" is a claim. See how it holds up against the evidence before you buy.", href: "/review", label: "Review a product" },
+      { type: "cta", text: "\"For sensitive skin\" is a claim. See how it holds up against the evidence before you buy.", href: "/brands", label: "Review a product" },
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "paragraph", text: "This article draws on the International Forum for the Study of Itch consensus definition and position papers on sensitive skin; research published in the Journal of Investigative Dermatology and Clinical & Experimental Allergy on water hardness, surfactant deposition and skin barrier function; guidance from the American Academy of Dermatology on rosacea triggers; United States FDA consumer guidance on natural, organic and hypoallergenic cosmetic claims; and published dermatology literature on topical corticosteroid misuse in India." },
@@ -2173,7 +2173,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to know if the products in your routine are actually doing anything?",
-        href: "/review",
+        href: "/brands",
         label: "Ask Clean, Check Your Ingredients",
       },
     ],
@@ -2297,7 +2297,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Not sure what's actually in your products?",
-        href: "/review",
+        href: "/brands",
         label: "Ask Clean, Check Your Ingredients",
       },
     ],
@@ -2537,7 +2537,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to check a specific baby product?",
-        href: "/review",
+        href: "/brands",
         label: "Ask Clean, Check Any Product",
       },
     ],
@@ -2627,7 +2627,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Skip the guesswork, check any product in seconds.",
-        href: "/review",
+        href: "/brands",
         label: "Check Your Product Now",
       },
     ],
@@ -2707,7 +2707,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Want to check the preservative system in your product?",
-        href: "/review",
+        href: "/brands",
         label: "Analyse Your Product for Free",
       },
     ],
@@ -2785,7 +2785,7 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "cta",
         text: "Check your sunscreen's UV filters for free.",
-        href: "/review",
+        href: "/brands",
         label: "Analyse Your Sunscreen Now",
       },
     ],

@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { FlaskConical, ArrowRight } from "lucide-react";
 import { ProductRequestForm } from "./ProductRequestForm";
+import ReviewRunStatus from "./ReviewRunStatus";
+import { useReviewRunner } from "./useReviewRunner";
 
 interface NoResultsCardProps {
   query: string;
@@ -10,10 +11,7 @@ interface NoResultsCardProps {
 
 export function NoResultsCard({ query }: NoResultsCardProps) {
   const [showForm, setShowForm] = useState(false);
-
-  const analyzerHref = query
-    ? `/review?q=${encodeURIComponent(query)}`
-    : "/review";
+  const { state, run, busy } = useReviewRunner({ autoRun: false });
 
   return (
     <div className="col-span-full py-12 flex flex-col items-center text-center max-w-lg mx-auto">
@@ -29,15 +27,20 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
         You can analyse it instantly with our free Product Analyser, or request a full evidence-based scorecard review.
       </p>
 
-      {/* Primary CTA */}
-      <Link
-        href={analyzerHref}
-        className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-5 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-900/20 mb-4"
-      >
-        <FlaskConical size={15} />
-        Analyse this product for free
-        <ArrowRight size={13} />
-      </Link>
+      {/* Primary CTA: runs the review here, then opens its page */}
+      {query && (
+        <button
+          type="button"
+          onClick={() => void run(query)}
+          disabled={busy}
+          className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white text-sm font-medium px-5 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-900/20 mb-4"
+        >
+          <FlaskConical size={15} />
+          {busy ? "Reviewing…" : "Analyse this product for free"}
+          <ArrowRight size={13} />
+        </button>
+      )}
+      <ReviewRunStatus state={state} onPick={(name) => void run(name)} />
 
       {/* Secondary CTA */}
       <button

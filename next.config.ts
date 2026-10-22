@@ -45,12 +45,15 @@ const nextConfig: NextConfig = {
       { source: "/services", destination: "/for-brands", permanent: true },
       { source: "/certified", destination: "/verify", permanent: true },
       { source: "/consumers", destination: "/verify", permanent: true },
-      // The analyzer moved to /review. Permanent (308) so Google consolidates onto
-      // /review; /brands still links here as /analyzer?product=<query>, which /review
-      // reads as ?q=.
-      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/review?q=:product", permanent: true },
-      { source: "/analyzer", destination: "/review", permanent: true },
-      { source: "/analyser", destination: "/review", permanent: true },
+      // The analyser lives on /brands: searching a product there runs the review in place and
+      // opens its review page, so the old middle page (/review) is gone. Permanent (308) so
+      // Google consolidates onto /brands; a search in the old link (?q= / ?product=) is forwarded
+      // as ?review=<query>, which /brands runs on arrival.
+      { source: "/review", has: [{ type: "query", key: "q", value: "(?<q>.+)" }], destination: "/brands?review=:q", permanent: true },
+      { source: "/review", destination: "/brands", permanent: true },
+      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/brands?review=:product", permanent: true },
+      { source: "/analyzer", destination: "/brands", permanent: true },
+      { source: "/analyser", destination: "/brands", permanent: true },
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
       { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/reviews/kay-beauty-hydra-creme-lipstick", permanent: true },
       { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },
