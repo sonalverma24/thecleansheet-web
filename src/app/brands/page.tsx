@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Microscope } from "lucide-react";
-import { getAllBrandSummaries, ALL_BRANDS } from "@/data/brands";
-import BackButton from "@/components/BackButton";
-import { ScorecardDiscovery } from "@/components/scorecards/ScorecardDiscovery";
-import { HeroReviewBar } from "@/components/scorecards/HeroReviewBar";
+import { ALL_BRANDS } from "@/data/brands";
+import { HeroReveal } from "@/components/motion/Motion";
+import HeroSearch from "@/components/home/HeroSearch";
+import BrandsMarketplace from "@/components/registry/BrandsMarketplace";
 import { listRepositoryCatalogueProducts, listReviewIndex } from "@/lib/product-review-engine";
 import { getSiteStats } from "@/lib/site-stats";
 import { CrawlableIndex, type IndexGroup } from "@/components/seo/CrawlableIndex";
@@ -46,136 +45,108 @@ function isWithinThirtyDays(iso: string): boolean {
   return Date.now() - new Date(iso).getTime() < THIRTY_DAYS_MS;
 }
 
+const norm = (brand: string, name: string) => `${brand} ${name}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
 export default async function BrandsPage() {
   // Live repository products join the catalogue in the same tile format,
   // newest first, skipping any product the curated catalogue already covers.
   // Stats are fetched separately (uncapped) so "products analysed" keeps
-  // climbing past the 60-tile grid cap instead of plateauing at it.
+  // climbing past the number of products listed on the page.
   const [repoProducts, siteStats, reviewIndex] = await Promise.all([
-    listRepositoryCatalogueProducts(60),
+    listRepositoryCatalogueProducts(200),
     getSiteStats(),
     listReviewIndex(),
   ]);
-  const brands = getAllBrandSummaries();
   const staticProducts = ALL_BRANDS.flatMap((b) => b.products);
-  const known = new Set(staticProducts.map((p) => `${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()));
+  const known = new Set(staticProducts.map((p) => norm(p.brand, p.productName)));
   const freshProducts = repoProducts
-    .filter((p) => !known.has(`${p.brand} ${p.productName}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()))
-    // NEW badge: only the latest 5 arrivals actually visible in the grid (30-day cap)
+    .filter((p) => !known.has(norm(p.brand, p.productName)))
+    // NEW badge: only the latest 5 arrivals actually visible in the list (30-day cap)
     .map((p, idx) => ({
       ...p,
       newArrival: idx < 5 && isWithinThirtyDays(p.analyzedAt),
     }));
   const allProducts = [...freshProducts, ...staticProducts];
 
-  // Crawlable link index (the discovery grid above is client-rendered, so its
-  // server HTML links to nothing): every catalogue brand and product, then every
-  // repository review grouped by brand. Same name-dedupe as the grid.
-  const norm = (brand: string, name: string) => `${brand} ${name}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  const indexGroups: IndexGroup[] = ALL_BRANDS.map((b) => ({
-    label: b.name,
-    href: `/brands/${b.slug}`,
-    links: b.products.map((p) => ({ href: `/brands/${b.slug}/${p.slug}`, text: p.productName })),
-  }));
-  const reviewsByBrand = new Map<string, IndexGroup>();
+  // Crawlable link index (the marketplace is client-rendered past its first cards, so its
+  // server HTML links to little): every catalogue brand and product, then every
+  // repository review grouped by brand. A brand that is in both lists appears once.
+  const groups = new Map<string, IndexGroup>();
+  for (const b of ALL_BRANDS) {
+    groups.set(b.name.toLowerCase(), {
+      label: b.name,
+      href: `/brands/${b.slug}`,
+      links: b.products.map((p) => ({ href: `/brands/${b.slug}/${p.slug}`, text: p.productName })),
+    });
+  }
+  const catalogueKeys = new Set(groups.keys());
   for (const r of reviewIndex) {
     if (!r.productName || known.has(norm(r.brand, r.productName))) continue;
     const label = r.brand || "Other brands";
-    const g = reviewsByBrand.get(label) ?? { label, links: [] };
+    const key = label.toLowerCase();
+    const g = groups.get(key) ?? { label, links: [] };
     g.links.push({ href: `/reviews/${r.slug}`, text: r.productName });
-    reviewsByBrand.set(label, g);
+    groups.set(key, g);
   }
-  indexGroups.push(...[...reviewsByBrand.values()].sort((a, b) => a.label.localeCompare(b.label)));
+  const indexGroups: IndexGroup[] = [
+    ...[...groups.entries()].filter(([k]) => catalogueKeys.has(k)).map(([, g]) => g),
+    ...[...groups.entries()].filter(([k]) => !catalogueKeys.has(k)).map(([, g]) => g).sort((a, b) => a.label.localeCompare(b.label)),
+  ];
 
   // Live counts come from one shared helper so every page quotes the same numbers.
-  const statsOverride = {
-    totalProducts: siteStats.products,
-    brandsScored: siteStats.brands,
-    ingredients: siteStats.ingredients,
-  };
+  const stats = [
+    { label: "Products analysed", value: siteStats.products.toLocaleString("en-IN") },
+    { label: "Brands scored", value: siteStats.brands.toLocaleString("en-IN") },
+    { label: "Ingredients in directory", value: siteStats.ingredients.toLocaleString("en-IN") },
+  ];
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-        <BackButton />
-      </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }} />
 
-      <style>{`
-        @keyframes drawArc {
-          from { stroke-dashoffset: 1000; }
-          to   { stroke-dashoffset: 0; }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        .anim-fade-up  { animation: fadeUp  0.6s ease-out both; }
-        .anim-fade-in  { animation: fadeIn  0.5s ease-out both; }
-      `}</style>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
-      />
-
-      {/* ── Hero (server-rendered) ── */}
-      <div className="bg-teal-950 pt-6 pb-5 relative overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px" }}
-        />
-        <div className="absolute -left-24 bottom-0 opacity-[0.04] pointer-events-none">
-          <svg width={280} height={280} viewBox="0 0 280 280">
-            <circle cx={140} cy={140} r={128} fill="none" stroke="#fff" strokeWidth={16} />
-          </svg>
-        </div>
-
-        {/* Skincare loop bleeding in from the right, fading into the teal canvas */}
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[42%] overflow-hidden" aria-hidden>
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster="/images/creatives/dropper-drop.jpg"
-            className="w-full h-full object-cover"
-            style={{ animation: "hero-video-in 1.8s ease-out both, hero-drift 26s ease-in-out infinite alternate" }}
-          >
-            <source src="/Videos/review-hero-web.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #081918 0%, rgba(8,25,24,0.82) 38%, rgba(8,25,24,0.15) 82%)" }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #081918 0%, rgba(8,25,24,0) 24%)" }} />
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-          <div className="relative max-w-xl anim-fade-up" style={{ animationDelay: "0.05s" }}>
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-teal-300 text-xs px-3 py-1.5 rounded-full mb-4">
-              <Microscope size={12} /> India&apos;s Independent Product Review Registry
-            </div>
-            <h1 className="text-[26px] sm:text-4xl font-medium text-white tracking-tight mb-3 leading-[1.1]">
-              Every claim.<br />
-              Every ingredient.<br />
-              <span className="text-teal-400">Checked against proof.</span>
+      <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 sm:pt-14 lg:pt-[72px] pb-8 sm:pb-10 lg:pb-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 lg:gap-16 lg:items-end">
+        <div className="flex flex-col gap-4 md:gap-6">
+          <HeroReveal>
+            <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">The reviews</p>
+          </HeroReveal>
+          <HeroReveal delay={0.05}>
+            <h1 className="font-display font-light text-[clamp(38px,4.6vw,60px)] leading-[1.05] tracking-[-0.02em] text-[#282828] text-balance">
+              Find products worth
+              <br />
+              <span className="text-[#248179]">a closer look.</span>
             </h1>
-            <p className="text-teal-300/75 text-sm sm:text-[15px] leading-relaxed mb-4 max-w-md">
-              Independent reviews of India&apos;s beauty products: every marketing claim graded against
-              real evidence, formulas read ingredient by ingredient.
+          </HeroReveal>
+          <HeroReveal delay={0.1}>
+            <p className="text-[15px] md:text-[17px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a] max-w-[520px] text-pretty">
+              Every marketing claim graded against real evidence, every formula read ingredient by ingredient. Search,
+              filter and compare the products we have reviewed.
             </p>
-
-            <HeroReviewBar />
-          </div>
+          </HeroReveal>
+          <HeroReveal delay={0.15}>
+            <dl className="flex flex-wrap gap-x-8 gap-y-3 pt-1">
+              {stats.map((s) => (
+                <div key={s.label} className="flex flex-col">
+                  <dd className="font-display font-light text-[28px] md:text-[34px] leading-none text-[#282828] tabular-nums">{s.value}</dd>
+                  <dt className="text-[12px] md:text-[13px] text-[#4a4a4a] mt-1.5">{s.label}</dt>
+                </div>
+              ))}
+            </dl>
+          </HeroReveal>
         </div>
-      </div>
 
-      {/* ── Content (client interactive) — catalogue + live repository products merged ── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <ScorecardDiscovery brands={brands} products={allProducts} statsOverride={statsOverride} />
-      </div>
+        <HeroReveal delay={0.15}>
+          <div className="rounded-[18px] border border-[#e5dfd6] bg-[#f4faf9] p-5 md:p-7 flex flex-col gap-3 md:gap-4">
+            <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#248179] uppercase">Not listed yet?</span>
+            <h2 className="font-display font-light text-[26px] md:text-[30px] leading-[1.1] text-[#282828]">Review any product, free.</h2>
+            <p className="text-[14px] leading-[1.55] text-[#4a4a4a]">
+              Paste a product name or link. If we have not reviewed it, we will check it now and open the result.
+            </p>
+            <HeroSearch stacked />
+          </div>
+        </HeroReveal>
+      </section>
+
+      <BrandsMarketplace products={allProducts} />
 
       <CrawlableIndex
         id="all-reviews"

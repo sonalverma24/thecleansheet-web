@@ -77,6 +77,11 @@ export function matchSeed(seed: ShelfSeed, tile: Pick<ProductScorecard, "brand" 
   return seed.mustContain.every((frag) => text.includes(frag));
 }
 
+/** The clean pack shot kept for this product, when it is one of the seeded shelf products. */
+export function seedImageFor(tile: Pick<ProductScorecard, "brand" | "productName">): string | null {
+  return SHELF_SEEDS.find((seed) => matchSeed(seed, tile))?.image ?? null;
+}
+
 /** Filter group for a stored review's type, or null when it is not a skincare group on the shelf. */
 export function categoryFor(tile: Pick<ProductScorecard, "category" | "productName">): ShelfCategory | null {
   const text = norm(`${tile.category ?? ""} ${tile.productName ?? ""}`);
