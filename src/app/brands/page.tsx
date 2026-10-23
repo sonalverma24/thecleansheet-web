@@ -104,7 +104,7 @@ export default async function BrandsPage() {
     <div className="bg-white min-h-screen">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }} />
 
-      <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 sm:pt-14 lg:pt-[72px] pb-8 sm:pb-10 lg:pb-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 lg:gap-16 lg:items-end">
+      <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pt-4 sm:pt-6 lg:pt-8 pb-8 sm:pb-10 lg:pb-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 lg:gap-16 lg:items-end">
         <div className="flex flex-col gap-4 md:gap-6">
           <HeroReveal>
             <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">Product analyses</p>
