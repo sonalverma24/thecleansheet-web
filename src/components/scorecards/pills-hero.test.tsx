@@ -362,18 +362,48 @@ describe("when a part of the model is empty, that part is left out and the rest 
     expect(none).not.toContain("Gaps, and what would strengthen this analysis");
   });
 
-  it("no retailer: the block says to check the brand site; one with no address is a dashed card, not a link; one with no price says so", () => {
+  it("no retailer: the block says to check the brand site; one with no address is a plain chip, not a link; a price is shown only when we hold one", () => {
     expect(render(built, { model: { buyLinks: [] } })).toContain("Check brand website");
     const links: BuyLink[] = [
       { name: "Shop One", url: "https://example.com/p?a=1&b=2", price: "Rs.499", direct: true },
       { name: "Shop Two", url: null, price: null, direct: false },
+      { name: "Shop Three", url: null, price: "Rs.350", direct: false },
     ];
     const where = between(render(built, { model: { buyLinks: links } }), 'id="where-to-buy"', 'id="in-india"', 'id="key-ingredients"');
     expect(where.split("<a ").length - 1, "only the one with an address is a link").toBe(1);
     expect(where).toContain('href="https://example.com/p?a=1&amp;b=2"');
-    expect(where).toContain("border-dashed");
-    expect(where).toContain("Price not available");
-    expect(where, "no search note when every link is the product's own page").not.toContain("Links search the retailer");
+    expect(where.split("border-dashed").length - 1, "the two with no address are plain chips").toBe(2);
+    expect(where).toContain("Rs.499");
+    expect(where).toContain("Rs.350");
+    expect(where, "no price text where we hold none").not.toMatch(/Price not available|Rs\.\s*<|null|undefined/);
+    expect(where, "no search note when every link is the product's own page").not.toContain("links search the retailer");
+    expect(where, "prices are labelled as last seen").toContain("prices as last seen");
+  });
+
+  it("Where to buy sits beside the overview and takes only the height of its chips: no tall cards, no empty space", () => {
+    const html = render(built, { model: { buyLinks: [
+      { name: "Flipkart", url: "https://www.flipkart.com/search?q=x", price: "Rs.1690", direct: false },
+      { name: "Nykaa", url: "https://www.nykaa.com/search/result/?q=x", price: "Rs.1950", direct: false },
+      { name: "Ubuy India", url: null, price: "Rs.3944", direct: false },
+      { name: "Apollo Pharmacy", url: null, price: "Rs.1288", direct: false },
+    ] } });
+    const band = between(html, 'class="min-w-0 lg:flex-1', 'id="in-india"', 'id="key-ingredients"');
+    // one row on a wide screen: the overview takes the room left over, Where to buy a fixed share, both from the top
+    const row = html.slice(html.lastIndexOf("<section", html.indexOf('class="min-w-0 lg:flex-1')), html.indexOf('id="where-to-buy"'));
+    expect(row).toContain("lg:flex-row");
+    expect(row).toContain("lg:items-center");
+    expect(band).toContain("lg:w-[44%]");
+    // chips as small as their words
+    const where = between(html, 'id="where-to-buy"', 'id="in-india"', 'id="key-ingredients"');
+    expect(where).toContain("rounded-full");
+    expect(where, "the old two-by-two cards are gone").not.toMatch(/grid-cols-2|min-h-\[72px\]|h-full/);
+    expect(where.match(/<li/g)?.length).toBe(4);
+    // each retailer's name, price and (for a link) arrow is in its own chip, and the link says it searches
+    for (const [n, p] of [["Flipkart", "Rs.1690"], ["Nykaa", "Rs.1950"], ["Ubuy India", "Rs.3944"], ["Apollo Pharmacy", "Rs.1288"]]) {
+      const chip = where.slice(where.indexOf(`>${n}<`), where.indexOf("</li>", where.indexOf(`>${n}<`)));
+      expect(chip, n).toContain(p);
+    }
+    expect(where).toContain("links search the retailer, prices as last seen");
   });
 
   it("an analysis date we cannot read shows no caption, and never 'Invalid Date'", () => {

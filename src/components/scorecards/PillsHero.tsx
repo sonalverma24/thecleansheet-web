@@ -61,35 +61,39 @@ function FitCard({ title, items, tone }: { title: string; items: string[]; tone:
   );
 }
 
+/** Where to buy, as compact chips that sit beside the overview (the summary line) on a wide screen and under it on a phone. Each chip is a retailer's name, the
+    price we last saw, and an arrow when it is a link. A chip is as small as its words, so the block is no taller than it needs to be and leaves no empty space
+    next to the overview. A link that is a search for the product (not the product's own page) says so; a retailer we hold no address for is a plain chip. */
 function WhereToBuy({ links }: { links: BuyLink[] }) {
   const searches = links.some((b) => b.url && !b.direct);
+  const priced = links.some((b) => b.price);
+  const note = [searches ? "links search the retailer" : "", priced ? "prices as last seen" : ""].filter(Boolean).join(", ");
   return (
-    <div id="where-to-buy" className="flex flex-col gap-2.5 scroll-mt-28">
-      <h2 className="pp-serif text-[22px] leading-[1.15] text-[#282828]">Where to buy</h2>
+    <div id="where-to-buy" className="min-w-0 lg:flex-none lg:w-[44%] scroll-mt-28">
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 mb-2">
+        <h2 className="pp-serif text-lg sm:text-xl leading-none text-[#282828]">Where to buy</h2>
+        {links.length > 0 && note ? <span className="text-[11.5px] leading-none text-[#55504d]">{note}</span> : null}
+      </div>
       {links.length ? (
-        <ul className="grid grid-cols-2 gap-2">
+        <ul className="flex flex-wrap gap-2">
           {links.map((b) => {
-            const head = (
-              <span className="flex items-start justify-between gap-1.5 text-sm sm:text-[14.5px] leading-tight">
-                <span>
-                  <strong className="font-semibold">{b.name}</strong>
-                  {b.url && !b.direct ? <>{" "}<span className="text-xs sm:text-[12.5px] text-[#55504d]">· search</span></> : null}
-                </span>
-                {b.url ? <ExternalLink aria-hidden size={15} strokeWidth={1.9} className="flex-none mt-px text-[#1d6761]" /> : null}
-              </span>
+            const body = (
+              <>
+                <span className="font-semibold">{b.name}</span>
+                {b.url && !b.direct ? <span className="text-xs text-[#55504d]">· search</span> : null}
+                {b.price ? <span className="text-[13px] tabular-nums text-[#3f3b39]">{b.price}</span> : null}
+                {b.url ? <ExternalLink aria-hidden size={13} strokeWidth={1.9} className="flex-none text-[#1d6761]" /> : null}
+              </>
             );
-            const price = b.price
-              ? <span className="pp-serif text-[22px] sm:text-[23px] leading-none text-[#282828]">{b.price}</span>
-              : <span className="text-[12.5px] leading-none text-[#55504d]">Price not available</span>;
-            const card = "flex flex-col justify-between gap-2 min-h-[72px] h-full px-[13px] sm:px-3.5 py-[11px] bg-white rounded-2xl text-[#282828]";
+            const chip = "inline-flex items-center gap-x-1.5 rounded-full bg-white px-3 py-[7px] text-sm leading-none text-[#282828]";
             return (
               <li key={b.name}>
                 {b.url ? (
-                  <a href={b.url} target="_blank" rel="noopener noreferrer nofollow" className={`${card} pp-shop border border-[#e8e1d6] no-underline`}>
-                    {head}{price}<span className="sr-only"> (opens in a new tab)</span>
+                  <a href={b.url} target="_blank" rel="noopener noreferrer nofollow" className={`${chip} pp-shop border border-[#e8e1d6] no-underline`}>
+                    {body}<span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
-                  <div className={`${card} border-[1.5px] border-dashed border-[#cfc6b8]`}>{head}{price}</div>
+                  <span className={`${chip} border border-dashed border-[#cfc6b8]`}>{body}</span>
                 )}
               </li>
             );
@@ -98,7 +102,6 @@ function WhereToBuy({ links }: { links: BuyLink[] }) {
       ) : (
         <p className="text-sm text-[#55504d]">Check brand website</p>
       )}
-      {searches && <p className="text-[12.5px] leading-[1.45] text-[#55504d]">Links search the retailer for this product. Prices are as last seen.</p>}
     </div>
   );
 }
@@ -170,8 +173,8 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
       )}
 
       {/* The summary line (today's logic) and where to buy */}
-      <Band className="pt-[18px] sm:pt-6" innerClassName="grid gap-y-7 sm:gap-y-5 gap-x-9 items-start sm:grid-cols-[repeat(auto-fit,minmax(min(460px,100%),1fr))]">
-        <p className="text-[15.5px] sm:text-[17px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty">{summary}</p>
+      <Band className="pt-[18px] sm:pt-6" innerClassName="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+        <p className="min-w-0 lg:flex-1 text-[15.5px] sm:text-[17px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty">{summary}</p>
         <WhereToBuy links={model.buyLinks} />
       </Band>
 
