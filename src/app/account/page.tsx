@@ -148,7 +148,7 @@ export default function AccountPage() {
           className="text-[14px] text-[#b0a8a4] mb-8 max-w-xs"
           style={{ fontFamily: "Helvetica, Arial, sans-serif" }}
         >
-          Save products, compare formulations, build routines, and write reviews.
+          Save products, compare formulations, build routines, and share feedback.
         </p>
 
         <div className="w-full max-w-xs space-y-3">

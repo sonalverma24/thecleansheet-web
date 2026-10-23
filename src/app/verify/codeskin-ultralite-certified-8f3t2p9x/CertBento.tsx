@@ -324,7 +324,7 @@ export default function CertBento() {
                 },
                 {
                   title: "Vegan and Cruelty-Free",
-                  body: "Full ingredient list reviewed. No animal-derived ingredients. No animal testing.",
+                  body: "Full ingredient list assessed. No animal-derived ingredients. No animal testing.",
                 },
                 {
                   title: "Fragrance-Free",

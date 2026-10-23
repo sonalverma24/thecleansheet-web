@@ -1,7 +1,7 @@
 import { ALL_BRANDS } from "@/data/brands";
 
 /* A product can be both in the curated catalogue (/brands/[brand]/[product]) and
-   in the live review repository (/reviews/[slug]). The two pages show the same
+   in the live review repository (/analysis/[slug]). The two pages show the same
    product, so only one may be the canonical. The catalogue page wins. Uses the
    same brand+name normalisation as the /brands grid, so "already covered" means
    the same thing everywhere. */

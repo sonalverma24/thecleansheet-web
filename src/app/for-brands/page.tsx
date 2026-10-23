@@ -38,7 +38,7 @@ const PROOF_ROWS: [string, string, boolean][] = [
 ];
 
 const WHY = [
-  { n: "01", t: "An independent expert panel", d: "Every product is reviewed by specialists in global regulation, toxicology, formulation and industry practice." },
+  { n: "01", t: "An independent expert panel", d: "Every product is assessed by specialists in global regulation, toxicology, formulation and industry practice." },
   { n: "02", t: "Credibility that stands apart", d: "Brands and marketplaces are about to drown in self-declared proof. Independence is what makes yours believable." },
   { n: "03", t: "Discovery and global reach", d: "Certified products are easier to find on The Clean Sheet, with a record built to global benchmarks that opens doors to new markets." },
 ];
@@ -47,14 +47,14 @@ const OUTPUTS = [
   "A product-specific certification decision",
   "A readable summary of claims and testing",
   "A live, QR-linked registry status",
-  "Suitability, cautions and scope of review",
+  "Suitability, cautions and scope of the assessment",
 ];
 
 const STEPS = [
   { t: "Tell us about your product", d: "Category, intended users, target markets, claims and current testing." },
   { t: "Share your evidence confidentially", d: "Formula, label, test reports and manufacturing documents, under NDA." },
-  { t: "Expert panel review", d: "Assessed against TCCS. Existing reports count where they qualify; gaps are flagged." },
-  { t: "Decision and public record", d: "Qualifying products go live with their proof record and stay under review." },
+  { t: "Expert panel assessment", d: "Assessed against TCCS. Existing reports count where they qualify; gaps are flagged." },
+  { t: "Decision and public record", d: "Qualifying products go live with their proof record and stay under ongoing assessment." },
 ];
 
 const FAQ = [
@@ -62,9 +62,9 @@ const FAQ = [
   { q: "Does paying the fee guarantee certification?", a: "No. The fee covers the assessment, not the outcome. Only qualifying products are certified." },
   { q: "Is certification per brand or per product?", a: "Per product. Each certification covers a specific formulation and documented scope." },
   { q: "Is the founder community tied to certification?", a: "No. They are separate, and membership has no influence on outcomes." },
-  { q: "Is the packaging directory live?", a: "Not yet. Recommend vendors through the form and we will review every submission before listing." },
+  { q: "Is the packaging directory live?", a: "Not yet. Recommend vendors through the form and we will check every submission before listing." },
   { q: "Is The Clean Sheet accredited?", a: `${ACCREDITATION_FULL} Certification does not replace regulatory approval or legal compliance obligations.` },
-  { q: "How is this different from a public review?", a: `${PUBLIC_REVIEW_DISCLOSURE} Certification, by contrast, assesses the confidential dossier under NDA and reaches an independent decision.` },
+  { q: "How is this different from a public analysis?", a: `${PUBLIC_REVIEW_DISCLOSURE} Certification, by contrast, assesses the confidential dossier under NDA and reaches an independent decision.` },
 ];
 
 const CHAT = [
@@ -90,7 +90,7 @@ export default function ForBrandsPage() {
               easier. All in one place.
             </p>
             <div className="flex flex-col md:flex-row md:flex-wrap gap-2.5 md:gap-3 mt-1 md:mt-2 w-full md:w-auto">
-              <OpenFormButton className={BTN_SOLID}>Request an eligibility review</OpenFormButton>
+              <OpenFormButton className={BTN_SOLID}>Request an eligibility assessment</OpenFormButton>
               <Link href="/standard" className={BTN_OUTLINE}>Read the standard</Link>
             </div>
           </div>
@@ -149,7 +149,7 @@ export default function ForBrandsPage() {
                 <div className="p-[22px] md:p-7 flex flex-col gap-2.5 md:gap-3 flex-1">
                   <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#248179]">01 · TCCS CERTIFICATION</span>
                   <h3 className="font-display font-light text-[23px] md:text-[26px] leading-[1.15]">Make your product evidence count.</h3>
-                  <p className="text-[15px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a]">Independent review of your formula, testing and claims, turned into a public record shoppers can read.</p>
+                  <p className="text-[15px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a]">Independent assessment of your formula, testing and claims, turned into a public record shoppers can read.</p>
                   <a href="#certification" className={CARD_LINK}>Explore certification</a>
                 </div>
               </article>
@@ -241,7 +241,7 @@ export default function ForBrandsPage() {
           </div>
 
           <div className="flex flex-col gap-5 md:gap-8">
-            <span className="text-[11px] md:text-[12px] font-bold tracking-[0.18em] uppercase text-[#8a8380]">How the review works</span>
+            <span className="text-[11px] md:text-[12px] font-bold tracking-[0.18em] uppercase text-[#8a8380]">How the assessment works</span>
             <ol className="flex flex-col gap-5 md:gap-7">
               {STEPS.map((s, i) => (
                 <li key={s.t} className="grid grid-cols-[36px_1fr] md:grid-cols-[48px_1fr] gap-3 md:gap-4">
@@ -254,7 +254,7 @@ export default function ForBrandsPage() {
               ))}
             </ol>
             <div className="flex flex-col md:flex-row md:flex-wrap gap-1.5 md:gap-3 md:items-center mt-2 md:mt-0">
-              <OpenFormButton className={BTN_SOLID}>Request an eligibility review</OpenFormButton>
+              <OpenFormButton className={BTN_SOLID}>Request an eligibility assessment</OpenFormButton>
               <Link href="/standard" className="flex items-center justify-center h-12 md:h-auto text-[15px] font-bold text-[#282828] underline underline-offset-4 md:px-2.5 hover:text-[#248179]">
                 Read the standard
               </Link>
@@ -382,7 +382,7 @@ export default function ForBrandsPage() {
               <span className="absolute left-3.5 bottom-3.5 bg-[#282828] text-[#d2ff34] rounded-full px-3 py-[7px] text-[10px] font-bold tracking-[0.16em]">COMING SOON</span>
             </div>
             <p className="text-[16px] md:text-[17px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a] max-w-[480px]">
-              Bottles, pumps, jars, tubes, cartons and sustainable options. A directory built from founder recommendations, reviewed before anything is listed.
+              Bottles, pumps, jars, tubes, cartons and sustainable options. A directory built from founder recommendations, checked before anything is listed.
             </p>
             <p className="hidden md:block text-[15px] leading-[1.6] font-bold mt-2">Know a packaging vendor who does good work?</p>
             <a href={PACKAGING_VENDOR_FORM_URL} target="_blank" rel="noopener noreferrer" className={BTN_SOLID}>Recommend a vendor</a>

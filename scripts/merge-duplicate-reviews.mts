@@ -25,7 +25,7 @@ if (keepSlug && dropSlugs.length) {
   for (const d of dropSlugs) {
     console.log(`${apply ? "deleting" : "would delete"} ${d}`);
     if (apply) { const { error: e } = await db.from("product_reviews").delete().eq("product_slug", d); if (e) throw e; }
-    console.log(`      { source: "/reviews/${d}", destination: "/reviews/${keepSlug}", permanent: true },`);
+    console.log(`      { source: "/analysis/${d}", destination: "/analysis/${keepSlug}", permanent: true },`);
   }
   process.exit(0);
 }
@@ -56,7 +56,7 @@ for (const g of groups) {
   console.log(`\n${keep.brand}: ${g.length} rows`);
   for (const r of g) console.log(`  ${r === keep ? "KEEP" : "drop"}  ${r.tier.padEnd(15)} ${String(r.inci.length).padStart(2)} inci${r.sane ? "" : " (garbled)"}  ${r.slug}`);
   for (const r of g) if (r !== keep) {
-    redirects.push(`      { source: "/reviews/${r.slug}", destination: "/reviews/${keep.slug}", permanent: true },`);
+    redirects.push(`      { source: "/analysis/${r.slug}", destination: "/analysis/${keep.slug}", permanent: true },`);
     if (apply) {
       const { error: e } = await db.from("product_reviews").delete().eq("product_slug", r.slug);
       if (e) throw e;

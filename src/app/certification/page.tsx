@@ -26,7 +26,7 @@ const HAIR_LIGHT = "rgba(40,40,40,0.15)";
 const LAYERS = [
   { num: "01", name: "Legal Compliance", badge: "Pass / fail gate", points: null, body: "Every ingredient is checked against prohibited and restricted substance lists for your target markets — India, EU, US, Korea, or all of them. If anything fails here, we tell you exactly what and why before proceeding." },
   { num: "02", name: "Ingredient Safety", badge: "Primary evaluation", points: 50, body: "Every ingredient with a concern is assessed for toxicology, endocrine activity, carcinogenicity, and sensitization potential in the context of your specific formula, product type, and consumer profile. Not in isolation." },
-  { num: "03", name: "Manufacturing & Quality", badge: "Scored dimension", points: 20, body: "We review your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem." },
+  { num: "03", name: "Manufacturing & Quality", badge: "Scored dimension", points: 20, body: "We assess your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem." },
   { num: "04", name: "Claims", badge: "Scored dimension", points: 20, body: "'Clinically proven' has to mean a clinical study. 'SPF 50' has to match a test result. Every claim on your label and in your marketing is assessed against the evidence in your dossier." },
   { num: "05", name: "Ethics & Sustainability", badge: "Scored dimension", points: 10, body: "Cruelty-free status, vegan ingredients, palm oil and mica sourcing, packaging sustainability, and environmental claims. We verify — not just ask." },
 ];
@@ -49,17 +49,17 @@ const STANDARDS = [
 
 const PROCESS_STEPS = [
   { step: "Week 1", title: "Application & NDA", body: "Submit your application. We agree scope — which products, which markets, which PRISM modules. An NDA is signed. You receive a dossier checklist specific to your product categories." },
-  { step: "Weeks 1-3", title: "Dossier Submission", body: "You submit your formula, test data, manufacturing documentation, and marketing materials. We review for completeness. Your formula concentrations are seen only by the scientific panel." },
+  { step: "Weeks 1-3", title: "Dossier Submission", body: "You submit your formula, test data, manufacturing documentation, and marketing materials. We check for completeness. Your formula concentrations are seen only by the scientific panel." },
   { step: "Weeks 3-9", title: "Scientific Evaluation", body: "Our independent panel evaluates across all five layers. Questions are routed through your account contact. Evaluators never communicate directly with brands. No informal score discussions." },
   { step: "Weeks 9-10", title: "Result & Certificate", body: "You receive a full written evaluation report with score breakdown layer by layer. If certified: certificate, badge files, QR code, and public proof page. If not: specific gap analysis." },
-  { step: "Ongoing", title: "Post-Certification", body: "We monitor regulatory developments affecting your certified products. Certificates are valid for two years. Formula or label changes trigger a review." },
+  { step: "Ongoing", title: "Post-Certification", body: "We monitor regulatory developments affecting your certified products. Certificates are valid for two years. Formula or label changes trigger a fresh assessment." },
 ];
 
 const PRISM_MODULES = [
   { name: "Baby Safe", desc: "Paediatric safety margins and mandatory testing for products intended for infants and young children." },
   { name: "Sun Verified", desc: "SPF and UVA verification, phototoxic botanical screen, UV filter legality across markets." },
-  { name: "Active Verified", desc: "Concentration verification and clinical evidence review for products making active ingredient claims." },
-  { name: "Sensitive Skin", desc: "Tolerability assessment and patch testing review for products positioned for reactive or sensitised skin." },
+  { name: "Active Verified", desc: "Concentration verification and clinical evidence assessment for products making active ingredient claims." },
+  { name: "Sensitive Skin", desc: "Tolerability assessment and patch testing assessment for products positioned for reactive or sensitised skin." },
   { name: "Pregnancy Safe", desc: "Teratogen screen and ingredient restriction for products positioned for use during pregnancy." },
   { name: "Natural & Organic", desc: "ISO 16128 natural origin index calculation and COSMOS-alignment assessment." },
   { name: "Vegan Verified", desc: "Full supply chain vegan assessment — ingredients, processing aids, and testing methodology." },
@@ -281,7 +281,7 @@ export default function CertificationPage() {
                 PRISM Standard™
               </h2>
               <p className="mt-3 text-[13px] uppercase" style={{ letterSpacing: "0.1em", color: WARM }}>
-                Product Review for Ingredient Safety and Marketing Integrity
+                Product Analysis for Ingredient Safety and Marketing Integrity
               </p>
               <p className="mt-7 text-[16px] leading-[1.75] max-w-md" style={{ color: WARM }}>
                 Baby care, sunscreens, clinical actives, products for sensitive skin — these
@@ -333,14 +333,14 @@ export default function CertificationPage() {
             <p className="mt-4 text-[15px] leading-[1.7] text-[var(--color-warm-gray)] max-w-lg">
               We are currently evaluating our founding cohort of brands. Certified products
               will appear as the first certifications are issued. Meanwhile, every product that
-              passes our public review is published in our reviews.
+              passes our public analysis is published in our analyses.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
                 href="/brands"
                 className="inline-flex items-center justify-center gap-3 rounded-full px-8 py-4 text-[15px] text-white bg-[var(--color-primary)] hover:opacity-90 transition-opacity"
               >
-                Browse product reviews <span aria-hidden>→</span>
+                Browse product analyses <span aria-hidden>→</span>
               </Link>
             </div>
           </Reveal>

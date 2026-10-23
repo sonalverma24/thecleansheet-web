@@ -774,7 +774,7 @@ async function getStored(slug: string, strict = false): Promise<ProductReviewRes
 }
 
 /** Public: fetch a stored review by canonical slug WITHOUT re-running the engine.
-    Powers the permanent /reviews/[slug] product page for repository products.
+    Powers the permanent /analysis/[slug] product page for repository products.
     `strict` rethrows a database error instead of returning null: the ISR-cached
     review page uses it so a transient outage is never cached as a 404. */
 export async function getStoredReview(slug: string, opts?: { strict?: boolean }): Promise<ProductReviewResult | null> {

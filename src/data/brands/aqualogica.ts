@@ -13,7 +13,7 @@ const BRAND_SLUG = "aqualogica";
 const BRAND_NAME = "Aqualogica";
 
 const CLEAN_SHEET_NOTE =
-  "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.";
+  "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.";
 
 const products: ProductScorecard[] = [
 

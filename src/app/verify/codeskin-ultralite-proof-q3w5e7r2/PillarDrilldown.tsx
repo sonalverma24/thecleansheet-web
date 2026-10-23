@@ -49,12 +49,12 @@ const pillars: Pillar[] = [
       {
         id: "india",
         label: "Permitted in India",
-        detail: "Reviewed against India's Cosmetics Rules 2020 (CDSCO). All three UV filters are on the permitted list for sunscreens. No prohibited or restricted substances identified.",
+        detail: "Assessed against India's Cosmetics Rules 2020 (CDSCO). All three UV filters are on the permitted list for sunscreens. No prohibited or restricted substances identified.",
       },
       {
         id: "eu",
         label: "Permitted in the European Union",
-        detail: "Reviewed against EU Cosmetics Regulation EC 1223/2009. All three UV filters are listed in Annex VI (permitted UV filters) and are within the maximum permitted concentrations.",
+        detail: "Assessed against EU Cosmetics Regulation EC 1223/2009. All three UV filters are listed in Annex VI (permitted UV filters) and are within the maximum permitted concentrations.",
       },
       {
         id: "no-prohibited",
@@ -64,7 +64,7 @@ const pillars: Pillar[] = [
       {
         id: "no-formaldehyde",
         label: "No formaldehyde releasers",
-        detail: "Preservative system reviewed: Benzyl Alcohol, Sodium Benzoate, Potassium Sorbate, 1,2-Hexanediol. None of these are formaldehyde-releasing preservatives.",
+        detail: "Preservative system assessed: Benzyl Alcohol, Sodium Benzoate, Potassium Sorbate, 1,2-Hexanediol. None of these are formaldehyde-releasing preservatives.",
       },
       {
         id: "no-banned-filters",
@@ -79,14 +79,14 @@ const pillars: Pillar[] = [
       {
         id: "claims-legal",
         label: "No prohibited marketing claims",
-        detail: "Label and marketing material reviewed. No 'waterproof' or '100% protection' claims found. Both are prohibited under Indian and EU cosmetic regulations for sunscreen products.",
+        detail: "Label and marketing material assessed. No 'waterproof' or '100% protection' claims found. Both are prohibited under Indian and EU cosmetic regulations for sunscreen products.",
       },
     ],
   },
   {
     id: "safety",
     name: "Ingredient Safety",
-    sublabel: "Every ingredient reviewed for known hazards",
+    sublabel: "Every ingredient assessed for known hazards",
     icon: <FlaskConical size={16} />,
     color: "#e8963a",
     badge: "VERIFIED",
@@ -103,13 +103,13 @@ const pillars: Pillar[] = [
       },
       {
         id: "sensitisation",
-        label: "Sensitisation review completed",
-        detail: "Formula reviewed for known skin sensitisers. Benzyl Alcohol is present as part of the preservative system at preservative-level concentration. No safety concern identified at assessed levels.",
+        label: "Sensitisation assessment completed",
+        detail: "Formula assessed for known skin sensitisers. Benzyl Alcohol is present as part of the preservative system at preservative-level concentration. No safety concern identified at assessed levels.",
       },
       {
         id: "phototoxic",
         label: "Phototoxic botanical screen: clear",
-        detail: "Three botanical extracts reviewed: Aloe Barbadensis Leaf Juice, Chondrus Crispus (Red Algae) Extract, Olea Europaea Leaf Extract. No furanocoumarins, hypericin, or psoralens identified. No phototoxicity risk.",
+        detail: "Three botanical extracts assessed: Aloe Barbadensis Leaf Juice, Chondrus Crispus (Red Algae) Extract, Olea Europaea Leaf Extract. No furanocoumarins, hypericin, or psoralens identified. No phototoxicity risk.",
       },
       {
         id: "svhc",
@@ -126,7 +126,7 @@ const pillars: Pillar[] = [
   {
     id: "manufacturing",
     name: "Manufacturing Quality",
-    sublabel: "Facility, process, and batch documentation reviewed",
+    sublabel: "Facility, process, and batch documentation assessed",
     icon: <Building2 size={16} />,
     color: "#248179",
     badge: "VERIFIED",
@@ -144,7 +144,7 @@ const pillars: Pillar[] = [
       {
         id: "stability",
         label: "Stability testing completed",
-        detail: "Accelerated stability data reviewed: 40 degrees Celsius at 75% relative humidity. Product maintained physical integrity (appearance, consistency, pH, viscosity) under test conditions.",
+        detail: "Accelerated stability data assessed: 40 degrees Celsius at 75% relative humidity. Product maintained physical integrity (appearance, consistency, pH, viscosity) under test conditions.",
       },
       {
         id: "preservative",
@@ -153,15 +153,15 @@ const pillars: Pillar[] = [
       },
       {
         id: "suppliers",
-        label: "UV filter supplier documentation reviewed",
-        detail: "All three UV filters (Tinosorb M, Uvinul A Plus, Uvinul T 150) are sourced from BASF. Certificate of analysis reviewed. Filter identities and purity confirmed.",
+        label: "UV filter supplier documentation assessed",
+        detail: "All three UV filters (Tinosorb M, Uvinul A Plus, Uvinul T 150) are sourced from BASF. Certificate of analysis assessed. Filter identities and purity confirmed.",
       },
     ],
   },
   {
     id: "claims",
     name: "Claims Verified",
-    sublabel: "Every claim reviewed against submitted test evidence",
+    sublabel: "Every claim assessed against submitted test evidence",
     icon: <ShieldCheck size={16} />,
     color: "#fd6158",
     badge: "VERIFIED",
@@ -204,7 +204,7 @@ const pillars: Pillar[] = [
       {
         id: "vegan",
         label: "Vegan and cruelty-free",
-        detail: "Full INCI reviewed. No animal-derived ingredients identified. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin, not animal-derived. Brand cruelty-free declaration reviewed.",
+        detail: "Full INCI assessed. No animal-derived ingredients identified. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin, not animal-derived. Brand cruelty-free declaration assessed.",
       },
       {
         id: "fragrance",
@@ -221,7 +221,7 @@ const pillars: Pillar[] = [
   {
     id: "ethics",
     name: "Ethics & Sourcing",
-    sublabel: "Formula and ingredient origins reviewed",
+    sublabel: "Formula and ingredient origins assessed",
     icon: <Leaf size={16} />,
     color: "#6b9e3a",
     badge: "VERIFIED",
@@ -229,17 +229,17 @@ const pillars: Pillar[] = [
       {
         id: "no-animal",
         label: "No animal-derived ingredients",
-        detail: "Complete INCI reviewed for animal-origin ingredients. None identified. Saccharomyces Ferment Lysate Filtrate is confirmed yeast fermentation origin.",
+        detail: "Complete INCI assessed for animal-origin ingredients. None identified. Saccharomyces Ferment Lysate Filtrate is confirmed yeast fermentation origin.",
       },
       {
         id: "cruelty-free",
         label: "Cruelty-free",
-        detail: "Brand declaration reviewed. No animal testing conducted on this product or its ingredient components.",
+        detail: "Brand declaration assessed. No animal testing conducted on this product or its ingredient components.",
       },
       {
         id: "no-palm-mica",
         label: "No palm-derived or mica ingredients",
-        detail: "Formula reviewed for palm-derived ingredients and mica (commonly associated with child labour concerns). Neither was identified in the INCI for this product.",
+        detail: "Formula assessed for palm-derived ingredients and mica (commonly associated with child labour concerns). Neither was identified in the INCI for this product.",
       },
       {
         id: "no-reef-toxic",
@@ -434,10 +434,10 @@ export default function PillarDrilldown() {
             </div>
             <div>
               <p className="text-[10px] tracking-[0.15em] uppercase mb-1" style={{ color: "#b0a8a4" }}>
-                Review methodology
+                Assessment methodology
               </p>
               <p className="text-[13px] leading-relaxed" style={{ color: "#6b6868" }}>
-                Reviewed by an independent panel of cosmetic scientists, toxicologists,
+                Assessed by an independent panel of cosmetic scientists, toxicologists,
                 regulatory specialists, and dermatologists.
                 Every check above was assessed against submitted laboratory evidence.
               </p>

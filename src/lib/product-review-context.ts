@@ -461,7 +461,7 @@ NEVER:
   Use safety verdicts - that is the Analyzer's role. This framework evaluates CLAIMS, not safety.
 
 ALWAYS include in cleanSheetNote:
-  "This review evaluates brand claims against visible evidence and formula logic. It does not replace a full ingredient safety analysis or a clinical product test. Results vary by individual, and the consumer should always read the full ingredient list and follow usage guidance."
+  "This analysis evaluates brand claims against visible evidence and formula logic. It does not replace a full ingredient safety analysis or a clinical product test. Results vary by individual, and the consumer should always read the full ingredient list and follow usage guidance."
 
 ---
 
@@ -644,6 +644,6 @@ OUTPUT JSON STRUCTURE:
     "userSentiment": "string - 1-2 sentences on what users praise and flag"
   },
 
-  "cleanSheetNote": "This review evaluates brand claims against visible evidence and formula logic. It does not replace a full ingredient safety analysis or a clinical product test. Results vary by individual, and the consumer should always read the full ingredient list and follow usage guidance."
+  "cleanSheetNote": "This analysis evaluates brand claims against visible evidence and formula logic. It does not replace a full ingredient safety analysis or a clinical product test. Results vary by individual, and the consumer should always read the full ingredient list and follow usage guidance."
 }
 `;

@@ -31,11 +31,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { review, verdict } = result;
   const tierLabel = TIER_STYLES[verdict.tier].label;
   return {
-    title: `${review.productName} Review · ${tierLabel}`,
+    title: `${review.productName} Analysis · ${tierLabel}`,
     description: clipDescription(`${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
     // A product that also has a curated catalogue page is the same content at two
     // URLs: the catalogue page is the canonical one.
-    alternates: { canonical: `https://thecleansheet.in${cataloguePathFor(review.brand, review.productName) ?? `/reviews/${slug}`}` },
+    alternates: { canonical: `https://thecleansheet.in${cataloguePathFor(review.brand, review.productName) ?? `/analysis/${slug}`}` },
     openGraph: {
       title: `${review.productName} · ${tierLabel} | The Clean Sheet`,
       description: review.verdict?.cleanSheetTakeaway ?? "",
@@ -51,7 +51,7 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
 
   const { product, brand, brandSlug } = reviewToScorecard(result.review, result.verdict);
 
-  const url = `https://thecleansheet.in/reviews/${slug}`;
+  const url = `https://thecleansheet.in/analysis/${slug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -59,7 +59,7 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
-          { "@type": "ListItem", position: 2, name: "Product Reviews", item: "https://thecleansheet.in/brands" },
+          { "@type": "ListItem", position: 2, name: "Product Analyses", item: "https://thecleansheet.in/brands" },
           { "@type": "ListItem", position: 3, name: product.productName, item: url },
         ],
       },

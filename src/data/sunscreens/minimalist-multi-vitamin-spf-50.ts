@@ -55,7 +55,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
     {
       label: "What we could verify",
       value:
-        "SPF 50 is supported at claim level by two public data points: ISO 24444:2019 in vivo SPF 56.6 on 15 subjects, batch 11830 (Advanced Science Laboratories certificate dated 10 Apr 2023, reviewed by TCS), and an influencer-funded test (Oct 2025) reporting SPF 78.54",
+        "SPF 50 is supported at claim level by two public data points: ISO 24444:2019 in vivo SPF 56.6 on 15 subjects, batch 11830 (Advanced Science Laboratories certificate dated 10 Apr 2023, assessed by TCS), and an influencer-funded test (Oct 2025) reporting SPF 78.54",
     },
     {
       label: "What we could not verify",
@@ -151,7 +151,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             { label: "Alcohol present", value: "No ethanol / denatured alcohol. Fatty alcohols present (arachidyl, behenyl)" },
             { label: "Fragrance allergens declared", value: "None declared" },
             {
-              label: "Ingredients for additional safety review",
+              label: "Ingredients for additional safety assessment",
               value:
                 "Octocrylene (brand itself advises avoiding in pregnancy and lactation; benzophenone degradation question in aged product). Avobenzone photostability depends on octocrylene pairing. Linoleic acid, linolenic acid, glyceryl stearate, PEG-100 stearate flagged by third party tools as not fungal acne safe",
             },
@@ -203,8 +203,8 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             ["SPF testing conducted", "Yes", "Yes"],
             [
               "Report available",
-              "Publicly available: 1 page lab certificate published on the brand product page; reviewed by TCS 29 Sep 2026. Full report with per-subject data not public",
-              "Results posted publicly by influencer Nitin Joshi; full report not reviewed",
+              "Publicly available: 1 page lab certificate published on the brand product page; assessed by TCS 29 Sep 2026. Full report with per-subject data not public",
+              "Results posted publicly by influencer Nitin Joshi; full report not assessed",
             ],
             [
               "Testing method",
@@ -232,7 +232,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             ["Measured SPF", "Mean SPF 56.6 (confidence interval and SD not shown)", "78.54"],
             ["Labelled SPF", "50", "50"],
             ["Result supports claim", "Yes, for batch 11830", "Yes (on reported figure)"],
-            ["TCS evidence status", "Document reviewed", "Public claim only"],
+            ["TCS evidence status", "Document assessed", "Public claim only"],
           ],
         },
         {
@@ -297,7 +297,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             ["5", "Acne safe", "Website", "No evidence identified", "No", "None", "Evidence missing"],
             ["6", "Non-comedogenic", "Website", "No evidence identified", "No", "None", "Evidence missing"],
             ["7", "Fragrance free", "Website", "INCI (no parfum)", "Yes", "Strong", "Verified"],
-            ["8", "White cast free", "Website, marketplace titles", "Consumer reports only", "Yes", "Moderate", "Under review"],
+            ["8", "White cast free", "Website, marketplace titles", "Consumer reports only", "Yes", "Moderate", "Under assessment"],
             ["9", "Vitamins “repair skin and minimise damage caused by UV exposure”", "Website", "Ingredient level research only", "No", "Weak", "Not verified"],
             ["10", "Contains Vitamin A / reduces photoaging", "Global site, marketplace titles", "INCI no longer lists retinol", "No", "None", "Not verified"],
             ["11", "Dermatologist patch tested", "Website", "Brand declaration", "NA", "Weak", "Evidence missing"],
@@ -397,14 +397,14 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       id: "J",
       title: "Consumer experience",
       blocks: [
-        { kind: "paragraph", text: "Based on marketplace reviews and a small number of blog reviews. Experience only, not protection." },
+        { kind: "paragraph", text: "Based on marketplace feedback and a small number of blog posts. Experience only, not protection." },
         {
           kind: "kv",
           rows: [
             { label: "Texture", value: "Lightweight, creamy lotion" },
             { label: "Finish", value: "Mixed: natural to dewy on normal/dry skin; some report semi-matte, some report oily" },
             { label: "White cast", value: "None to mild (occasional brief cast that settles in minutes)" },
-            { label: "Pilling", value: "Rarely (one reviewer notes others report it; humidity and base layer dependent)" },
+            { label: "Pilling", value: "Rarely (one commenter notes others report it; humidity and base layer dependent)" },
             { label: "Eye sting", value: "Sometimes (mild irritation reported in a minority)" },
             { label: "Greasy feel", value: "Reported by some oily skin users" },
             { label: "Drying feel", value: "No meaningful reports" },
@@ -435,14 +435,14 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
     },
     {
       id: "L",
-      title: "Influencer review analysis",
+      title: "Influencer content analysis",
       blocks: [
-        { kind: "paragraph", text: "Thin sample: Instagram and YouTube were not systematically reviewed." },
+        { kind: "paragraph", text: "Thin sample: Instagram and YouTube were not systematically assessed." },
         {
           kind: "kv",
           rows: [
-            { label: "Reviews sampled", value: "2 (Nitin Joshi SPF test, Oct 2025; PeppyBlog review, Feb 2022, updated Oct 2022)" },
-            { label: "Review sources", value: "News coverage of Instagram post; independent blog" },
+            { label: "Items sampled", value: "2 (Nitin Joshi SPF test, Oct 2025; PeppyBlog post, Feb 2022, updated Oct 2022)" },
+            { label: "Sources", value: "News coverage of Instagram post; independent blog" },
             { label: "Paid partnership disclosed", value: "No (Joshi self-funded the Rs 2.15 lakh test; PeppyBlog shows no sponsorship)" },
             { label: "Gifted product disclosed", value: "Unknown" },
             { label: "Overall sentiment", value: "Mixed" },
@@ -453,7 +453,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             },
             {
               label: "Factual claims repeated without evidence",
-              value: "Hormone-disruption concern about filters (PeppyBlog), not substantiated in the review",
+              value: "Hormone-disruption concern about filters (PeppyBlog), not substantiated in the blog post",
             },
             {
               label: "Claims requiring verification",
@@ -470,7 +470,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       blocks: [
         {
           kind: "paragraph",
-          text: "Three threads were reviewed: r/IndianSkincareAddicts “Is Minimalist SPF 50 actually overrated? These skin type scores are concerning” (48 comments shown, 18 upvotes, posted approximately 7 months before this record) and “Minimalist Sunscreen Review” (53 comments shown, 110 upvotes, posted approximately 4 years before this record); and “Does Minimalist SPF 50 sunscreen really works?” (107 comments shown, 38 upvotes, posted approximately 5 years before this record, subreddit not shown in the capture reviewed). Findings below are drawn from the comments visible in the capture, not every reply in each thread.",
+          text: "Three threads were analysed: r/IndianSkincareAddicts “Is Minimalist SPF 50 actually overrated? These skin type scores are concerning” (48 comments shown, 18 upvotes, posted approximately 7 months before this record) and “Minimalist Sunscreen Review” (53 comments shown, 110 upvotes, posted approximately 4 years before this record); and “Does Minimalist SPF 50 sunscreen really works?” (107 comments shown, 38 upvotes, posted approximately 5 years before this record, subreddit not shown in the capture reviewed). Findings below are drawn from the comments visible in the capture, not every reply in each thread.",
         },
         {
           kind: "paragraph",
@@ -500,7 +500,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             {
               label: "Third-party rating cited in-thread",
               value:
-                "One commenter linked a site (ryfoya.com) rating “Minimalist SPF 50 Sunscreen” at approximately 45% for oily, dry and combination skin and approximately 25% for sensitive skin, citing irritation, eye stinging and retinol content. Other commenters in the same thread disputed the site's credibility. TCS has not reviewed ryfoya.com's methodology or data",
+                "One commenter linked a site (ryfoya.com) rating “Minimalist SPF 50 Sunscreen” at approximately 45% for oily, dry and combination skin and approximately 25% for sensitive skin, citing irritation, eye stinging and retinol content. Other commenters in the same thread disputed the site's credibility. TCS has not assessed ryfoya.com's methodology or data",
             },
             {
               label: "Shift toward a different SKU",
@@ -510,7 +510,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
             {
               label: "TCS assessment",
               value:
-                "Treated as unverified consumer reports, the same reliability tier as the marketplace reviews in Section N. Individual account authenticity and any undisclosed sponsorship could not be checked",
+                "Treated as unverified consumer reports, the same reliability tier as the marketplace feedback in Section N. Individual account authenticity and any undisclosed sponsorship could not be checked",
             },
           ],
         },
@@ -518,11 +518,11 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
     },
     {
       id: "N",
-      title: "Marketplace review analysis",
+      title: "Marketplace feedback analysis",
       blocks: [
         {
           kind: "grid",
-          columns: ["Marketplace", "Rating", "Reviews", "Date range"],
+          columns: ["Marketplace", "Rating", "Ratings", "Date range"],
           rows: [
             ["Nykaa", "4.3 / 5", "164,667 ratings", "May 2022 to Aug 2026"],
             ["Brand site (India)", "3.9 / 5", "2,070", "NA"],
@@ -586,7 +586,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
           kind: "grid",
           columns: ["Claim", "Classification"],
           rows: [
-            ["SPF 50", "Document reviewed (lab certificate, batch 11830; full report not seen)"],
+            ["SPF 50", "Document assessed (lab certificate, batch 11830; full report not seen)"],
             ["PA++++", "Publicly claimed"],
             ["Broad spectrum", "Publicly claimed"],
             ["Photostable", "Publicly claimed"],
@@ -620,7 +620,7 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
         {
           kind: "list",
           items: [
-            "Claims reviewed: 11",
+            "Claims assessed: 11",
             "Claims verified: 1 (fragrance free); 1 verified with qualification (SPF 50)",
             "Claims not verified: 2 (vitamin repair; Vitamin A / photoaging)",
             "Claims requiring more evidence: 7 (PA++++, broad spectrum, photostable, acne safe, non-comedogenic, dermatologist tested, white cast free)",
@@ -675,8 +675,8 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       reliability: "Primary source",
     },
     {
-      info: "Rating, review count, themes",
-      sourceLabel: "Nykaa reviews",
+      info: "Rating, rating count, themes",
+      sourceLabel: "Nykaa ratings",
       sourceUrl: "https://www.nykaa.com/minimalist-multi-vitamin-spf-50-pa-sunscreen-for-complete-sun-protection/reviews/2812174",
       type: "Marketplace",
       reliability: "Consumer report",
@@ -689,10 +689,10 @@ export const minimalistMultiVitaminSpf50: SunscreenEvidenceRecord = {
       reliability: "Unverified",
     },
     {
-      info: "Review themes",
+      info: "Feedback themes",
       sourceLabel: "GoPicky",
       sourceUrl: "https://www.gopicky.com/product/58208/minimalist-multi-vitamin-spf-50",
-      type: "Consumer review",
+      type: "Consumer feedback",
       reliability: "Consumer report",
     },
     {

@@ -111,7 +111,7 @@ const products: ProductScorecard[] = [
       "Brightening botanical concentrations are not disclosed",
       "Full INCI is not consistently available across pack sizes",
       "Fragrance allergen breakdown is not published",
-      "No independent safety assessment or dermatologist review is publicly linked",
+      "No independent safety assessment or dermatologist assessment is publicly linked",
     ],
     cleanSheetNote: "Whiteglow SPF 25 is one of India's highest-selling skincare products, but it scores poorly on transparency. The SPF claim is unverified by any publicly accessible test data, the brightening actives have no disclosed concentrations, and the synthetic fragrance is not broken down by allergen. The formula has sound ingredient logic for brightening (physical UV filter, botanical tyrosinase inhibitors) but the evidence gap means consumers are taking the brand's word for every key claim.",
     keyActives: [
@@ -419,7 +419,7 @@ const products: ProductScorecard[] = [
     priceRange: "₹395-₹425",
     productType: "sunscreen",
     concern: "Sun protection, oil control, matte finish",
-    summary: "A lightweight gel-format SPF 50 PA+++ sunscreen from Lotus Herbals' Safe Sun line. The matte-gel texture uses oil-absorbing agents for a non-greasy finish suited to oily and combination skin. The specific chemical UV filter combination is not published on any reviewed labelling or the brand website. PA+++ (PPD >= 8) provides good UVA protection, though PA++++ (PPD >= 16) is now the recommended standard for Indian conditions. Contains synthetic fragrance in a leave-on product requiring two-hourly reapplication - the highest daily fragrance exposure scenario in this product range.",
+    summary: "A lightweight gel-format SPF 50 PA+++ sunscreen from Lotus Herbals' Safe Sun line. The matte-gel texture uses oil-absorbing agents for a non-greasy finish suited to oily and combination skin. The specific chemical UV filter combination is not published on any analysed labelling or the brand website. PA+++ (PPD >= 8) provides good UVA protection, though PA++++ (PPD >= 16) is now the recommended standard for Indian conditions. Contains synthetic fragrance in a leave-on product requiring two-hourly reapplication - the highest daily fragrance exposure scenario in this product range.",
     score: 44,
     scoreLabel: "Concern",
     publicDecisionLabel: "Weak public evidence",
@@ -428,7 +428,7 @@ const products: ProductScorecard[] = [
       {
         name: "Public INCI Safety Screen",
         score: 12, max: 30,
-        note: "The UV filter identities are not disclosed anywhere - not on the packaging reviewed, not on the brand website, and not in any publicly accessible document. This is a fundamental gap for a sunscreen: different chemical UV filters have sharply different safety profiles. Several widely used chemical UV filters including oxybenzone, octinoxate, and homosalate are classified or under active regulatory review as potential endocrine disruptors in jurisdictions including the US FDA and the EU. Without disclosure, their presence cannot be ruled out. Synthetic fragrance is present in a leave-on product reapplied every two hours - this represents the highest cumulative daily fragrance exposure of any product type. Compliance with UV filter concentration limits under India CR 2020 or EU 1223/2009 Annex VI cannot be independently verified.",
+        note: "The UV filter identities are not disclosed anywhere - not on the packaging analysed, not on the brand website, and not in any publicly accessible document. This is a fundamental gap for a sunscreen: different chemical UV filters have sharply different safety profiles. Several widely used chemical UV filters including oxybenzone, octinoxate, and homosalate are classified or under active regulatory review as potential endocrine disruptors in jurisdictions including the US FDA and the EU. Without disclosure, their presence cannot be ruled out. Synthetic fragrance is present in a leave-on product reapplied every two hours - this represents the highest cumulative daily fragrance exposure of any product type. Compliance with UV filter concentration limits under India CR 2020 or EU 1223/2009 Annex VI cannot be independently verified.",
       },
       {
         name: "Formula Logic Inference",
@@ -444,7 +444,7 @@ const products: ProductScorecard[] = [
         name: "Test Result Transparency",
         score: 5, max: 15,
         evidenceGrade: "F",
-        note: "No SPF test certificate, no PA rating test result, no UV filter photostability data, no preservative efficacy test, and no independent safety assessment is publicly accessible for this product. The SPF 50 PA+++ claim is entirely based on the brand's packaging statement. For a sunscreen - a product category regulated as a cosmetic with a medicinal-style function claim in India - the absence of any public test evidence is the most serious transparency failure in the Lotus Herbals range reviewed.",
+        note: "No SPF test certificate, no PA rating test result, no UV filter photostability data, no preservative efficacy test, and no independent safety assessment is publicly accessible for this product. The SPF 50 PA+++ claim is entirely based on the brand's packaging statement. For a sunscreen - a product category regulated as a cosmetic with a medicinal-style function claim in India - the absence of any public test evidence is the most serious transparency failure in the Lotus Herbals range analysed.",
       },
       {
         name: "Consumer Clarity",
@@ -802,7 +802,7 @@ const products: ProductScorecard[] = [
     priceRange: "₹449-₹499",
     productType: "sunscreen",
     concern: "High sun protection, outdoor activities",
-    summary: "Lotus Herbals' highest SPF offering in the Safe Sun range at SPF 70 PA+++. The higher SPF is achieved through a higher UV filter load versus the SPF 50 formula - but UV filter identities are not published on any reviewed labelling or brand documentation. PA+++ (PPD >= 8) remains below the PA++++ standard increasingly recommended for Indian conditions. Contains synthetic fragrance in a leave-on product reapplied every two hours. The combination of undisclosed UV filters at elevated concentrations (required for SPF 70) and synthetic fragrance makes this the product in the range with the most significant safety information gaps.",
+    summary: "Lotus Herbals' highest SPF offering in the Safe Sun range at SPF 70 PA+++. The higher SPF is achieved through a higher UV filter load versus the SPF 50 formula - but UV filter identities are not published on any analysed labelling or brand documentation. PA+++ (PPD >= 8) remains below the PA++++ standard increasingly recommended for Indian conditions. Contains synthetic fragrance in a leave-on product reapplied every two hours. The combination of undisclosed UV filters at elevated concentrations (required for SPF 70) and synthetic fragrance makes this the product in the range with the most significant safety information gaps.",
     score: 42,
     scoreLabel: "Concern",
     publicDecisionLabel: "Weak public evidence",
@@ -811,7 +811,7 @@ const products: ProductScorecard[] = [
       {
         name: "Public INCI Safety Screen",
         score: 11, max: 30,
-        note: "SPF 70 PA+++ chemical sunscreen where UV filter identities are not disclosed anywhere publicly. At SPF 70, a higher filter load (concentration or number of filters) is required compared to SPF 50 - increasing potential exposure to whichever filters are used. Several widely used chemical UV filters including oxybenzone and homosalate are classified or under active regulatory review as potential endocrine disruptors in the US FDA and EU regulatory systems. Without filter disclosure, their presence cannot be ruled out. This is the most serious safety information gap in the Lotus Herbals range reviewed. Synthetic fragrance in a leave-on product reapplied every two hours represents the highest possible daily fragrance exposure for any skincare product category.",
+        note: "SPF 70 PA+++ chemical sunscreen where UV filter identities are not disclosed anywhere publicly. At SPF 70, a higher filter load (concentration or number of filters) is required compared to SPF 50 - increasing potential exposure to whichever filters are used. Several widely used chemical UV filters including oxybenzone and homosalate are classified or under active regulatory review as potential endocrine disruptors in the US FDA and EU regulatory systems. Without filter disclosure, their presence cannot be ruled out. This is the most serious safety information gap in the Lotus Herbals range analysed. Synthetic fragrance in a leave-on product reapplied every two hours represents the highest possible daily fragrance exposure for any skincare product category.",
       },
       {
         name: "Formula Logic Inference",
@@ -941,7 +941,7 @@ const products: ProductScorecard[] = [
       {
         name: "Public Claim Support",
         score: 9, max: 25,
-        note: "A serum marketed on four actives (Vitamin C, Retinol, Niacinamide, HA) discloses the form or concentration of none of them. This is the most significant active disclosure gap in the Lotus Herbals range reviewed. Retinol's pregnancy contraindication is not consistently communicated, which is a safety communication failure beyond a transparency issue. No published clinical data for this formula. Full INCI not published. The multi-active positioning cannot be evaluated without any of the basic active identity disclosures.",
+        note: "A serum marketed on four actives (Vitamin C, Retinol, Niacinamide, HA) discloses the form or concentration of none of them. This is the most significant active disclosure gap in the Lotus Herbals range analysed. Retinol's pregnancy contraindication is not consistently communicated, which is a safety communication failure beyond a transparency issue. No published clinical data for this formula. Full INCI not published. The multi-active positioning cannot be evaluated without any of the basic active identity disclosures.",
       },
       {
         name: "Test Result Transparency",
@@ -1010,7 +1010,7 @@ const products: ProductScorecard[] = [
       "Fragrance allergen breakdown not published",
       "No finished-product clinical study, no preservative efficacy test, no independent safety assessment publicly available",
     ],
-    cleanSheetNote: "This is the most concerning product in the Lotus Herbals range reviewed because the stakes of the information gaps are highest. Retinol without disclosed concentration and pregnancy warning is a safety communication failure. Vitamin C without disclosed form in a multi-active formula is a stability risk that cannot be assessed. The combination of four undisclosed actives in a leave-on serum, with no public test evidence and synthetic fragrance, makes this a product The Clean Sheet cannot recommend until these disclosures are made.",
+    cleanSheetNote: "This is the most concerning product in the Lotus Herbals range analysed because the stakes of the information gaps are highest. Retinol without disclosed concentration and pregnancy warning is a safety communication failure. Vitamin C without disclosed form in a multi-active formula is a stability risk that cannot be assessed. The combination of four undisclosed actives in a leave-on serum, with no public test evidence and synthetic fragrance, makes this a product The Clean Sheet cannot recommend until these disclosures are made.",
     keyActives: [
       { name: "Vitamin C",          function: "Antioxidant and brightening; form not disclosed", concentrationConfidence: "Low" },
       { name: "Retinol",            function: "Anti-ageing, cell turnover; concentration not disclosed; pregnancy contraindicated", concentrationConfidence: "Low" },
@@ -1040,7 +1040,7 @@ const products: ProductScorecard[] = [
     skinTypeTags: ["normal", "combination", "dull"],
     concernTags: ["Fine Lines", "Pigmentation", "Dullness"],
     suitabilityTags: ["Active Experienced Users"],
-    cautionTags: ["Retinoid Flag", "Pregnancy Not Reviewed"],
+    cautionTags: ["Retinoid Flag", "Pregnancy Not Assessed"],
     fragranceStatus: "synthetic",
     alcoholStatus: "unknown",
   },
@@ -1058,7 +1058,7 @@ const products: ProductScorecard[] = [
     priceRange: "₹449-₹499",
     productType: "leave-on",
     concern: "Overnight brightening, hydration, dullness",
-    summary: "An overnight sleep mask from the Whiteglow range combining Mulberry Extract and Milk Enzyme brightening with a gel-creme texture for overnight use. Extended overnight contact time improves the absorption potential of botanical actives versus daytime application. Hyaluronic Acid is included for overnight hydration. Contains synthetic fragrance - a heightened concern in a product specifically designed for 7-8 hours of uninterrupted skin contact. Full INCI is not published on reviewed labelling. Suitable as an occasional overnight treatment or a daily overnight step.",
+    summary: "An overnight sleep mask from the Whiteglow range combining Mulberry Extract and Milk Enzyme brightening with a gel-creme texture for overnight use. Extended overnight contact time improves the absorption potential of botanical actives versus daytime application. Hyaluronic Acid is included for overnight hydration. Contains synthetic fragrance - a heightened concern in a product specifically designed for 7-8 hours of uninterrupted skin contact. Full INCI is not published on analysed labelling. Suitable as an occasional overnight treatment or a daily overnight step.",
     score: 47,
     scoreLabel: "Concern",
     publicDecisionLabel: "Weak public evidence",
@@ -1260,7 +1260,7 @@ const products: ProductScorecard[] = [
       "Fragrance allergen breakdown not published",
       "No preservative efficacy test or independent safety assessment publicly available",
     ],
-    cleanSheetNote: "This face wash is the most accessible product in the Lotus Herbals range reviewed and has the most modest claims. The Turmeric inclusion has genuine cultural resonance and solid ingredient-level science. However, brightening from rinsed-off actives is very limited, and the Vitamin C form remains undisclosed. Use this as a pleasant daily cleanser - not as a primary brightening treatment.",
+    cleanSheetNote: "This face wash is the most accessible product in the Lotus Herbals range analysed and has the most modest claims. The Turmeric inclusion has genuine cultural resonance and solid ingredient-level science. However, brightening from rinsed-off actives is very limited, and the Vitamin C form remains undisclosed. Use this as a pleasant daily cleanser - not as a primary brightening treatment.",
     keyActives: [
       { name: "Vitamin C",                       function: "Antioxidant brightening; limited efficacy in rinse-off format; form not disclosed", concentrationConfidence: "Low" },
       { name: "Curcuma Longa (Turmeric) Extract", function: "Curcumin, antioxidant and anti-inflammatory; limited rinse-off brightening contact time", concentrationConfidence: "Low" },

@@ -6,23 +6,23 @@ import { fmt, type SiteStats } from "@/lib/site-stats";
 export const buildHomeFaqs = (stats: SiteStats) => [
   {
     q: "How do I check if a beauty product is safe in India?",
-    a: "The easiest way is The Clean Sheet's free Product Review tool. Paste a product name or URL and it finds every marketing claim, grades each against real evidence and the actual ingredient list, checks India's advertising and drug-boundary rules, and gives you one clear Clean Sheet standing.",
+    a: "The easiest way is The Clean Sheet's free Product Analyser. Paste a product name or URL and it finds every marketing claim, grades each against real evidence and the actual ingredient list, checks India's advertising and drug-boundary rules, and gives you one clear Clean Sheet standing.",
   },
   {
     q: "What is The Clean Sheet?",
-    a: `The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide an AI-powered Product Review tool that checks marketing claims against evidence, a reviewed product registry (${fmt(stats.products)} products from ${fmt(stats.brands)} brands so far), a directory of ${fmt(stats.ingredients)} cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.`,
+    a: `The Clean Sheet is India's first independent, science-backed clean beauty platform. We provide an AI-powered Product Analyser that checks marketing claims against evidence, an analysed product registry (${fmt(stats.products)} products from ${fmt(stats.brands)} brands so far), a directory of ${fmt(stats.ingredients)} cosmetic ingredients, and a rigorous product certification for beauty brands. Everything is free for consumers.`,
   },
   {
     q: "Is The Clean Sheet's ingredient analysis free?",
-    a: "Yes. The Product Review tool is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full review: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet standing.",
+    a: "Yes. The Product Analyser is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full analysis: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet standing.",
   },
   {
     q: "What does the Clean Sheet standing mean?",
-    a: "Every reviewed product gets one of three standings. Good Standing (our highest): a well-made, transparent product that passes our independent checks on ingredient safety, regulatory compliance and claim substantiation. Room to Improve: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
+    a: "Every analysed product gets one of three standings. Good Standing (our highest): a well-made, transparent product that passes our independent checks on ingredient safety, regulatory compliance and claim substantiation. Room to Improve: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
   },
   {
-    q: "Which beauty products are reviewed by The Clean Sheet in India?",
-    a: "You can browse every reviewed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet standing, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
+    q: "Which beauty products are analysed by The Clean Sheet in India?",
+    a: "You can browse every analysed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet standing, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
   },
   {
     q: "Is niacinamide safe for Indian skin?",

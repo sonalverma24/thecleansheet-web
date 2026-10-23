@@ -33,7 +33,7 @@ export default function ReviewRunStatus({
           <div className="h-full transition-all duration-700" style={{ width: `${((state.stepIdx + 1) / REVIEW_STEPS.length) * 100}%`, background: t.accent }} />
         </div>
         <p className="mt-2 text-[12px]" style={{ color: t.muted }}>
-          A product we haven’t reviewed yet takes about a minute. We’ll open its review as soon as it’s ready.
+          A product we haven’t analysed yet takes about a minute. We’ll open its analysis as soon as it’s ready.
         </p>
       </div>
     );
@@ -44,7 +44,7 @@ export default function ReviewRunStatus({
       <div className="mt-4">
         <p className="text-[12px] uppercase tracking-[0.12em]" style={{ color: t.accent }}>Which one did you mean?</p>
         <p className="mt-1.5 text-[14px]" style={{ color: t.text }}>
-          “{state.query}” matches a few products. Pick the exact one so the review uses the right ingredient list.
+          “{state.query}” matches a few products. Pick the exact one so the analysis uses the right ingredient list.
         </p>
         <div className="mt-3 flex flex-col gap-2 max-w-xl">
           {state.options.map((o) => (

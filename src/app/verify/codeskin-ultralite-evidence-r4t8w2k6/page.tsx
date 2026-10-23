@@ -44,7 +44,7 @@ const reviewed = [
     items: [
       "Hazard profile completed",
       "Exposure assessed",
-      "Sensitisation reviewed",
+      "Sensitisation assessed",
       "Phototoxic screen: clear",
       "No SVHC identified",
       "Preservative system clean",
@@ -57,7 +57,7 @@ const reviewed = [
       "ISO 22716 confirmed",
       "Stability tested",
       "Preservative efficacy passed",
-      "UV filter COAs reviewed",
+      "UV filter COAs assessed",
     ],
   },
   {
@@ -142,7 +142,7 @@ export default function EvidencePage() {
               </p>
 
               <p className="text-teal-400 text-sm leading-relaxed max-w-sm mb-6 animate-fade-up delay-300">
-                Reviewed by an independent panel for formula safety, UV performance,
+                Assessed by an independent panel for formula safety, UV performance,
                 manufacturing quality, claims evidence, and legal compliance.
                 Everything on this page is backed by submitted evidence.
               </p>
@@ -259,7 +259,7 @@ export default function EvidencePage() {
               </h2>
             </div>
             <p className="text-ink-400 text-sm max-w-xs leading-relaxed">
-              Reviewed against submitted lab reports, clinical studies, and ingredient data.
+              Assessed against submitted lab reports, clinical studies, and ingredient data.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -279,13 +279,13 @@ export default function EvidencePage() {
         </div>
       </section>
 
-      {/* What was reviewed */}
+      {/* What was assessed */}
       <section className="bg-white border-b border-ink-100 px-5 py-14">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
-            <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-1.5">Scope of review</p>
+            <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-1.5">Scope of assessment</p>
             <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight leading-none">
-              What was reviewed
+              What was assessed
             </h2>
           </div>
           <div className="border border-ink-100 rounded-2xl overflow-hidden">
@@ -341,7 +341,7 @@ export default function EvidencePage() {
             ))}
           </div>
           <p className="text-ink-400 text-xs leading-relaxed">
-            All three filters sourced from BASF. Certificates of analysis reviewed. All confirmed permitted in India and EU markets. None on any global banned filter list.
+            All three filters sourced from BASF. Certificates of analysis assessed. All confirmed permitted in India and EU markets. None on any global banned filter list.
           </p>
         </div>
       </section>

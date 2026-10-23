@@ -4,7 +4,7 @@ import Link from "next/link";
    click from the home page, on mobile too. */
 
 const LINKS = [
-  { href: "/brands", eyebrow: "REVIEWS", title: "Every product we’ve reviewed", note: "Browse the public registry." },
+  { href: "/brands", eyebrow: "ANALYSER", title: "Every product we’ve analysed", note: "Browse the public registry." },
   { href: "/standard", eyebrow: "THE STANDARD", title: "How we judge a claim", note: "The framework, in the open." },
   { href: "/verify", eyebrow: "VERIFY", title: "Check a seal", note: "Confirm a product’s status." },
   { href: "/about", eyebrow: "ABOUT", title: "Why we exist", note: "Evidence over marketing." },

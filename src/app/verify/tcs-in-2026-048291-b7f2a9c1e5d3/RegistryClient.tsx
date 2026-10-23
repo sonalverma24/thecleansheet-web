@@ -469,7 +469,7 @@ export default function RegistryClient() {
               id="safety"
               icon={<FlaskConical size={16} />}
               title="Requirement 2: Ingredient Safety"
-              subtitle="Every ingredient reviewed for known hazards"
+              subtitle="Every ingredient assessed for known hazards"
               status="passed" statusLabel="PASSED"
               isOpen={openSections.has("safety")} onToggle={() => toggleSection("safety")}
             >
@@ -514,7 +514,7 @@ export default function RegistryClient() {
               id="manufacturing"
               icon={<Building2 size={16} />}
               title="Requirement 3: Manufacturing Quality"
-              subtitle="Facility, process, and batch documentation reviewed"
+              subtitle="Facility, process, and batch documentation assessed"
               status="passed" statusLabel="PASSED"
               isOpen={openSections.has("manufacturing")} onToggle={() => toggleSection("manufacturing")}
             >
@@ -522,10 +522,10 @@ export default function RegistryClient() {
                 <Row label="Manufacturer" value="Effeza Science Pvt Ltd" />
                 <Row label="GMP certification" value="GMP-certified + FDA India-approved manufacturing facility" pass={true} />
                 <Row label="ISO 22716 GMP" value="Confirmed [SAMPLE]" pass={true} />
-                <Row label="Stability testing" value="Accelerated stability reviewed (40°C / 75% RH) [SAMPLE]" pass={true} />
+                <Row label="Stability testing" value="Accelerated stability assessed (40°C / 75% RH) [SAMPLE]" pass={true} />
                 <Row label="Preservative efficacy" value="Passed, ISO 11930 [SAMPLE]" pass={true} />
                 <Row label="Batch-level SPF protocol" value="Partially documented - minor deduction [SAMPLE]" pass={null} />
-                <Row label="UV filter supplier COAs" value="BASF-sourced UV filters reviewed [SAMPLE]" pass={true} />
+                <Row label="UV filter supplier COAs" value="BASF-sourced UV filters assessed [SAMPLE]" pass={true} />
                 <Row label="Heavy metal testing" value="Not independently submitted for this evaluation [SAMPLE]" pass={null} />
               </div>
             </AccordionSection>
@@ -535,7 +535,7 @@ export default function RegistryClient() {
               id="claims"
               icon={<Shield size={16} />}
               title="Requirement 4: Claims and Transparency"
-              subtitle="Every claim reviewed against submitted test evidence"
+              subtitle="Every claim assessed against submitted test evidence"
               status="passed" statusLabel="PASSED"
               isOpen={openSections.has("claims")} onToggle={() => toggleSection("claims")}
             >
@@ -546,13 +546,13 @@ export default function RegistryClient() {
                 <ClaimRow claim="PA++++ UVA protection" status="verified" detail="UVAPF: 22.07 (JCIA method). PA++++ tier requires UVA-PF of 16 or above - this result qualifies comfortably. Boots 3-star UVA rating consistent with the result and claim." />
                 <ClaimRow claim="Water resistant (80 minutes)" status="verified" detail="94% of original SPF retained after 80 minutes of water immersion (ISO 16217 protocol). Specific claim wording is 'water resistant' with duration specified - not 'waterproof', which is a prohibited claim in India and EU." />
                 <ClaimRow claim="Non-comedogenic" status="verified" detail="28-day clinical study. 33 adult participants with oily or mixed-oily skin. Zero new comedones observed. 61.5% reduction in inflammatory acne lesions. 16% reduction in total lesions. Dermatologist supervised. Sample size adequate for a consumer-facing claim." />
-                <ClaimRow claim="Dermatologist-tested" status="verified" detail="24-hour primary irritation patch test conducted under dermatologist supervision. Zero irritation reported across participants. Protocol and adverse event summary reviewed [SAMPLE: study reference pending]." />
-                <ClaimRow claim="Ophthalmologist-tested" status="verified" detail="3-day ocular safety study, twice-daily application, conducted under ophthalmologist supervision. No ocular irritation reported. Protocol reviewed [SAMPLE]." />
+                <ClaimRow claim="Dermatologist-tested" status="verified" detail="24-hour primary irritation patch test conducted under dermatologist supervision. Zero irritation reported across participants. Protocol and adverse event summary assessed [SAMPLE: study reference pending]." />
+                <ClaimRow claim="Ophthalmologist-tested" status="verified" detail="3-day ocular safety study, twice-daily application, conducted under ophthalmologist supervision. No ocular irritation reported. Protocol assessed [SAMPLE]." />
                 <ClaimRow claim="Reef-safe" status="verified-qualified" detail="Product does not contain oxybenzone, octinoxate, or octisalate - the three UV filters banned under Hawaii SB 2571 and Palau reef protection standards. Claim substantiated on filter-absence basis. No product-specific ecotoxicology testing submitted. The term 'reef-safe' has no universal regulatory definition." />
-                <ClaimRow claim="Vegan and cruelty-free" status="verified" detail="Full INCI reviewed - no animal-derived ingredients. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin (not animal). Cruelty-free supported by brand declaration [SAMPLE - third-party audit not submitted for this evaluation]." />
-                <ClaimRow claim="Fragrance-free" status="verified" detail="No parfum, fragrance, or masking fragrance ingredient in INCI. No EU 26 fragrance allergens detected above 0.001% leave-on threshold in reviewed formula [SAMPLE]." />
-                <ClaimRow claim="Hydration 65% at 8h / 38% at 24h" status="verified-qualified" detail="Consumer study data reviewed. Corneometer-based hydration measurement, dry skin panel. Results consistent with ingredient profile (Sodium Hyaluronate, Polyglutamic Acid, Ectoin, Aloe). Full protocol and sample size details are [SAMPLE] - pending final protocol review." />
-                <ClaimRow claim="Blue light / visible light / IR protection" status="not-verified" detail="No peer-reviewed validated in vitro or clinical test for blue light, visible light, or IR protection in this specific formulation was submitted. Red Algae extract has published data on blue light defence, but a product-specific validated protocol was not available for review." />
+                <ClaimRow claim="Vegan and cruelty-free" status="verified" detail="Full INCI assessed - no animal-derived ingredients. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin (not animal). Cruelty-free supported by brand declaration [SAMPLE - third-party audit not submitted for this evaluation]." />
+                <ClaimRow claim="Fragrance-free" status="verified" detail="No parfum, fragrance, or masking fragrance ingredient in INCI. No EU 26 fragrance allergens detected above 0.001% leave-on threshold in assessed formula [SAMPLE]." />
+                <ClaimRow claim="Hydration 65% at 8h / 38% at 24h" status="verified-qualified" detail="Consumer study data assessed. Corneometer-based hydration measurement, dry skin panel. Results consistent with ingredient profile (Sodium Hyaluronate, Polyglutamic Acid, Ectoin, Aloe). Full protocol and sample size details are [SAMPLE] - pending final protocol assessment." />
+                <ClaimRow claim="Blue light / visible light / IR protection" status="not-verified" detail="No peer-reviewed validated in vitro or clinical test for blue light, visible light, or IR protection in this specific formulation was submitted. Red Algae extract has published data on blue light defence, but a product-specific validated protocol was not available for assessment." />
                 <ClaimRow claim="100% biodegradable" status="not-verified" detail="No third-party biodegradability certification or OECD 301-method test data submitted for the full formulation. Individual ingredients may be biodegradable but a whole-formulation test is required for the claim to be verified." />
               </div>
             </AccordionSection>
@@ -587,8 +587,8 @@ export default function RegistryClient() {
                   <div className="space-y-2">
                     {[
                       "SPF test from NABL/ISO 17025-accredited lab",
-                      "UVA / PA test evidence reviewed",
-                      "Photostability reviewed - UV filter combination is photostable",
+                      "UVA / PA test evidence assessed",
+                      "Photostability assessed - UV filter combination is photostable",
                       "Water resistance test with duration specified on label",
                       "All UV filters legal in assessed markets (India, EU)",
                       "No banned UV filters (no 4-MBC, no oxybenzone, no octinoxate)",
@@ -613,13 +613,13 @@ export default function RegistryClient() {
               id="ethics"
               icon={<Leaf size={16} />}
               title="Requirement 5: Ethics and Sustainability"
-              subtitle="Formula and ingredient origins reviewed"
+              subtitle="Formula and ingredient origins assessed"
               status="passed" statusLabel="PASSED"
               isOpen={openSections.has("ethics")} onToggle={() => toggleSection("ethics")}
             >
               <div className="divide-y divide-teal-50">
                 <Row label="Vegan ingredients" value="Confirmed - no animal-derived INCI identified" pass={true} />
-                <Row label="Cruelty-free" value="Brand declaration reviewed [SAMPLE - third-party audit not submitted]" pass={true} />
+                <Row label="Cruelty-free" value="Brand declaration assessed [SAMPLE - third-party audit not submitted]" pass={true} />
                 <Row label="Palm / mica sourcing" value="No palm-derived or mica-containing ingredients in formula" pass={true} />
                 <Row label="Natural origin index" value="Primarily synthetic UV filters - natural origin index not calculated for this evaluation [SAMPLE]" pass={null} />
                 <Row label="Packaging sustainability" value="Packaging details not fully documented in dossier [SAMPLE]" pass={null} />
@@ -631,8 +631,8 @@ export default function RegistryClient() {
               id="transparency"
               icon={<FlaskConical size={16} />}
               title="Ingredient Transparency"
-              subtitle="Regulatory screening and formula review"
-              status="passed" statusLabel="REVIEWED"
+              subtitle="Regulatory screening and formula assessment"
+              status="passed" statusLabel="ASSESSED"
               isOpen={openSections.has("transparency")} onToggle={() => toggleSection("transparency")}
             >
               <div className="grid sm:grid-cols-2 gap-6 mb-6">
@@ -655,15 +655,15 @@ export default function RegistryClient() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-[11px] text-ink-400 uppercase tracking-widest mb-3">Formula review</p>
+                  <p className="text-[11px] text-ink-400 uppercase tracking-widest mb-3">Formula assessment</p>
                   <div className="space-y-2.5">
                     {[
-                      "Complete formula reviewed confidentially [SAMPLE]",
+                      "Complete formula assessed confidentially [SAMPLE]",
                       "Ingredient origin types disclosed to certifier",
                       "Key actives checked against formula and evidence",
-                      "Fragrance and allergen review completed",
-                      "Preservative system reviewed",
-                      "UV filters and concentrations reviewed [SAMPLE]",
+                      "Fragrance and allergen assessment completed",
+                      "Preservative system assessed",
+                      "UV filters and concentrations assessed [SAMPLE]",
                       "Global restricted ingredient screening completed",
                     ].map((item) => (
                       <div key={item} className="flex items-start gap-2 text-sm text-ink-600">
@@ -729,7 +729,7 @@ export default function RegistryClient() {
                 </div>
               </div>
               <p className="text-xs text-ink-400 mt-4 leading-relaxed italic">
-                Certification confirms this product met our review criteria based on submitted and verified evidence. It does not guarantee no person will ever experience an adverse reaction. Individual skin reactions are always possible. Discontinue use if a reaction occurs.
+                Certification confirms this product met our assessment criteria based on submitted and verified evidence. It does not guarantee no person will ever experience an adverse reaction. Individual skin reactions are always possible. Discontinue use if a reaction occurs.
               </p>
             </AccordionSection>
 
@@ -738,8 +738,8 @@ export default function RegistryClient() {
               id="evidence"
               icon={<FlaskConical size={16} />}
               title="Testing Evidence on File"
-              subtitle="Lab reports and clinical studies reviewed"
-              status="passed" statusLabel="REVIEWED"
+              subtitle="Lab reports and clinical studies assessed"
+              status="passed" statusLabel="ASSESSED"
               isOpen={openSections.has("evidence")} onToggle={() => toggleSection("evidence")}
             >
               <div className="rounded-2xl border border-teal-100 overflow-x-auto">
@@ -761,7 +761,7 @@ export default function RegistryClient() {
                       { test: "Primary irritation patch test", result: "Non-irritant", lab: "Dermatologist supervised [SAMPLE]", pass: true },
                       { test: "Ocular safety", result: "No irritation / 3-day study", lab: "Ophthalmologist supervised [SAMPLE]", pass: true },
                       { test: "Preservative efficacy (ISO 11930)", result: "Passed [SAMPLE]", lab: "ISO 17025 accredited [SAMPLE]", pass: true },
-                      { test: "Accelerated stability (40°C/75% RH)", result: "Reviewed [SAMPLE]", lab: "In-house, validated [SAMPLE]", pass: true },
+                      { test: "Accelerated stability (40°C/75% RH)", result: "Assessed [SAMPLE]", lab: "In-house, validated [SAMPLE]", pass: true },
                       { test: "Microbial count", result: "Within limits [SAMPLE]", lab: "ISO 17025 accredited [SAMPLE]", pass: true },
                     ].map(({ test, result, lab, pass }) => (
                       <tr key={test} className="border-b border-teal-50 last:border-0">

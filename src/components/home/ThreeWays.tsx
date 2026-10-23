@@ -17,8 +17,8 @@ const WAYS = [
   },
   {
     n: "02", eyebrow: "COMMUNITY", title: "Ask people who use it",
-    short: "Honest reviews, evidence marked.",
-    desc: "Real routines and honest reviews, with answers that match the evidence clearly marked.",
+    short: "Honest opinions, evidence marked.",
+    desc: "Real routines and honest opinions, with answers that match the evidence clearly marked.",
     cta: "Join the conversation", href: WHATSAPP_COMMUNITY_URL, external: true,
     img: "/images/home/photos/flatlay-pink.webp", fit: "cover" as const,
   },

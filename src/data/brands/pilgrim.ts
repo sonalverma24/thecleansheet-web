@@ -15,7 +15,7 @@ const BRAND_SLUG = "pilgrim";
 const BRAND_NAME = "Pilgrim";
 
 const CLEAN_SHEET_NOTE =
-  "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.";
+  "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.";
 
 const products: ProductScorecard[] = [
 
@@ -844,7 +844,7 @@ const products: ProductScorecard[] = [
     analyzedAt: "2026-06-10",
     concernTags: ["Fine Lines", "Wrinkles", "Skin Renewal", "Age Prevention"],
     suitabilityTags: ["Retinoid Beginners"],
-    cautionTags: ["Retinoid Flag", "Contains Fragrance", "Fragrance Allergen Flag", "Pregnancy Not Reviewed", "Active % Not Verified"],
+    cautionTags: ["Retinoid Flag", "Contains Fragrance", "Fragrance Allergen Flag", "Pregnancy Not Assessed", "Active % Not Verified"],
   },
 
   /* -------------------------------------------------
@@ -892,7 +892,7 @@ const products: ProductScorecard[] = [
         score: 7,
         max: 15,
         evidenceGrade: "C",
-        note: "The brand confirms all three acid percentages, which is strong active disclosure. No lab test report, pH measurement, or clinical exfoliation study is publicly accessible. For a product at this acid concentration, the pH value is not a minor formulation detail but a safety-critical parameter. The absence of a disclosed pH is a notable transparency gap that prevents independent consumer risk assessment. No dermatologist review or patch test result is publicly linked.",
+        note: "The brand confirms all three acid percentages, which is strong active disclosure. No lab test report, pH measurement, or clinical exfoliation study is publicly accessible. For a product at this acid concentration, the pH value is not a minor formulation detail but a safety-critical parameter. The absence of a disclosed pH is a notable transparency gap that prevents independent consumer risk assessment. No dermatologist assessment or patch test result is publicly linked.",
       },
       {
         name: "Consumer Clarity",

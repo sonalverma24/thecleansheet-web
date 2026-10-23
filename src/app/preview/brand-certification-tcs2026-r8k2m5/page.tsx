@@ -255,7 +255,7 @@ export default function BrandPreviewPage() {
           </p>
           <div className="space-y-2.5">
             {[
-              { title: 'Pre-Assessment Call', badge: 'Free', color: '#b0a8a4', desc: 'We review your product and identify any gaps before you commit to a full evaluation. No obligation.' },
+              { title: 'Pre-Assessment Call', badge: 'Free', color: '#b0a8a4', desc: 'We assess your product and identify any gaps before you commit to a full evaluation. No obligation.' },
               { title: 'Dossier Submission', color: '#248179', desc: 'Submit your formula, safety data, and claims evidence via our secure, encrypted portal. Everything is held under strict NDA.' },
               { title: 'Independent Evaluation', badge: '6-10 Weeks', color: '#248179', desc: 'Our panel of cosmetic chemists, toxicologists, and claims specialists rigorously evaluates your product across all 5 pillars.' },
               { title: 'Certification & Live Page', badge: 'Valid 1 Year', color: '#fd6158', desc: 'Score 60 or above and you\'re certified. Your public proof page goes live, and you receive your badge and QR code.' },
@@ -356,7 +356,7 @@ export default function BrandPreviewPage() {
               { q: 'Do I have to share my exact formula?', a: 'Yes, we need exact concentrations to calculate safety margins. However, your formula is strictly confidential, protected by a robust NDA, and never published. Consumers only see the standard INCI list and verified active ranges.' },
               { q: 'What if my product doesn\'t pass?', a: 'You still receive a comprehensive evaluation report with specific, actionable feedback. Most brands use this to improve their formulation, testing, or documentation and re-apply successfully.' },
               { q: 'What if I don\'t have all the required tests yet?', a: 'Our pre-assessment identifies exactly what testing is missing. You can then commission these tests from accredited labs before submitting for full evaluation.' },
-              { q: 'How is this different from "dermatologist tested"?', a: 'Dermatologist-tested typically means one doctor reviewed the product. We run a comprehensive 5-pillar evaluation with independent cosmetic chemists, toxicologists, and claims specialists. Every claim is verified against real evidence.' },
+              { q: 'How is this different from "dermatologist tested"?', a: 'Dermatologist-tested typically means one doctor assessed the product. We run a comprehensive 5-pillar evaluation with independent cosmetic chemists, toxicologists, and claims specialists. Every claim is verified against real evidence.' },
               { q: 'Is my data secure?', a: 'All data is submitted via an encrypted portal, held under strict NDA, and never shared with third parties. Your exact formula is never published; consumers only see the standardised INCI list.' },
             ].map((faq, i) => (
               <div
@@ -408,7 +408,7 @@ export default function BrandPreviewPage() {
             <div className="grid sm:grid-cols-3" style={{ background: "#ffffff" }}>
               {[
                 { num: '1', text: 'Reply to this email or reach out to schedule a call.', color: '#248179' },
-                { num: '2', text: 'We\'ll review your product and identify any gaps.', color: '#fd6158' },
+                { num: '2', text: 'We\'ll assess your product and identify any gaps.', color: '#fd6158' },
                 { num: '3', text: 'If it\'s a fit, you submit your dossier and we begin.', color: '#d2ff34' },
               ].map((step, i) => (
                 <div

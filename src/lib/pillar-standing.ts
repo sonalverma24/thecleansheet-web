@@ -101,7 +101,7 @@ export function pillarStanding(i: PillarStandingInput): PillarStandingResult {
 
   const failing = pillars.filter((p) => p.status === "failing");
   const reason = standing === "Not Recommended" && !i.hardOverride && failing.length
-    ? `Two or more areas of the review fall short: ${failing.map((p) => p.pillar).join(" and ")}.`
+    ? `Two or more areas of the analysis fall short: ${failing.map((p) => p.pillar).join(" and ")}.`
     : null;
   return { standing, pillars, reason };
 }

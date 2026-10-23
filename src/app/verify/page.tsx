@@ -34,7 +34,7 @@ export default function VerifyPage() {
               <p className="mt-6 text-[17px] leading-[1.7] text-[var(--color-warm-gray)] max-w-xl">
                 Check a Clean Sheet certificate here. Certification is open to brands, and certified
                 products will appear in the registry as certificates are issued. Our free{" "}
-                <Link href="/brands" className="text-[var(--color-primary)] hover:underline">product reviews</Link>,
+                <Link href="/brands" className="text-[var(--color-primary)] hover:underline">product analyses</Link>,
                 which use only public information, are available now too.
               </p>
             </Reveal>
@@ -53,9 +53,9 @@ export default function VerifyPage() {
         <Reveal>
           <div className="rounded-2xl p-5 md:p-6" style={{ background: "#f9f8f7", border: `1px solid ${HAIR_LIGHT}` }}>
             <p className="text-[14px] leading-[1.7] text-[var(--color-charcoal)]/90">
-              <strong>This is not the same as a product review.</strong> Certification is based on
+              <strong>This is not the same as a product analysis.</strong> Certification is based on
               a brand&apos;s confidential formula, test reports and manufacturing records, and an
-              independent decision. Our free <Link href="/brands" className="text-[var(--color-primary)] hover:underline">product reviews</Link> are
+              independent decision. Our free <Link href="/brands" className="text-[var(--color-primary)] hover:underline">product analyses</Link> are
               different: they only use information anyone can see, and they are not certification.
             </p>
           </div>

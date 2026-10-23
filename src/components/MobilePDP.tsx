@@ -427,7 +427,7 @@ export function MobilePDP({
 
         {/* User Reviews Section */}
         <section className="bg-white border border-[#b0a8a4]/30 rounded p-5 space-y-5 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
-          <h4 className="font-display text-[16px] text-[#248179] border-b border-[#b0a8a4]/10 pb-1.5">Consumer Reviews</h4>
+          <h4 className="font-display text-[16px] text-[#248179] border-b border-[#b0a8a4]/10 pb-1.5">Consumer Feedback</h4>
           
           <div className="space-y-4 divide-y divide-[#b0a8a4]/10">
             {reviews.map(rev => (
@@ -507,7 +507,7 @@ export function MobilePDP({
             </div>
 
             <div className="flex flex-col">
-              <label className="text-[10px] text-[#b0a8a4] uppercase mb-1">Review Text</label>
+              <label className="text-[10px] text-[#b0a8a4] uppercase mb-1">Your feedback</label>
               <textarea 
                 value={newReviewText}
                 onChange={(e) => setNewReviewText(e.target.value)}
@@ -520,18 +520,18 @@ export function MobilePDP({
               type="submit"
               className="w-full bg-[#282828] text-white font-sans text-[11px] tracking-[0.08em] uppercase py-2.5 rounded hover:bg-[#282828]/90 transition-colors"
             >
-              Post Review
+              Post feedback
             </button>
           </form>
 
           <div className="text-[10px] text-[#b0a8a4] text-center italic mt-2">
-            Consumer reviews reflect user experience. The Clean Sheet Score is based on product analysis and evidence review.
+            Consumer feedback reflects user experience. The Clean Sheet Score is based on product analysis and evidence checks.
           </div>
         </section>
 
         {/* Disclaimer */}
         <section className="font-sans text-[10px] leading-[15px] text-[#b0a8a4] text-center pb-8 border-t border-[#b0a8a4]/10 pt-4">
-          Product scores shown as Public Data Review are based on available information at the time of analysis. Certified Product status is shown only when The Clean Sheet has reviewed submitted evidence and issued certification.
+          Product scores shown as Public Data Analysis are based on available information at the time of analysis. Certified Product status is shown only when The Clean Sheet has assessed submitted evidence and issued certification.
         </section>
       </div>
     </div>

@@ -113,7 +113,7 @@ export default async function IngredientsPage() {
       <CrawlableIndex
         id="ingredient-index"
         heading="Every ingredient profile, A to Z"
-        intro="Open any ingredient for its full safety profile, regulatory status and the reviewed products that contain it."
+        intro="Open any ingredient for its full safety profile, regulatory status and the analysed products that contain it."
         groups={azGroups}
       />
     </div>

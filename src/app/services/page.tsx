@@ -46,7 +46,7 @@ const LAYERS = [
   {
     num: "03", icon: Award, color: "#3b82f6", bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.2)",
     name: "Manufacturing & Quality", badge: "Scored dimension", points: 20,
-    body: "We review your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem.",
+    body: "We assess your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem.",
   },
   {
     num: "04", icon: Eye, color: "#a855f7", bg: "rgba(168,85,247,0.06)", border: "rgba(168,85,247,0.2)",
@@ -78,17 +78,17 @@ const STANDARDS = [
 
 const PROCESS_STEPS = [
   { step: "Week 1",    title: "Application & NDA",     body: "Submit your application. We agree scope, which products, which markets, which PRISM modules. An NDA is signed. You receive a dossier checklist specific to your product categories.", color: "#14b8a6" },
-  { step: "Wks 1-3",  title: "Dossier Submission",    body: "You submit your formula, test data, manufacturing documentation, and marketing materials. We review for completeness. Your formula concentrations are seen only by the scientific panel.", color: "#3b82f6" },
+  { step: "Wks 1-3",  title: "Dossier Submission",    body: "You submit your formula, test data, manufacturing documentation, and marketing materials. We check for completeness. Your formula concentrations are seen only by the scientific panel.", color: "#3b82f6" },
   { step: "Wks 3-9",  title: "Scientific Evaluation", body: "Our independent panel evaluates across all five layers. Questions are routed through your account contact. Evaluators never communicate directly with brands. No informal score discussions.", color: "#a855f7" },
   { step: "Wks 9-10", title: "Result & Certificate",  body: "You receive a full written evaluation report with score breakdown layer by layer. If certified: certificate, badge files, QR code, and public proof page. If not: specific gap analysis.", color: "#f59e0b" },
-  { step: "Ongoing",  title: "Post-Certification",    body: "We monitor regulatory developments affecting your certified products. Certificates are valid for one year. Formula or label changes trigger a review.", color: "#22c55e" },
+  { step: "Ongoing",  title: "Post-Certification",    body: "We monitor regulatory developments affecting your certified products. Certificates are valid for one year. Formula or label changes trigger a fresh assessment.", color: "#22c55e" },
 ];
 
 const PRISM_MODULES = [
   { icon: Baby,          name: "Baby Safe",         desc: "Paediatric safety margins and mandatory testing for products intended for infants and young children.", color: "#3b82f6" },
   { icon: Sun,           name: "Sun Verified",      desc: "SPF and UVA verification, phototoxic botanical screen, UV filter legality across markets.", color: "#f59e0b" },
-  { icon: FlaskConical,  name: "Active Verified",   desc: "Concentration verification and clinical evidence review for products making active ingredient claims.", color: "#14b8a6" },
-  { icon: Leaf,          name: "Sensitive Skin",    desc: "Tolerability assessment and patch testing review for products positioned for reactive or sensitised skin.", color: "#22c55e" },
+  { icon: FlaskConical,  name: "Active Verified",   desc: "Concentration verification and clinical evidence assessment for products making active ingredient claims.", color: "#14b8a6" },
+  { icon: Leaf,          name: "Sensitive Skin",    desc: "Tolerability assessment and patch testing assessment for products positioned for reactive or sensitised skin.", color: "#22c55e" },
   { icon: Shield,        name: "Pregnancy Safe",    desc: "Teratogen screen and ingredient restriction for products positioned for use during pregnancy.", color: "#a855f7" },
   { icon: CheckCircle2,  name: "Natural & Organic", desc: "ISO 16128 natural origin index calculation and COSMOS-alignment assessment.", color: "#10b981" },
   { icon: Globe,         name: "Vegan Verified",    desc: "Full supply chain vegan assessment, ingredients, processing aids, and testing methodology.", color: "#6366f1" },
@@ -433,7 +433,7 @@ export default function ServicesPage() {
               <div className="text-indigo-400 text-xs font-normal uppercase tracking-widest mb-4">Specialist Certification</div>
               <div className="inline-flex flex-col mb-5">
                 <span className="text-3xl font-medium text-white tracking-tight">PRISM Standard™</span>
-                <span className="text-indigo-300/50 text-sm mt-1">Product Review for Ingredient Safety and Marketing Integrity</span>
+                <span className="text-indigo-300/50 text-sm mt-1">Product Analysis for Ingredient Safety and Marketing Integrity</span>
               </div>
               <p className="text-indigo-200/70 text-lg leading-relaxed mb-6">
                 Baby care, sunscreens, clinical actives, products for sensitive skin, these categories carry higher consumer trust stakes. PRISM modules are specialist add-ons to Core certification that apply a deeper evaluation where it matters most.

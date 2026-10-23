@@ -45,7 +45,7 @@ export default function ClaimSample() {
       <Reveal delay={0.1}>
         <div className="border border-[#e5dfd6] rounded-[22px] overflow-hidden bg-white shadow-[0_1px_2px_rgba(40,40,40,0.06),0_8px_24px_rgba(40,40,40,0.06)]">
           <div className="bg-[#248179] text-white px-4 sm:px-6 py-3.5 md:py-[18px] flex flex-wrap justify-between items-center gap-x-4 gap-y-1">
-            <span className="text-[10px] font-bold tracking-[0.18em]">SAMPLE CLAIM REVIEW</span>
+            <span className="text-[10px] font-bold tracking-[0.18em]">SAMPLE CLAIM ANALYSIS</span>
             <span className="hidden sm:inline font-display font-light text-[22px]">What the proof really says</span>
           </div>
           <div className="flex gap-3 md:gap-5 p-4 sm:p-6 border-b border-[#e5dfd6] items-center">
@@ -83,8 +83,8 @@ export default function ClaimSample() {
             </div>
           </div>
           <p className="px-4 sm:px-6 py-3 text-[11px] text-[#4a4a4a] bg-white border-t border-[#e5dfd6]">
-            <span className="font-bold tracking-[0.12em] text-[#282828]">SAMPLE</span> · An illustrative example, not a
-            review of any real product.
+            <span className="font-bold tracking-[0.12em] text-[#282828]">SAMPLE</span> · An illustrative example, not an
+            analysis of any real product.
           </p>
         </div>
       </Reveal>

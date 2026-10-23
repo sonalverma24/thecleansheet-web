@@ -11,6 +11,7 @@ import { slugify } from "@/lib/verified-store";
 import { reviewInciList } from "@/lib/review-inci";
 import { enrichIngredients, keyActivesFrom } from "@/lib/inci-enrich";
 import { globalScreenFor } from "@/lib/global-screen";
+import { analysisWording } from "@/lib/analysis-wording";
 import type { GlobalScreen, IngredientEntry, KeyActive } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
@@ -182,7 +183,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     globalScreen,
     claimsCheck: claims.slice(0, 10).map(claimToCheckItem),
     missingProof,
-    cleanSheetNote: review.cleanSheetNote,
+    cleanSheetNote: review.cleanSheetNote ? analysisWording(review.cleanSheetNote) : review.cleanSheetNote,
     pass_badges,
     warn_badges,
     info_badges: [],

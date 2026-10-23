@@ -212,7 +212,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Dry Skin", "Dehydrated Skin", "Barrier Damage"],
       suitabilityTags: ["Dry Skin", "Normal Skin", "Daily Use", "Skincare Beginners", "Fragrance Sensitive Users"],
       cautionTags: [],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 2. Calendula Herbal Extract Alcohol-Free Toner
@@ -348,7 +348,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Sensitive Skin", "Redness", "Barrier Damage"],
       suitabilityTags: ["Sensitive Skin", "Daily Use", "Skincare Beginners", "Fragrance Sensitive Users"],
       cautionTags: [],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 3. Clearly Corrective Dark Spot Solution
@@ -493,7 +493,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Pigmentation", "Dullness", "Post Acne Marks"],
       suitabilityTags: ["Dark Spots and Pigmentation", "Active Experienced Users", "Melanin Rich Skin"],
       cautionTags: ["Drying Alcohol Flag", "Essential Oil Flag", "Fragrance Allergen Flag", "Contains Potential Allergen"],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 4. Midnight Recovery Concentrate
@@ -637,7 +637,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Barrier Damage", "Dry Skin", "Dehydrated Skin"],
       suitabilityTags: ["Dry Skin", "Active Experienced Users"],
       cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Essential Oil Flag", "Contains Potential Allergen"],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 5. Powerful-Strength Line-Reducing Concentrate
@@ -778,7 +778,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Fine Lines", "Wrinkles", "Dullness", "Pigmentation"],
       suitabilityTags: ["Active Experienced Users", "Dark Spots and Pigmentation", "Melanin Rich Skin"],
       cautionTags: ["Essential Oil Flag", "High Irritation Potential", "Contains Potential Allergen", "ph not disclosed"],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 6. Rare Earth Deep Pore Cleansing Masque
@@ -918,7 +918,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Enlarged Pores", "Oily Skin", "Acne", "Texture"],
       suitabilityTags: ["Oily Skin", "Combination Skin", "Acne Prone Skin"],
       cautionTags: [],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 7. Creamy Eye Treatment with Avocado
@@ -1066,7 +1066,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Dehydrated Skin", "Fine Lines"],
       suitabilityTags: ["Dry Skin", "Normal Skin", "Daily Use"],
       cautionTags: ["Milia-Prone Skin (Isopropyl Palmitate)"],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
 
     // 8. Ultra Facial Cleanser
@@ -1215,7 +1215,7 @@ export const kiehlsBrand: Brand = {
       concernTags: ["Sensitive Skin"],
       suitabilityTags: ["Daily Use", "Normal Skin", "Oily Skin"],
       cautionTags: ["High Irritation Potential"],
-      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+      cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     },
   ],
 };

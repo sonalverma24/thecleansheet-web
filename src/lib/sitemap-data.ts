@@ -81,7 +81,7 @@ export async function getSitemapEntries(section: SitemapSection): Promise<Sitema
       // page, so they are not their own canonical and must not be listed.
       return (await listReviewIndex())
         .filter((r) => !cataloguePathFor(r.brand, r.productName))
-        .map((r) => ({ url: absoluteUrl(`/reviews/${r.slug}`), lastModified: validDate(r.reviewedAt) }));
+        .map((r) => ({ url: absoluteUrl(`/analysis/${r.slug}`), lastModified: validDate(r.reviewedAt) }));
 
     case "ingredients": {
       // Every indexable profile: the curated core plus discovered ingredients that

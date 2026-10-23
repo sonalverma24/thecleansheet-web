@@ -329,7 +329,7 @@ export function EvidenceChecksheet({ record }: { record: SunscreenEvidenceRecord
             <p className="text-teal-600 text-[10px] tracking-[0.2em] uppercase mb-2">Related</p>
             <p className="text-white text-sm max-w-md leading-relaxed">
               This evidence record audits public claims. For the full 5-pillar ingredient safety scorecard on this
-              product, see the brand review.
+              product, see the brand analysis.
             </p>
           </div>
           {record.brandProductSlug && (

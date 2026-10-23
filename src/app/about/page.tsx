@@ -47,7 +47,7 @@ export default function AboutPage() {
         <Reveal delay={0.3}>
           <p className="mt-8 text-[18px] leading-[1.7] max-w-2xl" style={{ color: WARM }}>
             The Clean Sheet is building independent evidence infrastructure for beauty and personal
-            care. We publish a standard, we review products against the evidence, and we certify the
+            care. We publish a standard, we analyse products against the evidence, and we certify the
             ones that prove their claims, so a shopper can see what is really behind a product,
             not just how it is marketed.
           </p>
@@ -139,7 +139,7 @@ export default function AboutPage() {
               <p>
                 The Clean Sheet is built on published standards and outside expertise, rather than
                 on any one person&apos;s authority. Where specialist judgement is needed, it comes
-                from qualified reviewers and named sources, not from opinion.
+                from qualified assessors and named sources, not from opinion.
               </p>
             </div>
           </Reveal>
@@ -158,7 +158,7 @@ export default function AboutPage() {
             </h2>
             <div className="mt-6 flex flex-col gap-4 text-[16px] leading-[1.75] max-w-lg" style={{ color: WARM }}>
               <p>
-                The Clean Sheet evaluations are reviewed by an independent panel of experts,
+                The Clean Sheet evaluations are checked by an independent panel of experts,
                 including cosmetic scientists, toxicologists, and dermatologists.
               </p>
               <p>
@@ -168,7 +168,7 @@ export default function AboutPage() {
               </p>
               <p>
                 No panel member holds a commercial relationship with the brands under
-                review. Conflicts of interest are declared and managed, and evaluators
+                assessment. Conflicts of interest are declared and managed, and evaluators
                 never deal with a brand directly.
               </p>
             </div>

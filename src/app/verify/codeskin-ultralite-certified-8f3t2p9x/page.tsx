@@ -211,7 +211,7 @@ export default function ConsumerCertPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-10 items-start">
             <div className="lg:w-56 flex-shrink-0">
-              <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-2">Panel review</p>
+              <p className="text-teal-600 text-[9px] tracking-[0.2em] uppercase mb-2">Panel assessment</p>
               <h2 className="text-2xl font-medium text-ink-950 tracking-tight leading-tight">Who this is for</h2>
               <p className="text-ink-400 text-xs leading-relaxed mt-2">
                 Suitability based on verified test data, not brand positioning.
@@ -284,7 +284,7 @@ export default function ConsumerCertPage() {
               <p className="text-ink-500 text-sm leading-relaxed mb-2">
                 The Clean Sheet is an independent certification body. CodeSkin submitted to this certification.
                 Our panel assessments are editorially independent. A panel of cosmetic scientists, toxicologists,
-                regulatory specialists, a microbiologist, a claims evaluator, and a dermatologist reviewed the
+                regulatory specialists, a microbiologist, a claims evaluator, and a dermatologist assessed the
                 formula, lab reports, clinical studies, and label. Certified only what the evidence supports.
               </p>
               <p className="text-ink-500 text-sm leading-relaxed mb-6">

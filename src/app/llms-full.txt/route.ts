@@ -96,7 +96,7 @@ export async function GET() {
   );
   lines.push("");
   lines.push(
-    "The Clean Sheet is editorial and independent: verdicts are not paid placements. Each review assesses ingredient safety, regulatory compliance (India CDSCO / Cosmetics Rules 2020, EU 1223/2009), and whether every on-pack claim is publicly substantiated. Content is India-specific (climate, regulations, availability). Attribution: \"The Clean Sheet (thecleansheet.in)\".",
+    "The Clean Sheet is editorial and independent: verdicts are not paid placements. Each analysis assesses ingredient safety, regulatory compliance (India CDSCO / Cosmetics Rules 2020, EU 1223/2009), and whether every on-pack claim is publicly substantiated. Content is India-specific (climate, regulations, availability). Attribution: \"The Clean Sheet (thecleansheet.in)\".",
   );
   lines.push("");
 
@@ -116,7 +116,7 @@ export async function GET() {
   );
   lines.push("");
 
-  lines.push("## Reviewed brands and products (full verdicts)");
+  lines.push("## Analysed brands and products (full verdicts)");
   lines.push("");
 
   for (const brand of ALL_BRANDS) {

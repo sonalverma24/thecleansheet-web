@@ -104,7 +104,7 @@ export default function CommunityIllustrative() {
                 Post your shelf. We’ll tell you what’s doubling up.
               </span>
               <span className="text-[13px] text-[#4a4a4a] leading-[1.5]">
-                Share a photo of your routine and the community, plus our reviewers, flag overlaps and clashes.
+                Share a photo of your routine and the community, plus our analysts, flag overlaps and clashes.
               </span>
               <a
                 href={WHATSAPP_COMMUNITY_URL}

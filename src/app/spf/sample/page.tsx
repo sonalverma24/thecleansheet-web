@@ -108,7 +108,7 @@ const VERIFIED = [
   {
     tone: 'plain',
     label: 'Claim language',
-    claim: '14 live claims reviewed',
+    claim: '14 live claims checked',
     result: '12 supported · 2 amended before publication',
     body: 'Every SPF-related claim across the website, pack, ads and marketplace listings. Two were amended by the brand before this page was issued. Both are named in the scope note below.',
   },
@@ -140,8 +140,8 @@ const HOW_TESTED = [
   },
   {
     n: '04',
-    title: 'A second assessor reviewed the decision',
-    body: 'The person who sold the engagement did not decide its outcome. Every verdict is reviewed independently before it is communicated or published.',
+    title: 'A second assessor checked the decision',
+    body: 'The person who sold the engagement did not decide its outcome. Every verdict is checked independently before it is communicated or published.',
   },
 ];
 
@@ -308,7 +308,7 @@ export default function SampleProofPage() {
               ['Date of assessment', SAMPLE.assessed],
               ['Valid until', SAMPLE.expires],
               ['Methodology', SAMPLE.methodology],
-              ['Claims reviewed', '14 reviewed · 12 supported · 2 amended before publication'],
+              ['Claims checked', '14 checked · 12 supported · 2 amended before publication'],
               ['Status', 'Sample. No verification in force.'],
             ].map(([k, v], i) => (
               <div

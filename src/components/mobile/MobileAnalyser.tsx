@@ -67,7 +67,7 @@ const analysisSteps = [
   "Matching INCI names...",
   "Checking regulatory flags...",
   "Applying product category logic...",
-  "Reviewing claims...",
+  "Analysing claims...",
   "Calculating Clean Sheet Score...",
   "Creating consumer summary..."
 ];

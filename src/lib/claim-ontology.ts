@@ -54,7 +54,7 @@ export const isReviewRef = (ref?: string): boolean => REVIEW_REF_RE.test((ref ??
 
 /** The only public statement about who reviewed an alias. It names no one and carries no
     reference. It is shown only for an alias that is definitive in code (publicAttribution). */
-export const PANEL_ATTRIBUTION = "Reviewed by an expert on the TCS Panel.";
+export const PANEL_ATTRIBUTION = "Assessed by an expert on the TCS Panel.";
 
 /** YYYY-MM-DD, a real calendar date, not after `now`. */
 export function isReviewDate(date?: string, now: Date = new Date()): boolean {

@@ -8,13 +8,14 @@ import {
   interpretReviewResponse,
   REVIEW_GATE_SUBTITLE,
   REVIEW_GATE_TITLE,
+  LEGACY_REVIEW_RUN_PARAM,
   REVIEW_RUN_PARAM,
   REVIEW_STEPS,
   type ReviewRunError,
 } from "@/lib/review-run";
 
 /* Runs a product review in place, then opens the product's permanent page
-   (/reviews/[slug]). Existing reviews come back instantly; a new product takes
+   (/analysis/[slug]). Existing reviews come back instantly; a new product takes
    about a minute, during which `phase` is "running" and `stepIdx` advances.
    Running a NEW analysis needs an account, so signed-out people get the sign-in
    modal and come back with ?review=<query>, which this hook runs on arrival. */
@@ -69,7 +70,7 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
         const outcome = interpretReviewResponse(res.status, data, text);
         if (outcome.kind === "done") {
           navigating = true;
-          router.push(`/reviews/${outcome.slug}`);
+          router.push(`/analysis/${outcome.slug}`);
         } else if (outcome.kind === "auth") {
           setState({ phase: "idle" });
           askToSignIn(text);
@@ -89,16 +90,17 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
     [user, router, askToSignIn],
   );
 
-  // Arriving with ?review=<query> (the sign-in round trip, or an old /review?q= link): run it once auth is known.
+  // Arriving with ?analyse=<query> (the sign-in round trip, or an old /review?q= link): run it once auth is known.
   const autoRan = useRef(false);
   useEffect(() => {
     if (!autoRun || authLoading || autoRan.current) return;
     autoRan.current = true;
     const url = new URL(window.location.href);
-    const q = url.searchParams.get(REVIEW_RUN_PARAM);
+    const q = url.searchParams.get(REVIEW_RUN_PARAM) ?? url.searchParams.get(LEGACY_REVIEW_RUN_PARAM);
     if (!q?.trim()) return;
     const id = window.setTimeout(() => {
       url.searchParams.delete(REVIEW_RUN_PARAM);
+      url.searchParams.delete(LEGACY_REVIEW_RUN_PARAM);
       window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
       void run(q);
     }, 0);

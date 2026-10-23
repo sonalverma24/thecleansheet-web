@@ -168,7 +168,7 @@ export default function ConsumersPage() {
               {
                 icon: Star,
                 title: "Manufacturing quality",
-                desc: "Whether the manufacturer holds GMP certification and what level of quality documentation was reviewed. A safe formula in a poorly manufactured product is still a problem.",
+                desc: "Whether the manufacturer holds GMP certification and what level of quality documentation was assessed. A safe formula in a poorly manufactured product is still a problem.",
                 color: "bg-blue-50 border-blue-200",
                 iconColor: "text-blue-600 bg-blue-100",
               },

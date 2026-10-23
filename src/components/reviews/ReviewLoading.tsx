@@ -36,7 +36,7 @@ export function ReviewLoading() {
       style={{ minHeight: "70vh", background: CREAM }}
       role="status"
       aria-live="polite"
-      aria-label="Loading the product review"
+      aria-label="Loading the product analysis"
     >
       <style>{`
         @keyframes tcs-fill  { from { transform: translateY(140px); } to { transform: translateY(21px); } }
@@ -109,7 +109,7 @@ export function ReviewLoading() {
         className="font-display mt-8 text-[22px] sm:text-[26px] leading-snug"
         style={{ color: INK, maxWidth: 420 }}
       >
-        Getting you a comprehensive review of the product
+        Getting you a comprehensive analysis of the product
       </p>
 
       <p

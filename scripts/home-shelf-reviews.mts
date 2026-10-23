@@ -159,4 +159,4 @@ for (const [i, { seed }] of todo.entries()) {
 }
 
 console.log(`\nDone. ${results.length} review(s) stored. State: ${statePath}`);
-for (const r of results) console.log(`  /reviews/${r.slug}  ${r.tierLabel}`);
+for (const r of results) console.log(`  /analysis/${r.slug}  ${r.tierLabel}`);

@@ -351,10 +351,10 @@ export default function CertificationProofPage() {
               <Row label="Manufacturer" value="Effeza Science Pvt Ltd" />
               <Row label="GMP certification" value="GMP-certified + FDA India-approved manufacturing facility" pass={true} />
               <Row label="ISO 22716 GMP" value="Confirmed [SAMPLE]" pass={true} />
-              <Row label="Stability testing" value="Accelerated stability reviewed (40°C / 75% RH) [SAMPLE]" pass={true} />
+              <Row label="Stability testing" value="Accelerated stability assessed (40°C / 75% RH) [SAMPLE]" pass={true} />
               <Row label="Preservative efficacy" value="Passed, ISO 11930 [SAMPLE]" pass={true} />
               <Row label="Batch-level SPF protocol" value="Partially documented - minor deduction [SAMPLE]" pass={null} />
-              <Row label="UV filter supplier COAs" value="BASF-sourced UV filters reviewed [SAMPLE]" pass={true} />
+              <Row label="UV filter supplier COAs" value="BASF-sourced UV filters assessed [SAMPLE]" pass={true} />
               <Row label="Heavy metal testing" value="Not independently submitted for this evaluation [SAMPLE]" pass={null} />
             </div>
           </div>
@@ -396,12 +396,12 @@ export default function CertificationProofPage() {
               <ClaimRow
                 claim="Dermatologist-tested"
                 status="verified"
-                detail="24-hour primary irritation patch test conducted under dermatologist supervision. Zero irritation reported across participants. Protocol and adverse event summary reviewed [SAMPLE: study reference pending]."
+                detail="24-hour primary irritation patch test conducted under dermatologist supervision. Zero irritation reported across participants. Protocol and adverse event summary assessed [SAMPLE: study reference pending]."
               />
               <ClaimRow
                 claim="Ophthalmologist-tested"
                 status="verified"
-                detail="3-day ocular safety study, twice-daily application, conducted under ophthalmologist supervision. No ocular irritation reported. Protocol reviewed [SAMPLE]."
+                detail="3-day ocular safety study, twice-daily application, conducted under ophthalmologist supervision. No ocular irritation reported. Protocol assessed [SAMPLE]."
               />
               <ClaimRow
                 claim="Reef-safe"
@@ -411,22 +411,22 @@ export default function CertificationProofPage() {
               <ClaimRow
                 claim="Vegan and cruelty-free"
                 status="verified"
-                detail="Full INCI reviewed - no animal-derived ingredients. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin (not animal). Cruelty-free supported by brand declaration [SAMPLE - third-party audit not submitted for this evaluation]."
+                detail="Full INCI assessed - no animal-derived ingredients. Saccharomyces Ferment Lysate Filtrate is yeast fermentation origin (not animal). Cruelty-free supported by brand declaration [SAMPLE - third-party audit not submitted for this evaluation]."
               />
               <ClaimRow
                 claim="Fragrance-free"
                 status="verified"
-                detail="No parfum, fragrance, or masking fragrance ingredient in INCI. No EU 26 fragrance allergens detected above 0.001% leave-on threshold in reviewed formula [SAMPLE]."
+                detail="No parfum, fragrance, or masking fragrance ingredient in INCI. No EU 26 fragrance allergens detected above 0.001% leave-on threshold in assessed formula [SAMPLE]."
               />
               <ClaimRow
                 claim="Hydration 65% at 8h / 38% at 24h"
                 status="verified-qualified"
-                detail="Consumer study data reviewed. Corneometer-based hydration measurement, dry skin panel. Results consistent with ingredient profile (Sodium Hyaluronate, Polyglutamic Acid, Ectoin, Aloe). Full protocol and sample size details are [SAMPLE] - pending final protocol review."
+                detail="Consumer study data assessed. Corneometer-based hydration measurement, dry skin panel. Results consistent with ingredient profile (Sodium Hyaluronate, Polyglutamic Acid, Ectoin, Aloe). Full protocol and sample size details are [SAMPLE] - pending final protocol assessment."
               />
               <ClaimRow
                 claim="Blue light / visible light / IR protection"
                 status="not-verified"
-                detail="No peer-reviewed validated in vitro or clinical test for blue light, visible light, or IR protection in this specific formulation was submitted. Red Algae extract has published data on blue light defence, but a product-specific validated protocol was not available for review."
+                detail="No peer-reviewed validated in vitro or clinical test for blue light, visible light, or IR protection in this specific formulation was submitted. Red Algae extract has published data on blue light defence, but a product-specific validated protocol was not available for assessment."
               />
               <ClaimRow
                 claim="100% biodegradable"
@@ -467,8 +467,8 @@ export default function CertificationProofPage() {
             <div className="space-y-2">
               {[
                 { check: "SPF test from NABL/ISO 17025-accredited lab", done: true },
-                { check: "UVA / PA test evidence reviewed", done: true },
-                { check: "Photostability reviewed - UV filter combination is photostable", done: true },
+                { check: "UVA / PA test evidence assessed", done: true },
+                { check: "Photostability assessed - UV filter combination is photostable", done: true },
                 { check: "Water resistance test with duration specified on label", done: true },
                 { check: "All UV filters legal in assessed markets (India, EU)", done: true },
                 { check: "No banned UV filters (no 4-MBC, no oxybenzone, no octinoxate)", done: true },
@@ -500,7 +500,7 @@ export default function CertificationProofPage() {
           <div className="p-6">
             <div className="divide-y divide-teal-50">
               <Row label="Vegan ingredients" value="Confirmed - no animal-derived INCI identified" pass={true} />
-              <Row label="Cruelty-free" value="Brand declaration reviewed [SAMPLE - third-party audit not submitted]" pass={true} />
+              <Row label="Cruelty-free" value="Brand declaration assessed [SAMPLE - third-party audit not submitted]" pass={true} />
               <Row label="Palm / mica sourcing" value="No palm-derived or mica-containing ingredients in formula" pass={true} />
               <Row label="Natural origin index" value="Primarily synthetic UV filters - natural origin index not calculated for this evaluation [SAMPLE]" pass={null} />
               <Row label="Packaging sustainability" value="Packaging details not fully documented in dossier [SAMPLE]" pass={null} />
@@ -508,7 +508,7 @@ export default function CertificationProofPage() {
           </div>
         </div>
 
-        {/* ─ What was reviewed + INCI ─ */}
+        {/* ─ What was assessed + INCI ─ */}
         <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
           <div className="border-b border-ink-100 px-6 py-4 flex items-center gap-3">
             <FlaskConical size={16} className="text-teal-600 flex-shrink-0" />
@@ -535,15 +535,15 @@ export default function CertificationProofPage() {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-3">Formula review</p>
+                <p className="text-[10px] text-ink-400 uppercase tracking-widest mb-3">Formula assessment</p>
                 <div className="space-y-2">
                   {[
-                    "Complete formula reviewed confidentially [SAMPLE]",
+                    "Complete formula assessed confidentially [SAMPLE]",
                     "Ingredient origin types disclosed to certifier",
                     "Key actives checked against formula and evidence",
-                    "Fragrance and allergen review completed",
-                    "Preservative system reviewed",
-                    "UV filters and concentrations reviewed [SAMPLE]",
+                    "Fragrance and allergen assessment completed",
+                    "Preservative system assessed",
+                    "UV filters and concentrations assessed [SAMPLE]",
                     "Global restricted ingredient screening completed",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-2 text-xs text-ink-600">
@@ -608,7 +608,7 @@ export default function CertificationProofPage() {
               </div>
             </div>
             <p className="text-xs text-ink-400 mt-4 leading-relaxed italic">
-              Certification confirms this product met our review criteria based on submitted and verified evidence. It does not guarantee no person will ever experience an adverse reaction. Individual skin reactions are always possible. Discontinue use if a reaction occurs.
+              Certification confirms this product met our assessment criteria based on submitted and verified evidence. It does not guarantee no person will ever experience an adverse reaction. Individual skin reactions are always possible. Discontinue use if a reaction occurs.
             </p>
           </div>
         </div>
@@ -639,7 +639,7 @@ export default function CertificationProofPage() {
                     { test: "Primary irritation patch test", result: "Non-irritant", lab: "Dermatologist supervised [SAMPLE]", pass: true },
                     { test: "Ocular safety", result: "No irritation / 3-day study", lab: "Ophthalmologist supervised [SAMPLE]", pass: true },
                     { test: "Preservative efficacy (ISO 11930)", result: "Passed [SAMPLE]", lab: "ISO 17025 accredited [SAMPLE]", pass: true },
-                    { test: "Accelerated stability (40°C/75% RH)", result: "Reviewed [SAMPLE]", lab: "In-house, validated [SAMPLE]", pass: true },
+                    { test: "Accelerated stability (40°C/75% RH)", result: "Assessed [SAMPLE]", lab: "In-house, validated [SAMPLE]", pass: true },
                     { test: "Microbial count", result: "Within limits [SAMPLE]", lab: "ISO 17025 accredited [SAMPLE]", pass: true },
                   ].map(({ test, result, lab, pass }) => (
                     <tr key={test} className="border-b border-teal-50 last:border-0">

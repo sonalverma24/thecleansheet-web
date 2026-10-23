@@ -112,13 +112,13 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
                 className="text-[22px] text-[#282828] leading-tight mb-2"
                 style={{ fontFamily: FONT_DISPLAY }}
               >
-                {title ?? "Sign in to write a review"}
+                {title ?? "Sign in to share feedback"}
               </h2>
               <p
                 className="text-sm text-[#b0a8a4] mb-7 leading-snug"
                 style={{ fontFamily: FONT_SANS }}
               >
-                {subtitle ?? "Your review helps other consumers make better product decisions."}
+                {subtitle ?? "Your feedback helps other consumers make better product decisions."}
               </p>
 
               {/* Error */}

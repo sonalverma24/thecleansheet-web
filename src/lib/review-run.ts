@@ -1,10 +1,12 @@
 /* Shared pieces of the "search a product, get its review" flow that used to live
    on the /review page. The search boxes (home hero, /brands, the no-results card)
-   run the review in place and then open the product's permanent /reviews/[slug]
+   run the review in place and then open the product's permanent /analysis/[slug]
    page; there is no middle page. */
 
 /** Query flag that auto-runs a review on arrival, e.g. after the sign-in round trip. */
-export const REVIEW_RUN_PARAM = "review";
+export const REVIEW_RUN_PARAM = "analyse";
+/** The name this parameter had before the rename; links already in the wild still work. */
+export const LEGACY_REVIEW_RUN_PARAM = "review";
 
 export const REVIEW_GATE_TITLE = "Sign in to analyse a product";
 export const REVIEW_GATE_SUBTITLE = "Create a free account to run a Clean Sheet analysis on any product.";
@@ -49,5 +51,5 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
 export const REVIEW_ERROR_MESSAGE: Record<ReviewRunError, string> = {
   busy: "The engine is at capacity. Please try again in a minute.",
   scope: "That doesn't look like a beauty or personal-care product.",
-  fail: "Couldn't complete the review. Please try again, or paste the product page link for a more reliable read.",
+  fail: "Couldn't complete the analysis. Please try again, or paste the product page link for a more reliable read.",
 };

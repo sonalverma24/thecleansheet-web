@@ -268,7 +268,7 @@ const CHECKS: CheckDef[] = [
       if (filters.length) return { state: "not-disclosed", detail: `UV filters are present (${filters.slice(0, 3).join(", ")}), which supports the SPF claim, but no ISO 24444 test evidence is published.` };
       return { state: "not-disclosed", detail: "No SPF (ISO 24444) test evidence is published." };
     } },
-  { id: "pregnancy_safe", pillar: "Standards & Compliance", subCategory: "Special Categories", label: "Pregnancy-safe review", axis: "safety", obtainability: "public",
+  { id: "pregnancy_safe", pillar: "Standards & Compliance", subCategory: "Special Categories", label: "Pregnancy-safe assessment", axis: "safety", obtainability: "public",
     applies: (c) => !c.isRinseOff && (c.isFacial || /serum|treatment|anti-aging|moisturizer/i.test(c.category.type)),
     evaluate: (c) => {
       const hits = inciHas(c.inciJoined, RETINOIDS);

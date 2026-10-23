@@ -60,7 +60,7 @@ export function ProductRequestForm({
             <div className="text-3xl mb-4">✓</div>
             <h3 className="font-medium text-ink-900 mb-2">Request received</h3>
             <p className="text-sm text-ink-500 mb-6">
-              We&apos;ll review your request and aim to publish a scorecard for this product.
+              We&apos;ll look at your request and aim to publish a scorecard for this product.
             </p>
             <button
               onClick={onClose}
@@ -71,9 +71,9 @@ export function ProductRequestForm({
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <h3 className="font-medium text-ink-900 mb-1.5">Request a scorecard review</h3>
+            <h3 className="font-medium text-ink-900 mb-1.5">Request a scorecard analysis</h3>
             <p className="text-xs text-ink-500 mb-5">
-              We&apos;ll add it to our review queue and publish a full evidence-based scorecard.
+              We&apos;ll add it to our analysis queue and publish a full evidence-based scorecard.
             </p>
 
             <div className="space-y-3">
@@ -120,7 +120,7 @@ export function ProductRequestForm({
 
               <div>
                 <label className="block text-xs font-medium text-ink-700 mb-1">
-                  Why do you want this reviewed? <span className="text-ink-400">(optional)</span>
+                  Why do you want this analysed? <span className="text-ink-400">(optional)</span>
                 </label>
                 <textarea
                   value={reason}

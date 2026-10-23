@@ -31,7 +31,7 @@ const products: ProductScorecard[] = [
   /* -------------------------------------------------
      1. Vitamin C Daily Glow Serum with Turmeric
      Source: mamaearth.in
-     Web Evidence Review - June 2026
+     Web Evidence Analysis - June 2026
   ------------------------------------------------- */
   {
     productName: "Vitamin C Daily Glow Serum with Turmeric",
@@ -176,7 +176,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Synthetic Fragrance", "Claim Not Publicly Substantiated"],
     info_badges: ["Ayurveda-Aligned", "Canada NHPID Relevant", "Dermatologically Tested (Citation Absent)"],
     indiaContext: "Sodium Ascorbyl Phosphate is more heat-stable than L-Ascorbic Acid, which is a genuine advantage in India's warm climate where pure Vitamin C oxidises rapidly. The conversion step means results build more slowly than serums using 3-O-Ethyl Ascorbic Acid. Particularly useful for Fitzpatrick III-V skin for mild post-inflammatory hyperpigmentation reduction. Fragrance sensitivity can be heightened in hot weather when skin is flushed and more permeable. Consumers with reactive or atopic skin should consider patch testing before daily use.",
-    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
     category: "Serums",
     subCategory: "Vitamin C Serum",
@@ -189,7 +189,7 @@ const products: ProductScorecard[] = [
   /* -------------------------------------------------
      2. Ubtan Natural Face Wash with Turmeric & Saffron
      Source: mamaearth.in
-     Web Evidence Review - June 2026
+     Web Evidence Analysis - June 2026
   ------------------------------------------------- */
   {
     productName: "Ubtan Natural Face Wash with Turmeric & Saffron",
@@ -327,7 +327,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Claim Not Publicly Substantiated"],
     info_badges: ["Ayurveda-Aligned", "Canada NHPID Relevant"],
     indiaContext: "The ubtan ritual traditionally used freshly prepared pastes left on skin for extended contact time, providing significantly more active exposure than a rinse-off face wash. This product captures the cultural identity and ingredient heritage without replicating the traditional application method. As a daily gentle cleanser with a pleasant skin feel, it performs well for Indian skin in humid conditions. Use it for cleansing quality and mild exfoliation rather than expecting the brightening results of a targeted leave-on treatment.",
-    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
     category: "Face Cleansers",
     subCategory: "Foaming Cleanser",
@@ -340,7 +340,7 @@ const products: ProductScorecard[] = [
   /* -------------------------------------------------
      3. Aqua Glow Gel Moisturizer with Hyaluronic Acid
      Source: mamaearth.in
-     Web Evidence Review - June 2026
+     Web Evidence Analysis - June 2026
   ------------------------------------------------- */
   {
     productName: "Aqua Glow Gel Moisturizer with Hyaluronic Acid",
@@ -479,7 +479,7 @@ const products: ProductScorecard[] = [
     warn_badges: ["Synthetic Fragrance", "Claim Not Publicly Substantiated"],
     info_badges: ["India Climate Optimized", "Dermatologically Tested (Citation Absent)"],
     indiaContext: "A gel moisturizer is the right format for India's humid climate. The absence of heavy emollients prevents the greasy, pore-blocking feel that cream moisturisers cause in high humidity. Niacinamide at a functional concentration helps regulate sebum, particularly relevant during summer and monsoon months. Use under SPF during the day. For consumers with a history of fragrance sensitivity or atopic dermatitis, the undisclosed Parfum in this formula warrants a patch test before committing to daily use.",
-    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
     category: "Moisturizers",
     subCategory: "Gel Moisturizer",
@@ -492,7 +492,7 @@ const products: ProductScorecard[] = [
   /* -------------------------------------------------
      4. Retinol & Bakuchiol Youth Boost Night Cream
      Source: mamaearth.in
-     Web Evidence Review - June 2026
+     Web Evidence Analysis - June 2026
   ------------------------------------------------- */
   {
     productName: "Retinol & Bakuchiol Youth Boost Night Cream",
@@ -641,13 +641,13 @@ const products: ProductScorecard[] = [
     warn_badges: ["Not for Use During Pregnancy", "Synthetic Fragrance", "Claim Not Publicly Substantiated", "Mandatory SPF After Use"],
     info_badges: ["Dermatologically Tested (Citation Absent)", "pH-Sensitive Formula"],
     indiaContext: "Retinol cream is an accessible entry point for Indian consumers new to retinoids. The cream vehicle is gentler than a concentrated serum, and Bakuchiol may reduce the adjustment period. Start 2 to 3 times per week and apply SPF 30 or higher every morning. Retinol increases photosensitivity, and unprotected post-retinol sun exposure in India's UV-intense conditions is a direct trigger for post-inflammatory hyperpigmentation in Fitzpatrick III-V skin. Store in a cool, dark place. If you experience unexpected redness or itching after starting use, fragrance sensitivity during the adjustment phase is one possible contributing factor.",
-    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
     analyzedAt: "2026-06-10",
     category: "Moisturizers",
     subCategory: "Night Cream",
     concernTags: ["Fine Lines", "Wrinkles", "Texture", "Skin Renewal", "Collagen Support"],
     suitabilityTags: ["Dark Spots and Pigmentation", "Dry Skin", "Combination Skin"],
-    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Retinoid Flag", "Pregnancy Not Reviewed", "Active % Not Verified"],
+    cautionTags: ["Contains Fragrance", "Fragrance Allergen Flag", "Retinoid Flag", "Pregnancy Not Assessed", "Active % Not Verified"],
     fragranceStatus: "synthetic",
   },
 
@@ -658,7 +658,7 @@ export const mamaearthBrand: Brand = {
   slug: "mamaearth",
   logo: "https://images.mamaearth.in/wysiwyg/mamaearth-logo.png?format=auto&fit=scale",
   tagline: "Toxin-free, MADE SAFE certified skincare for the modern Indian consumer",
-  description: "Mamaearth is a Gurugram-based direct-to-consumer skincare brand founded in 2016 by Varun and Ghazal Alagh under Honasa Consumer Ltd, publicly listed on the NSE and BSE in 2023. The brand markets products as toxin-free and holds MADE SAFE certification, which excludes a defined list of harmful chemicals. Formulations blend traditional Indian botanicals with modern actives. The pattern across the range reviewed is consistent: full INCI is publicly available, MADE SAFE certification is genuine, but no published test reports for claims are accessible, active concentrations are not disclosed, and most leave-on products contain Parfum as an undisclosed fragrance blend. This recurring transparency gap sits alongside a toxin-free positioning that promises more than it delivers. The Retinol night cream, which combines an undisclosed fragrance blend with an active known to temporarily increase skin permeability, carries the most significant concern found in this review. Rescored under the 5-Pillar Public Evidence Score framework, June 2026.",
+  description: "Mamaearth is a Gurugram-based direct-to-consumer skincare brand founded in 2016 by Varun and Ghazal Alagh under Honasa Consumer Ltd, publicly listed on the NSE and BSE in 2023. The brand markets products as toxin-free and holds MADE SAFE certification, which excludes a defined list of harmful chemicals. Formulations blend traditional Indian botanicals with modern actives. The pattern across the range analysed is consistent: full INCI is publicly available, MADE SAFE certification is genuine, but no published test reports for claims are accessible, active concentrations are not disclosed, and most leave-on products contain Parfum as an undisclosed fragrance blend. This recurring transparency gap sits alongside a toxin-free positioning that promises more than it delivers. The Retinol night cream, which combines an undisclosed fragrance blend with an active known to temporarily increase skin permeability, carries the most significant concern found in this analysis. Rescored under the 5-Pillar Public Evidence Score framework, June 2026.",
   founded: "2016",
   headquarters: "Gurugram, India",
   website: "https://mamaearth.in",

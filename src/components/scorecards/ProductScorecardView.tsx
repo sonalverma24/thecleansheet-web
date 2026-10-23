@@ -2,7 +2,7 @@
    THE CLEAN SHEET™ · Product scorecard view
    THE one review format (extracted from the brand product page).
    Renders a ProductScorecard + Brand - used by static catalogue pages,
-   stored repository reviews (/reviews/[slug]) and live /review results.
+   stored repository reviews (/analysis/[slug]) and live /review results.
 ──────────────────────────────────────────────────────────────── */
 
 import type { ReactNode } from "react";
@@ -422,13 +422,13 @@ function IndiaUnavailableBody({ product }: { product: ProductScorecard }) {
           Not on sale in India yet
         </h2>
         <p className="text-sm text-[#282828]/70 leading-relaxed max-w-lg mx-auto">
-          {brandName}{" "}isn&apos;t available on Indian platforms, so a full India-specific review
+          {brandName}{" "}isn&apos;t available on Indian platforms, so a full India-specific analysis
           (price parity across Nykaa, Amazon and Flipkart, platform claim checks, and the
           CDSCO / ASCI read) isn&apos;t possible. The verdict above is based on the brand&apos;s
           published ingredient list and its global claims.
         </p>
         <p className="text-xs text-[#b0a8a4] mt-5 max-w-md mx-auto leading-relaxed">
-          We&apos;ll run the complete Clean Sheet review the day it lands in the Indian market.
+          We&apos;ll run the complete Clean Sheet analysis the day it lands in the Indian market.
         </p>
       </div>
     </div>
@@ -766,7 +766,7 @@ function buildMobileTabs({
       <CollapsibleSection key="regscreen" id="m-regulatory-screen" title="Regulatory screen" subtitle="Each ingredient mapped against 10 global regulatory authorities" headerRight={
         <span className="flex items-center gap-2.5">
           <PillarDots score={10 - flagged} max={10} />
-          <span className="text-xs" style={{ color: allClear ? "#248179" : "#b45309", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{allClear ? "Clear" : "Review"}</span>
+          <span className="text-xs" style={{ color: allClear ? "#248179" : "#b45309", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>{allClear ? "Clear" : "Check"}</span>
         </span>
       }>
         <div className="divide-y divide-[#efe9e0]">
@@ -789,7 +789,7 @@ function buildMobileTabs({
             );
           })}
         </div>
-        <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+        <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance assessment.</p>
       </CollapsibleSection>,
     );
   }
@@ -855,7 +855,7 @@ function buildMobileTabs({
         <div className="flex items-center gap-2.5 mb-3">
           <span className="w-[3px] h-[18px] rounded-full bg-[#b0a8a4] flex-shrink-0" />
           <div>
-            <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this review</h2>
+            <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this analysis</h2>
             <p className="text-xs text-[#b0a8a4] mt-0.5">Public evidence the brand could provide to close verification gaps</p>
           </div>
         </div>
@@ -881,12 +881,12 @@ function buildMobileTabs({
         <div className="flex items-start gap-4">
           <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="text-white mb-2">About this review</div>
+            <div className="text-white mb-2">About this analysis</div>
             <p className="text-white/60 text-sm leading-relaxed mb-3">
-              {product.cleanSheetNote ?? "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
+              {product.cleanSheetNote ?? "This is a web evidence analysis, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis."}
             </p>
             <p className="text-white/45 text-xs leading-relaxed mb-4">
-              Are you the brand? If you have published test data or want to request a re-review, write to us at{" "}
+              Are you the brand? If you have published test data or want to request a re-analysis, write to us at{" "}
               <a href={`mailto:hello@thecleansheet.in?subject=${encodeURIComponent(`Re-review request · ${product.brand} ${product.productName}`)}`} className="text-[#248179] hover:underline">hello@thecleansheet.in</a>.
             </p>
             <details className="group">
@@ -937,7 +937,7 @@ function buildMobileTabs({
   }
   method.push(
     <Link key="back" href={brandPageExists ? `/brands/${brandSlug}` : "/brands"} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
-      <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all reviews"}
+      <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all products"}
     </Link>,
   );
 
@@ -1233,7 +1233,7 @@ export function ProductScorecardView({
                 <span className="flex items-center gap-2.5">
                   <PillarDots score={10 - flagged} max={10} />
                   <span className="text-xs" style={{ color: allClear ? "#248179" : "#b45309", fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}>
-                    {allClear ? "Clear" : "Review"}
+                    {allClear ? "Clear" : "Check"}
                   </span>
                 </span>
               }
@@ -1258,7 +1258,7 @@ export function ProductScorecardView({
                   );
                 })}
               </div>
-              <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+              <p className="text-[10px] text-[#b0a8a4] px-4 py-2.5 border-t border-[#efe9e0]">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance assessment.</p>
             </CollapsibleSection>
           );
         })()}
@@ -1337,7 +1337,7 @@ export function ProductScorecardView({
             <div className="flex items-center gap-2.5 mb-3">
               <span className="w-[3px] h-[18px] rounded-full bg-[#b0a8a4] flex-shrink-0" />
               <div>
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this review</h2>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this analysis</h2>
                 <p className="text-xs text-[#b0a8a4] mt-0.5">Public evidence the brand could provide to close verification gaps</p>
               </div>
             </div>
@@ -1354,19 +1354,19 @@ export function ProductScorecardView({
           </section>
         )}
 
-        {/* 9. About this review - absorbs methodology + India context */}
+        {/* 9. About this analysis - absorbs methodology + India context */}
         <section id="methodology">
           <div className="bg-[#282828] rounded-2xl p-5 sm:p-6">
             <div className="flex items-start gap-4">
               <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <div className="text-white mb-2">About this review</div>
+                <div className="text-white mb-2">About this analysis</div>
                 <p className="text-white/60 text-sm leading-relaxed mb-3">
                   {product.cleanSheetNote ??
-                    "This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review."}
+                    "This is a web evidence analysis, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis."}
                 </p>
                 <p className="text-white/45 text-xs leading-relaxed mb-4">
-                  Are you the brand? If you have published test data or want to request a re-review, write to us at{" "}
+                  Are you the brand? If you have published test data or want to request a re-analysis, write to us at{" "}
                   <a
                     href={`mailto:hello@thecleansheet.in?subject=${encodeURIComponent(`Re-review request · ${product.brand} ${product.productName}`)}`}
                     className="text-[#248179] hover:underline"
@@ -1376,7 +1376,7 @@ export function ProductScorecardView({
                   .
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
-                  {["Independent review", "Public evidence only"].map((m) => (
+                  {["Independent analysis", "Public evidence only"].map((m) => (
                     <span key={m} className="text-[11px] text-white/35">{m}</span>
                   ))}
                 </div>
@@ -1449,7 +1449,7 @@ export function ProductScorecardView({
           href={brandPageExists ? `/brands/${brandSlug}` : "/brands"}
           className="inline-flex items-center gap-2 text-sm text-[#b0a8a4] hover:text-[#282828] transition-colors"
         >
-          <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all reviews"}
+          <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all products"}
         </Link>
       </div>
 
