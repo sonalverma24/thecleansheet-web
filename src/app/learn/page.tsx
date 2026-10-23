@@ -149,7 +149,7 @@ function ScanGraphic() {
           <div className="flex items-center gap-2">
             <span className="text-[10px]" style={{ color:"rgba(255,255,255,0.3)" }}>Result</span>
           </div>
-          <span className="text-[11px]" style={{ color:"#f87171" }}>3 ingredients flagged · review recommended</span>
+          <span className="text-[11px]" style={{ color:"#f87171" }}>3 ingredients flagged · check recommended</span>
         </div>
       </div>
     </>

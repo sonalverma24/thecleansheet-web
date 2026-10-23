@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
   // Auth check
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
-    return NextResponse.json({ error: "You must be signed in to leave a review." }, { status: 401 });
+    return NextResponse.json({ error: "You must be signed in to leave feedback." }, { status: 401 });
   }
 
   let body: {
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Rating must be a whole number between 1 and 5" }, { status: 400 });
   }
   if (!review_text || typeof review_text !== "string" || review_text.trim().length < 10) {
-    return NextResponse.json({ error: "Review must be at least 10 characters" }, { status: 400 });
+    return NextResponse.json({ error: "Feedback must be at least 10 characters" }, { status: 400 });
   }
 
   const isAnonymous = display_anonymously === true;
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
 
   if (upsertError) {
     console.error("[Reviews POST] Upsert failed:", upsertError.message);
-    return NextResponse.json({ error: "Failed to save review. Please try again." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save feedback. Please try again." }, { status: 500 });
   }
 
   // Recalculate aggregate rating via stored function

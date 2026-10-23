@@ -56,7 +56,7 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
   // Fragrance status — a top question for sensitive / acne-prone skin.
   if (product.fragranceStatus && product.fragranceStatus !== "unknown") {
     const fragranceAnswer: Record<string, string> = {
-      "free": `Yes. Our review of the published INCI list found no synthetic fragrance (Parfum) or scent-use essential oils in ${name}.`,
+      "free": `Yes. Our analysis of the published INCI list found no synthetic fragrance (Parfum) or scent-use essential oils in ${name}.`,
       "synthetic": `No. ${name} contains synthetic fragrance (Parfum) in its ingredient list — worth noting if you have sensitive or fragrance-reactive skin.`,
       "essential-oil": `${name} is scented with essential oils rather than synthetic fragrance. Essential oils can still trigger reactions in sensitive skin, so patch-test first.`,
       "both": `${name} contains both synthetic fragrance and essential oils. If you are fragrance-sensitive, patch-test before regular use.`,
@@ -102,10 +102,10 @@ export async function generateMetadata({
 
   const tierLabel = TIER_STYLES[resolveTier(product)].label;
   return {
-    title: `${product.productName} Review · ${tierLabel}`,
-    description: clipDescription(`Is ${product.productName} safe? Science-backed review: ingredient safety, regulatory compliance, and formulation analysis. Targets ${product.concern.toLowerCase()}.`),
+    title: `${product.productName} Analysis · ${tierLabel}`,
+    description: clipDescription(`Is ${product.productName} safe? Science-backed analysis: ingredient safety, regulatory compliance, and formulation analysis. Targets ${product.concern.toLowerCase()}.`),
     keywords: [
-      `${product.productName} review`,
+      `${product.productName} analysis`,
       `${product.productName} India`,
       `is ${product.productName} safe`,
       `${brand.name} ingredients safe`,

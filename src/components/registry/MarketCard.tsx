@@ -10,8 +10,8 @@ import { seedImageFor, shelfNote } from "@/lib/home-shelf";
 import { track } from "@/lib/analytics";
 
 /* One product in the /brands marketplace. Same card as the home shelf: a clean pack
-   shot on white, brand, name, the real standing, one line from the review itself.
-   The whole card opens the review (the title link is stretched over it); the compare
+   shot on white, brand, name, the real standing, one line from the analysis itself.
+   The whole card opens the analysis (the title link is stretched over it); the compare
    button sits above that link so it does not navigate. */
 
 export const MAX_COMPARE = 4;

@@ -11,17 +11,17 @@ import { CrawlableIndex, type IndexGroup } from "@/components/seo/CrawlableIndex
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Product Reviews · India's Independent Clean Beauty Registry",
+  title: "Product Analyses · India's Independent Clean Beauty Registry",
   description:
-    "Independent, science-backed reviews of India's beauty products. Marketing claims graded against real evidence, full ingredient analysis, regulatory checks, zero brand bias.",
+    "Independent, science-backed analyses of India's beauty products. Marketing claims graded against real evidence, full ingredient analysis, regulatory checks, zero brand bias.",
   keywords: [
-    "clean beauty brands India", "Minimalist review India", "best clean skincare brands India",
+    "clean beauty brands India", "Minimalist analysis India", "best clean skincare brands India",
     "brand ingredient safety score", "skincare brand ranking India", "clean beauty certification India",
   ],
   alternates: { canonical: "https://thecleansheet.in/brands" },
   openGraph: {
-    title: "Product Reviews | The Clean Sheet™",
-    description: "Independent reviews of Indian beauty products. Claims checked against proof, formulas read ingredient by ingredient.",
+    title: "Product Analyses | The Clean Sheet™",
+    description: "Independent analyses of Indian beauty products. Claims checked against proof, formulas read ingredient by ingredient.",
     url: "https://thecleansheet.in/brands",
     type: "website",
   },
@@ -107,7 +107,7 @@ export default async function BrandsPage() {
       <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pt-8 sm:pt-14 lg:pt-[72px] pb-8 sm:pb-10 lg:pb-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 lg:gap-16 lg:items-end">
         <div className="flex flex-col gap-4 md:gap-6">
           <HeroReveal>
-            <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">The reviews</p>
+            <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">Product analyses</p>
           </HeroReveal>
           <HeroReveal delay={0.05}>
             <h1 className="font-display font-light text-[clamp(38px,4.6vw,60px)] leading-[1.05] tracking-[-0.02em] text-[#282828] text-balance">
@@ -119,7 +119,7 @@ export default async function BrandsPage() {
           <HeroReveal delay={0.1}>
             <p className="text-[15px] md:text-[17px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a] max-w-[520px] text-pretty">
               Every marketing claim graded against real evidence, every formula read ingredient by ingredient. Search,
-              filter and compare the products we have reviewed.
+              filter and compare the products we have analysed.
             </p>
           </HeroReveal>
           <HeroReveal delay={0.15}>
@@ -137,9 +137,9 @@ export default async function BrandsPage() {
         <HeroReveal delay={0.15}>
           <div className="rounded-[18px] border border-[#e5dfd6] bg-[#f4faf9] p-5 md:p-7 flex flex-col gap-3 md:gap-4">
             <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#248179] uppercase">Not listed yet?</span>
-            <h2 className="font-display font-light text-[26px] md:text-[30px] leading-[1.1] text-[#282828]">Review any product, free.</h2>
+            <h2 className="font-display font-light text-[26px] md:text-[30px] leading-[1.1] text-[#282828]">Analyse any product, free.</h2>
             <p className="text-[14px] leading-[1.55] text-[#4a4a4a]">
-              Paste a product name or link. If we have not reviewed it, we will check it now and open the result.
+              Paste a product name or link. If we have not analysed it yet, we will check it now and open the result.
             </p>
             <HeroSearch stacked />
           </div>
@@ -150,8 +150,8 @@ export default async function BrandsPage() {
 
       <CrawlableIndex
         id="all-reviews"
-        heading="All reviewed brands and products"
-        intro="Every product The Clean Sheet has reviewed, listed by brand."
+        heading="All analysed brands and products"
+        intro="Every product The Clean Sheet has analysed, listed by brand."
         groups={indexGroups}
       />
     </div>

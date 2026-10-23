@@ -178,10 +178,10 @@ describe("URL state", () => {
     expect(stateFromParams(new URLSearchParams(search))).toEqual(state);
   });
 
-  it("leaves out the default sort and keeps unrelated parameters like ?review=", () => {
-    const out = searchWithState("review=cosrx+bha&q=old", { query: "serum", sort: "best_match", filters: EMPTY_FILTERS });
+  it("leaves out the default sort and keeps unrelated parameters like ?analyse=", () => {
+    const out = searchWithState("analyse=cosrx+bha&q=old", { query: "serum", sort: "best_match", filters: EMPTY_FILTERS });
     const sp = new URLSearchParams(out);
-    expect(sp.get("review")).toBe("cosrx bha");
+    expect(sp.get("analyse")).toBe("cosrx bha");
     expect(sp.get("q")).toBe("serum");
     expect(sp.has("sort")).toBe(false);
   });

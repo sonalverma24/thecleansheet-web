@@ -39,7 +39,7 @@ export default function HeroSearch({ stacked = false }: { /** Keep the phone lay
           disabled={busy || !query.trim()}
           className={`h-[52px] w-full rounded-lg bg-[#248179] hover:bg-[#1d6b64] active:scale-[0.98] disabled:opacity-60 text-white text-[15px] font-bold whitespace-nowrap transition-[background-color,transform] ${stacked ? "" : "md:text-[14px] md:w-auto md:h-auto md:px-[18px] md:py-3"}`}
         >
-          {busy ? "Reviewing…" : "Check the evidence"}
+          {busy ? "Analysing…" : "Check the evidence"}
         </button>
       </form>
       <ReviewRunStatus

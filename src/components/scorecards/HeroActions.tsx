@@ -60,7 +60,7 @@ export function HeroActions({ productId }: Props) {
           className="flex-1 flex items-center justify-center gap-1.5 bg-[#248179] hover:bg-[#1e6b62] text-white text-xs py-2.5 rounded-xl transition-colors"
           style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
         >
-          {user ? (reviewCount > 0 && /* user's own review check handled server-side */ false ? "Edit your review" : "Add Review") : "Add Review"}
+          {user ? (reviewCount > 0 && /* user's own review check handled server-side */ false ? "Edit your feedback" : "Add feedback") : "Add feedback"}
         </button>
         <Link
           href="/brands"
@@ -75,7 +75,7 @@ export function HeroActions({ productId }: Props) {
       <button
         onClick={scrollToReviews}
         className="flex items-center gap-2 group text-left"
-        aria-label="Scroll to reviews"
+        aria-label="Scroll to consumer feedback"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="flex-shrink-0">
           <path
@@ -96,7 +96,7 @@ export function HeroActions({ productId }: Props) {
               className="text-xs text-[#b0a8a4] group-hover:text-[#248179] transition-colors"
               style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
             >
-              from {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+              from {reviewCount} {reviewCount === 1 ? "rating" : "ratings"}
             </span>
           </>
         ) : (
@@ -104,7 +104,7 @@ export function HeroActions({ productId }: Props) {
             className="text-xs text-[#b0a8a4] group-hover:text-[#248179] transition-colors"
             style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
           >
-            No reviews yet
+            No ratings yet
           </span>
         )}
       </button>

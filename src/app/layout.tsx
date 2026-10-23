@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     "India's first science-backed clean beauty platform. AI-powered ingredient analysis, a certified product directory, and a searchable ingredient database. Know what's in your skincare.",
   keywords: [
     "clean beauty India", "ingredient safety checker", "cosmetic ingredient analysis",
-    "skincare product review India", "INCI ingredient checker", "clean beauty certification",
+    "skincare product analysis India", "INCI ingredient checker", "clean beauty certification",
     "is this product safe", "beauty product ingredients India",
     "The Clean Sheet", "skincare certification India", "clean beauty tool",
   ],
@@ -168,7 +168,7 @@ export default function RootLayout({
                 },
                 {
                   "@type": "SoftwareApplication",
-                  name: "The Clean Sheet Product Review",
+                  name: "The Clean Sheet Product Analyser",
                   applicationCategory: "HealthApplication",
                   operatingSystem: "Web",
                   url: "https://thecleansheet.in/review",

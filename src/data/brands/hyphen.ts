@@ -522,7 +522,7 @@ const products: ProductScorecard[] = [
     analyzedAt: "2026-06-10",
     concernTags: ["Fine Lines", "Wrinkles", "Texture", "Skin Renewal"],
     suitabilityTags: ["Retinoid Beginners", "Active Experienced Users"],
-    cautionTags: ["Retinoid Flag", "Pregnancy Not Reviewed", "High Irritation Potential"],
+    cautionTags: ["Retinoid Flag", "Pregnancy Not Assessed", "High Irritation Potential"],
   },
 
   /* -------------------------------------------------

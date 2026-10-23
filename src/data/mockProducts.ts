@@ -314,8 +314,8 @@ export const mockProducts: Product[] = [
       { name: "Caprylic/Capric Triglyceride", function: "Emollient", concern: "low", why: "Gently conditions", matters: "Highly stable fatty acid ester" }
     ],
     claims_audit: [
-      { claim: "Pediatrician Tested", status: "Supported by available data", reason: "Standard clinical evaluation records submitted.", evidence_needed: "Dossier review" },
-      { claim: "Safe for Newborns", status: "Supported by available data", reason: "No restricted baby ingredients found in formulation.", evidence_needed: "Dossier review" }
+      { claim: "Pediatrician Tested", status: "Supported by available data", reason: "Standard clinical evaluation records submitted.", evidence_needed: "Dossier assessment" },
+      { claim: "Safe for Newborns", status: "Supported by available data", reason: "No restricted baby ingredients found in formulation.", evidence_needed: "Dossier assessment" }
     ],
     retailer_links: [
       { retailer: "Amazon", url: "https://amazon.com" },

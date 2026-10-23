@@ -6,6 +6,7 @@ import type { NavMenuItem } from './NavMenu';
 
 export const CONSUMER_MENU: NavMenuItem[] = [
   { label: 'Analyser', href: '/brands' },
+  { label: 'Browse products', href: '/brands#registry' },
   { label: 'Community', href: '/#community' },
   { label: 'Learn', href: '/education' },
 ];

@@ -69,7 +69,7 @@ describe("pillarStanding", () => {
     const r = pillarStanding(input());
     expect(r.standing).toBe("Not Recommended");
     expect(r.pillars.filter((p) => p.status === "failing").map((p) => p.pillar)).toEqual([SAFETY, IRRITATION]);
-    expect(r.reason).toBe(`Two or more areas of the review fall short: ${SAFETY} and ${IRRITATION}.`);
+    expect(r.reason).toBe(`Two or more areas of the analysis fall short: ${SAFETY} and ${IRRITATION}.`);
   });
 
   it("one failing pillar alone is Room to Improve", () => {

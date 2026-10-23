@@ -104,7 +104,7 @@ export function ReviewsSection({ productId }: Props) {
 
   function handleFormSuccess(updated: { average_rating: number; review_count: number }) {
     setFormOpen(false);
-    setSuccessMessage(data?.user_review ? "Your review has been updated." : "Your review has been posted.");
+    setSuccessMessage(data?.user_review ? "Your feedback has been updated." : "Your feedback has been posted.");
     fetchReviews();
     // Notify HeroActions to refresh its rating display
     window.dispatchEvent(
@@ -125,7 +125,7 @@ export function ReviewsSection({ productId }: Props) {
         <div className="flex items-center gap-2.5">
           <span className="w-[3px] h-[18px] rounded-full bg-[#248179] flex-shrink-0" />
           <h2 className="text-sm text-[#282828]" style={{ fontFamily: FONT_DISPLAY }}>
-            Consumer reviews
+            Consumer feedback
           </h2>
         </div>
         {hasReviews && !formOpen && (
@@ -133,7 +133,7 @@ export function ReviewsSection({ productId }: Props) {
             onClick={handleAddReviewClick}
             className="text-xs text-[#248179] border border-[#248179]/30 px-3 py-1.5 rounded-lg hover:bg-[#e3f1ef] transition-colors"
           >
-            {userReview ? "Edit your review" : "Write a review"}
+            {userReview ? "Edit your feedback" : "Share your feedback"}
           </button>
         )}
       </div>
@@ -175,14 +175,14 @@ export function ReviewsSection({ productId }: Props) {
               <div className="h-10 w-px bg-[#b0a8a4]/20" />
               <div>
                 <p className="text-sm text-[#282828]">
-                  Based on {data?.review_count} {data?.review_count === 1 ? "review" : "reviews"}
+                  Based on {data?.review_count} {data?.review_count === 1 ? "rating" : "ratings"}
                 </p>
                 {!formOpen && (
                   <button
                     onClick={handleAddReviewClick}
                     className="text-xs text-[#248179] mt-1 hover:underline"
                   >
-                    {userReview ? "Edit your review" : "Write a review"}
+                    {userReview ? "Edit your feedback" : "Share your feedback"}
                   </button>
                 )}
               </div>
@@ -205,16 +205,16 @@ export function ReviewsSection({ productId }: Props) {
           {!hasReviews && !formOpen && (
             <div className="bg-white rounded-2xl border border-[#b0a8a4]/25 p-6 sm:p-8 text-center">
               <p className="text-sm text-[#282828] mb-1" style={{ fontFamily: FONT_DISPLAY }}>
-                No reviews yet.
+                No feedback yet.
               </p>
               <p className="text-xs text-[#b0a8a4] mb-5">
-                Be the first to review this product.
+                Be the first to share feedback on this product.
               </p>
               <button
                 onClick={handleAddReviewClick}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#248179] text-white text-xs font-medium rounded-lg hover:bg-[#1d6e67] transition-colors"
               >
-                Write a review
+                Share your feedback
               </button>
             </div>
           )}

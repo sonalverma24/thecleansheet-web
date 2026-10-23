@@ -103,7 +103,7 @@ const TIERS = [
     cta: false,
   },
   {
-    name: 'Evidence Review',
+    name: 'Evidence Assessment',
     price: '₹45,000',
     meta: '7 working days · private',
     body: 'The full twelve-point audit of the evidence you already hold, with a remediation plan and rewritten claim language. No public output. Built for the six weeks before a launch, when artwork can still change.',
@@ -113,7 +113,7 @@ const TIERS = [
     name: 'SPF Proof Report',
     price: '₹75,000',
     meta: '4–6 weeks · public proof page',
-    body: 'Everything in the Evidence Review, plus an off-the-shelf sample, confirmatory testing at an accredited lab, and — if it holds — a permanent public proof page, QR code and register entry. Laboratory costs are additional and passed through at cost.',
+    body: 'Everything in the Evidence Assessment, plus an off-the-shelf sample, confirmatory testing at an accredited lab, and — if it holds — a permanent public proof page, QR code and register entry. Laboratory costs are additional and passed through at cost.',
     cta: true,
     note: 'Founding cohort rate. ₹95,000 thereafter.',
   },
@@ -144,7 +144,7 @@ const FAQ = [
   },
   {
     q: 'Can we pay for a pass?',
-    a: 'No. The fee buys the assessment, not the outcome, and this is written into the engagement letter. The person who sells does not decide, every verdict is reviewed by a second assessor, and we publish annual figures for how many products were assessed against how many were verified — with no brand named. Without that denominator the mark would mean nothing.',
+    a: 'No. The fee buys the assessment, not the outcome, and this is written into the engagement letter. The person who sells does not decide, every verdict is checked by a second assessor, and we publish annual figures for how many products were assessed against how many were verified — with no brand named. Without that denominator the mark would mean nothing.',
   },
   {
     q: 'Do you make money on the laboratory testing?',
@@ -160,7 +160,7 @@ const FAQ = [
   },
   {
     q: 'Do we get to approve the proof page?',
-    a: 'You review it for factual accuracy, and you get five working days with the draft findings to submit further evidence or correct an error. You do not get to change the verdict, and that is stated in the engagement letter.',
+    a: 'You check it for factual accuracy, and you get five working days with the draft findings to submit further evidence or correct an error. You do not get to change the verdict, and that is stated in the engagement letter.',
   },
 ];
 

@@ -45,7 +45,7 @@ function Hero() {
             </h1>
             <p className="text-xl text-ink-600 leading-relaxed max-w-xl">
               The Clean Sheet evaluation is based on established international safety
-              science, EU SCCS opinions, CIR reviews, IFRA standards, ISO testing
+              science, EU SCCS opinions, CIR assessments, IFRA standards, ISO testing
               standards, and India&apos;s Cosmetics Rules 2020. We don&apos;t invent our own
               safety thresholds. We apply the best available evidence from recognised
               regulatory and scientific bodies.
@@ -220,7 +220,7 @@ const LAYERS = [
     bg: "bg-teal-50",
     borderColor: "border-teal-200",
     description:
-      "We review your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem.",
+      "We assess your GMP certification, preservative efficacy data, stability data, and active ingredient assays. A safe formula in a poorly manufactured product is still a problem.",
     details: [
       "Facility & Quality System (8 pts), GMP certification (ISO 22716 preferred), quality management documentation, Qualified Person designation, recall procedures",
       "Batch Control & Testing (7 pts), Certificate of Analysis per batch, in-process and finished product testing, stability data (accelerated + real-time), Preservative Efficacy Test",

@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       ? "Generally considered safe for cosmetic use."
       : concern === "medium"
       ? "Use with caution, some restrictions apply."
-      : "High concern, flagged for safety review.";
+      : "High concern, flagged for safety assessment.";
 
   const title = `${ing.INCI_Name}, Safety, Uses & Regulatory Status`;
   const description = clipDescription(`Is ${ing.INCI_Name} safe? ${safetyLine} See TCS concern level, India/EU/US regulatory status, allergen flags, concentration limits, and safety notes, backed by science.`);
@@ -366,7 +366,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                 </div>
               )}
               <div className="text-xs text-teal-400 mt-3">
-                Based on peer-reviewed safety data, regulatory status, and expert review by The Clean Sheet panel.
+                Based on peer-reviewed safety data, regulatory status, and expert assessment by The Clean Sheet panel.
               </div>
             </div>
 
@@ -459,7 +459,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
               Products containing {ing.INCI_Name}
             </h2>
             <p className="text-sm text-ink-500 mb-5">
-              Reviewed by The Clean Sheet, with our verdict.
+              Analysed by The Clean Sheet, with our verdict.
             </p>
             <div className="grid sm:grid-cols-2 gap-3">
               {productsWithIngredient.map((p) => {

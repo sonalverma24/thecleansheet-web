@@ -181,7 +181,7 @@ export default function PitchPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             {[
               "No operational changes required",
-              "No additional testing: we review what you have",
+              "No additional testing: we assess what you have",
               "No reformulation needed",
               "NDA protection for sensitive formulation data",
               "Works with your existing QA and lab ecosystem",
@@ -214,10 +214,10 @@ export default function PitchPage() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <PillarCard icon={<Scale size={18} />} name="Legal Compliance" description="Permitted in every declared market. UV filter legality, prohibited substances, label compliance." />
-            <PillarCard icon={<FlaskConical size={18} />} name="Ingredient Safety" description="Full hazard profile, exposure assessment, sensitisation review, SVHC screening." />
+            <PillarCard icon={<FlaskConical size={18} />} name="Ingredient Safety" description="Full hazard profile, exposure assessment, sensitisation assessment, SVHC screening." />
             <PillarCard icon={<Building2 size={18} />} name="Manufacturing Quality" description="GMP certification, ISO 22716 compliance, stability data, preservative efficacy." />
-            <PillarCard icon={<Shield size={18} />} name="Claims Verification" description="Every claim reviewed against submitted test evidence. SPF, clinical, efficacy." />
-            <PillarCard icon={<Leaf size={18} />} name="Ethics & Sourcing" description="Cruelty-free verification, vegan assessment, reef safety, supply chain review." />
+            <PillarCard icon={<Shield size={18} />} name="Claims Verification" description="Every claim assessed against submitted test evidence. SPF, clinical, efficacy." />
+            <PillarCard icon={<Leaf size={18} />} name="Ethics & Sourcing" description="Cruelty-free verification, vegan assessment, reef safety, supply chain assessment." />
           </div>
         </div>
       </section>

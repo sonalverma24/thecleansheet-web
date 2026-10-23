@@ -144,8 +144,8 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
               type="search"
               value={query}
               onChange={(e) => changeQuery(e.target.value)}
-              aria-label="Search reviewed products by name, brand or ingredient"
-              placeholder="Search reviewed products by name, brand or ingredient"
+              aria-label="Search analysed products by name, brand or ingredient"
+              placeholder="Search analysed products by name, brand or ingredient"
               className="flex-1 min-w-0 border-0 outline-none text-[16px] md:text-[15px] text-[#282828] bg-transparent placeholder:text-[#b0a8a4] [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
@@ -248,7 +248,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
             </div>
           )}
 
-          <p className="text-[12px] text-[#b0a8a4] pt-2">Standings are Clean Sheet review standings. They are not certifications.</p>
+          <p className="text-[12px] text-[#b0a8a4] pt-2">Standings come from the Clean Sheet analyser. They are not certifications.</p>
         </div>
       </div>
 

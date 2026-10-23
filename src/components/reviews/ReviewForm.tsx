@@ -33,7 +33,7 @@ export function ReviewForm({ productId, existingReview, onSuccess, onCancel }: P
     setError("");
 
     if (rating === 0) { setError("Please select a star rating."); return; }
-    if (text.trim().length < 10) { setError("Review must be at least 10 characters."); return; }
+    if (text.trim().length < 10) { setError("Feedback must be at least 10 characters."); return; }
 
     setSubmitting(true);
 
@@ -70,10 +70,10 @@ export function ReviewForm({ productId, existingReview, onSuccess, onCancel }: P
           className="text-sm text-[#282828] mb-1"
           style={{ fontFamily: "'Cooper BT', Georgia, serif" }}
         >
-          {isEdit ? "Edit your review" : "Write a review"}
+          {isEdit ? "Edit your feedback" : "Share your feedback"}
         </p>
         <p className="text-xs text-[#b0a8a4]">
-          {isEdit ? "Update your rating or review text below." : "Your experience helps others make better decisions."}
+          {isEdit ? "Update your rating or feedback below." : "Your experience helps others make better decisions."}
         </p>
       </div>
 
@@ -93,7 +93,7 @@ export function ReviewForm({ productId, existingReview, onSuccess, onCancel }: P
       {/* Review text */}
       <div>
         <label htmlFor="review-text" className="block text-xs text-[#282828] font-medium mb-2">
-          Your review <span className="text-[#fd6158]">*</span>
+          Your feedback <span className="text-[#fd6158]">*</span>
         </label>
         <textarea
           id="review-text"
@@ -163,7 +163,7 @@ export function ReviewForm({ productId, existingReview, onSuccess, onCancel }: P
           disabled={submitting}
           className="flex-1 sm:flex-none sm:min-w-[140px] px-5 py-2.5 rounded-xl bg-[#248179] text-white text-sm font-medium hover:bg-[#1d6e67] transition-colors disabled:opacity-50"
         >
-          {submitting ? "Submitting..." : isEdit ? "Update review" : "Submit review"}
+          {submitting ? "Submitting..." : isEdit ? "Update feedback" : "Submit feedback"}
         </button>
         <button
           type="button"

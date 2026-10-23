@@ -108,16 +108,16 @@ export function generateConsumerFitStatement(product: ProductScorecard): string 
       return "Built for parents looking for a mild rinse-off formula with fewer fragrance-related triggers.";
     }
     const category = product.category?.toLowerCase() ?? "cleanser";
-    return `Built for daily use as a gentle ${category} reviewed for ingredient safety and formula quality.`;
+    return `Built for daily use as a gentle ${category} analysed for ingredient safety and formula quality.`;
   }
 
   if (product.productType === "treatment") {
-    return "Built for targeted treatment use, reviewed for active concentration, safety signals, and claims evidence.";
+    return "Built for targeted treatment use, analysed for active concentration, safety signals, and claims evidence.";
   }
 
   const ptMap: Record<string, string> = { "leave-on": "serum", "rinse-off": "cleanser", "sunscreen": "sunscreen", "toner": "toner", "treatment": "treatment", "baby": "baby product", "eye-area": "eye-area product", "hair": "hair product" };
   const category = product.category ?? ptMap[product.productType] ?? product.productType.replace(/-/g, " ");
-  return `A ${category.toLowerCase()} reviewed for formula signals, ingredient safety, claims evidence, and consumer suitability.`;
+  return `A ${category.toLowerCase()} analysed for formula signals, ingredient safety, claims evidence, and consumer suitability.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,10 +182,10 @@ export function generateVerdict(product: ProductScorecard): string {
   } else if (product.productType === "rinse-off") {
     const isFragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
     const cat = product.category?.toLowerCase() ?? "cleanser";
-    base = `A ${cat}${isFragFree ? " without fragrance or essential oils" : ""} reviewed for ingredient safety and formula logic`;
+    base = `A ${cat}${isFragFree ? " without fragrance or essential oils" : ""} analysed for ingredient safety and formula logic`;
   } else {
     const cat = product.category ?? product.productType.replace(/-/g, " ");
-    base = `A ${cat.toLowerCase()} reviewed for active safety, formula logic, and claims evidence`;
+    base = `A ${cat.toLowerCase()} analysed for active safety, formula logic, and claims evidence`;
   }
 
   let watchOut = "";
@@ -453,7 +453,7 @@ export function generateScoreRationale(product: ProductScorecard): string {
   if (pass.some((b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("filter")) || b.includes("mineral"))) signals.push("a mineral-only UV formula");
   if (pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"))) signals.push("a fragrance free formula");
   if (pass.some((b) => b.includes("inci verified"))) signals.push("a verified ingredient list");
-  if (pass.some((b) => b.includes("claims verified") || b.includes("claims reviewed"))) signals.push("reviewed claims evidence");
+  if (pass.some((b) => b.includes("claims verified") || b.includes("claims assessed"))) signals.push("analysed claims evidence");
   if (pass.some((b) => b.includes("active verified"))) signals.push("a verified active concentration");
 
   if (signals.length === 0) {
@@ -1095,7 +1095,7 @@ export function ProductHero({ product, brand, brandSlug }: ProductHeroProps) {
       <div className="mt-8 border-t border-[#efe9e0] relative z-10">
         <div className="max-w-5xl mx-auto px-5 sm:px-8 py-3">
           <p className="text-[10px] text-[#b0a8a4] leading-relaxed">
-            <span className="text-[#248179] font-medium">Independent and free.</span> The Clean Sheet takes no money from brands to review, rank, or approve a product. This is a web evidence review, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of review.
+            <span className="text-[#248179] font-medium">Independent and free.</span> The Clean Sheet takes no money from brands to analyse, rank, or approve a product. This is a web evidence analysis, not a Clean Sheet certification. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis.
           </p>
         </div>
       </div>

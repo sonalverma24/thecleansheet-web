@@ -5,9 +5,9 @@ import { Shield, Sun, ArrowUpRight } from "lucide-react";
 import PillarDrilldown from "./PillarDrilldown";
 
 export const metadata: Metadata = {
-  title: "CodeSkin UltraLite Fluid Sunscreen | Full Independent Review | The Clean Sheet",
+  title: "CodeSkin UltraLite Fluid Sunscreen | Full Independent Assessment | The Clean Sheet",
   description:
-    "Every check, every pillar, every piece of evidence. Full independent certification review for CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++.",
+    "Every check, every pillar, every piece of evidence. Full independent certification assessment for CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++.",
   robots: { index: false, follow: false },
 };
 
@@ -143,7 +143,7 @@ export default function ProofPage() {
               5 pillars · every check passed
             </p>
             <h2 className="text-2xl sm:text-3xl font-medium text-ink-950 tracking-tight leading-none">
-              The full independent review
+              The full independent assessment
             </h2>
           </div>
           <p className="text-ink-400 text-sm max-w-xs leading-relaxed">

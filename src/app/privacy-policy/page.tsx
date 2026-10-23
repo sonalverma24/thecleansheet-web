@@ -126,7 +126,7 @@ export default function PrivacyPolicyPage() {
           <Section title="9. Third-Party Links">
             <p>
               Our website may link to external sites (e.g. Nykaa, Amazon). We are not responsible for the
-              privacy practices of those sites. Please review their privacy policies independently.
+              privacy practices of those sites. Please read their privacy policies independently.
             </p>
           </Section>
 

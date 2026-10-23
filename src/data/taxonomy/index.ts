@@ -227,7 +227,7 @@ const ALL_TYPE_LABELS = new Set(PRODUCT_TYPES.map((t) => t.label));
 // before validating, mirroring the same slug->label map used for filtering results.
 const CERT_SLUG_TO_LABEL: Record<string, string> = {
   "tcs-certified": "TCS Certified",
-  "under-review": "Under Review",
+  "under-review": "Under Assessment",
   "not-certified": "Not Certified",
 };
 

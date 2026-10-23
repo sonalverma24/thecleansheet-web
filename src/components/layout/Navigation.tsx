@@ -45,7 +45,7 @@ export function Navigation() {
     openLoginModal({
       returnPath: pathname,
       title: 'Sign in to your account',
-      subtitle: 'Save products, compare formulations, build routines, and write reviews.',
+      subtitle: 'Save products, compare formulations, build routines, and share feedback.',
     });
 
   return (

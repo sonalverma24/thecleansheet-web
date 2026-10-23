@@ -47,7 +47,7 @@ export function nextEvidenceStatus(current: EvidenceStatus, outcome: CaptureOutc
 /** Copy for the states. The Provisional wording is the owner's approved text. */
 export const EVIDENCE_COPY = {
   unverified: "Ingredient source not yet verified.",
-  conflicting: "Conflicting ingredient sources - assessment under review",
+  conflicting: "Conflicting ingredient sources - assessment pending",
 } as const;
 
 export const provisionalCopy = (calculatedStanding: string): string =>

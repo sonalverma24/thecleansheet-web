@@ -27,7 +27,7 @@ const products: ProductScorecard[] = [
     priceRange: "₹299",
     productType: "leave-on",
     concern: "Dry skin, intense moisturisation, dullness",
-    summary: "Himalaya's Rich Cocoa Butter Body Cream is an affordable ester-based moisturiser for dry skin, available at ₹299 for 200ml across Indian pharmacies and online platforms. The ingredient list is largely clean with a functional Olivem 1000 emulsifier system and a plausible preservative pair, but Theobroma Cacao Seed Butter appears relatively low in the formula despite being the named hero ingredient, and an unspecified fragrance with no allergen declarations is a transparency concern for sensitive-skin users. Consumer reviews on Nykaa and Amazon India note good value for money and adequate moisturisation, but those with fragrance sensitivities or acne-prone body skin should exercise caution.",
+    summary: "Himalaya's Rich Cocoa Butter Body Cream is an affordable ester-based moisturiser for dry skin, available at ₹299 for 200ml across Indian pharmacies and online platforms. The ingredient list is largely clean with a functional Olivem 1000 emulsifier system and a plausible preservative pair, but Theobroma Cacao Seed Butter appears relatively low in the formula despite being the named hero ingredient, and an unspecified fragrance with no allergen declarations is a transparency concern for sensitive-skin users. Consumer feedback on Nykaa and Amazon India notes good value for money and adequate moisturisation, but those with fragrance sensitivities or acne-prone body skin should exercise caution.",
     score: 67,
     scoreLabel: "Fair",
     publicDecisionLabel: "Needs proof",
@@ -175,7 +175,7 @@ const products: ProductScorecard[] = [
     claimsVerified: ["Moisturisation at ingredient level: glycerin and ester base provide surface hydration"],
     claimsNotVerified: ["'Rich Cocoa Butter' naming: cocoa butter does not appear at a dominant concentration in the publicly available INCI", "'Eliminates dryness and dullness': no published clinical or consumer-panel evidence found"],
     availabilitySources: ["Nykaa", "Amazon India", "Pharmacies"],
-    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula review, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
+    cleanSheetNote: "This assessment is based only on publicly available INCI, claims, and test evidence. It is not a full Clean Sheet certification. Full certification requires confidential formula assessment, exact concentrations, supplier documentation, manufacturing records, packaging compatibility, preservative efficacy, stability, and complete claim validation.",
   },
 
 ];

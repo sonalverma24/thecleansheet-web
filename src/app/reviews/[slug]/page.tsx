@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { review, verdict } = result;
   const tierLabel = TIER_STYLES[verdict.tier].label;
   return {
-    title: `${review.productName} Review · ${tierLabel}`,
+    title: `${review.productName} Analysis · ${tierLabel}`,
     description: clipDescription(`${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
     // A product that also has a curated catalogue page is the same content at two
     // URLs: the catalogue page is the canonical one.
@@ -59,7 +59,7 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: "https://thecleansheet.in" },
-          { "@type": "ListItem", position: 2, name: "Product Reviews", item: "https://thecleansheet.in/brands" },
+          { "@type": "ListItem", position: 2, name: "Product Analyses", item: "https://thecleansheet.in/brands" },
           { "@type": "ListItem", position: 3, name: product.productName, item: url },
         ],
       },

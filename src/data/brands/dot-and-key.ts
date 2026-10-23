@@ -1016,7 +1016,7 @@ export const dotAndKeyBrand: Brand = {
         { claim: "Ceramide barrier benefit", evidenceStatus: "Evidence visible", decision: "Publicly supported", note: "Ceramide NP/AP/EOP + Cholesterol is well-supported in published barrier science." },
       ],
       missingProof: ["Correct retinoid labelling (Retinyl Palmitate, not Retinol)", "Retinoid concentration disclosure", "Constituent allergen breakdown for Parfum", "Colourant purpose communication for three azo dyes"],
-      cleanSheetNote: "The ceramide base is genuinely good. The Retinyl Palmitate mislabelled as Retinol is the most significant transparency concern in the entire Dot & Key range reviewed. Combined with Parfum and three azo dyes in an overnight format, this is the lowest-scoring product in the brand.",
+      cleanSheetNote: "The ceramide base is genuinely good. The Retinyl Palmitate mislabelled as Retinol is the most significant transparency concern in the entire Dot & Key range analysed. Combined with Parfum and three azo dyes in an overnight format, this is the lowest-scoring product in the brand.",
       pillars: [
         {
           name: "Public INCI Safety Screen",
@@ -1080,7 +1080,7 @@ export const dotAndKeyBrand: Brand = {
         "Anti-ageing actives are a growing segment in India, with consumers increasingly researching ingredients. The 'Retinol' naming creates a false equivalence with clinical retinol products. Indian consumers comparing this to The Ordinary Retinol or prescription Tretinoin will have misaligned expectations. The ceramide base is genuinely good, but the retinoid claim requires clear correction.",
       concernTags: ["Fine Lines", "Wrinkles", "Skin Renewal", "Barrier Damage"],
       suitabilityTags: ["Retinoid Beginners"],
-      cautionTags: ["Retinoid Flag", "Contains Fragrance", "Fragrance Allergen Flag", "Pregnancy Not Reviewed", "Clinical Claim Not Verified"],
+      cautionTags: ["Retinoid Flag", "Contains Fragrance", "Fragrance Allergen Flag", "Pregnancy Not Assessed", "Clinical Claim Not Verified"],
     },
 
     // 10. Strawberry Dew Tinted Sunscreen SPF 50+

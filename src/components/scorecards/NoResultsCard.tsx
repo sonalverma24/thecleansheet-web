@@ -24,7 +24,7 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
       <p className="text-sm text-ink-500 leading-relaxed mb-8">
         We don&apos;t have a scorecard for{" "}
         {query ? <strong className="text-ink-700">&ldquo;{query}&rdquo;</strong> : "this search"} yet.
-        You can analyse it instantly with our free Product Analyser, or request a full evidence-based scorecard review.
+        You can analyse it instantly with our free Product Analyser, or request a full evidence-based scorecard analysis.
       </p>
 
       {/* Primary CTA: runs the review here, then opens its page */}
@@ -36,7 +36,7 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
           className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white text-sm font-medium px-5 py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-900/20 mb-4"
         >
           <FlaskConical size={15} />
-          {busy ? "Reviewing…" : "Analyse this product for free"}
+          {busy ? "Analysing…" : "Analyse this product for free"}
           <ArrowRight size={13} />
         </button>
       )}
@@ -47,7 +47,7 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
         onClick={() => setShowForm(true)}
         className="text-sm text-ink-500 hover:text-ink-700 underline underline-offset-2 transition-colors"
       >
-        Request a full scorecard review instead
+        Request a full scorecard analysis instead
       </button>
 
       {showForm && (

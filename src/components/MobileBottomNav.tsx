@@ -6,7 +6,7 @@ import { Home, Search, ShieldCheck, BookOpen, Info, FlaskConical } from "lucide-
 
 const NAV_ITEMS = [
   { href: "/",          label: "Home",      icon: Home         },
-  { href: "/brands",    label: "Reviews",   icon: FlaskConical },
+  { href: "/brands",    label: "Analyser",   icon: FlaskConical },
   { href: "/standard",  label: "Standard",  icon: ShieldCheck  },
   { href: "/education", label: "Education", icon: BookOpen     },
   { href: "/verify",    label: "Verify",    icon: Search       },

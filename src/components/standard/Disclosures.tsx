@@ -12,7 +12,7 @@ export const ACCREDITATION_FULL =
 export const ACCREDITATION_COMPACT = "Private certification framework. Not currently accredited.";
 
 export const PUBLIC_REVIEW_DISCLOSURE =
-  "This review uses publicly available information. Confidential formulation data, manufacturing records and private laboratory reports were not assessed. It is not certification.";
+  "This analysis uses publicly available information. Confidential formulation data, manufacturing records and private laboratory reports were not assessed. It is not certification.";
 
 export const FRAMEWORK_DISCLOSURE =
   "This framework describes the proposed requirements for The Clean Sheet certification scheme. The Clean Sheet is a voluntary private certification system. It does not replace legal registration, regulatory approval or professional medical advice.";

@@ -67,7 +67,7 @@ export default function TermsOfUsePage() {
               The Clean Sheet™ Certification is awarded at our sole discretion following independent evaluation.
               Certification does not constitute an endorsement of a brand&apos;s overall business practices or all
               products in its portfolio. Only the specific product(s) evaluated. Certification is subject to
-              periodic review and may be revoked if a product formulation changes or standards are not maintained.
+              periodic assessment and may be revoked if a product formulation changes or standards are not maintained.
             </p>
           </Section>
 
@@ -138,7 +138,7 @@ export default function TermsOfUsePage() {
           <Section title="11. Changes to Terms">
             <p>
               We may modify these Terms at any time. Continued use of the Platform after changes constitutes
-              acceptance of the revised Terms. We recommend reviewing this page periodically.
+              acceptance of the revised Terms. We recommend checking this page periodically.
             </p>
           </Section>
 

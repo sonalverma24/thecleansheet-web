@@ -71,7 +71,7 @@ export const BLOG_POSTS: BlogPost[] = [
       ] },
       { type: "paragraph", text: ["", { text: "Health Canada describes cyclomethicone", href: "https://www.canada.ca/en/health-canada/services/chemical-substances/chemicals-management-plan-3-substances/siloxanes-group.html" }, " as a material of variable composition primarily comprising D4, D5 and D6. You can look up any unfamiliar name in ", { text: "The Clean Sheet's ingredient glossary", href: "/ingredients" }, "."] },
       { type: "image", src: "https://images.pexels.com/photos/28994388/pexels-photo-28994388.jpeg?auto=compress&cs=tinysrgb&w=1600", alt: "A person applying hair serum with a dropper onto red hair", caption: "Cyclic silicones are common in leave-on hair serums, where they help the product spread and dry without residue." },
-      { type: "paragraph", text: ["These ingredients are not obscure. At the time of review, ", { text: "L'Oréal Paris's Indian webpage for Extraordinary Oil Hair Serum", href: "https://www.lorealparis.co.in/extraordinary-oil/serum-100-ml" }, " listed cyclopentasiloxane first."] },
+      { type: "paragraph", text: ["These ingredients are not obscure. At the time of analysis, ", { text: "L'Oréal Paris's Indian webpage for Extraordinary Oil Hair Serum", href: "https://www.lorealparis.co.in/extraordinary-oil/serum-100-ml" }, " listed cyclopentasiloxane first."] },
       { type: "paragraph", text: "That establishes a declared ingredient, not its exact concentration or a finding of harm. It does not establish that the product was sampled by NEERI. Formulations can also change, so the current pack matters." },
 
       { type: "heading", level: 2, text: "What the findings mean for a buyer" },
@@ -250,8 +250,8 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "heading", level: 2, text: "What to do before you buy" },
       { type: "paragraph", text: "Find the complete list. Match it to the current product. Check personal triggers. Clarify any percentage or claim driving your decision." },
       { type: "paragraph", text: "When the brand cannot resolve an important question, choosing a more transparent alternative is reasonable. You do not have to prove that a product is dangerous before deciding against buying it." },
-      { type: "paragraph", text: ["For help organising the evidence, use ", { text: "The Clean Sheet's Product Review tool", href: "/brands" }, ". Treat a review as support for your decision, with laboratory testing and individual medical assessment answering questions a public label cannot."] },
-      { type: "cta", text: "Turn a confusing ingredient list into a clear buying decision.", href: "/brands", label: "Review a Product" },
+      { type: "paragraph", text: ["For help organising the evidence, use ", { text: "The Clean Sheet's Product Analyser", href: "/brands" }, ". Treat an analysis as support for your decision, with laboratory testing and individual medical assessment answering questions a public label cannot."] },
+      { type: "cta", text: "Turn a confusing ingredient list into a clear buying decision.", href: "/brands", label: "Analyse a Product" },
 
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "sources", items: [
@@ -453,7 +453,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "That changes the economics of credibility." },
       { type: "paragraph", text: "And I think founders building today should prepare for it before the dashboards arrive." },
 
-      { type: "cta", text: "A claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Review a product" },
+      { type: "cta", text: "A claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Analyse a product" },
 
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
@@ -612,7 +612,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "For “dermatologically tested”, identify the assessment and its findings. For “clinically proven”, identify the particular result the evidence establishes. Make the conditions understandable where the customer sees the claim." },
       { type: "paragraph", text: "Before approving the label, ask your team to point to the evidence for every part of the sentence. If a word goes further than the report, change the word or build the evidence." },
 
-      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product’s wording holds up against its evidence.", href: "/brands", label: "Review a product" },
+      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product’s wording holds up against its evidence.", href: "/brands", label: "Analyse a product" },
 
       { type: "paragraph", text: "This article addresses claims on cosmetics sold in India. It separates Indian legal requirements, ASCI self regulation and recommended evidence review practices. Acceptability depends on the complete product, evidence and presentation; the examples are not individual label clearances." },
 
@@ -753,7 +753,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "A founder should be able to move from the pack to the manufacturer, from the manufacturer to the batch, and from the promise to the evidence without relying on someone’s memory." },
       { type: "paragraph", text: "Before your next production order, ask for the current licence, relevant product coverage and one complete example of a batch evidence file. Read them together." },
 
-      { type: "cta", text: "A licence proves who may manufacture. It does not prove a claim. See how a product holds up against the evidence behind it.", href: "/brands", label: "Review a product" },
+      { type: "cta", text: "A licence proves who may manufacture. It does not prove a claim. See how a product holds up against the evidence behind it.", href: "/brands", label: "Analyse a product" },
 
       { type: "paragraph", text: "This article explains the national framework and uses selected state documents as examples. Confirm the current filing requirements with the authority responsible for your manufacturing premises." },
 
@@ -825,7 +825,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "callout", text: "What happens when the recommendation system asks for more detail than the front label provides?" },
       { type: "heading", level: 2, text: "AI cannot verify evidence it cannot access" },
       { type: "image", src: "https://images.unsplash.com/photo-1570723989345-3a537f60a9c5?auto=format&fit=crop&w=1600&q=80", alt: "A person in a white lab coat holding a brown bottle and a glass tube", caption: "An AI system can only weigh the evidence it can actually reach. Photo: Bee Naturalles / Unsplash." },
-      { type: "paragraph", text: "An AI system can read product pages, retailer listings, reviews, articles and structured catalogues." },
+      { type: "paragraph", text: "An AI system can read product pages, retailer listings, customer comments, articles and structured catalogues." },
       { type: "paragraph", text: "It cannot independently know whether \"clinically proven\" refers to the finished product or only to an ingredient study." },
       { type: "paragraph", text: "It cannot infer whether \"dermatologist tested\" involved one expert assessment or a properly designed study." },
       { type: "paragraph", text: "It cannot determine whether one SPF report represents the formula currently being sold, unless that information is available, current and traceable." },
@@ -846,7 +846,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Because when an AI system recommends a product, the consumer's most important question should still be:" },
       { type: "callout", text: "Based on what?" },
       { type: "paragraph", text: "We are building the answer." },
-      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Review a product" },
+      { type: "cta", text: "Every claim on a label is only a claim until something backs it up. See how a product holds up against the evidence.", href: "/brands", label: "Analyse a product" },
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "paragraph", text: "This article references OpenAI's published descriptions of beauty as a research and comparison category within ChatGPT, and its work on structured product feeds for AI shopping experiences; Google's rollout of shopping journeys within AI Mode; the Advertising Standards Council of India (ASCI) code requirement that objective advertising claims be capable of substantiation; and the Cosmetics Rules, 2020, which prohibit false or misleading cosmetic claims in India." },
@@ -925,7 +925,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "Beauty marketing trains us to inspect what skin looks like. Skin health often requires paying closer attention to how it behaves. And when that behaviour suddenly changes, resist the instinct to shop first." },
       { type: "bullets", items: ["Look for the trigger.", "Look at what you started using.", "Look at how frequently you are using it.", "Look at your weather, water and environment.", "Then look at the product claims."] },
       { type: "paragraph", text: "Because \"for sensitive skin\" printed on the front of a bottle is still only a claim. The real question is what the finished product can prove." },
-      { type: "cta", text: "\"For sensitive skin\" is a claim. See how it holds up against the evidence before you buy.", href: "/brands", label: "Review a product" },
+      { type: "cta", text: "\"For sensitive skin\" is a claim. See how it holds up against the evidence before you buy.", href: "/brands", label: "Analyse a product" },
       { type: "divider" },
       { type: "heading", level: 2, text: "Sources and further reading" },
       { type: "paragraph", text: "This article draws on the International Forum for the Study of Itch consensus definition and position papers on sensitive skin; research published in the Journal of Investigative Dermatology and Clinical & Experimental Allergy on water hardness, surfactant deposition and skin barrier function; guidance from the American Academy of Dermatology on rosacea triggers; United States FDA consumer guidance on natural, organic and hypoallergenic cosmetic claims; and published dermatology literature on topical corticosteroid misuse in India." },
@@ -975,13 +975,13 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "paragraph", text: "A product verification system performs a different function. It connects laboratory evidence with the exact public claim, formula version, manufacturing records, packaging, change history and intended consumer communication. The two roles strengthen each other." },
       { type: "paragraph", text: "Testing evidence should be accepted from any appropriately qualified laboratory whose competence and scope cover the relevant method. The verification decision should remain separate and follow a published scheme. This keeps laboratory relationships collaborative and nonexclusive, and it means that commissioning a test does not automatically determine the final verification outcome. The complete evidence package and declared scope still matter." },
       { type: "paragraph", text: "For brands, this creates an additional commercial benefit. Valuable scientific work no longer needs to remain hidden inside technical folders. It can be translated into a clear public proof record without exposing confidential formulation information." },
-      { type: "heading", level: 2, text: "Public evidence reviews and certification are different" },
+      { type: "heading", level: 2, text: "Public evidence analyses and certification are different" },
       { type: "paragraph", text: "Consumers increasingly search for reports, paste ingredient lists into AI tools and ask whether a sunscreen claim is genuine. This creates demand for two distinct kinds of assessment." },
-      { type: "paragraph", text: "A public evidence review examines information already available on the product, brand website, packaging and other public sources. It can explain what has been disclosed, identify the claims supported by that information and highlight evidence that is currently unavailable to the public. It does not review the confidential formula, manufacturing records or private product dossier. It is therefore not product certification." },
-      { type: "paragraph", text: "Certification requires a defined scheme, confidential documentation, relevant laboratory evidence, manufacturing and quality records, independent technical review and a controlled decision. Continuing badge use also requires rules for changes, renewal, suspension and withdrawal. Keeping these activities separate protects consumers, brands and laboratories. It ensures that a public information gap is not automatically treated as evidence of poor product quality, and that certification carries a higher level of assessment than an online review." },
+      { type: "paragraph", text: "A public evidence analysis examines information already available on the product, brand website, packaging and other public sources. It can explain what has been disclosed, identify the claims supported by that information and highlight evidence that is currently unavailable to the public. It does not assess the confidential formula, manufacturing records or private product dossier. It is therefore not product certification." },
+      { type: "paragraph", text: "Certification requires a defined scheme, confidential documentation, relevant laboratory evidence, manufacturing and quality records, independent technical review and a controlled decision. Continuing badge use also requires rules for changes, renewal, suspension and withdrawal. Keeping these activities separate protects consumers, brands and laboratories. It ensures that a public information gap is not automatically treated as evidence of poor product quality, and that certification carries a higher level of assessment than an online analysis." },
       { type: "heading", level: 2, text: "Consumers need interpretation along with transparency" },
       { type: "paragraph", text: "Publishing a complete report can strengthen trust, but most consumers cannot reasonably be expected to interpret technical sunscreen data. A useful public proof page should help them understand:" },
-      { type: "bullets", items: ["The exact product and variant tested", "The relevant formula version or batch", "Whether the sample was brand submitted or independently purchased", "The laboratory and applicable method", "The testing and reporting dates", "The mean SPF and confidence interval", "The UVA PF, PA rating and critical wavelength", "Water resistance results, where claimed", "The stability stage and packaging used", "The claims covered by the evidence", "Any important limitations", "The current review or verification status"] },
+      { type: "bullets", items: ["The exact product and variant tested", "The relevant formula version or batch", "Whether the sample was brand submitted or independently purchased", "The laboratory and applicable method", "The testing and reporting dates", "The mean SPF and confidence interval", "The UVA PF, PA rating and critical wavelength", "Water resistance results, where claimed", "The stability stage and packaging used", "The claims covered by the evidence", "Any important limitations", "The current analysis or verification status"] },
       { type: "paragraph", text: "This is also where AI can help. It can extract fields, explain technical terms and make reports more accessible. What AI cannot do is authenticate a sample, verify chain of custody or confirm that the report still applies to the product currently on sale. That requires traceable information from the brand, laboratory and verification process. Structured evidence helps AI explain. Clear governance helps people trust the explanation." },
       { type: "heading", level: 2, text: "PA++++ is important, but pigmentation may require more context" },
       { type: "paragraph", text: "Many Indian consumers buy sunscreen to manage tanning, melasma and post inflammatory hyperpigmentation. PA++++ confirms a UVA PF of at least 16. It does not establish visible light protection." },
@@ -996,7 +996,7 @@ export const BLOG_POSTS: BlogPost[] = [
       { type: "heading", level: 2, text: "The next opportunity is continuing proof" },
       { type: "paragraph", text: "BeautyScienceX showed how much serious work is already happening across formulation, manufacturing, testing, claims and consumer education. The next opportunity is to make that work easier to connect, understand and maintain over time. That is where I see The Clean Sheet contributing." },
       { type: "paragraph", text: "The Clean Sheet is being built as a laboratory neutral verification and certification platform for beauty and personal care. BIS, CDSCO, ISO methods, qualified laboratories and brand quality systems remain the technical and regulatory foundation. Our role is to connect the evidence within a declared scope, examine what it supports, identify its limitations and translate the result into consumer readable proof." },
-      { type: "paragraph", text: "Public evidence reviews will remain clearly separate from product certification. Laboratory relationships will remain nonexclusive. A laboratory report will be recognised as essential scientific evidence within the larger product dossier. When a brand has invested in formulation, testing, stability and responsible claims, consumers should be able to see and understand that work." },
+      { type: "paragraph", text: "Public evidence analyses will remain clearly separate from product certification. Laboratory relationships will remain nonexclusive. A laboratory report will be recognised as essential scientific evidence within the larger product dossier. When a brand has invested in formulation, testing, stability and responsible claims, consumers should be able to see and understand that work." },
       { type: "before-after", before: "A test report creates evidence.", after: "A connected, traceable and current proof record allows that evidence to create trust." },
       { type: "cta", text: "The Clean Sheet connects laboratory evidence to the exact public claim, then translates it into consumer-readable proof.", href: "/standard", label: "Read the standard" },
     ],
@@ -1319,7 +1319,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "This is the gap The Clean Sheet exists to close, from two directions. Our public product reviews let any shopper see how a claim holds up against the evidence. Clean Sheet Certification lets a brand prove it on the public record, with a QR coded proof page, before a consumer ever has to ask.",
+        text: "This is the gap The Clean Sheet exists to close, from two directions. Our public product analyses let any shopper see how a claim holds up against the evidence. Clean Sheet Certification lets a brand prove it on the public record, with a QR coded proof page, before a consumer ever has to ask.",
       },
       {
         type: "callout",
@@ -1514,7 +1514,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "In India, Nykaa, Tira, Myntra, Amazon, Blinkit, Zepto, pharmacy chains, salon retail, and brand-owned D2C websites are all fighting for the same consumer attention. The consumer may discover a serum on Instagram, compare it on Nykaa, check reviews on Amazon, ask a friend on WhatsApp, and then buy it on quick commerce if she needs it tonight.",
+        text: "In India, Nykaa, Tira, Myntra, Amazon, Blinkit, Zepto, pharmacy chains, salon retail, and brand-owned D2C websites are all fighting for the same consumer attention. The consumer may discover a serum on Instagram, compare it on Nykaa, check ratings on Amazon, ask a friend on WhatsApp, and then buy it on quick commerce if she needs it tonight.",
       },
       {
         type: "paragraph",
@@ -2125,7 +2125,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "paragraph",
-        text: "Most skincare influencers fail all three criteria. They are not doctors. They are not chemists. And they are being paid, either directly through sponsorships or indirectly through affiliate links, to recommend the exact products they're enthusiastically reviewing. That doesn't make them liars. But it makes them salespeople. And you should treat their advice accordingly.",
+        text: "Most skincare influencers fail all three criteria. They are not doctors. They are not chemists. And they are being paid, either directly through sponsorships or indirectly through affiliate links, to recommend the exact products they're enthusiastically promoting. That doesn't make them liars. But it makes them salespeople. And you should treat their advice accordingly.",
       },
       {
         type: "paragraph",

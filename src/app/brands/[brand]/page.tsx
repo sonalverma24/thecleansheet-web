@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   if (!brand) return {};
   const tierLabel = TIER_STYLES[scoreToTier(brand.avgScore)].label;
   return {
-    title: `${brand.name} Skincare Review · ${tierLabel}`,
-    description: clipDescription(`Is ${brand.name} clean beauty? Science-backed reviews for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`),
+    title: `${brand.name} Skincare Analysis · ${tierLabel}`,
+    description: clipDescription(`Is ${brand.name} clean beauty? Science-backed analyses for all ${brand.products.length} ${brand.name} products: ingredient safety, regulatory compliance, and formulation analysis.`),
     keywords: [
-      `${brand.name} review India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
+      `${brand.name} analysis India`, `is ${brand.name} clean beauty`, `${brand.name} ingredients safe`,
       `${brand.name} products score`, `${brand.name} skincare India`, `${brand.name} ingredient analysis`,
     ],
     alternates: { canonical: `https://thecleansheet.in/brands/${slug}` },

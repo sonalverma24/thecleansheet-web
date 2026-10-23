@@ -9,7 +9,7 @@ export default function ProductDetailPage() {
       <section className="flex flex-col md:flex-row gap-8 md:gap-16">
         <div className="flex-1 bg-[var(--color-surface-subtle)] p-8 flex flex-col items-center justify-center border border-[var(--color-warm-gray)] relative min-h-[400px]">
           <div className="absolute top-4 left-4">
-            <StatusLabel label="Public Data Review" status="neutral" />
+            <StatusLabel label="Public Data Analysis" status="neutral" />
           </div>
           <img src="https://via.placeholder.com/600x600/F7F7F5/282828?text=Product+Bottle" alt="Product" className="w-full max-w-sm mix-blend-multiply" />
         </div>

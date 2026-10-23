@@ -7,6 +7,7 @@ import { ProductHero } from "@/components/scorecards/ProductHero";
 import { simplifyPillarName } from "@/lib/pillar-display";
 import { buildAtAGlanceAnalyzedPage } from "@/lib/at-a-glance";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
+import { analysisWording } from "@/lib/analysis-wording";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Metadata
@@ -29,10 +30,10 @@ export async function generateMetadata({
   const sc = data.scorecard as any;
 
   return {
-    title: `${data.product_name} Review, Clean Sheet Score ${sc.score ?? 0}/100`,
-    description: `Is ${data.product_name} safe? AI-analyzed ingredient scorecard: ${sc.score ?? 0}/100 (${sc.scoreLabel ?? "Fair"}). Full INCI review, regulatory compliance, and India-specific skin context.`,
+    title: `${data.product_name} Analysis, Clean Sheet Score ${sc.score ?? 0}/100`,
+    description: `Is ${data.product_name} safe? AI-analyzed ingredient scorecard: ${sc.score ?? 0}/100 (${sc.scoreLabel ?? "Fair"}). Full INCI analysis, regulatory compliance, and India-specific skin context.`,
     keywords: [
-      `${data.product_name} review`,
+      `${data.product_name} analysis`,
       `${data.product_name} India`,
       `is ${data.product_name} safe`,
       `${data.brand_name} ingredients safe`,
@@ -353,7 +354,7 @@ export default async function AnalyzedProductPage({
     info_badges: sc.info_badges ?? [],
     indiaContext: sc.indiaContext ?? "",
     analyzedAt: sc.analyzedAt ?? new Date().toISOString().split("T")[0],
-    cleanSheetNote: sc.cleanSheetNote,
+    cleanSheetNote: sc.cleanSheetNote ? analysisWording(sc.cleanSheetNote) : sc.cleanSheetNote,
     targetUser: sc.targetUser,
     skinTypeTags: sc.skinTypeTags ?? [],
     concernTags: sc.concernTags ?? [],
@@ -659,7 +660,7 @@ export default async function AnalyzedProductPage({
                 );
               })}
             </div>
-            <p className="text-[10px] text-[#b0a8a4] mt-2">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance review.</p>
+            <p className="text-[10px] text-[#b0a8a4] mt-2">Flags are based on publicly available INCI only. Not a substitute for full regulatory compliance assessment.</p>
           </section>
         )}
 
@@ -706,7 +707,7 @@ export default async function AnalyzedProductPage({
             <div className="flex items-center gap-2.5 mb-3">
               <span className="w-[3px] h-[18px] rounded-full bg-[#b0a8a4] flex-shrink-0" />
               <div>
-                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this review</h2>
+                <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>What would strengthen this analysis</h2>
                 <p className="text-xs text-[#b0a8a4] mt-0.5">Public evidence the brand could provide to close verification gaps</p>
               </div>
             </div>
@@ -723,16 +724,16 @@ export default async function AnalyzedProductPage({
           </section>
         )}
 
-        {/* 8. About this review */}
+        {/* 8. About this analysis */}
         <section id="methodology">
           <div className="bg-[#282828] rounded-2xl p-5 sm:p-6">
             <div className="flex items-start gap-4">
               <ShieldCheck size={20} className="text-[#248179] flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <div className="text-white mb-2">About this review</div>
+                <div className="text-white mb-2">About this analysis</div>
                 <p className="text-white/60 text-sm leading-relaxed mb-1.5">
                   {product.cleanSheetNote ??
-                    "This is an AI-generated web evidence review. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis."}
+                    "This is an AI-generated web evidence analysis. We checked the ingredient list, publicly available test reports, marketing claims, and formula logic using only public information available at the time of analysis."}
                 </p>
                 <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
                   {["AI-powered analysis", "Public evidence only", "Not a certification"].map((m) => (

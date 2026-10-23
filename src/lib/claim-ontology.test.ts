@@ -97,7 +97,7 @@ describe("effectiveStrength", () => {
   });
 
   it("the public line is fixed text that names no one and carries no reference", () => {
-    expect(PANEL_ATTRIBUTION).toBe("Reviewed by an expert on the TCS Panel.");
+    expect(PANEL_ATTRIBUTION).toBe("Assessed by an expert on the TCS Panel.");
     expect(PANEL_ATTRIBUTION).not.toMatch(/TCS-P|\d/);
   });
 

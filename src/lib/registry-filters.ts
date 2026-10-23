@@ -43,7 +43,7 @@ export const FILTER_PARAM: Record<FilterKey, string> = {
 };
 
 export const SORT_LABELS: Record<SortKey, string> = {
-  newest: "Newest review",
+  newest: "Newest analysis",
   best_match: "Best match",
   standing: "Standing, best first",
   price_asc: "Price, low to high",
@@ -255,7 +255,7 @@ export function stateFromParams(sp: URLSearchParams): RegistryState {
   return { query: sp.get("q") ?? "", sort: sort && sort in SORT_LABELS ? (sort as SortKey) : null, filters };
 }
 
-/** The new query string: this page's parameters are rewritten, everything else (like ?review=) is kept. */
+/** The new query string: this page's parameters are rewritten, everything else (like ?analyse=) is kept. */
 export function searchWithState(currentSearch: string, state: RegistryState): string {
   const sp = new URLSearchParams(currentSearch);
   for (const key of OWNED_PARAMS) sp.delete(key);

@@ -8,6 +8,7 @@ import {
   interpretReviewResponse,
   REVIEW_GATE_SUBTITLE,
   REVIEW_GATE_TITLE,
+  LEGACY_REVIEW_RUN_PARAM,
   REVIEW_RUN_PARAM,
   REVIEW_STEPS,
   type ReviewRunError,
@@ -89,16 +90,17 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
     [user, router, askToSignIn],
   );
 
-  // Arriving with ?review=<query> (the sign-in round trip, or an old /review?q= link): run it once auth is known.
+  // Arriving with ?analyse=<query> (the sign-in round trip, or an old /review?q= link): run it once auth is known.
   const autoRan = useRef(false);
   useEffect(() => {
     if (!autoRun || authLoading || autoRan.current) return;
     autoRan.current = true;
     const url = new URL(window.location.href);
-    const q = url.searchParams.get(REVIEW_RUN_PARAM);
+    const q = url.searchParams.get(REVIEW_RUN_PARAM) ?? url.searchParams.get(LEGACY_REVIEW_RUN_PARAM);
     if (!q?.trim()) return;
     const id = window.setTimeout(() => {
       url.searchParams.delete(REVIEW_RUN_PARAM);
+      url.searchParams.delete(LEGACY_REVIEW_RUN_PARAM);
       window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
       void run(q);
     }, 0);

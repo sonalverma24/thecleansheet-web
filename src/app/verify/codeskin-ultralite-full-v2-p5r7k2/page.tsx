@@ -9,7 +9,7 @@ import CollapsibleCert from "./CollapsibleCert";
 export const metadata: Metadata = {
   title: "CodeSkin UltraLite Sunscreen | Verified | The Clean Sheet",
   description:
-    "Official certification record and full independent review for CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++.",
+    "Official certification record and full independent assessment for CodeSkin UltraLite Fluid Sunscreen SPF 50+ PA++++.",
   robots: { index: false, follow: false },
 };
 
@@ -212,7 +212,7 @@ export default function VerifiedPage() {
 
               {/* Short description */}
               <p style={{ maxWidth: "28rem", color: "#6b6868", fontSize: "13.5px", lineHeight: 1.7 }} className="mb-6">
-                Independently reviewed across formula safety, UV performance,
+                Independently assessed across formula safety, UV performance,
                 manufacturing quality, claims evidence, and legal compliance.
               </p>
 
@@ -356,7 +356,7 @@ export default function VerifiedPage() {
       {/* ─── Section divider ─────────────────────────────────── */}
       <div className="h-px mx-5 max-w-5xl sm:mx-auto" style={{ background: "linear-gradient(90deg, transparent, #e0dede 15%, #e0dede 85%, transparent)" }} />
 
-      {/* ─── Independent Review ───────────────────────────────── */}
+      {/* ─── Independent Assessment ───────────────────────────────── */}
       <section className="px-5 pt-10 sm:pt-12 pb-4">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>
@@ -368,7 +368,7 @@ export default function VerifiedPage() {
                 02
               </span>
               <h2 className="text-lg tracking-tight" style={{ color: "#248179" }}>
-                Independent Review
+                Independent Assessment
               </h2>
             </div>
             <p className="text-[13px] leading-relaxed ml-9" style={{ color: "#6b6868", maxWidth: "30rem" }}>
@@ -417,7 +417,7 @@ export default function VerifiedPage() {
               View full technical record
             </p>
             <p className="text-[12px] mb-4" style={{ color: "rgba(255,255,255,0.5)" }}>
-              55 parameters reviewed across 5 independent pillars.
+              55 parameters assessed across 5 independent pillars.
             </p>
             <Link
               href="/verify/tcs-in-2026-048291-b7f2a9c1e5d3"

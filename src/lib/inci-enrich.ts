@@ -72,7 +72,7 @@ function flagFor(row: DBRow | undefined, name: string): IngredientEntry["flag"] 
 }
 
 function noteFor(row: DBRow | undefined, name: string): string {
-  if (!row) return "Not in our reviewed database; assessed from public sources.";
+  if (!row) return "Not in our analysed database; assessed from public sources.";
   const bits: string[] = [];
   if (row.Function) bits.push(row.Function.replace(/\s*\([^)]*\)/, "").trim());
   const safety = (row.Key_Safety_Notes || "").split(/;|\./)[0]?.trim();

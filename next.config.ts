@@ -59,10 +59,10 @@ const nextConfig: NextConfig = {
       // The analyser lives on /brands: searching a product there runs the review in place and
       // opens its review page, so the old middle page (/review) is gone. Permanent (308) so
       // Google consolidates onto /brands; a search in the old link (?q= / ?product=) is forwarded
-      // as ?review=<query>, which /brands runs on arrival.
-      { source: "/review", has: [{ type: "query", key: "q", value: "(?<q>.+)" }], destination: "/brands?review=:q", permanent: true },
+      // as ?analyse=<query>, which /brands runs on arrival.
+      { source: "/review", has: [{ type: "query", key: "q", value: "(?<q>.+)" }], destination: "/brands?analyse=:q", permanent: true },
       { source: "/review", destination: "/brands", permanent: true },
-      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/brands?review=:product", permanent: true },
+      { source: "/analyzer", has: [{ type: "query", key: "product", value: "(?<product>.+)" }], destination: "/brands?analyse=:product", permanent: true },
       { source: "/analyzer", destination: "/brands", permanent: true },
       { source: "/analyser", destination: "/brands", permanent: true },
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.

@@ -30,7 +30,7 @@ const OFFERS: Offer[] = [
   {
     n: "02", eyebrow: "GET CERTIFIED", title: "Turn your testing into proof",
     desc: "Submit your evidence. We assess it independently and publish a live proof record.",
-    points: ["Apply and share your dossier", "Independent evidence review", "Public record with live status"],
+    points: ["Apply and share your dossier", "Independent evidence analysis", "Public record with live status"],
     cta: (cls) => <OpenFormButton className={`${cls} ${BTN_SOLID}`}>Start an application</OpenFormButton>,
   },
   {

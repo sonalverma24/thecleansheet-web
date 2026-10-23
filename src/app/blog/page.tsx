@@ -179,7 +179,7 @@ export default function BlogPage() {
               className="mt-8 inline-flex items-center gap-3 rounded-full px-8 py-4 text-[15px] hover:opacity-90 transition-opacity"
               style={{ background: "var(--color-lime)", color: INK }}
             >
-              Review a product <span aria-hidden>→</span>
+              Analyse a product <span aria-hidden>→</span>
             </Link>
           </Reveal>
         </div>

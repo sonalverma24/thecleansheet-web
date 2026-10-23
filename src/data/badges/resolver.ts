@@ -92,7 +92,7 @@ function matchPassBadge(raw: string): string | null {
   if (s.includes("inci verified"))                                    return "INCI_VERIFIED";
   if (s.includes("tcs certified") || s.includes("tcs-certified"))    return "TCS_CERTIFIED";
   if (s.includes("claims verified"))                                  return "CLAIMS_VERIFIED";
-  if (s.includes("claims reviewed"))                                  return "CLAIMS_REVIEWED";
+  if (s.includes("claims reviewed") || s.includes("claims assessed"))                                  return "CLAIMS_REVIEWED";
   if (
     s.includes("spf verified") ||
     s.includes("spf test report") ||
@@ -101,10 +101,11 @@ function matchPassBadge(raw: string): string | null {
   ) return "SPF_VERIFIED";
   if (s.includes("uva verified") || s.includes("uva test"))          return "UVA_VERIFIED";
   if (s.includes("ph verified") || s.includes("ph tested"))          return "PH_VERIFIED";
-  if (s.includes("stability reviewed") || s.includes("stability tested")) return "STABILITY_REVIEWED";
-  if (s.includes("microbiology reviewed") || s.includes("microbiology tested")) return "MICROBIOLOGY_REVIEWED";
+  if (s.includes("stability reviewed") || s.includes("stability assessed") || s.includes("stability tested")) return "STABILITY_REVIEWED";
+  if (s.includes("microbiology reviewed") || s.includes("microbiology assessed") || s.includes("microbiology tested")) return "MICROBIOLOGY_REVIEWED";
   if (
     s.includes("formula reviewed") ||
+    s.includes("formula assessed") ||
     s.includes("gmp certified") ||
     s.includes("gmp manufacturer")
   ) return "FORMULA_REVIEWED";

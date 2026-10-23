@@ -60,7 +60,7 @@ describe("the Cetaphil two-formula case", () => {
   });
 
   it("its wording is the approved conflict text, not 'source not yet verified'", () => {
-    expect(EVIDENCE_COPY.conflicting).toBe("Conflicting ingredient sources - assessment under review");
+    expect(EVIDENCE_COPY.conflicting).toBe("Conflicting ingredient sources - assessment pending");
     expect(EVIDENCE_COPY.conflicting).not.toMatch(/not yet verified/);
   });
 
