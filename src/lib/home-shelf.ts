@@ -1,5 +1,6 @@
 import type { ProductScorecard } from "@/data/brands/types";
 import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
+import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
 
 /* ────────────────────────────────────────────────────────────────
    HOME SHELF · the product cards on the home page.
@@ -110,6 +111,8 @@ export function shelfNote(summary: string | undefined): string {
 function toCard(tile: ProductScorecard, seedKey: string | null, category: string, image: string | null): ShelfCard {
   const tier = resolveTier({ reviewTier: tile.reviewTier, score: tile.score });
   const style = TIER_STYLES[tier];
+  // The pills page (flag): a card of a stored review shows the pill its page shows, in the pill's own colours; the card's shape does not change.
+  const pill = tile.pill ? PILL_COLOURS[tile.pill.tone] : null;
   return {
     seedKey,
     slug: tile.slug,
@@ -118,8 +121,8 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
     name: tile.productName,
     category,
     image,
-    standing: style.label,
-    pill: { bg: style.bg, fg: style.fg, border: style.border },
+    standing: tile.pill ? tile.pill.label : style.label,
+    pill: pill ? { bg: pill.soft, fg: pill.ink, border: pill.line } : { bg: style.bg, fg: style.fg, border: style.border },
     note: shelfNote(tile.summary),
   };
 }

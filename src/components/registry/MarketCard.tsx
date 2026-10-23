@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Check, Minus, X } from "lucide-react";
 import type { ProductScorecard } from "@/data/brands/types";
 import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
+import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
 import { getDisplayPrice } from "@/lib/product-card-helpers";
 import { productGroup } from "@/lib/registry-filters";
 import { seedImageFor, shelfNote } from "@/lib/home-shelf";
@@ -24,6 +26,42 @@ export function productHref(p: ProductScorecard): string {
   return p.freshReview ? `/analysis/${p.slug}` : `/brands/${p.brandSlug}/${p.slug}`;
 }
 
+/* The ticks on a card (pills page only). Each is a small chip: a tick, a cross or a dash in a round badge, then the words. The row is one line tall on a
+   phone and two on a larger screen, and a chip that does not fit on those lines is not drawn at all (the lines below the box are cut off whole, never
+   through the middle of a chip), so the card keeps its size however many ticks the product has. */
+const GLANCE_TONE = {
+  yes: { bg: "#f0f6f6", border: "#cae1df", dot: "#1d6761", Icon: Check, sr: " (yes)" },
+  no: { bg: "#fcf1ef", border: "#f0cfcb", dot: "#b83f37", Icon: X, sr: " (no)" },
+  unknown: { bg: "#f1ece3", border: "#e8e1d6", dot: "#6f6a66", Icon: Minus, sr: " (not known)" },
+} as const;
+
+/** On a card, "Pregnancy caution: Homosalate and Benzophenone-3" reads as "Pregnancy caution": the names would be cut off mid-word, and the page lists them. */
+export const cardGlanceText = (label: string): string => label.replace(/^(Pregnancy caution): .+$/, "$1");
+
+function GlanceRow({ items }: { items: NonNullable<ProductScorecard["glance"]> }) {
+  return (
+    <ul aria-label="At a glance" className="flex flex-wrap content-start gap-x-1 gap-y-1 overflow-hidden h-[22px] md:h-[48px]">
+      {items.map((g) => {
+        const t = GLANCE_TONE[g.state];
+        return (
+          <li
+            key={g.label}
+            title={g.label}
+            className="inline-flex items-center gap-1 h-[22px] max-w-full rounded-full border pl-[3px] pr-2 text-[10.5px] md:text-[11px] font-medium leading-none text-[#282828]"
+            style={{ background: t.bg, borderColor: t.border }}
+          >
+            <span aria-hidden className="flex-none inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-white" style={{ background: t.dot }}>
+              <t.Icon size={9} strokeWidth={3.5} />
+            </span>
+            <span className="truncate">{cardGlanceText(g.label)}</span>
+            <span className="sr-only">{t.sr}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function MarketCard({
   product,
   comparing,
@@ -35,7 +73,11 @@ export default function MarketCard({
   compareFull: boolean;
   onCompare: (id: string) => void;
 }) {
-  const style = TIER_STYLES[resolveTier({ reviewTier: product.reviewTier, score: product.score })];
+  const tier = TIER_STYLES[resolveTier({ reviewTier: product.reviewTier, score: product.score })];
+  // The pills page: a card of a stored review shows the pill its page shows, in the pill's own colours. The badge keeps today's shape and size.
+  const pill = product.pill ? PILL_COLOURS[product.pill.tone] : null;
+  const style = product.pill && pill ? { label: product.pill.label, bg: pill.soft, fg: pill.ink, border: pill.line } : tier;
+  const glance = product.pill && product.glance?.length ? product.glance : null;
   const image = seedImageFor(product) ?? product.image ?? null;
   const category = productGroup(product);
   // Some catalogue prices are free text ("Rs.150–340 (for 100ml)"): show the rupee sign, not "Rs.".
@@ -87,7 +129,8 @@ export default function MarketCard({
         >
           {style.label}
         </span>
-        <p className="hidden md:block text-[13px] text-[#4a4a4a] leading-[1.5] flex-1 line-clamp-3">{shelfNote(product.summary)}</p>
+        {glance && <GlanceRow items={glance} />}
+        <p className={`hidden md:block text-[13px] text-[#4a4a4a] leading-[1.5] flex-1 ${glance ? "line-clamp-2" : "line-clamp-3"}`}>{shelfNote(product.summary)}</p>
 
         <div className="mt-auto flex items-center justify-between gap-2 pt-2.5 border-t border-[#e5dfd6]">
           <span title={hasPrice ? price : undefined} className={`min-w-0 truncate text-[13px] tabular-nums ${hasPrice ? "font-bold text-[#282828]" : "text-[#b0a8a4]"}`}>{hasPrice ? price : "Price n/a"}</span>

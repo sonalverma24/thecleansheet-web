@@ -7,6 +7,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { ALL_INGREDIENTS } from "@/lib/ingredient-utils";
+import { lookupKeys } from "@/lib/ingredient-db";
 import { hasUnnegatedMatch } from "@/lib/text-negation";
 import type { IngredientEntry, KeyActive, GlobalScreen } from "@/data/brands/types";
 
@@ -19,12 +20,14 @@ const norm = (s: string) =>
 /* Some DB rows are corrupted (column drift): a Function of "2", a Concern
    level that is actually a function word, etc. Never trust a row's safety
    flags unless its fields carry sane values — a false "warn" is the worst
-   possible error. */
+   possible error. A qualified concern level ("Low-Medium", "Low to Medium",
+   "Low (highly refined)") is not drift: it must still begin with a level word.
+   Keep this identical to rowLooksValid in ingredient-db.ts. */
 function rowLooksValid(r: DBRow): boolean {
   const concern = (r.Concern_Level_TCS || "").toLowerCase().trim();
   const svhc = (r.SVHC_Flag || "").toLowerCase().trim();
   const func = (r.Function || "").trim();
-  const concernOk = concern === "" || /^(low|medium|moderate|high|very high|none|n\/?a)$/.test(concern);
+  const concernOk = concern === "" || /^(low|medium|moderate|high|very high|none|n\/?a)(?![a-z])/.test(concern);
   const svhcOk = svhc === "" || /^(yes|no|none|n\/?a|0|0\.0+)$/.test(svhc);
   const funcOk = func === "" || /[a-z]{3}/i.test(func); // a real function name has letters, not "2"
   return concernOk && svhcOk && funcOk;
@@ -53,9 +56,15 @@ const INDEX: Map<string, DBRow> = (() => {
 })();
 
 /* Exact normalized match only — a wrong fuzzy match would mislabel an
-   ingredient's safety, which is worse than an honest "not in database". */
+   ingredient's safety, which is worse than an honest "not in database".
+   The keys to try come from lookupKeys in ingredient-db.ts, the same function
+   lookupIngredient uses, so a "CI 77891/Titanium Dioxide" label resolves here too. */
 function lookup(name: string): DBRow | undefined {
-  return INDEX.get(norm(name));
+  for (const key of lookupKeys(name)) {
+    const hit = INDEX.get(key);
+    if (hit) return hit;
+  }
+  return undefined;
 }
 
 function flagFor(row: DBRow | undefined, name: string): IngredientEntry["flag"] {

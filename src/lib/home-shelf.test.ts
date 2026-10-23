@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ProductScorecard } from "@/data/brands/types";
+import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
 import { buildShelf, categoryFor, matchSeed, popularChecks, SHELF_SEEDS, shelfCategories, shelfNote } from "./home-shelf";
 
 function tile(over: Partial<ProductScorecard> & { slug: string; brand: string; productName: string }): ProductScorecard {
@@ -125,5 +127,23 @@ describe("shelfNote", () => {
 
   it("falls back to a neutral line when there is no takeaway", () => {
     expect(shelfNote(undefined)).toBe("Every claim graded against the evidence.");
+  });
+});
+
+describe("the pills page: a shelf card of a stored review shows its pill", () => {
+  const CAUTION = { ...ANUA_OIL, pill: { key: "buy-with-caution", label: "Buy with caution", tone: "caution" as const } };
+
+  it("shows the pill's words and colours, and keeps everything else the card had", () => {
+    const [card] = buildShelf([CAUTION], 1);
+    const [before] = buildShelf([ANUA_OIL], 1);
+    expect(card.standing).toBe("Buy with caution");
+    expect(card.pill).toEqual({ bg: PILL_COLOURS.caution.soft, fg: PILL_COLOURS.caution.ink, border: PILL_COLOURS.caution.line });
+    expect({ ...card, standing: "", pill: null }).toEqual({ ...before, standing: "", pill: null });
+  });
+
+  it("a tile with no pill is exactly today's card", () => {
+    const [card] = buildShelf([ANUA_OIL], 1);
+    expect(card.standing).toBe("Good Standing");
+    expect(card.pill).toEqual({ bg: TIER_STYLES["mostly-clean"].bg, fg: TIER_STYLES["mostly-clean"].fg, border: TIER_STYLES["mostly-clean"].border });
   });
 });

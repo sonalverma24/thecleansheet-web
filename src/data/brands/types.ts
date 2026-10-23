@@ -103,6 +103,11 @@ export type ProductScorecard = {
   regulatoryFlags?: { claim: string; note: string }[];
   /** NEW tile badge — only the latest few repository arrivals carry it. */
   newArrival?: boolean;
+  /** Pills page only (flag ANALYSER_PILLS_PAGE), for a listing card of a stored review: the pill its page shows, and the At a glance ticks in the
+      page's own order. Both come from the same decision as the page (src/lib/listing-pill.ts), so a card and its page cannot disagree. Absent when
+      the flag is off and for a product with no stored review (the static catalogue): the card then shows the standing as before. */
+  pill?: { key: string; label: string; tone: "good" | "caution" | "look" | "info" | "med" };
+  glance?: { label: string; state: "yes" | "no" | "unknown" }[];
   /** Licensed-drug products (reviewTier "not-assessed"): the drug active(s) that
       make it a medicine, used to explain why it is not scored as a cosmetic. */
   drugActives?: string[];

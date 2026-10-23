@@ -28,6 +28,18 @@ export const ANALYSER_FLAGS = {
   strictIdentity: "ANALYSER_STRICT_IDENTITY",
   /** Standing from the four pillars (well 70, floor 50) instead of the 7-section total; stamps rows r9. See STAMPS.md. */
   pillarStanding: "ANALYSER_PILLAR_STANDING",
+  /** The pills page: the five buying decisions (Good choice, Buy with caution, Look elsewhere, Not enough info, Medicinal product)
+      replace the four standings, and the stored-review product page uses the 13-block layout (src/lib/pills-page.ts). The decision is
+      computed at render time from the stored review; nothing is written. Static catalogue pages have no review and are unchanged. */
+  pillsPage: "ANALYSER_PILLS_PAGE",
+  /** The new product page layout (the 13-block design) for a stored review, with TODAY'S standing in the take card and no confidence. Nothing about
+      what the page decides changes: the standing, the search title and description, the star rating and what is indexed are today's. The pills page
+      above implies this layout and also changes the decision. Static catalogue pages have no stored review and are unchanged. */
+  newLayout: "ANALYSER_NEW_LAYOUT",
+  /** Ingredient alias table (src/data/ingredient-aliases.ts): a label name that is another name for a row we already hold ("Water" for Aqua)
+      resolves to that row instead of "not in our reference database". Applies only to entries the owner has signed off, so with this on and
+      nothing signed off, nothing changes. Adds no ingredient and no regulatory fact. */
+  ingredientAliases: "ANALYSER_INGREDIENT_ALIASES",
 } as const;
 
 export type AnalyserFlagName = (typeof ANALYSER_FLAGS)[keyof typeof ANALYSER_FLAGS];
