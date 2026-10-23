@@ -1,0 +1,80 @@
+/* ────────────────────────────────────────────────────────────────
+   THE CLEAN SHEET™ · The pills page: the repeated pieces of the product page design
+
+   Layout is Tailwind in the markup. What repeats (the cards, chips, ratings, the round chevron, the claim bar) lives here, scoped under .pp so
+   nothing leaks into the rest of the site. Colours are the design's own: the brand teal #248179 and its soft and line tints, the warm
+   hairline #e8e1d6, and amber, green, gold and red for the ratings. Display only; nothing here decides anything.
+──────────────────────────────────────────────────────────────── */
+
+.pp { font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif; color: #3f3b39; line-height: 1.5; }
+.pp a:focus-visible, .pp summary:focus-visible { outline: 2px solid #1d6761; outline-offset: 3px; }
+
+.pp-serif { font-family: 'Cooper BT', Georgia, serif; font-weight: 300; letter-spacing: -0.01em; }
+.pp-eyebrow {
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.4;
+}
+
+.pp-card { background: #fff; border: 1px solid #e8e1d6; border-radius: 18px; }
+
+/* ── A native <details> row: no marker, a round chevron that turns when it opens ── */
+.pp-sum { list-style: none; cursor: pointer; }
+.pp-sum::-webkit-details-marker { display: none; }
+.pp-chev {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border: 1px solid #e8e1d6; border-radius: 9999px; color: #282828;
+}
+.pp-chev[data-size="30"] { width: 30px; height: 30px; }
+.pp-chev svg { transition: transform 0.2s ease; }
+details[open] > .pp-sum .pp-chev svg { transform: rotate(180deg); }
+.pp-sum:hover .pp-chev { background: #f1ece3; }
+
+/* ── Chips: a tick, a cross or a dash in a round badge, then the words ── */
+.pp-chip {
+  display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 5px; border-radius: 9999px;
+  border: 1px solid; font-size: 13px; font-weight: 500; line-height: 1.3; color: #282828;
+}
+.pp-chip[data-tone="ok"] { background: #f0f6f6; border-color: #cae1df; }
+.pp-chip[data-tone="no"] { background: #fcf1ef; border-color: #f0cfcb; }
+.pp-chip[data-tone="na"] { background: #f1ece3; border-color: #e8e1d6; }
+.pp-chip__ic { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 9999px; color: #fff; }
+.pp-chip[data-tone="ok"] .pp-chip__ic { background: #1d6761; }
+.pp-chip[data-tone="no"] .pp-chip__ic { background: #b83f37; }
+.pp-chip[data-tone="na"] .pp-chip__ic { background: #6f6a66; }
+
+/* a plain pill (key ingredients, the ingredient list); `amber` marks one worth noting */
+.pp-pill {
+  display: inline-flex; align-items: center; padding: 4px 12px; border: 1px solid #e8e1d6; border-radius: 9999px;
+  background: #fff; font-size: 13px; font-weight: 500; line-height: 1.3; color: #282828;
+}
+a.pp-pill { text-decoration: none; transition: border-color 0.15s ease, color 0.15s ease; }
+a.pp-pill:hover { border-color: #248179; color: #1d6761; }
+.pp-pill[data-tone="amber"] { background: #fbf3ea; border-color: #ebcfae; color: #94521a; }
+.pp-pill[data-tone="red"] { background: #fcf1ef; border-color: #f0cfcb; color: #b83f37; }
+.pp-pill[data-tone="plain"] { color: #55504d; }
+
+/* ── Ratings ── */
+.pp-rate {
+  display: inline-flex; align-items: center; padding: 2px 10px; border: 1px solid; border-radius: 9999px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.pp-rate[data-tone="excellent"] { color: #1d6761; background: #f0f6f6; border-color: #cae1df; }
+.pp-rate[data-tone="strong"] { color: #2f6b44; background: #eef6f0; border-color: #c9e0d0; }
+.pp-rate[data-tone="good"] { color: #7a5c0f; background: #fcf8ec; border-color: #e9ddb5; }
+.pp-rate[data-tone="fair"] { color: #94521a; background: #fbf3ea; border-color: #ebcfae; }
+.pp-rate[data-tone="concern"] { color: #b83f37; background: #fcf1ef; border-color: #f0cfcb; }
+.pp-rate[data-tone="none"] { color: #55504d; background: #f1ece3; border-color: #e8e1d6; }
+
+/* ── The claim bar: one segment per claim ── */
+.pp-seg { flex: 1; height: 8px; border-radius: 4px; }
+.pp-seg[data-k="y"] { background: #248179; }
+.pp-seg[data-k="n"] { background: #fff; border: 1.5px dashed #b97a3c; }
+.pp-seg[data-k="u"] { background: #fff; border: 1.5px dashed #b83f37; }
+
+/* ── A retailer: a link to its search or its page, or a dashed card when we hold no address ── */
+.pp-shop { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.pp-shop:hover { border-color: #248179; box-shadow: 0 14px 26px -20px rgba(18, 48, 44, 0.5); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-chev svg, .pp-shop, a.pp-pill { transition: none; }
+}

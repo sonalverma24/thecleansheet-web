@@ -51,12 +51,15 @@ export const SORT_LABELS: Record<SortKey, string> = {
   name: "Name, A to Z",
 };
 
-const STANDING_ORDER = ["Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug"];
+// The four standings (every product with no stored review) and the five pills (a stored review, with the pills page on). A listing can hold both while
+// the static catalogue has no pill, so each sits beside the one it replaces.
+const STANDING_ORDER = ["Good choice", "Good Standing", "Buy with caution", "Room to Improve", "Not enough info", "Look elsewhere", "Not Recommended", "Medicinal product", "Licensed Drug"];
 const PRICE_ORDER = ["Under ₹500", "₹500-₹1,000", "₹1,000-₹2,000", "₹2,000+"];
 
 // ── Values a product has for each filter group ───────────────────────────────
 
-export function standingOf(p: Pick<ProductScorecard, "reviewTier" | "score">): string {
+export function standingOf(p: Pick<ProductScorecard, "reviewTier" | "score"> & { pill?: ProductScorecard["pill"] }): string {
+  if (p.pill) return p.pill.label; // the pills page: the pill its stored review decides
   return TIER_STYLES[resolveTier({ reviewTier: p.reviewTier, score: p.score })].label;
 }
 
@@ -181,7 +184,10 @@ function searched(products: ProductScorecard[], query: string): { p: ProductScor
   return products.map((p) => ({ p, rel: searchScore(p, terms) })).filter((x) => x.rel > 0);
 }
 
-const STANDING_RANK: Record<string, number> = { "Good Standing": 0, "Room to Improve": 1, "Not Recommended": 2, "Licensed Drug": 3 };
+const STANDING_RANK: Record<string, number> = {
+  "Good choice": 0, "Good Standing": 0, "Buy with caution": 1, "Room to Improve": 1, "Not enough info": 2,
+  "Look elsewhere": 3, "Not Recommended": 3, "Medicinal product": 4, "Licensed Drug": 4,
+};
 
 function sortList(list: { p: ProductScorecard; rel: number }[], sort: SortKey): ProductScorecard[] {
   const newest = (a: ProductScorecard, b: ProductScorecard) => (b.analyzedAt ?? "").localeCompare(a.analyzedAt ?? "");

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGlobalScreen, restricted } from "@/lib/inci-enrich";
+import { buildGlobalScreen, enrichIngredients, keyActivesFrom, restricted } from "@/lib/inci-enrich";
 
 describe("restricted() - negation handling (Regulatory screen / 10-authority check)", () => {
   it("does not flag a status that negates 'restricted' and 'prohibited' in the same clause", () => {
@@ -38,5 +38,35 @@ describe("buildGlobalScreen - real-world regression (Moxie Beauty Deep Dive Hair
     expect(screen.india_cr_2020).not.toContain("Tripeptide-1");
     expect(screen.us_fda_21cfr).not.toContain("Tripeptide-1");
     expect(screen.korea_mfds).not.toContain("Tripeptide-1");
+  });
+});
+
+describe("the enrichment lookup reads a colour-index code beside its INCI name the same way lookupIngredient does", () => {
+  it("'CI 77891/Titanium Dioxide' gets Titanium Dioxide's note and flag, not the bare fallback for an unknown name", () => {
+    const [combined] = enrichIngredients(["CI 77891/Titanium Dioxide"]);
+    const [plain] = enrichIngredients(["Titanium Dioxide"]);
+    expect(plain.note).not.toBe("");
+    expect(combined.note).toBe(plain.note);
+    expect(combined.flag).toBe(plain.flag);
+  });
+
+  it("an unknown first part is still not rescued by a known name after the slash", () => {
+    const [rescued] = enrichIngredients(["Zorbaflux/Titanium Dioxide"]);
+    const [plain] = enrichIngredients(["Titanium Dioxide"]);
+    expect(rescued.note).not.toBe(plain.note);
+  });
+
+  it("the authority screen counts the combined label as Titanium Dioxide", () => {
+    expect(buildGlobalScreen(["CI 77891/Titanium Dioxide"])).toEqual(buildGlobalScreen(["Titanium Dioxide"]));
+  });
+
+  it("a key active written with its code is still picked up", () => {
+    expect(keyActivesFrom(["CI 77891/Titanium Dioxide"]).map((a) => a.name)).toEqual(keyActivesFrom(["Titanium Dioxide"]).map((a) => a.name));
+  });
+});
+
+describe("an ingredient we hold no row for keeps its generic note in the shared source: today's page still shows it", () => {
+  it("the note is unchanged, so only the pills page leaves it out", () => {
+    expect(enrichIngredients(["Zorbaflux Glycoside"])[0].note).toBe("Not in our analysed database; assessed from public sources.");
   });
 });

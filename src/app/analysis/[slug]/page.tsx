@@ -10,6 +10,9 @@ import { cataloguePathFor } from "@/lib/catalogue-dedupe";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
+import { PillsPage } from "@/components/scorecards/PillsPage";
+import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
+import { keepOutOfSearch, layoutFor, pillRating, pillsFor } from "@/lib/pills-for-review";
 import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
 import { clipDescription } from "@/lib/seo";
 
@@ -29,8 +32,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") return {};
   const { review, verdict } = result;
-  const tierLabel = TIER_STYLES[verdict.tier].label;
+  // The pills page (flag on): the title, the description and the search listing carry the pill, never the old standing.
+  const pills = isFlagOn(ANALYSER_FLAGS.pillsPage) ? pillsFor(review, verdict).model : null;
+  const tierLabel = pills ? pills.pill.label : TIER_STYLES[verdict.tier].label;
   return {
+    ...(pills && keepOutOfSearch(pills.pill.key) ? { robots: { index: false, follow: true } } : {}),
     title: `${review.productName} Analysis · ${tierLabel}`,
     description: clipDescription(`${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
     // A product that also has a curated catalogue page is the same content at two
@@ -49,7 +55,16 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") notFound();
 
-  const { product, brand, brandSlug } = reviewToScorecard(result.review, result.verdict);
+  // Two flags. ANALYSER_PILLS_PAGE: the new layout AND the five pills (the title, the rating and what is indexed follow the pill). ANALYSER_NEW_LAYOUT: the
+  // new layout only, with today's standing in the take card; the title, description, rating and indexing stay exactly today's.
+  const pillsOn = isFlagOn(ANALYSER_FLAGS.pillsPage);
+  const layoutOn = pillsOn || isFlagOn(ANALYSER_FLAGS.newLayout);
+  const { product, brand, brandSlug, model } = pillsOn
+    ? pillsFor(result.review, result.verdict)
+    : layoutOn
+      ? layoutFor(result.review, result.verdict)
+      : { ...reviewToScorecard(result.review, result.verdict), model: null };
+  const rating = model && pillsOn ? pillRating(model.pill.key, model.pill.label) : tierToRating(result.verdict.tier);
 
   const url = `https://thecleansheet.in/analysis/${slug}`;
   const jsonLd = {
@@ -70,14 +85,14 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
         image: product.image,
         description: product.summary,
         // Licensed drugs carry no cosmetic rating, so they emit no Review node.
-        ...(tierToRating(result.verdict.tier)
+        ...(rating
           ? {
               review: {
                 "@type": "Review",
                 author: { "@type": "Organization", name: "The Clean Sheet" },
                 reviewBody: product.summary,
                 datePublished: product.analyzedAt,
-                reviewRating: tierToRating(result.verdict.tier),
+                reviewRating: rating,
               },
             }
           : {}),
@@ -88,7 +103,11 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} brandPageExists={!!getBrandBySlug(brandSlug)} analysis={runAnalysis(result.review)} />
+      {model ? (
+        <PillsPage product={product} brand={brand} model={model} />
+      ) : (
+        <ProductScorecardView product={product} brand={brand} brandSlug={brandSlug} brandPageExists={!!getBrandBySlug(brandSlug)} analysis={runAnalysis(result.review)} />
+      )}
     </>
   );
 }

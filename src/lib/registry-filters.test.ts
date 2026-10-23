@@ -195,3 +195,44 @@ describe("URL state", () => {
     expect(stateFromParams(new URLSearchParams("sort=bogus")).sort).toBeNull();
   });
 });
+
+describe("the pills page: a card of a stored review carries its pill", () => {
+  const withPill = (p: ProductScorecard, label: string, tone: NonNullable<ProductScorecard["pill"]>["tone"]) => ({ ...p, pill: { key: label.toLowerCase().replace(/ /g, "-"), label, tone } });
+  const GOOD = withPill(C, "Good choice", "good");
+  const CAUTION = withPill(A, "Buy with caution", "caution");
+  const LOOK = withPill(D, "Look elsewhere", "look");
+  const NOT_ENOUGH = withPill(E, "Not enough info", "info");
+  const MED = withPill(B, "Medicinal product", "med");
+  const MIXED = [GOOD, CAUTION, LOOK, NOT_ENOUGH, MED];
+
+  it("the standing is the pill's words when there is a pill, and today's standing when there is none", () => {
+    expect(standingOf(GOOD)).toBe("Good choice");
+    expect(standingOf(MED)).toBe("Medicinal product");
+    expect(standingOf(C)).toBe("Good Standing"); // the same product with no pill
+    expect(standingOf({ reviewTier: "approved", score: 90 })).toBe("Good Standing");
+  });
+
+  it("filters by a pill's words, and a pill never matches the standing it replaces", () => {
+    const out = filterAndSort(MIXED, { filters: f({ standing: ["Good choice", "Look elsewhere"] }), query: "", sort: "newest" });
+    expect(names(out).sort()).toEqual([GOOD.productName, LOOK.productName].sort());
+    expect(filterAndSort(MIXED, { filters: f({ standing: ["Good Standing"] }), query: "", sort: "newest" })).toEqual([]);
+  });
+
+  it("lists the pills in their natural order, each beside the standing it replaces when a listing holds both", () => {
+    expect(computeFacets(MIXED, EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual(["Good choice", "Buy with caution", "Not enough info", "Look elsewhere", "Medicinal product"]);
+    expect(computeFacets([...MIXED, D, C], EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual([
+      "Good choice", "Good Standing", "Buy with caution", "Not enough info", "Look elsewhere", "Not Recommended", "Medicinal product",
+    ]);
+  });
+
+  it("sorts best first: Good choice, Buy with caution, Not enough info, Look elsewhere, Medicinal product", () => {
+    const sorted = filterAndSort([MED, LOOK, NOT_ENOUGH, CAUTION, GOOD], { filters: EMPTY_FILTERS, query: "", sort: "standing" });
+    expect(sorted.map(standingOf)).toEqual(["Good choice", "Buy with caution", "Not enough info", "Look elsewhere", "Medicinal product"]);
+  });
+
+  it("a pill and the standing it replaces sit at the same rank, so a mixed listing sorts sensibly", () => {
+    const sorted = filterAndSort([LOOK, D, GOOD, C], { filters: EMPTY_FILTERS, query: "", sort: "standing" });
+    expect(sorted.slice(0, 2).map(standingOf).sort()).toEqual(["Good Standing", "Good choice"].sort());
+    expect(sorted.slice(2).map(standingOf).sort()).toEqual(["Look elsewhere", "Not Recommended"].sort());
+  });
+});

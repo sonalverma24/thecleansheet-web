@@ -969,6 +969,10 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       return m ? parseFloat(m[1]) : undefined;
     };
 
+    // Pills page (flag): each tile also carries the pill and the At a glance ticks its page shows, built from the same decision. Loaded here, not at
+    // the top of the file, so the engine does not pull the page model in with it. With the flag off nothing is added and the tile is exactly today's.
+    const pillFor = isFlagOn(ANALYSER_FLAGS.pillsPage) ? (await import("@/lib/listing-pill")).listingPill : null;
+
     // Rows arrive newest-first: only the latest 5 arrivals (still within 30
     // days) wear the NEW badge.
     const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
@@ -981,7 +985,8 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       // approval-rule changes apply to already-stored reviews without re-running
       // the batch (this read path bypasses withFreshVerdict).
       const codeScore = reconcileReviewScores(rv).scores.total;
-      const tier = deriveVerdict(rv).tier;
+      const verdict = deriveVerdict(rv);
+      const tier = verdict.tier;
       const newArrival = idx < 5 && Date.now() - new Date(String(row.reviewed_at ?? 0)).getTime() < THIRTY_DAYS;
       const { category, subCategory } = normalizeReviewCategory(rv.category ?? "");
       return [{
@@ -1019,6 +1024,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
         claimsMade: (rv.claimMap ?? []).slice(0, 8).map((c) => c.text),
         freshReview: true,
         reviewTier: tier,
+        ...(pillFor ? pillFor(rv, verdict) ?? {} : {}),
         newArrival,
       }];
     });

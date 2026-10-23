@@ -14,6 +14,8 @@
 
 import { ALL_INGREDIENTS, type Ingredient } from "@/lib/ingredient-utils";
 import { hasUnnegatedMatch } from "@/lib/text-negation";
+import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
+import { INGREDIENT_ALIASES, aliasKey, isSignedOff, type IngredientAlias } from "@/data/ingredient-aliases";
 export { hasUnnegatedMatch };
 
 /* Case/format-insensitive key. Handles "Aqua/Water", "Aqua (Water)",
@@ -29,12 +31,17 @@ export function normIngredient(s: string): string {
 }
 
 /* Some rows suffer column drift (a Function of "2", a Concern level that is
-   actually a function word). Never trust such a row's safety flags. */
+   actually a function word). Never trust such a row's safety flags.
+
+   A concern level may be QUALIFIED without being drifted: "Low-Medium", "Low to Medium",
+   "Low (highly refined)". It must still BEGIN with a level word, so a function word in the
+   concern column ("Humectant") is still rejected. The SVHC check stays strict on purpose
+   (see the Polyacrylamide test). Keep this identical to rowLooksValid in inci-enrich.ts. */
 export function rowLooksValid(r: Ingredient): boolean {
   const concern = (r.Concern_Level_TCS || "").toLowerCase().trim();
   const svhc = (r.SVHC_Flag || "").toLowerCase().trim();
   const func = (r.Function || "").trim();
-  const concernOk = concern === "" || /^(low|medium|moderate|high|very high|none|n\/?a)$/.test(concern);
+  const concernOk = concern === "" || /^(low|medium|moderate|high|very high|none|n\/?a)(?![a-z])/.test(concern);
   const svhcOk = svhc === "" || /^(yes|no|none|n\/?a|0|0\.0+)$/.test(svhc);
   const funcOk = func === "" || /[a-z]{3}/i.test(func);
   return concernOk && svhcOk && funcOk;
@@ -60,9 +67,43 @@ const INDEX: Map<string, Ingredient> = (() => {
   return m;
 })();
 
+/* A colour-index code written beside the INCI name it stands for: "CI 77891/Titanium Dioxide". */
+const COLOUR_INDEX_CODE = /^c ?i \d{4,5}$/;
+
+/** The aliases that may apply: only entries the owner has signed off. Maps an alias's comparison key to the index key of its target row. */
+export function activeAliasKeys(entries: readonly IngredientAlias[]): ReadonlyMap<string, string> {
+  const m = new Map<string, string>();
+  for (const e of entries) if (isSignedOff(e)) m.set(aliasKey(e.alias), normIngredient(e.target));
+  return m;
+}
+const ACTIVE_ALIASES = activeAliasKeys(INGREDIENT_ALIASES);
+
+/** The index keys to try, in order, for one declared name. Always the part before a "/" first, so "Aqua/Water" still finds Aqua.
+    The parts after the slash follow ONLY when that first part is a colour-index code: then the name after the slash is the
+    ingredient, and the code just names a pigment row we may not hold. Nothing else falls through, because a wrong match would
+    mislabel an ingredient's safety, which is worse than an honest "not in database". Last of all, and only when the alias flag is on
+    and the owner has signed the pair off, the target of an alias entry (src/data/ingredient-aliases.ts): it is tried after every exact
+    key, so an alias can never override a name that resolves on its own. An alias matches the label as a whole ("Purified Water") or
+    its FIRST part before a "/" ("Water/Aqua" is read as "Water", "Glycerine/Glycerin" as "Glycerine"), the same way the exact lookup
+    reads a slash label by its first part. Never a later part. Shared with inci-enrich.ts so the two lookups cannot drift apart. */
+export function lookupKeys(name: string, aliases: ReadonlyMap<string, string> = ACTIVE_ALIASES): string[] {
+  const parts = (name || "").replace(/\u200b/g, "").replace(/\([^)]*\)/g, "").split("/").map(normIngredient);
+  const [first, ...rest] = parts;
+  const keys = COLOUR_INDEX_CODE.test(first) ? [first, ...rest.filter(Boolean)] : [first];
+  if (aliases.size > 0 && isFlagOn(ANALYSER_FLAGS.ingredientAliases)) {
+    const target = aliases.get(aliasKey(name)) ?? aliases.get(first);
+    if (target && !keys.includes(target)) keys.push(target);
+  }
+  return keys;
+}
+
 /** Exact normalised lookup. Returns the canonical DB row or undefined. */
 export function lookupIngredient(name: string): Ingredient | undefined {
-  return INDEX.get(normIngredient(name));
+  for (const key of lookupKeys(name)) {
+    const hit = INDEX.get(key);
+    if (hit) return hit;
+  }
+  return undefined;
 }
 
 /* ─── Field parsers ─── */
@@ -87,7 +128,9 @@ function statusProhibited(s?: string): boolean {
 export function isProhibited(r: Ingredient): boolean {
   if (!rowLooksValid(r)) return false;
   const annex = (r.EU_Annex || "").trim();
-  if (/\bII\b/.test(annex)) return true;                 // EU Annex II = prohibited
+  // EU Annex II = prohibited. Read with the negation-aware scan: the Annex field of Madecassoside says "Not listed in Annex II to VI in source
+  // checked", which names Annex II in order to say it is NOT on it.
+  if (hasUnnegatedMatch(annex, /\bii\b/)) return true;
   return statusProhibited(r.EU_Status) || statusProhibited(r.India_Status);
 }
 

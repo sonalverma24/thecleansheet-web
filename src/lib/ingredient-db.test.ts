@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { endocrineFlaggedInInci, hasUnnegatedMatch, isProhibited, lookupIngredient } from "@/lib/ingredient-db";
-import type { Ingredient } from "@/lib/ingredient-utils";
+import { endocrineFlaggedInInci, hasUnnegatedMatch, ingredientSafety, isProhibited, lookupIngredient, rowLooksValid } from "@/lib/ingredient-db";
+import { buildGlobalScreen } from "@/lib/inci-enrich";
+import { ALL_INGREDIENTS, type Ingredient } from "@/lib/ingredient-utils";
 
 describe("hasUnnegatedMatch - shared negation-aware trigger scan", () => {
   const triggers = /\b(prohibited|banned|restricted)\b|annex\s*ii\b/;
@@ -77,6 +78,24 @@ describe("isProhibited - negation handling", () => {
     expect(isProhibited(row({ India_Status: "Not specifically listed or restricted under Cosmetics Rules 2020; permitted by omission" }))).toBe(false);
   });
 
+  it("does not read 'Not listed in Annex II to VI' as being on Annex II (Madecassoside)", () => {
+    expect(isProhibited(row({ EU_Annex: "Not listed in Annex II to VI in source checked", EU_Status: "CosIng listed; no EU Annex II to VI restriction identified in source checked" }))).toBe(false);
+    expect(isProhibited(row({ EU_Annex: "None" }))).toBe(false);
+    expect(isProhibited(row({ EU_Annex: "Not identified" }))).toBe(false);
+  });
+
+  it("still flags an Annex field that lists Annex II, with or without other annexes", () => {
+    expect(isProhibited(row({ EU_Annex: "Annex II" }))).toBe(true);
+    expect(isProhibited(row({ EU_Annex: "Annex II (banned) - entry 1" }))).toBe(true);
+    expect(isProhibited(row({ EU_Annex: "Annex III (restricted) / Annex II (banned under oxidative conditions per entry 1309)" }))).toBe(true);
+    expect(isProhibited(row({ EU_Annex: "Annex III" }))).toBe(false);
+  });
+
+  it("the real Madecassoside row is not prohibited, and no other real row changes its answer", () => {
+    expect(isProhibited(lookupIngredient("Madecassoside")!)).toBe(false);
+    expect(isProhibited(lookupIngredient("Lawsone")!)).toBe(true);
+  });
+
   it("flags a genuinely prohibited EU status", () => {
     expect(isProhibited(row({ EU_Status: "Prohibited in cosmetics (EU Annex II); permitted only as a regulated drug." }))).toBe(true);
   });
@@ -147,5 +166,78 @@ describe("endocrineFlaggedInInci - the Minimalist Vitamin B5 regression", () => 
   it("does not double-report the same ingredient twice", () => {
     const hits = endocrineFlaggedInInci(["Cyclopentasiloxane", "Water", "Cyclopentasiloxane"]);
     expect(hits.length).toBe(1);
+  });
+});
+
+describe("rowLooksValid - a qualified concern level is not column drift", () => {
+  it.each(["Low", "Medium", "Moderate", "High", "Very high", "None", "N/A", "Low-Medium", "Low to Medium", "Low (highly refined)", "Low (at correct pH)", "Low (FCF); High phototoxicity (expressed)"])(
+    "accepts the concern level %j", (concern) => expect(rowLooksValid(row({ Concern_Level_TCS: concern }))).toBe(true));
+
+  it.each(["Humectant", "Emollient", "Preservative", "Moderately irritating", "2", "Yes"])(
+    "still rejects %j in the concern column: a function word or a number there is drift", (concern) => expect(rowLooksValid(row({ Concern_Level_TCS: concern }))).toBe(false));
+
+  it("still rejects a Function of '2' and a messy SVHC flag", () => {
+    expect(rowLooksValid(row({ Function: "2" }))).toBe(false);
+    expect(rowLooksValid(row({ SVHC_Flag: "Composition-dependent (Yes if D4 is present above 0.1%)" }))).toBe(false);
+  });
+
+  it("the only rows the database still distrusts are the three whose SVHC flag is free text (a deliberate gate)", () => {
+    expect(ALL_INGREDIENTS.filter((r) => !rowLooksValid(r)).map((r) => r.INCI_Name).sort()).toEqual(["Bisabolol", "Cyclomethicone", "Polyacrylamide"]);
+  });
+
+  it("common ingredients that were wrongly distrusted are screened again", () => {
+    for (const name of ["Zinc PCA", "Mineral Oil", "Petrolatum", "Triethanolamine", "Sodium Hydroxide", "BHT (Butylated Hydroxytoluene)", "Lactic Acid", "Sodium Laureth Sulfate", "Cocamidopropyl Betaine", "Mica"]) {
+      const s = ingredientSafety(name);
+      expect(s.found, name).toBe(true);
+      expect(s.valid, name).toBe(true);
+    }
+  });
+
+  it("the authority screen in inci-enrich agrees: a newly trusted row is now read (Triethanolamine is listed as restricted in the EU)", () => {
+    expect(buildGlobalScreen(["Aqua", "Glycerin", "Triethanolamine"]).eu_1223_2009).toMatch(/Triethanolamine/i);
+  });
+
+  it("repairing the check adds no prohibition and no endocrine flag: it only lets rows be read", () => {
+    const previouslyDistrusted = ["Triethanolamine", "Lactic Acid", "Menthol", "Mica", "Zinc PCA", "BHT (Butylated Hydroxytoluene)", "Lanolin"];
+    for (const n of previouslyDistrusted) expect(isProhibited(lookupIngredient(n)!), n).toBe(false);
+    expect(endocrineFlaggedInInci(previouslyDistrusted)).toEqual([]);
+  });
+});
+
+describe("lookupIngredient - a colour-index code written beside the INCI name", () => {
+  it("resolves 'CI 77891/Titanium Dioxide' to Titanium Dioxide: CI 77891 has no row of its own, the name after the slash is the ingredient", () => {
+    expect(lookupIngredient("CI 77891")).toBeUndefined();
+    expect(lookupIngredient("CI 77891/Titanium Dioxide")?.INCI_Name).toBe("Titanium Dioxide");
+  });
+
+  it("accepts the spellings a label uses for the code and for the separator", () => {
+    for (const label of ["Ci 77891/Titanium Dioxide", "C.I. 77891 / Titanium Dioxide", "CI 77891 (Titanium Dioxide)/Titanium Dioxide"]) {
+      expect(lookupIngredient(label)?.INCI_Name, label).toBe("Titanium Dioxide");
+    }
+  });
+
+  it("a code that has its own row keeps that row: 'CI 77491/Iron Oxides' is CI 77491", () => {
+    expect(lookupIngredient("CI 77491")?.INCI_Name).toBe("CI 77491");
+    expect(lookupIngredient("CI 77491/Iron Oxides")?.INCI_Name).toBe("CI 77491");
+  });
+
+  it("the name before the slash still wins, and an ordinary alias pair still resolves by its first part", () => {
+    expect(lookupIngredient("Titanium Dioxide/CI 77891")?.INCI_Name).toBe("Titanium Dioxide");
+    expect(lookupIngredient("Aqua/Water")).toBeDefined();
+  });
+
+  it("does NOT widen the match: only a colour-index code falls through to the later parts", () => {
+    // A made-up first part is not a code, so the known ingredient after the slash must not rescue it: a wrong match would mislabel its safety.
+    expect(lookupIngredient("Zorbaflux/Titanium Dioxide")).toBeUndefined();
+    expect(lookupIngredient("Zorbaflux (CI 77891)/Titanium Dioxide")).toBeUndefined();
+    // A code that is neither held nor followed by a known name stays unresolved.
+    expect(lookupIngredient("CI 99999/Zorbaflux")).toBeUndefined();
+    expect(lookupIngredient("CI 99999")).toBeUndefined();
+  });
+
+  it("the safety read follows: Titanium Dioxide written with its code is found and valid, not 'not in the database'", () => {
+    const s = ingredientSafety("CI 77891/Titanium Dioxide");
+    expect(s.found).toBe(true);
+    expect(s.valid).toBe(true);
   });
 });
