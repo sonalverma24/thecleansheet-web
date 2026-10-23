@@ -2,7 +2,7 @@
    THE CLEAN SHEET™ · Product scorecard view
    THE one review format (extracted from the brand product page).
    Renders a ProductScorecard + Brand - used by static catalogue pages,
-   stored repository reviews (/reviews/[slug]) and live /review results.
+   stored repository reviews (/analysis/[slug]) and live /review results.
 ──────────────────────────────────────────────────────────────── */
 
 import type { ReactNode } from "react";

@@ -1,6 +1,6 @@
 /* Shared pieces of the "search a product, get its review" flow that used to live
    on the /review page. The search boxes (home hero, /brands, the no-results card)
-   run the review in place and then open the product's permanent /reviews/[slug]
+   run the review in place and then open the product's permanent /analysis/[slug]
    page; there is no middle page. */
 
 /** Query flag that auto-runs a review on arrival, e.g. after the sign-in round trip. */

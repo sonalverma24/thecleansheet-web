@@ -21,7 +21,7 @@ export function productId(p: Pick<ProductScorecard, "brandSlug" | "slug">): stri
 }
 
 export function productHref(p: ProductScorecard): string {
-  return p.freshReview ? `/reviews/${p.slug}` : `/brands/${p.brandSlug}/${p.slug}`;
+  return p.freshReview ? `/analysis/${p.slug}` : `/brands/${p.brandSlug}/${p.slug}`;
 }
 
 export default function MarketCard({

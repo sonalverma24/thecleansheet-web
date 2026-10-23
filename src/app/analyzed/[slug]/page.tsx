@@ -45,7 +45,7 @@ export async function generateMetadata({
     },
     // Cached AI scans of arbitrary products (legacy /100 score, not the current
     // review standard, not in the sitemap): never index. The reviewed version of
-    // a product lives at /reviews/[slug] or /brands/[brand]/[product].
+    // a product lives at /analysis/[slug] or /brands/[brand]/[product].
     robots: { index: false, follow: true },
     openGraph: {
       title: `${data.product_name}, Score ${sc.score ?? 0}/100 | The Clean Sheet`,

@@ -85,7 +85,7 @@ export default async function BrandsPage() {
     const label = r.brand || "Other brands";
     const key = label.toLowerCase();
     const g = groups.get(key) ?? { label, links: [] };
-    g.links.push({ href: `/reviews/${r.slug}`, text: r.productName });
+    g.links.push({ href: `/analysis/${r.slug}`, text: r.productName });
     groups.set(key, g);
   }
   const indexGroups: IndexGroup[] = [

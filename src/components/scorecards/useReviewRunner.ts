@@ -15,7 +15,7 @@ import {
 } from "@/lib/review-run";
 
 /* Runs a product review in place, then opens the product's permanent page
-   (/reviews/[slug]). Existing reviews come back instantly; a new product takes
+   (/analysis/[slug]). Existing reviews come back instantly; a new product takes
    about a minute, during which `phase` is "running" and `stepIdx` advances.
    Running a NEW analysis needs an account, so signed-out people get the sign-in
    modal and come back with ?review=<query>, which this hook runs on arrival. */
@@ -70,7 +70,7 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
         const outcome = interpretReviewResponse(res.status, data, text);
         if (outcome.kind === "done") {
           navigating = true;
-          router.push(`/reviews/${outcome.slug}`);
+          router.push(`/analysis/${outcome.slug}`);
         } else if (outcome.kind === "auth") {
           setState({ phase: "idle" });
           askToSignIn(text);

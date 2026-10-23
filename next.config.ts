@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Next.js streams <title>/<meta>/canonical into <body> for user agents that are
 // not on its "limited bots" list, and Googlebot is (by design) not on the default
-// list. For dynamic pages (notably /reviews/[slug]) that pushes the canonical
+// list. For dynamic pages (notably /analysis/[slug]) that pushes the canonical
 // hundreds of KB into the document. Add Googlebot so it always gets metadata in
 // <head>. This is Next's own default list (next/dist/shared/lib/router/utils/html-bots)
 // plus Googlebot; re-check it when upgrading Next.
@@ -46,10 +46,10 @@ const nextConfig: NextConfig = {
       { source: "/verify/codeskin-ultralite-full-v2-p5r7k2", destination: "/verify", permanent: true },
       { source: "/verify/tcs-in-2026-048291-b7f2a9c1e5d3", destination: "/verify", permanent: true },
       // Duplicate Conscious Chemist Ultra Light Fluid reviews merged into one.
-      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
-      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-ultra-light-fluid-spf-50-pa", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
-      { source: "/reviews/conscious-chemist-conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
-      { source: "/reviews/conscious-chemist-mineral-sunscreen", destination: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-spf-50-pa", destination: "/analysis/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-100-mineral-sunscreen-ultra-light-fluid-spf-50-pa", destination: "/analysis/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-", destination: "/analysis/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
+      { source: "/reviews/conscious-chemist-mineral-sunscreen", destination: "/analysis/conscious-chemist-100-mineral-sunscreen-spf-50-pa-ultra-light-fluid", permanent: true },
       // Legacy pages retired into the new information architecture (Standard | Education | Verify | About).
       { source: "/certification", destination: "/standard", permanent: true },
       { source: "/methodology", destination: "/standard", permanent: true },
@@ -66,8 +66,12 @@ const nextConfig: NextConfig = {
       { source: "/analyzer", destination: "/brands", permanent: true },
       { source: "/analyser", destination: "/brands", permanent: true },
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
-      { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/reviews/kay-beauty-hydra-creme-lipstick", permanent: true },
-      { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },
+      { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/analysis/kay-beauty-hydra-creme-lipstick", permanent: true },
+      { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/analysis/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },
+      // The product analysis pages moved from /reviews/<slug> to /analysis/<slug>. Permanent (308) so Google
+      // carries the ranking over. The specific merges above come first so they reach the kept page in one hop.
+      { source: "/reviews/:slug", destination: "/analysis/:slug", permanent: true },
+      { source: "/reviews", destination: "/brands", permanent: true },
     ];
   },
 };

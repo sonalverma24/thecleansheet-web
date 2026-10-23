@@ -56,7 +56,7 @@ async function main() {
       console.log(`moved ${result.review.productSlug} -> ${SLUG}`);
     }
   }
-  for (const t of TWINS) if (t !== SLUG) console.log(`      { source: "/reviews/${t}", destination: "/reviews/${SLUG}", permanent: true },`);
+  for (const t of TWINS) if (t !== SLUG) console.log(`      { source: "/analysis/${t}", destination: "/analysis/${SLUG}", permanent: true },`);
   const r = result.review, v = result.verdict;
   console.log(`\n✓ Re-review done (${secs}s)`);
   console.log("stored slug   :", r.productSlug);

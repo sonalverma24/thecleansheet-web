@@ -38,7 +38,7 @@ describe("buildShelf", () => {
     const cards = buildShelf([COSRX_BHA, TONER, ANUA_FOAM, ANUA_OIL], 4);
     expect(cards.map((c) => c.slug)).toEqual([ANUA_OIL.slug, TONER.slug, COSRX_BHA.slug, ANUA_FOAM.slug]);
     expect(cards[0].image).toBe("/images/home/products/anua-heartleaf-oil.webp");
-    expect(cards[0].href).toBe("/reviews/anua-heartleaf-pore-control-cleansing-oil");
+    expect(cards[0].href).toBe("/analysis/anua-heartleaf-pore-control-cleansing-oil");
     expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Toners", "Exfoliants", "Cleansers"]);
   });
 
@@ -99,9 +99,9 @@ describe("popularChecks", () => {
     const patch = tile({ slug: "cosrx-master-patch-original-fit", brand: "COSRX", productName: "Master Patch Original Fit" });
     const cards = buildShelf([COSRX_BHA, patch, ANUA_OIL, TONER], 4);
     expect(popularChecks(cards)).toEqual([
-      { label: "Cleansing oil", href: `/reviews/${ANUA_OIL.slug}` },
-      { label: "BHA liquid", href: `/reviews/${COSRX_BHA.slug}` },
-      { label: "Pimple patches", href: "/reviews/cosrx-master-patch-original-fit" },
+      { label: "Cleansing oil", href: `/analysis/${ANUA_OIL.slug}` },
+      { label: "BHA liquid", href: `/analysis/${COSRX_BHA.slug}` },
+      { label: "Pimple patches", href: "/analysis/cosrx-master-patch-original-fit" },
     ]);
   });
 

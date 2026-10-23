@@ -217,7 +217,7 @@ export function RepositoryAdminClient() {
                   </button>
                 )}
                 <a
-                  href={`/reviews/${r.product_slug}`}
+                  href={`/analysis/${r.product_slug}`}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-lg border border-[#b0a8a4]/30 text-[#282828] text-xs px-3 py-1.5"

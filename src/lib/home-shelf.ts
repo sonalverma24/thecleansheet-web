@@ -113,7 +113,7 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
   return {
     seedKey,
     slug: tile.slug,
-    href: `/reviews/${tile.slug}`,
+    href: `/analysis/${tile.slug}`,
     brand: tile.brand,
     name: tile.productName,
     category,
