@@ -36,7 +36,7 @@ export async function GET() {
     `- [Ingredient Analyser](${BASE}/review): Paste a product name, URL or INCI list to get a full ingredient safety breakdown.`,
   );
   lines.push(
-    `- [Product Analyser](${BASE}/brands): Get one clear Clean Sheet standing for any product, with every claim checked against evidence.`,
+    `- [Product Analyser](${BASE}/brands): Get one clear Clean Sheet rating for any product, with every claim checked against evidence.`,
   );
   lines.push(
     `- [Ingredient Directory](${BASE}/ingredients): Search ${fmt(stats.ingredients)} cosmetic ingredients for safety, allergen flags and regulatory limits.`,
