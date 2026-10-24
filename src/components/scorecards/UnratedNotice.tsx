@@ -161,8 +161,8 @@ export default function UnratedNotice({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={close} aria-hidden="true" />
-      <div className="fixed z-50 inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center pointer-events-none">
+      <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm" onClick={close} aria-hidden="true" />
+      <div className="fixed z-[60] inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center pointer-events-none">
         <div
           ref={dialogRef}
           role="dialog"
