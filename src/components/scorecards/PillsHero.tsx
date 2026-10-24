@@ -69,8 +69,6 @@ function FitCard({ title, items, tone }: { title: string; items: string[]; tone:
     says so once, beside the heading, not on every chip; a retailer we hold no address for is a plain dashed chip. */
 function WhereToBuy({ links }: { links: BuyLink[] }) {
   const searches = links.some((b) => b.url && !b.direct);
-  const priced = links.some((b) => b.price);
-  const note = [searches ? "links search the retailer" : "", priced ? "prices as last seen" : ""].filter(Boolean).join(", ");
   return (
     <div id="where-to-buy" className="min-w-0 lg:flex-none lg:max-w-[58%] scroll-mt-28">
       <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 mb-1.5">
