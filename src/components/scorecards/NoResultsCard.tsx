@@ -11,7 +11,7 @@ interface NoResultsCardProps {
 
 export function NoResultsCard({ query }: NoResultsCardProps) {
   const [showForm, setShowForm] = useState(false);
-  const { state, run, busy } = useReviewRunner({ autoRun: false });
+  const { state, run, reset, busy } = useReviewRunner({ autoRun: false });
 
   return (
     <div className="col-span-full py-12 flex flex-col items-center text-center max-w-lg mx-auto">
@@ -40,7 +40,7 @@ export function NoResultsCard({ query }: NoResultsCardProps) {
           <ArrowRight size={13} />
         </button>
       )}
-      <ReviewRunStatus state={state} onPick={(name) => void run(name)} />
+      <ReviewRunStatus state={state} onPick={(name) => void run(name)} onDismiss={reset} />
 
       {/* Secondary CTA */}
       <button

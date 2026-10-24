@@ -11,6 +11,8 @@ import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { PillsPage } from "@/components/scorecards/PillsPage";
+import { UnratedProductPage } from "@/components/scorecards/UnratedProductPage";
+import { unratedKindOf } from "@/lib/unrated-kind";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { keepOutOfSearch, layoutFor, pillsFor } from "@/lib/pills-for-review";
 import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
@@ -32,6 +34,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") return {};
   const { review, verdict } = result;
+  // A nutraceutical or a prescription drug has no review to describe, and stays out of search.
+  if (unratedKindOf({ productName: review.productName, category: review.category, inci: review.inciIngredients })) {
+    return { title: `${review.productName} | The Clean Sheet`, robots: { index: false, follow: true } };
+  }
   // The pills page (flag on): a rating is a coloured circle and nothing else, so the title, the description and the search listing carry no verdict word,
   // old or new. The page that stays out of search is the one we could not rate (keepOutOfSearch).
   const pills = isFlagOn(ANALYSER_FLAGS.pillsPage) ? pillsFor(review, verdict).model : null;
@@ -53,6 +59,12 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   const { slug } = await params;
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") notFound();
+
+  // A nutraceutical or a prescription drug: no review, no rating, no structured data. Only the product and a popup saying why.
+  const unrated = unratedKindOf({ productName: result.review.productName, category: result.review.category, inci: result.review.inciIngredients });
+  if (unrated) {
+    return <UnratedProductPage slug={slug} kind={unrated} productName={result.review.productName} brand={result.review.brand ?? ""} category={result.review.category} image={result.review.imageUrl} />;
+  }
 
   // Two flags. ANALYSER_PILLS_PAGE: the new layout AND the five pills (the title, the rating and what is indexed follow the pill). ANALYSER_NEW_LAYOUT: the
   // new layout only, with today's standing in the take card; the title, description, rating and indexing stay exactly today's.

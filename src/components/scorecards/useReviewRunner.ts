@@ -13,6 +13,7 @@ import {
   REVIEW_STEPS,
   type ReviewRunError,
 } from "@/lib/review-run";
+import type { UnratedKind } from "@/lib/unrated-kind";
 
 /* Runs a product review in place, then opens the product's permanent page
    (/analysis/[slug]). Existing reviews come back instantly; a new product takes
@@ -24,6 +25,7 @@ export type ReviewRunnerState =
   | { phase: "idle" }
   | { phase: "running"; query: string; stepIdx: number }
   | { phase: "disambig"; query: string; options: { name: string }[] }
+  | { phase: "unrated"; unrated: UnratedKind; productName: string; brand: string }
   | { phase: "error"; error: ReviewRunError };
 
 export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) {
@@ -76,6 +78,8 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
           askToSignIn(text);
         } else if (outcome.kind === "disambig") {
           setState({ phase: "disambig", query: outcome.query, options: outcome.options });
+        } else if (outcome.kind === "unrated") {
+          setState({ phase: "unrated", unrated: outcome.unrated, productName: outcome.productName, brand: outcome.brand });
         } else {
           setState({ phase: "error", error: outcome.error });
         }

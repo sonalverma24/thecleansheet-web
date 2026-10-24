@@ -8,7 +8,7 @@ import { useReviewRunner } from "@/components/scorecards/useReviewRunner";
    with no page in between. On a phone it stacks (input, then a full-width button). */
 
 export default function HeroSearch({ stacked = false }: { /** Keep the phone layout (input, then a full-width button) at every width, for narrow cards. */ stacked?: boolean }) {
-  const { state, run, busy } = useReviewRunner();
+  const { state, run, reset, busy } = useReviewRunner();
   const [query, setQuery] = useState("");
 
   return (
@@ -44,6 +44,7 @@ export default function HeroSearch({ stacked = false }: { /** Keep the phone lay
       </form>
       <ReviewRunStatus
         state={state}
+        onDismiss={reset}
         onPick={(name) => {
           setQuery(name);
           void run(name);

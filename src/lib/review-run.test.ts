@@ -28,6 +28,18 @@ describe("interpretReviewResponse", () => {
     expect(interpretReviewResponse(500, { type: "error" }, "x")).toEqual({ kind: "error", error: "fail" });
   });
 
+  it("shows the popup, not a page, for a nutraceutical or a prescription drug", () => {
+    expect(interpretReviewResponse(200, { type: "unrated", kind: "nutraceutical", productName: "H2Glow Drink Mix", brand: "H2Glow" }, "h2glow"))
+      .toEqual({ kind: "unrated", unrated: "nutraceutical", productName: "H2Glow Drink Mix", brand: "H2Glow" });
+    expect(interpretReviewResponse(200, { type: "unrated", kind: "prescription-drug", productName: "Aziderm 20% Cream" }, "aziderm"))
+      .toEqual({ kind: "unrated", unrated: "prescription-drug", productName: "Aziderm 20% Cream", brand: "" });
+  });
+
+  it("does not trust an unrated answer it cannot read: an unknown kind or no product name is a failure", () => {
+    expect(interpretReviewResponse(200, { type: "unrated", kind: "cosmetic", productName: "X" }, "x")).toEqual({ kind: "error", error: "fail" });
+    expect(interpretReviewResponse(200, { type: "unrated", kind: "nutraceutical" }, "x")).toEqual({ kind: "error", error: "fail" });
+  });
+
   it("treats a review with no slug as a failure rather than navigating nowhere", () => {
     expect(interpretReviewResponse(200, { type: "product-review", review: {} }, "x")).toEqual({ kind: "error", error: "fail" });
     expect(interpretReviewResponse(200, null, "x")).toEqual({ kind: "error", error: "fail" });

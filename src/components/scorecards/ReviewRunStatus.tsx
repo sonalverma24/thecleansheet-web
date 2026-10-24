@@ -2,6 +2,7 @@
 
 import { REVIEW_ERROR_MESSAGE, REVIEW_STEPS } from "@/lib/review-run";
 import type { ReviewRunnerState } from "./useReviewRunner";
+import UnratedNotice from "./UnratedNotice";
 
 /* Progress, "which one did you mean?" and error states for useReviewRunner.
    `tone` picks the colours: "light" for white pages, "dark" for the teal /brands hero. */
@@ -14,10 +15,13 @@ const TONES = {
 export default function ReviewRunStatus({
   state,
   onPick,
+  onDismiss,
   tone = "light",
 }: {
   state: ReviewRunnerState;
   onPick: (name: string) => void;
+  /** Called when the popup for a product we do not rate is closed. */
+  onDismiss?: () => void;
   tone?: keyof typeof TONES;
 }) {
   const t = TONES[tone];
@@ -61,6 +65,11 @@ export default function ReviewRunStatus({
         </div>
       </div>
     );
+  }
+
+  if (state.phase === "unrated") {
+    // Keyed by the product, so a second search for another product opens its own popup.
+    return <UnratedNotice key={state.productName} kind={state.unrated} productName={state.productName} brand={state.brand} onClose={onDismiss} />;
   }
 
   if (state.phase === "error") {
