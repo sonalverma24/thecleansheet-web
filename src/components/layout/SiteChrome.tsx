@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { Navigation } from '@/components/layout/Navigation';
-import MobileBottomNav from '@/components/MobileBottomNav';
 import Footer from '@/components/Footer';
 import WhatsAppBubble from '@/components/WhatsAppBubble';
 import FormModal from '@/components/FormModal';
@@ -22,12 +21,10 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Navigation />
-      {/* Reserve space for the fixed bottom tab bar (+ iOS home indicator) on mobile */}
-      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
       <WhatsAppBubble />
       <FormModal />
-      <MobileBottomNav />
     </>
   );
 }
