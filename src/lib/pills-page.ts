@@ -242,16 +242,19 @@ const CHEMICAL_FILTER_RE = /avobenzone|butyl methoxydibenzoylmethane|octocrylene
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
 
-function pregnancyHighlight(p: PregnancyScreen): Highlight {
-  if (p.status === "clear") return { label: "No pregnancy-caution ingredients", state: "yes", detail: "None of the listed ingredients carries a pregnancy caution in our reference data. Ask your doctor if you are pregnant." };
+/** The pregnancy chip shows only when the screen is sure: "Pregnancy safe" when every ingredient was checked and none is cautioned, "Pregnancy caution" when one is.
+    When some ingredient could not be checked there is no chip at all, neither a caution nor a tick (the FAQ still answers the question in words). */
+function pregnancyHighlight(p: PregnancyScreen): Highlight | null {
+  if (p.status === "clear") return { label: "Pregnancy safe", state: "yes", detail: "None of the listed ingredients carries a pregnancy caution in our reference data. Ask your doctor if you are pregnant." };
   if (p.status === "caution") return { label: `Pregnancy caution: ${joinAnd(p.cautioned.map((c) => c.name))}`, state: "no", detail: p.cautioned.map((c) => `${c.name}: ${c.note}`).join(". ") };
-  return { label: "Pregnancy: not fully checked", state: "unknown", detail: p.unresolved.length ? `We could not check ${joinAnd(p.unresolved)}.` : "We have no ingredient list to check." };
+  return null;
 }
 
 export function highlightsOf(review: ProductReview, product: ProductScorecard, inci: string[], preg: PregnancyScreen): Highlight[] {
   const have = inci.length > 0;
   const named = (re: RegExp) => inci.some((i) => re.test(i.trim()));
-  const out: Highlight[] = [pregnancyHighlight(preg)];
+  const pregnancy = pregnancyHighlight(preg);
+  const out: Highlight[] = pregnancy ? [pregnancy] : [];
   out.push({ label: "Paraben free", state: !have ? "unknown" : named(/paraben/i) ? "no" : "yes" });
   out.push({ label: "Fragrance free", state: !have ? "unknown" : named(FRAGRANCE_RE) ? "no" : "yes" });
   out.push({ label: "Alcohol free", state: !have ? "unknown" : named(DRYING_ALCOHOL_RE) ? "no" : "yes" });

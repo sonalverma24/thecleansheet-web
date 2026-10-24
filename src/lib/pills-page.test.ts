@@ -35,7 +35,7 @@ describe("a Good choice", () => {
 
   it("block 4: highlights say what the label lets us say, including the pregnancy check", () => {
     const by = Object.fromEntries(m.highlights.map((h) => [h.label, h.state]));
-    expect(by).toMatchObject({ "No pregnancy-caution ingredients": "yes", "Paraben free": "yes", "Fragrance free": "yes", "Alcohol free": "yes", "Mineral filters only": "yes", "SPF verified": "yes" });
+    expect(by).toMatchObject({ "Pregnancy safe": "yes", "Paraben free": "yes", "Fragrance free": "yes", "Alcohol free": "yes", "Mineral filters only": "yes", "SPF verified": "yes" });
   });
 
   it("blocks 6 and 7: one line each", () => {
@@ -144,7 +144,40 @@ describe("at a glance", () => {
     const by = Object.fromEntries(page(review).model.highlights.map((h) => [h.label, h.state]));
     expect(by["Paraben free"]).toBe("unknown");
     expect(by["Fragrance free"]).toBe("unknown");
-    expect(by["Pregnancy: not fully checked"]).toBe("unknown");
+  });
+});
+
+describe("the pregnancy chip", () => {
+  const pregnancyChips = (m: PillsPageModel) => m.highlights.filter((h) => /pregnan/i.test(h.label));
+
+  it("says 'Pregnancy safe' when every ingredient was checked and none carries a caution", () => {
+    expect(pregnancyChips(page(rv({ productName: "Plain Cream", category: "Moisturizer" })).model)).toEqual([expect.objectContaining({ label: "Pregnancy safe", state: "yes" })]);
+  });
+
+  it("says 'Pregnancy caution' only for a product that has one, and names the ingredient", () => {
+    const chips = pregnancyChips(page(rv({ productName: "Night Serum", category: "Serum", inciIngredients: [...BASE, "Retinyl Palmitate"] })).model);
+    expect(chips).toEqual([expect.objectContaining({ label: "Pregnancy caution: Retinyl Palmitate", state: "no" })]);
+  });
+
+  it("a retinol serum gets the caution, though the database holds no row for plain retinol", () => {
+    const chips = pregnancyChips(page(rv({ productName: "Retinol Serum", category: "Serum", inciIngredients: [...BASE, "Retinol"] })).model);
+    expect(chips).toEqual([expect.objectContaining({ label: "Pregnancy caution: Retinol", state: "no" })]);
+  });
+
+  it("shows no chip at all when some ingredient could not be checked: not a caution, not 'safe'", () => {
+    const { model: m } = page(rv({ productName: "Serum", category: "Serum", inciIngredients: [...BASE, "Zorbaflux"] }));
+    expect(pregnancyChips(m)).toEqual([]);
+    expect(m.highlights.some((h) => h.state === "unknown" && /pregnan/i.test(h.label))).toBe(false);
+  });
+
+  it("shows no chip when there is no ingredient list to check", () => {
+    const review = rv({ productName: "Cream", category: "Moisturizer", inciIngredients: [], ingredientReads: [] }, evidence.model());
+    expect(pregnancyChips(page(review).model)).toEqual([]);
+  });
+
+  it("a caution still shows when another ingredient could not be checked", () => {
+    const { model: m } = page(rv({ productName: "Serum", category: "Serum", inciIngredients: [...BASE, "Retinyl Palmitate", "Zorbaflux"] }));
+    expect(pregnancyChips(m)).toEqual([expect.objectContaining({ label: "Pregnancy caution: Retinyl Palmitate", state: "no" })]);
   });
 });
 

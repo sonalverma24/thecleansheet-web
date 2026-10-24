@@ -28,6 +28,26 @@ describe("pregnancy screen", () => {
     expect(pregnancyScreen(["Aqua", "Azadirachta Indica Seed Oil"])).toEqual({ status: "clear", cautioned: [], unresolved: [] });
   });
 
+  it("a retinoid is a caution even though the database holds no row for it", () => {
+    // The database has no "Retinol" row at all, only its esters; without this a retinol serum would read as not checked.
+    const r = pregnancyScreen(["Aqua", "Retinol"]);
+    expect(r.status).toBe("caution");
+    expect(r.cautioned.map((c) => c.name)).toEqual(["Retinol"]);
+    expect(r.unresolved).toEqual([]);
+  });
+
+  it("a name that only mentions retinol in brackets is not a retinoid", () => {
+    expect(pregnancyScreen(["Aqua", "Bakuchiol (a natural retinol alternative)"]).cautioned).toEqual([]);
+    expect(pregnancyScreen(["Aqua", "Bakuchiol"])).toEqual({ status: "clear", cautioned: [], unresolved: [] });
+  });
+
+  it("a note that opens 'No specific restriction' is never a caution, and its hedge makes the ingredient not checked, not clear", () => {
+    // Oligopeptide-1: "No specific restriction identified; precautionary avoidance sometimes recommended due to cell proliferation mechanism"
+    expect(pregnancyScreen(["Aqua", "Oligopeptide-1"])).toEqual({ status: "unknown", cautioned: [], unresolved: ["Oligopeptide-1"] });
+    // Neem leaf: "No specific restriction for topical leaf extract; seed extract use should be avoided in pregnancy..." - the caution is about the seed
+    expect(pregnancyScreen(["Aqua", "Azadirachta Indica Leaf Extract"]).cautioned).toEqual([]);
+  });
+
   it("is never clear while an ingredient is unresolved", () => {
     const r = pregnancyScreen(["Aqua", "Zorbaflux"]);
     expect(r).toEqual({ status: "unknown", cautioned: [], unresolved: ["Zorbaflux"] });
