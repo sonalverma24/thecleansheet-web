@@ -21,14 +21,5 @@ export function pillsFor(review: ProductReview, verdict: DerivedVerdict, now: st
 /** The layout-only view of a stored review: the new layout, today's standing. */
 export const layoutFor = (review: ProductReview, verdict: DerivedVerdict, now?: string) => pillsFor(review, verdict, now, standingViewOf(verdict.tier));
 
-/** The search-engine rating follows the visible pill, as the standing's did: Good choice 5, Buy with caution 3, Look elsewhere 1.5,
-    and none for Not enough info and Medicinal product (a made-up number breaks structured-data rules). */
-const RATING: Partial<Record<DecisionKey, number>> = { "good-choice": 5, "buy-with-caution": 3, "look-elsewhere": 1.5 };
-
-export function pillRating(key: DecisionKey, label: string) {
-  const ratingValue = RATING[key];
-  return ratingValue === undefined ? null : { "@type": "Rating" as const, ratingValue, bestRating: 5, worstRating: 1, alternateName: label };
-}
-
 /** A Not enough info page is kept out of search while the cause is an unread page or an unreliable list. */
 export const keepOutOfSearch = (key: DecisionKey): boolean => key === "not-enough-info";

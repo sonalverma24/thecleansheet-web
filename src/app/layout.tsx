@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 });
 
 /* viewport-fit=cover populates the CSS env(safe-area-inset-*) values so the
-   fixed bottom nav and floating bubble clear the iPhone home indicator and
+   floating bubble and tray clear the iPhone home indicator and
    notch. maximumScale is left unset so users can still pinch-zoom (a11y). */
 export const viewport: Viewport = {
   themeColor: "#ffffff",

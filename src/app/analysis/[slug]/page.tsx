@@ -12,7 +12,7 @@ import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { PillsPage } from "@/components/scorecards/PillsPage";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
-import { keepOutOfSearch, layoutFor, pillRating, pillsFor } from "@/lib/pills-for-review";
+import { keepOutOfSearch, layoutFor, pillsFor } from "@/lib/pills-for-review";
 import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
 import { clipDescription } from "@/lib/seo";
 
@@ -32,18 +32,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") return {};
   const { review, verdict } = result;
-  // The pills page (flag on): the title, the description and the search listing carry the pill, never the old standing.
+  // The pills page (flag on): a rating is a coloured circle and nothing else, so the title, the description and the search listing carry no verdict word,
+  // old or new. The page that stays out of search is the one we could not rate (keepOutOfSearch).
   const pills = isFlagOn(ANALYSER_FLAGS.pillsPage) ? pillsFor(review, verdict).model : null;
-  const tierLabel = pills ? pills.pill.label : TIER_STYLES[verdict.tier].label;
+  const tierLabel = TIER_STYLES[verdict.tier].label;
   return {
     ...(pills && keepOutOfSearch(pills.pill.key) ? { robots: { index: false, follow: true } } : {}),
-    title: `${review.productName} Analysis · ${tierLabel}`,
-    description: clipDescription(`${review.brand} ${review.productName}: ${tierLabel}. ${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
-    // A product that also has a curated catalogue page is the same content at two
-    // URLs: the catalogue page is the canonical one.
+    title: pills ? `${review.productName} Analysis` : `${review.productName} Analysis · ${tierLabel}`,
+    description: clipDescription(`${review.brand} ${review.productName}: ${pills ? "" : `${tierLabel}. `}${review.verdict?.cleanSheetTakeaway ?? "Every marketing claim checked against real evidence."}`),
     alternates: { canonical: `https://thecleansheet.in${cataloguePathFor(review.brand, review.productName) ?? `/analysis/${slug}`}` },
     openGraph: {
-      title: `${review.productName} · ${tierLabel} | The Clean Sheet`,
+      title: pills ? `${review.productName} | The Clean Sheet` : `${review.productName} · ${tierLabel} | The Clean Sheet`,
       description: review.verdict?.cleanSheetTakeaway ?? "",
       images: review.imageUrl ? [{ url: review.imageUrl }] : undefined,
     },
@@ -64,7 +63,9 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
     : layoutOn
       ? layoutFor(result.review, result.verdict)
       : { ...reviewToScorecard(result.review, result.verdict), model: null };
-  const rating = model && pillsOn ? pillRating(model.pill.key, model.pill.label) : tierToRating(result.verdict.tier);
+  // With the pills page the rating is a circle, not a number or a label, so no star rating is published in the structured data (a rating that is not on the
+  // page must not be in it). The page without the flag keeps today's rating.
+  const rating = pillsOn ? null : tierToRating(result.verdict.tier);
 
   const url = `https://thecleansheet.in/analysis/${slug}`;
   const jsonLd = {

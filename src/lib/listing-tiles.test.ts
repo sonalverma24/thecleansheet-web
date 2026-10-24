@@ -44,7 +44,7 @@ describe("the tiles of the stored reviews", () => {
     expect(on).toHaveLength(off.length);
     on.forEach((tile, i) => {
       const { model } = pillsFor(REVIEWS[i], deriveVerdict(REVIEWS[i]));
-      expect(tile.pill, tile.productName).toEqual({ key: model.pill.key, label: model.pill.label, tone: model.pill.tone });
+      expect(tile.pill, tile.productName).toEqual({ key: model.pill.key, marker: model.pill.marker });
       expect(tile.glance, tile.productName).toEqual(model.highlights.map((x) => ({ label: x.label, state: x.state })));
       const rest = { ...tile };
       delete rest.pill;

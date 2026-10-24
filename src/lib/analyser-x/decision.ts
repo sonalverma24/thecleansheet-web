@@ -11,6 +11,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { evaluate } from "./rules";
+import { MIN_SCREEN_COVERAGE } from "./kb";
 import { AUTHORITIES } from "./regulatory";
 import { PILLS, render } from "./copy";
 import type { BenchmarkValue, Decision, DecisionKey, DecisionReason, Finding, RuleContext } from "./types";
@@ -78,6 +79,8 @@ function confidence(ctx: RuleContext, key: DecisionKey): Decision["confidence"] 
   const screenComplete = !!ctx.screen && ctx.screen.total > 0 && ctx.screen.unresolved.length === 0;
   if (key === "medicinal-product") return ctx.list.reliable || ctx.profile.family === "OTC (Eczema)" ? "high" : "medium";
   if (ctx.list.trust <= 2) return "low";
+  // Coverage is how sure we are, not what the product is (decision X42): fewer than half the ingredients checked is Low, whatever the pill.
+  if (ctx.screen && ctx.screen.coverage < MIN_SCREEN_COVERAGE) return "low";
   if (ctx.list.reliable && ctx.list.anchored && screenComplete && share >= 0.8 && grounded && ageDays <= 180) return "high";
   return "medium";
 }

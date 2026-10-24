@@ -5,7 +5,7 @@ import { deriveVerdict } from "@/lib/product-review-engine";
 import { layoutFor, pillsFor, standingViewOf } from "@/lib/pills-for-review";
 import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
 import { PillsPage } from "@/components/scorecards/PillsPage";
-import { PILL } from "@/components/scorecards/pills-ui";
+import { MARKER_OF_PILL } from "@/components/scorecards/pill-palette";
 import type { ProductReview } from "@/lib/product-review-types";
 
 /* ANALYSER_NEW_LAYOUT: the new page, with today's standing in the take card. Nothing about what the page decides may change. */
@@ -16,7 +16,7 @@ const FIXTURES: [string, ProductReview][] = [
   ["prohibited ingredient", SAMPLE_EXAMPLE_PROHIBITED], ["medicinal shampoo", SAMPLE_EXAMPLE_MEDICINAL],
 ];
 const draw = (v: ReturnType<typeof pillsFor>) => renderToStaticMarkup(<PillsPage product={v.product} brand={v.brand} model={v.model} />);
-const take = (html: string) => html.slice(html.indexOf('aria-label="The Clean Sheet take"'), html.indexOf('id="at-a-glance"'));
+const take = (html: string) => html.slice(html.indexOf('aria-label="The Clean Sheet rating"'), html.indexOf('id="at-a-glance"'));
 
 describe("the standing as the take card shows it", () => {
   it.each([
@@ -35,19 +35,17 @@ describe.each(FIXTURES)("the new layout with today's standing, %s", (_name, revi
   const html = draw(layout);
   const standing = TIER_STYLES[verdict.tier].label;
 
-  it("the take card shows today's standing, and none of the five pills", () => {
+  it("the take card is a circle in the colour of today's standing, with no words: neither the standing nor any of the five pills", () => {
     expect(layout.model.mode).toBe("standing");
-    expect(take(html)).toContain(standing);
-    for (const p of NEW_PILLS) expect(take(html), p).not.toContain(p);
-    expect(layout.model.pill.label).toBe(standing);
+    expect(layout.model.pill.label).toBe(standing); // kept in the model for the preview; never drawn
+    expect(take(html)).toContain(`data-marker="${MARKER_OF_PILL[layout.model.pill.tone] ?? "none"}"`);
+    for (const p of [...NEW_PILLS, standing]) expect(take(html), p).not.toContain(p);
   });
 
-  it("says nothing about confidence: no meter, no words, a whole ring in the standing's own colour", () => {
+  it("says nothing about confidence: no meter, no words", () => {
     expect(html).not.toContain("Confidence");
     expect(html).not.toContain("cs-conf");
-    const ring = PILL[layout.model.pill.tone].ring;
-    expect(take(html).match(/<circle [^>]*r="35"/g)?.length).toBe(3);
-    expect(take(html).split(`stroke="${ring}"`).length - 1, "every arc filled").toBe(3);
+    expect(take(html)).not.toContain("<circle");
   });
 
   it("names no rule of the decision core: the standing is not theirs", () => {
@@ -71,8 +69,9 @@ describe("a stored Licensed Drug", () => {
   const v = layoutFor(SAMPLE_MINIMALIST_B5, verdict);
   const html = draw(v);
 
-  it("shows Licensed Drug and hides what only makes sense for a cosmetic", () => {
-    expect(take(html)).toContain("Licensed Drug");
+  it("shows a grey circle and hides what only makes sense for a cosmetic", () => {
+    expect(take(html)).toContain('data-marker="none"');
+    expect(take(html)).not.toContain("Licensed Drug");
     expect(v.model.details).toBeNull();
     expect(v.model.cheatCode).toBeNull();
     expect(v.model.howToUse).toBeNull();
@@ -92,12 +91,13 @@ describe("a stored Licensed Drug", () => {
 });
 
 describe("the pills page itself is unchanged by the new mode", () => {
-  it.each(FIXTURES)("%s: the pill and its confidence are the decision core's, and the footer names its rules", (_n, review) => {
+  it.each(FIXTURES)("%s: the circle's colour is the decision core's, no word is drawn for it, and the footer names its rules", (_n, review) => {
     const v = pillsFor(review, deriveVerdict(review));
     const html = draw(v);
     expect(v.model.mode).toBe("pills");
-    expect(take(html)).toContain(v.model.pill.label);
-    expect(html).toContain(`Confidence: ${v.model.take.confidence.label}`);
+    expect(take(html)).toContain(`data-marker="${v.model.pill.marker ?? "none"}"`);
+    for (const p of NEW_PILLS) expect(take(html), p).not.toContain(p);
+    expect(html).not.toContain("Confidence:");
     for (const old of ["Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug"]) expect(html, old).not.toContain(old);
   });
 });

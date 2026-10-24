@@ -52,10 +52,32 @@ describe("list reliability", () => {
     expect(out.decision.reasons.map((x) => x.ruleId)).toContain("gap.formula_conflict");
   });
 
-  it("an ingredient list our database barely recognises is not screened, so it is not judged", () => {
+  it("a list our database does not recognise at all has nothing for the screen to check, so nothing is said of it", () => {
     const r = decideReview(rv({ inciIngredients: ["Zorbaflux One", "Zorbaflux Two", "Zorbaflux Three", "Zorbaflux Four"] }), NOW);
     expect(r.decision.key).toBe("not-enough-info");
-    expect(ids(r)).toContain("gap.screen_incomplete");
+    expect(ids(r)).toContain("gap.support_insufficient");
+    expect(ids(r)).not.toContain("gap.screen_incomplete"); // that rule is gone: coverage is not a reason for the pill
+  });
+
+  it("a list our database only partly recognises does not change the pill: coverage sets the confidence and is a note (decision X42)", () => {
+    const full = decideReview(rv({ inciIngredients: BASE }), NOW);
+    const many = [...BASE, ...Array.from({ length: 12 }, (_, i) => `Zorbaflux ${i + 1}`)];
+    const part = decideReview(rv({ inciIngredients: many }), NOW);
+    expect(part.decision.key).toBe(full.decision.key);
+    expect(part.decision.confidence).toBe("low"); // under half the list was checked
+    expect(ids(part)).toContain("note.screen_partial");
+    expect(ids(part)).not.toContain("caution.screen_partial");
+    expect(ids(part)).not.toContain("gap.screen_incomplete");
+    expect(part.settled.filter((f) => f.severity === "gap" || f.severity === "caution").map((f) => f.ruleId)).toEqual(
+      full.settled.filter((f) => f.severity === "gap" || f.severity === "caution").map((f) => f.ruleId),
+    );
+  });
+
+  it("more than half recognised: the pill is unchanged and the confidence is at most Medium", () => {
+    const part = decideReview(rv({ inciIngredients: [...BASE, "Zorbaflux One"] }), NOW);
+    expect(part.decision.key).toBe(decideReview(rv({ inciIngredients: BASE }), NOW).decision.key);
+    expect(part.decision.confidence).not.toBe("high");
+    expect(part.decision.confidence).not.toBe("low");
   });
 });
 

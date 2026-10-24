@@ -1,3 +1,4 @@
+import { productScopeOf } from "@/lib/product-scope";
 import { describe, expect, it } from "vitest";
 import { buildGlobalScreen, enrichIngredients, keyActivesFrom, restricted } from "@/lib/inci-enrich";
 
@@ -68,5 +69,27 @@ describe("the enrichment lookup reads a colour-index code beside its INCI name t
 describe("an ingredient we hold no row for keeps its generic note in the shared source: today's page still shows it", () => {
   it("the note is unchanged, so only the pills page leaves it out", () => {
     expect(enrichIngredients(["Zorbaflux Glycoside"])[0].note).toBe("Not in our analysed database; assessed from public sources.");
+  });
+});
+
+describe("the wider screen reads a status by product type (decision X40)", () => {
+  const LIPSTICK = productScopeOf("Hydra Creme Lipstick", "Lipstick");
+  const FACE_WASH = productScopeOf("Gentle Face Wash", "Cleanser");
+
+  it("a rinse-off ban is listed for a rinse-off product and not for a leave-on one", () => {
+    const inci = ["Aqua", "Glycerin", "Polyethylene"];
+    expect(buildGlobalScreen(inci, FACE_WASH).eu_1223_2009).toMatch(/Polyethylene/);
+    expect(buildGlobalScreen(inci, LIPSTICK).eu_1223_2009).toBe("No prohibited or restricted ingredients identified");
+    expect(buildGlobalScreen(inci).eu_1223_2009).toMatch(/Polyethylene/); // no product given: today's reading
+  });
+
+  it("a restriction that applies to rinse-off products is not listed for a leave-on product (Cyclopentasiloxane)", () => {
+    const inci = ["Aqua", "Glycerin", "Cyclopentasiloxane"];
+    expect(buildGlobalScreen(inci, FACE_WASH).eu_1223_2009).toMatch(/Cyclopentasiloxane/);
+    expect(buildGlobalScreen(inci, LIPSTICK).eu_1223_2009).not.toMatch(/Cyclopentasiloxane/);
+  });
+
+  it("an unscoped ban is listed for every product", () => {
+    for (const scope of [LIPSTICK, FACE_WASH]) expect(buildGlobalScreen(["Aqua", "Glycerin", "Formaldehyde"], scope).eu_1223_2009).toMatch(/Formaldehyde/);
   });
 });

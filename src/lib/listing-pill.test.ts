@@ -17,9 +17,13 @@ describe.each(FIXTURES)("the card's pill and ticks, %s", (_name, review) => {
   const card = listingPill(review, verdict)!;
 
   it("are the page's own: the same pill, the same ticks, in the same order", () => {
-    expect(card.pill).toEqual({ key: model.pill.key, label: model.pill.label, tone: model.pill.tone });
+    expect(card.pill).toEqual({ key: model.pill.key, marker: model.pill.marker });
     expect(card.glance).toEqual(model.highlights.map((h) => ({ label: h.label, state: h.state })));
     expect(card.glance!.length).toBeGreaterThan(0);
+  });
+
+  it("carry no verdict word at all: a card gets a colour, never a label", () => {
+    for (const word of ["Good choice", "Buy with caution", "Look elsewhere", "Not enough info", "Medicinal product"]) expect(JSON.stringify(card)).not.toContain(word);
   });
 
   it("never carry an old standing, and carry no explainer line", () => {

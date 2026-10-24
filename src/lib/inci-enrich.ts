@@ -9,6 +9,7 @@
 import { ALL_INGREDIENTS } from "@/lib/ingredient-utils";
 import { lookupKeys } from "@/lib/ingredient-db";
 import { hasUnnegatedMatch } from "@/lib/text-negation";
+import { statusAppliesTo, type ProductScope } from "@/lib/product-scope";
 import type { IngredientEntry, KeyActive, GlobalScreen } from "@/data/brands/types";
 
 type DBRow = (typeof ALL_INGREDIENTS)[number] & Record<string, string>;
@@ -133,16 +134,18 @@ export function restricted(s?: string): boolean {
   return hasUnnegatedMatch(s, /\b(prohibited|banned|restricted)\b|annex\s*ii\b|not permitted for/);
 }
 
-export function buildGlobalScreen(inci: string[]): GlobalScreen {
+export function buildGlobalScreen(inci: string[], scope?: ProductScope): GlobalScreen {
+  // A status that names a kind of product ("banned in rinse-off products") counts only for that kind of product (src/lib/product-scope.ts).
+  const hit = (text?: string) => restricted(text) && statusAppliesTo(text, scope);
   return {
-    eu_1223_2009:          authorityLine(inci, (r) => restricted(r.EU_Status) ? (r.EU_Status || "restricted") : null, "No prohibited or restricted ingredients identified"),
-    india_cr_2020:         authorityLine(inci, (r) => restricted(r.India_Status) ? (r.India_Status || "restricted") : null, "No prohibited ingredients under India CR 2020 identified"),
-    us_fda_21cfr:          authorityLine(inci, (r) => restricted(r.US_FDA_Status) ? (r.US_FDA_Status || "restricted") : null, "No prohibited ingredients under US FDA 21 CFR identified"),
-    korea_mfds:            authorityLine(inci, (r) => restricted(r.Korea_Status) ? (r.Korea_Status || "restricted") : null, "No prohibited ingredients under Korea MFDS identified"),
-    tga_australia:         authorityLine(inci, (r) => restricted(r.Australia_TGA_Status) ? "restricted" : null, "No therapeutic-goods trigger identified"),
-    aicis_australia:       authorityLine(inci, (r) => restricted(r.Australia_TGA_Status) ? "restricted" : null, "No AICIS industrial-chemical concern identified"),
-    canada_nhpid:          authorityLine(inci, (r) => restricted(r.Canada_NHPID_Status) ? "restricted" : null, "No Health Canada restriction identified"),
-    health_canada_hotlist: authorityLine(inci, (r) => restricted(r.Canada_NHPID_Status) ? "hotlist" : null, "No Health Canada Hotlist ingredient identified"),
+    eu_1223_2009:          authorityLine(inci, (r) => hit(r.EU_Status) ? (r.EU_Status || "restricted") : null, "No prohibited or restricted ingredients identified"),
+    india_cr_2020:         authorityLine(inci, (r) => hit(r.India_Status) ? (r.India_Status || "restricted") : null, "No prohibited ingredients under India CR 2020 identified"),
+    us_fda_21cfr:          authorityLine(inci, (r) => hit(r.US_FDA_Status) ? (r.US_FDA_Status || "restricted") : null, "No prohibited ingredients under US FDA 21 CFR identified"),
+    korea_mfds:            authorityLine(inci, (r) => hit(r.Korea_Status) ? (r.Korea_Status || "restricted") : null, "No prohibited ingredients under Korea MFDS identified"),
+    tga_australia:         authorityLine(inci, (r) => hit(r.Australia_TGA_Status) ? "restricted" : null, "No therapeutic-goods trigger identified"),
+    aicis_australia:       authorityLine(inci, (r) => hit(r.Australia_TGA_Status) ? "restricted" : null, "No AICIS industrial-chemical concern identified"),
+    canada_nhpid:          authorityLine(inci, (r) => hit(r.Canada_NHPID_Status) ? "restricted" : null, "No Health Canada restriction identified"),
+    health_canada_hotlist: authorityLine(inci, (r) => hit(r.Canada_NHPID_Status) ? "hotlist" : null, "No Health Canada Hotlist ingredient identified"),
     echa_svhc:             authorityLine(inci, (r) => /^yes/i.test((r.SVHC_Flag || "").trim()) ? "SVHC" : null, "No Substances of Very High Concern identified"),
     iarc:                  authorityLine(inci, (r) => /group\s*(1|2a|2b)/i.test(r.IARC_Group || "") ? (r.IARC_Group || "") : null, "No IARC-classified carcinogens identified"),
   };

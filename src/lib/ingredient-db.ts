@@ -13,10 +13,11 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { ALL_INGREDIENTS, type Ingredient } from "@/lib/ingredient-utils";
-import { hasUnnegatedMatch } from "@/lib/text-negation";
+import { hasUnnegatedMatch, readsAsBan } from "@/lib/text-negation";
+import { statusAppliesTo, type ProductScope } from "@/lib/product-scope";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { INGREDIENT_ALIASES, aliasKey, isSignedOff, type IngredientAlias } from "@/data/ingredient-aliases";
-export { hasUnnegatedMatch };
+export { hasUnnegatedMatch, readsAsBan };
 
 /* Case/format-insensitive key. Handles "Aqua/Water", "Aqua (Water)",
    zero-width chars, punctuation. */
@@ -122,16 +123,17 @@ export function parseMaxPct(s?: string): number | null {
 /* Prohibition detection: EU Annex II (prohibited list) or an explicit
    prohibited status, via the shared negation-aware scan (see
    text-negation.ts for why a naive keyword search is wrong here). */
-function statusProhibited(s?: string): boolean {
-  return hasUnnegatedMatch(s, /\b(prohibited|banned)\b/);
+function statusProhibited(s?: string, scope?: ProductScope): boolean {
+  // A ban that names a kind of product ("EU BANNED in rinse-off products") speaks only to that kind (src/lib/product-scope.ts).
+  return readsAsBan(s) && statusAppliesTo(s, scope);
 }
-export function isProhibited(r: Ingredient): boolean {
+export function isProhibited(r: Ingredient, scope?: ProductScope): boolean {
   if (!rowLooksValid(r)) return false;
   const annex = (r.EU_Annex || "").trim();
   // EU Annex II = prohibited. Read with the negation-aware scan: the Annex field of Madecassoside says "Not listed in Annex II to VI in source
   // checked", which names Annex II in order to say it is NOT on it.
   if (hasUnnegatedMatch(annex, /\bii\b/)) return true;
-  return statusProhibited(r.EU_Status) || statusProhibited(r.India_Status);
+  return statusProhibited(r.EU_Status, scope) || statusProhibited(r.India_Status, scope);
 }
 
 export interface IngredientSafety {
@@ -199,12 +201,12 @@ const BACKSTOP_BANNED: { stem: string; note: string }[] = [
   { stem: "lead acetate", note: "Lead acetate is prohibited in cosmetics (EU Annex II)." },
 ];
 
-export function bannedIngredientsInInci(inci: string[]): { name: string; note: string }[] {
+export function bannedIngredientsInInci(inci: string[], scope?: ProductScope): { name: string; note: string }[] {
   const out: { name: string; note: string }[] = [];
   const seen = new Set<string>();
   for (const name of inci) {
     const r = lookupIngredient(name);
-    if (r && isProhibited(r)) {
+    if (r && isProhibited(r, scope)) {
       const key = normIngredient(name);
       if (!seen.has(key)) { seen.add(key); out.push({ name: r.INCI_Name || name, note: (r.Key_Safety_Notes || "Prohibited in cosmetics.").split(/;|\./)[0].trim() }); }
     }

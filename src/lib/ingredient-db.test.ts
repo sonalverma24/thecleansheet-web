@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { endocrineFlaggedInInci, hasUnnegatedMatch, ingredientSafety, isProhibited, lookupIngredient, rowLooksValid } from "@/lib/ingredient-db";
+import { bannedIngredientsInInci, endocrineFlaggedInInci, hasUnnegatedMatch, ingredientSafety, isProhibited, lookupIngredient, readsAsBan, rowLooksValid } from "@/lib/ingredient-db";
+import { productScopeOf } from "@/lib/product-scope";
 import { buildGlobalScreen } from "@/lib/inci-enrich";
 import { ALL_INGREDIENTS, type Ingredient } from "@/lib/ingredient-utils";
 
@@ -239,5 +240,42 @@ describe("lookupIngredient - a colour-index code written beside the INCI name", 
     const s = ingredientSafety("CI 77891/Titanium Dioxide");
     expect(s.found).toBe(true);
     expect(s.valid).toBe(true);
+  });
+});
+
+describe("a ban is read by product type (decision X40)", () => {
+  const LIPSTICK = productScopeOf("Hydra Creme Lipstick", "Lipstick");
+  const FACE_WASH = productScopeOf("Gentle Face Wash", "Cleanser");
+
+  it("Polyethylene is banned in rinse-off products: prohibited in a face wash, not in a lipstick", () => {
+    const pe = lookupIngredient("Polyethylene")!;
+    expect(isProhibited(pe, FACE_WASH)).toBe(true);
+    expect(isProhibited(pe, LIPSTICK)).toBe(false);
+    expect(isProhibited(pe)).toBe(true); // no product given: today's reading
+    expect(bannedIngredientsInInci(["Polyethylene"], FACE_WASH).map((b) => b.name)).toEqual(["Polyethylene"]);
+    expect(bannedIngredientsInInci(["Polyethylene"], LIPSTICK)).toEqual([]);
+  });
+
+  it("an unscoped ban is a ban for every product", () => {
+    for (const scope of [LIPSTICK, FACE_WASH]) expect(bannedIngredientsInInci(["Formaldehyde"], scope).map((b) => b.name)).toEqual(["Formaldehyde"]);
+  });
+});
+
+describe("readsAsBan", () => {
+  it.each([
+    ["Banned", true],
+    ["EU BANNED in rinse-off products (microplastic regulation)", true],
+    ["Prohibited in cosmetics (EU Annex II); permitted only as a regulated drug.", true],
+    ["Permitted but restricted; EU Annex II (prohibited) applies above 0.1%", true],
+    ["Permitted; not banned in any jurisdiction", false],
+    ["Not restricted or prohibited", false],
+    // the negation comes after the word: the sentence says the ingredient is NOT on the list
+    ["Permitted but restricted; EU Annex II (prohibited) does not list polyacrylamide itself, but EU Regulation 1223/2009 specifies residue limits", false],
+    // a hedge has not said banned
+    ["Restricted or banned (check CPCB)", false],
+    ["Banned or restricted depending on the product", false],
+    ["", false],
+  ] as const)("%s", (text, want) => {
+    expect(readsAsBan(text)).toBe(want);
   });
 });

@@ -12,6 +12,7 @@
 import type { ProductReview } from "@/lib/product-review-types";
 import type { GlobalScreen } from "@/data/brands/types";
 import { buildGlobalScreen } from "@/lib/inci-enrich";
+import { productScopeOf } from "@/lib/product-scope";
 
 const STALE_RE = /missing inci|no inci\b|inci (?:not|un)available|not available.*inci/i;
 
@@ -23,10 +24,10 @@ function fromReview(rs: NonNullable<ProductReview["regulatoryScreen"]>): GlobalS
   };
 }
 
-export function globalScreenFor(review: Pick<ProductReview, "regulatoryScreen">, inci: string[]): GlobalScreen | undefined {
+export function globalScreenFor(review: Pick<ProductReview, "regulatoryScreen"> & Partial<Pick<ProductReview, "productName" | "category">>, inci: string[]): GlobalScreen | undefined {
   const rs = review.regulatoryScreen;
   const stale = !rs || Object.values(rs).some((v) => STALE_RE.test(String(v)));
   if (rs && !stale) return fromReview(rs);
-  if (inci.length >= 3) return buildGlobalScreen(inci);
+  if (inci.length >= 3) return buildGlobalScreen(inci, review.productName ? productScopeOf(review.productName, review.category ?? "") : undefined);
   return rs ? fromReview(rs) : undefined;
 }

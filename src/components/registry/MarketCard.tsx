@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check, Minus, X } from "lucide-react";
 import type { ProductScorecard } from "@/data/brands/types";
-import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
-import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
+import { resolveTier } from "@/components/scorecards/pillar-ui";
+import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
+import { RatingDot } from "@/components/scorecards/RatingDot";
 import { getDisplayPrice } from "@/lib/product-card-helpers";
 import { productGroup } from "@/lib/registry-filters";
 import { seedImageFor, shelfNote } from "@/lib/home-shelf";
@@ -73,10 +74,9 @@ export default function MarketCard({
   compareFull: boolean;
   onCompare: (id: string) => void;
 }) {
-  const tier = TIER_STYLES[resolveTier({ reviewTier: product.reviewTier, score: product.score })];
-  // The pills page: a card of a stored review shows the pill its page shows, in the pill's own colours. The badge keeps today's shape and size.
-  const pill = product.pill ? PILL_COLOURS[product.pill.tone] : null;
-  const style = product.pill && pill ? { label: product.pill.label, bg: pill.soft, fg: pill.ink, border: pill.line } : tier;
+  // The rating is one circle: green, yellow, red, or grey (not rated). A card of a stored review (the pills page) shows the circle its page shows; a catalogue
+  // product with no stored review shows the circle of its standing. No label either way.
+  const marker = product.pill ? product.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: product.reviewTier, score: product.score })];
   const glance = product.pill && product.glance?.length ? product.glance : null;
   const image = seedImageFor(product) ?? product.image ?? null;
   const category = productGroup(product);
@@ -123,12 +123,7 @@ export default function MarketCard({
             {product.productName}
           </Link>
         </h3>
-        <span
-          className="self-start text-[9px] md:text-[10px] font-bold tracking-[0.1em] px-[9px] md:px-2.5 py-1 rounded-full border uppercase"
-          style={{ background: style.bg, color: style.fg, borderColor: style.border }}
-        >
-          {style.label}
-        </span>
+        <span className="self-start py-0.5 pl-0.5"><RatingDot marker={marker} size={14} /></span>
         {glance && <GlanceRow items={glance} />}
         <p className={`hidden md:block text-[13px] text-[#4a4a4a] leading-[1.5] flex-1 ${glance ? "line-clamp-2" : "line-clamp-3"}`}>{shelfNote(product.summary)}</p>
 

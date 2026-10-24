@@ -64,7 +64,6 @@ const T: Record<string, (p: P) => string> = {
   "gap.identity": () => "We could not confirm exactly which product this is, so we have not judged it.",
   "gap.acquisition": () => "We could not read the product page when we analysed it. We are checking again.",
   "gap.claims_unreliable": () => "We could not confirm the product's claims from text we read, so we have not judged them.",
-  "gap.screen_incomplete": (p) => `Our ingredient database recognised ${s(p.recognised, "few")} of ${s(p.total, "the")} listed ingredients, so our screen is incomplete.`,
   "gap.list_blocked": () => "One of our checks flagged something we are still verifying. We will update this page.",
   "gap.possible_medicinal": () => "This may be a medicine rather than a cosmetic. We are verifying before we say more.",
   "gap.support_insufficient": () => "Nothing we checked is a problem, but there is not enough verified evidence to recommend it.",
@@ -77,18 +76,18 @@ const T: Record<string, (p: P) => string> = {
   "caution.formula": () => "The formula may not deliver everything the claims promise.",
   "caution.list_trust_2": () => "The ingredient list comes from a retailer page only, so check it against the pack.",
   "caution.spf_low": (p) => `SPF ${s(p.spf)} is below the SPF 30 that The Clean Sheet treats as the minimum for daily outdoor use in India.`,
-  "caution.screen_partial": (p) => `${s(p.n)} of ${s(p.total)} listed ingredients ${Number(p.n) === 1 ? "is" : "are"} not in our reference database (${s(p.names)}), so our screen does not cover ${Number(p.n) === 1 ? "it" : "them"}.`,
   "caution.benchmark_gap": (p) =>
     p.kind === "exceeded"
       ? `${s(p.authority)} limits ${s(p.ingredient)} to ${s(p.limit)}%; this product states ${s(p.declared)}%.`
       : `${s(p.ingredient)} is not permitted in cosmetics in ${s(p.authority)}. It is not prohibited in the EU or India.`,
 
   "support.list_verified": (p) => `The ingredient list was read ${from(p) || "from a source we can verify"} and matches the product name.`,
-  "support.safety_clear": (p) => `No prohibited or flagged ingredient in our screen (all ${s(p.total)} listed ingredients checked).`,
+  "support.safety_clear": (p) => Number(p.recognised) >= Number(p.total) ? `No prohibited or flagged ingredient in our screen (all ${s(p.total)} listed ingredients checked).` : `No prohibited or flagged ingredient among the ${s(p.recognised)} of ${s(p.total)} listed ingredients our screen checked.`,
   "support.claims_proportionate": () => "The claims are modest, or the main claims are backed by a test on this product.",
   "support.formula_sound": () => "The formula and format plausibly deliver the claims.",
 
   "note.endocrine": (p) => `${s(p.ingredient)}: ${s(p.note)}. Legal at its permitted level.`,
+  "note.screen_partial": (p) => `${s(p.n)} of ${s(p.total)} listed ingredients ${Number(p.n) === 1 ? "is" : "are"} not in our reference database (${s(p.names)}), so our screen did not check ${Number(p.n) === 1 ? "it" : "them"}.`,
   "note.freshness": (p) => `Evidence last checked${on(p.checkedAt)}. We re-check older analyses.`,
   "note.restricted_unverified": (p) =>
     p.why === "source"

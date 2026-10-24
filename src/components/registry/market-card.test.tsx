@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ProductScorecard } from "@/data/brands/types";
-import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
+import { MARKER_COLOURS, NEUTRAL_COLOURS } from "@/components/scorecards/pill-palette";
 import MarketCard, { cardGlanceText } from "./MarketCard";
 
 const BASE = {
@@ -13,27 +13,28 @@ const GLANCE: NonNullable<ProductScorecard["glance"]> = [
   { label: "Pregnancy caution: Homosalate and Benzophenone-3", state: "no" }, { label: "Paraben free", state: "yes" }, { label: "Dermatologist tested", state: "yes" },
   { label: "Fragrance free", state: "no" }, { label: "Alcohol free", state: "unknown" },
 ];
-const PILLED: ProductScorecard = { ...BASE, pill: { key: "buy-with-caution", label: "Buy with caution", tone: "caution" }, glance: GLANCE };
+const PILLED: ProductScorecard = { ...BASE, pill: { key: "buy-with-caution", marker: "yellow" }, glance: GLANCE };
 const draw = (p: ProductScorecard) => renderToStaticMarkup(<MarketCard product={p} comparing={false} compareFull={false} onCompare={() => {}} />);
 /** The classes of the summary paragraph (the product name above it is clamped too, so look at this one only). */
 const summaryClasses = (html: string) => html.match(/<p class="(hidden md:block[^"]*)"/)![1];
-const badge = (html: string) => html.match(/<span class="(self-start[^"]*rounded-full[^"]*)" style="([^"]*)">([^<]*)<\/span>/)!;
+/** The rating circle of a card: its colour name, its background, and nothing else (no text, no label). */
+const dot = (html: string) => {
+  const m = html.match(/<span role="img" aria-label="Rating: ([a-z]+)" data-marker="([a-z]+)" class="[^"]*" style="([^"]*)"><\/span>/)!;
+  return { name: m[1], marker: m[2], style: m[3] };
+};
 
 describe("a listing card with the pills page on", () => {
   const html = draw(PILLED);
 
-  it("shows the pill in place of the standing, in the pill's own colours", () => {
-    const [, , style, text] = badge(html);
-    expect(text).toBe("Buy with caution");
-    expect(html).not.toContain("Good Standing");
-    const c = PILL_COLOURS.caution;
-    expect(style).toContain(`background:${c.soft}`);
-    expect(style).toContain(`color:${c.ink}`);
-    expect(style).toContain(`border-color:${c.line}`);
+  it("shows a rating circle in place of the standing: its colour, and no words", () => {
+    const d = dot(html);
+    expect(d.name).toBe("yellow");
+    expect(d.style).toContain(`background:${MARKER_COLOURS.yellow.ring}`);
+    for (const word of ["Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug", "Buy with caution", "Good choice", "Look elsewhere", "Not enough info", "Medicinal product"]) expect(html, word).not.toContain(word);
   });
 
-  it("keeps the badge's shape and size: the very same classes as today's card", () => {
-    expect(badge(html)[1]).toBe(badge(draw(BASE))[1]);
+  it("is the same circle, the same size, as a card of today's standing", () => {
+    expect(dot(html).style.replace(/background:[^;]*;?/, "").replace(/box-shadow:[^;]*;?/, "")).toBe(dot(draw(BASE)).style.replace(/background:[^;]*;?/, "").replace(/box-shadow:[^;]*;?/, ""));
   });
 
   it("keeps the card's own frame, the image box and the price row exactly as today's", () => {
@@ -75,9 +76,10 @@ describe("a listing card with the pills page on", () => {
 });
 
 describe("a listing card without a pill is exactly today's", () => {
-  it("keeps the standing, has no ticks row and keeps the three-line summary", () => {
+  it("keeps the standing as a circle, has no ticks row and keeps the three-line summary", () => {
     const html = draw(BASE);
-    expect(badge(html)[3]).toBe("Good Standing");
+    expect(dot(html).name).toBe("green");
+    expect(html).not.toContain("Good Standing");
     expect(html).not.toContain('aria-label="At a glance"');
     expect(summaryClasses(html)).toContain("line-clamp-3");
     expect(summaryClasses(html)).not.toContain("line-clamp-2");
@@ -85,27 +87,33 @@ describe("a listing card without a pill is exactly today's", () => {
 
   it("a pill with no ticks shows the pill and no empty row", () => {
     const html = draw({ ...PILLED, glance: [] });
-    expect(badge(html)[3]).toBe("Buy with caution");
+    expect(dot(html).name).toBe("yellow");
     expect(html).not.toContain('aria-label="At a glance"');
     expect(summaryClasses(html)).toContain("line-clamp-3");
   });
 
   it("ticks on a product with no pill are ignored: the pill decides whether the card is a pills card", () => {
     const html = draw({ ...BASE, glance: GLANCE });
-    expect(badge(html)[3]).toBe("Good Standing");
+    expect(dot(html).name).toBe("green");
     expect(html).not.toContain('aria-label="At a glance"');
   });
 });
 
-describe("each of the five pills", () => {
-  it.each([["good", "Good choice"], ["caution", "Buy with caution"], ["look", "Look elsewhere"], ["info", "Not enough info"], ["med", "Medicinal product"]] as const)(
-    "%s: its words in its colours, and no old standing",
-    (tone, label) => {
-      const html = draw({ ...BASE, pill: { key: label, label, tone }, glance: [] });
-      const [, , style, text] = badge(html);
-      expect(text).toBe(label);
-      expect(style).toContain(`color:${PILL_COLOURS[tone].ink}`);
+describe("each rating", () => {
+  it.each([["green", "green"], ["yellow", "yellow"], ["red", "red"], [null, "grey"]] as const)(
+    "%s: a circle named %s, in the palette's colour, with no words and no old standing",
+    (marker, name) => {
+      const html = draw({ ...BASE, pill: { key: "x", marker }, glance: [] });
+      const d = dot(html);
+      expect(d.name).toBe(name);
+      expect(d.style).toContain(`background:${(marker ? MARKER_COLOURS[marker] : NEUTRAL_COLOURS).ring}`);
       for (const old of ["Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug"]) expect(html, old).not.toContain(old);
     },
   );
+
+  it("a catalogue product's standing is a circle too: Room to Improve yellow, Not Recommended red, a Licensed Drug grey", () => {
+    expect(dot(draw({ ...BASE, reviewTier: "can-do-better" })).name).toBe("yellow");
+    expect(dot(draw({ ...BASE, reviewTier: "not-recommended" })).name).toBe("red");
+    expect(dot(draw({ ...BASE, reviewTier: "not-assessed" })).name).toBe("grey");
+  });
 });

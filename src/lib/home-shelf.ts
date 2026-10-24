@@ -1,12 +1,12 @@
 import type { ProductScorecard } from "@/data/brands/types";
-import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
-import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
+import { resolveTier } from "@/components/scorecards/pillar-ui";
+import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
 
 /* ────────────────────────────────────────────────────────────────
    HOME SHELF · the product cards on the home page.
 
-   The cards are REAL stored reviews, shown with the real standing
-   (Good Standing / Room to Improve / Not Recommended / Licensed Drug).
+   The cards are REAL stored reviews, shown with their real rating: one circle,
+   green, yellow, red, or grey when we could not rate the product. No label.
    Nothing here can produce a "certified" status: certification is a
    separate, not-yet-live programme, so the shelf never reads
    `certificationStatus` and never invents a verdict.
@@ -63,9 +63,8 @@ export interface ShelfCard {
   name: string;
   category: string;
   image: string | null;
-  /** The real standing label, e.g. "Good Standing". */
-  standing: string;
-  pill: { bg: string; fg: string; border: string };
+  /** The rating circle: green, yellow, red, or null for grey (not rated). No label. */
+  marker: "green" | "yellow" | "red" | null;
   note: string;
 }
 
@@ -109,10 +108,8 @@ export function shelfNote(summary: string | undefined): string {
 }
 
 function toCard(tile: ProductScorecard, seedKey: string | null, category: string, image: string | null): ShelfCard {
-  const tier = resolveTier({ reviewTier: tile.reviewTier, score: tile.score });
-  const style = TIER_STYLES[tier];
-  // The pills page (flag): a card of a stored review shows the pill its page shows, in the pill's own colours; the card's shape does not change.
-  const pill = tile.pill ? PILL_COLOURS[tile.pill.tone] : null;
+  // A card of a stored review shows the circle its page shows; a product with no stored review shows the circle of its standing.
+  const marker = tile.pill ? tile.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: tile.reviewTier, score: tile.score })];
   return {
     seedKey,
     slug: tile.slug,
@@ -121,8 +118,7 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
     name: tile.productName,
     category,
     image,
-    standing: tile.pill ? tile.pill.label : style.label,
-    pill: pill ? { bg: pill.soft, fg: pill.ink, border: pill.line } : { bg: style.bg, fg: style.fg, border: style.border },
+    marker,
     note: shelfNote(tile.summary),
   };
 }

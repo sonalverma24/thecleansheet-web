@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { ProductScorecard } from "@/data/brands/types";
-import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
-import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
 import { buildShelf, categoryFor, matchSeed, popularChecks, SHELF_SEEDS, shelfCategories, shelfNote } from "./home-shelf";
 
 function tile(over: Partial<ProductScorecard> & { slug: string; brand: string; productName: string }): ProductScorecard {
@@ -44,12 +42,13 @@ describe("buildShelf", () => {
     expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Toners", "Exfoliants", "Cleansers"]);
   });
 
-  it("shows the real standing for each product", () => {
+  it("shows the real rating for each product, as a circle: green, yellow, red", () => {
     const cards = buildShelf([ANUA_OIL, ANUA_FOAM, COSRX_BHA, TONER], 4);
-    const label = (slug: string) => cards.find((c) => c.slug === slug)!.standing;
-    expect(label(ANUA_OIL.slug)).toBe("Good Standing");
-    expect(label(ANUA_FOAM.slug)).toBe("Room to Improve");
-    expect(label(COSRX_BHA.slug)).toBe("Not Recommended");
+    const marker = (slug: string) => cards.find((c) => c.slug === slug)!.marker;
+    expect(marker(ANUA_OIL.slug)).toBe("green");
+    expect(marker(ANUA_FOAM.slug)).toBe("yellow");
+    expect(marker(COSRX_BHA.slug)).toBe("red");
+    for (const c of cards) expect(Object.keys(c)).not.toContain("standing");
   });
 
   it("never shows a certified status, even when the stored tile says certified", () => {
@@ -130,20 +129,25 @@ describe("shelfNote", () => {
   });
 });
 
-describe("the pills page: a shelf card of a stored review shows its pill", () => {
-  const CAUTION = { ...ANUA_OIL, pill: { key: "buy-with-caution", label: "Buy with caution", tone: "caution" as const } };
+describe("the pills page: a shelf card of a stored review shows its circle", () => {
+  const CAUTION = { ...ANUA_OIL, pill: { key: "buy-with-caution", marker: "yellow" as const } };
 
-  it("shows the pill's words and colours, and keeps everything else the card had", () => {
+  it("shows the page's circle and no words, and keeps everything else the card had", () => {
     const [card] = buildShelf([CAUTION], 1);
     const [before] = buildShelf([ANUA_OIL], 1);
-    expect(card.standing).toBe("Buy with caution");
-    expect(card.pill).toEqual({ bg: PILL_COLOURS.caution.soft, fg: PILL_COLOURS.caution.ink, border: PILL_COLOURS.caution.line });
-    expect({ ...card, standing: "", pill: null }).toEqual({ ...before, standing: "", pill: null });
+    expect(card.marker).toBe("yellow");
+    expect(JSON.stringify(card)).not.toMatch(/Buy with caution|Good choice|Look elsewhere|Not enough info|Medicinal product/);
+    expect({ ...card, marker: null }).toEqual({ ...before, marker: null });
   });
 
-  it("a tile with no pill is exactly today's card", () => {
+  it("a tile with no pill shows the circle of today's standing", () => {
     const [card] = buildShelf([ANUA_OIL], 1);
-    expect(card.standing).toBe("Good Standing");
-    expect(card.pill).toEqual({ bg: TIER_STYLES["mostly-clean"].bg, fg: TIER_STYLES["mostly-clean"].fg, border: TIER_STYLES["mostly-clean"].border });
+    expect(card.marker).toBe("green");
+  });
+
+  it("a grey pill (not enough info, a medicine) is a grey circle", () => {
+    const [card] = buildShelf([{ ...ANUA_OIL, pill: { key: "not-enough-info", marker: null } }], 1);
+    expect(card.marker).toBeNull();
   });
 });
+
