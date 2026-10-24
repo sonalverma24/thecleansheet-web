@@ -17,7 +17,8 @@
    A watchlist is not a verdict. The statuses are data; the rules decide what they may drive.
 ──────────────────────────────────────────────────────────────── */
 
-import { hasUnnegatedMatch, lookupIngredient, parseMaxPct, rowLooksValid } from "@/lib/ingredient-db";
+import { hasUnnegatedMatch, lookupIngredient, parseMaxPct, readsAsBan, rowLooksValid } from "@/lib/ingredient-db";
+import { statusAppliesTo, type ProductScope } from "@/lib/product-scope";
 import type { Ingredient } from "@/lib/ingredient-utils";
 import type { Authority, AuthorityResult, BenchmarkValue, RegStatus } from "./types";
 
@@ -54,11 +55,18 @@ const FIELDS: Record<Authority, { status: (r: Ingredient) => string; max?: (r: I
 
 export type WordClass = "prohibited" | "restricted" | "permitted" | "not_covered";
 
-/** Read one authority's free-text status. Order matters: a ban outranks a restriction outranks a permission. */
-export function classifyWords(text: string | undefined): WordClass {
+/** Read one authority's free-text status, for a product of this kind. Order matters: a ban outranks a restriction outranks a permission. A ban or a
+    restriction that names a kind of product ("EU BANNED in rinse-off products", "restricted in rinse-off", "regulated as a primary sunscreen active
+    when SPF claims are made") speaks only to that kind: for any other product it is read as permitted. With no product given, it speaks to all. */
+export function classifyWords(text: string | undefined, scope?: ProductScope): WordClass {
+  const c = classifyAll(text);
+  return (c === "prohibited" || c === "restricted") && !statusAppliesTo(text, scope) ? "permitted" : c;
+}
+
+function classifyAll(text: string | undefined): WordClass {
   const t = (text ?? "").trim();
   if (!t) return "not_covered";
-  if (hasUnnegatedMatch(t, /\b(prohibited|banned)\b/)) return "prohibited";
+  if (readsAsBan(t)) return "prohibited";
   // Restricted: listed with conditions, or a medicine framework applies (prescription, over-the-counter, registration).
   if (hasUnnegatedMatch(t, /\brestricted\b|\bwith restrictions?\b|\bannex\s*(?:iii|iv|v|vi)\b|\bprimary sunscreen\b|\bartg\b|\bnpn\b|\bschedule h\b|\bprescription\b|\brx only\b|\botc\b|\bfunctional cosmetic\b/)) return "restricted";
   // "Not specifically listed as restricted", "no Annex restriction identified": the words appear, negated.
@@ -107,14 +115,14 @@ export interface IngredientRegulation {
 const none = (): Record<Authority, IngredientStatus> =>
   Object.fromEntries(AUTHORITIES.map((a) => [a, { status: "not_covered" as RegStatus }])) as Record<Authority, IngredientStatus>;
 
-export function regulationOf(name: string, productName: string, lookup: Lookup = lookupIngredient): IngredientRegulation {
+export function regulationOf(name: string, productName: string, lookup: Lookup = lookupIngredient, scope?: ProductScope): IngredientRegulation {
   const row = lookup(name);
   if (!row || !rowLooksValid(row)) return { name, resolved: false, perAuthority: none() };
 
   const per = none();
   for (const a of AUTHORITIES) {
     const f = FIELDS[a];
-    let cls = classifyWords(f.status(row));
+    let cls = classifyWords(f.status(row), scope);
     // Annex II is the prohibited list, but a field that says "Not listed in Annex II to VI" names it to say the ingredient is NOT on it.
     if (a === "EU" && hasUnnegatedMatch((row.EU_Annex ?? "").trim(), /\bii\b/)) cls = "prohibited";
     if ((cls === "prohibited" || cls === "restricted") && isLowConfidence(row)) { per[a] = { status: "low_confidence" }; continue; }
@@ -140,8 +148,10 @@ export function computeBenchmark(
   /** Prohibitions the screen found that the database does not hold (the backstop list), with who prohibits them. The panel
       must not say "not fully checked" about an ingredient the reasons call prohibited. */
   backstop: { name: string; authorities: Authority[] }[] = [],
+  /** What kind of product it is, so a status that names a kind of product is read only for that kind. */
+  scope?: ProductScope,
 ): BenchmarkValue {
-  const regs = inci.map((n) => regulationOf(n, productName, lookup));
+  const regs = inci.map((n) => regulationOf(n, productName, lookup, scope));
   const authorities = Object.fromEntries(AUTHORITIES.map((a) => [a, emptyResult()])) as Record<Authority, AuthorityResult>;
   for (const reg of regs) {
     for (const a of AUTHORITIES) {
@@ -173,8 +183,8 @@ export function computeBenchmark(
 
 /** The authorities whose own words prohibit an ingredient, for the sentence that names the jurisdiction. Reads the
     database row; for a name the database lacks (the backstop list) it reads the note. */
-export function prohibitingAuthorities(name: string, note: string): Authority[] {
-  const reg = regulationOf(name, "");
+export function prohibitingAuthorities(name: string, note: string, scope?: ProductScope): Authority[] {
+  const reg = regulationOf(name, "", lookupIngredient, scope);
   const fromRow = AUTHORITIES.filter((a) => reg.perAuthority[a].status === "prohibited");
   if (fromRow.length) return fromRow;
   const out: Authority[] = [];

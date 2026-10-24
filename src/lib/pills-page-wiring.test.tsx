@@ -34,38 +34,42 @@ describe("the stored-review page, flag off: exactly today's page", () => {
   });
 });
 
-describe("the stored-review page, flag on: pills only", () => {
-  it("a Good choice: the title carries the pill, the rating is 5, the pills page renders", async () => {
+describe("the stored-review page, flag on: a rating circle and no verdict word anywhere", () => {
+  const WORDS = ["Good choice", "Buy with caution", "Look elsewhere", "Not enough info", "Medicinal product", "Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug"];
+
+  it("a rated product: the title and description carry no verdict word, no star rating is published, the pills page renders", async () => {
     process.env[FLAG] = "1";
     serve(SAMPLE_EXAMPLE_MINERAL_SUNSCREEN);
     const meta = await generateMetadata(params);
-    expect(meta.title).toMatch(/ Analysis · Good choice$/);
-    expect(String(meta.description)).toContain("Good choice");
+    expect(meta.title).toBe(`${SAMPLE_EXAMPLE_MINERAL_SUNSCREEN.productName} Analysis`);
     expect(meta.robots).toBeUndefined();
     const tree = await StoredReviewPage(params);
     expect(kids(tree)[1].type?.name).toBe("PillsPage");
-    expect(reviewNode(jsonLd(tree))?.reviewRating).toMatchObject({ ratingValue: 5, bestRating: 5, worstRating: 1, alternateName: "Good choice" });
-    for (const old of ["Good Standing", "Room to Improve", "Not Recommended", "Licensed Drug"]) {
-      expect(JSON.stringify(meta)).not.toContain(old);
-      expect(JSON.stringify(jsonLd(tree))).not.toContain(old);
+    expect(reviewNode(jsonLd(tree)), "a rating that is a circle is not published as a number").toBeUndefined();
+    for (const word of WORDS) {
+      expect(JSON.stringify(meta), word).not.toContain(word);
+      expect(JSON.stringify(jsonLd(tree)), word).not.toContain(word);
     }
   });
 
-  it("Not enough info is kept out of search and carries no rating", async () => {
+  it("a page we could not rate is kept out of search, and no rating is published", async () => {
     process.env[FLAG] = "1";
     serve(rv({ productName: "Face Cream", category: "Moisturizer", inciIngredients: [], ingredientReads: [], claimMap: [] }, evidence.model()));
     const meta = await generateMetadata(params);
-    expect(meta.title).toMatch(/ Analysis · Not enough info$/);
+    expect(meta.title).toBe("Face Cream Analysis");
     expect(meta.robots).toEqual({ index: false, follow: true });
     expect(reviewNode(jsonLd(await StoredReviewPage(params)))).toBeUndefined();
   });
 
-  it("a medicine carries no rating, and Look elsewhere is 1.5", async () => {
+  it("a medicine and a red page are published with no rating and no verdict word either", async () => {
     process.env[FLAG] = "1";
     serve(rv({ productName: "Anti Dandruff Shampoo", category: "Shampoo", inciIngredients: [...BASE, "Ketoconazole"] }));
     expect(reviewNode(jsonLd(await StoredReviewPage(params)))).toBeUndefined();
     serve(rv({ productName: "Preserved Cream", category: "Moisturizer", inciIngredients: [...BASE, "Formaldehyde"] }));
-    expect(reviewNode(jsonLd(await StoredReviewPage(params)))?.reviewRating).toMatchObject({ ratingValue: 1.5, alternateName: "Look elsewhere" });
+    const tree = await StoredReviewPage(params);
+    expect(reviewNode(jsonLd(tree))).toBeUndefined();
+    for (const word of WORDS) expect(JSON.stringify(jsonLd(tree)), word).not.toContain(word);
+    expect(((kids(tree)[1].props as { model: { pill: { marker: string | null } } }).model.pill.marker)).toBe("red");
   });
 });
 
@@ -116,7 +120,7 @@ describe("the stored-review page, new layout only (ANALYSER_NEW_LAYOUT): the new
     process.env[LAYOUT] = "1";
     process.env[FLAG] = "1";
     serve(SAMPLE_EXAMPLE_MINERAL_SUNSCREEN);
-    expect((await generateMetadata(params)).title).toMatch(/ Analysis · Good choice$/);
+    expect((await generateMetadata(params)).title).toBe(`${SAMPLE_EXAMPLE_MINERAL_SUNSCREEN.productName} Analysis`);
     const tree = await StoredReviewPage(params);
     expect((kids(tree)[1].props as { model: { mode: string } }).model.mode).toBe("pills");
   });

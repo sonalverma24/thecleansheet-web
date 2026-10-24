@@ -17,7 +17,7 @@ export function listingPill(review: ProductReview, verdict: DerivedVerdict, now?
   try {
     const { model } = pillsFor(review, verdict, now);
     return {
-      pill: { key: model.pill.key, label: model.pill.label, tone: model.pill.tone },
+      pill: { key: model.pill.key, marker: model.pill.marker },
       glance: model.highlights.map((h) => ({ label: h.label, state: h.state })),
     };
   } catch {

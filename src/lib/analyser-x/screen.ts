@@ -11,6 +11,7 @@ import { runAnalysis } from "@/lib/analysis-engine";
 import { pillarStanding } from "@/lib/pillar-standing";
 import { bannedIngredientsInInci, endocrineFlaggedInInci, ingredientSafety } from "@/lib/ingredient-db";
 import { findCatchAllIngredients } from "@/lib/inci-catchall";
+import { productScopeOf } from "@/lib/product-scope";
 import type { ProductReview } from "@/lib/product-review-types";
 import type { ClaimFlags } from "./claimflags";
 import { prohibitingAuthorities, regulationOf } from "./regulatory";
@@ -23,8 +24,9 @@ const CODE_PILLARS = ["Ingredient Safety & Toxicity", "Irritation & Allergen Ris
 export function computeScreen(review: ProductReview, inci: string[], flags: ClaimFlags): ScreenValue {
   // A ban we cannot attribute to an authority (a database row graded low confidence) is not a prohibition; the
   // benchmark shows it as unverified. A name the database lacks (the backstop list) is attributed from its note.
-  const prohibited = bannedIngredientsInInci(inci)
-    .map((p) => ({ ...p, authorities: prohibitingAuthorities(p.name, p.note) }))
+  const scope = productScopeOf(review.productName, review.category ?? "");
+  const prohibited = bannedIngredientsInInci(inci, scope)
+    .map((p) => ({ ...p, authorities: prohibitingAuthorities(p.name, p.note, scope) }))
     .filter((p) => p.authorities.length > 0 || !regulationOf(p.name, "").resolved);
   const endocrine = endocrineFlaggedInInci(inci);
   const resolvedNow = (n: string) => { const s = ingredientSafety(n); return s.found && s.valid; };

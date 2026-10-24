@@ -20,12 +20,13 @@ import type { Authority } from "@/lib/analyser-x";
 import { isNotHeldNote, type PillsPageModel } from "@/lib/pills-page";
 import { PillsHero } from "./PillsHero";
 import { Band, Chev } from "./pills-ui";
+import { MARKER_COLOURS, type MarkerName } from "./pill-palette";
 
-const FLAG_DOT: Record<"ok" | "warn" | "info", string> = { ok: "#248179", warn: "#c2453d", info: "#d4a017" };
+const FLAG_DOT: Record<"ok" | "warn" | "info", string> = { ok: MARKER_COLOURS.green.ring, warn: MARKER_COLOURS.red.ring, info: MARKER_COLOURS.yellow.ring };
 /** The dot of an ingredient we hold no row for and have no flag on: neutral, never the green of "no concern". */
 const UNRATED_DOT = "#d9d4cc";
-/** How each claim decision shows (the tones are the rating tones of pills-page.css). */
-const CLAIM_TONE: Record<string, string> = { "Publicly supported": "excellent", "Needs proof": "fair", "Not publicly supported": "concern" };
+/** How each claim decision shows: one of the three markers (the data-marker values of pills-page.css). */
+const CLAIM_MARKER: Record<string, MarkerName> = { "Publicly supported": "green", "Needs proof": "yellow", "Not publicly supported": "red" };
 const SEGMENT: Record<string, "y" | "n" | "u"> = { "Publicly supported": "y", "Needs proof": "n", "Not publicly supported": "u" };
 
 /** The short name of each authority, for its chip. The panel carries the full name, shown beside its detail. */
@@ -48,10 +49,10 @@ function Heading({ id, children, hint }: { id?: string; children: ReactNode; hin
 }
 
 /** A card with a title and a one-line summary that opens to the full detail. */
-function CheckCard({ id, title, oneLiner, open, children }: { id: string; title: string; oneLiner: string; open?: boolean; children: ReactNode }) {
+function CheckCard({ id, title, oneLiner, children }: { id: string; title: string; oneLiner: string; children: ReactNode }) {
   return (
     <div id={id} className="pp-card scroll-mt-28">
-      <details open={open}>
+      <details>
         <summary className="pp-sum flex items-start justify-between gap-3 pl-[18px] pr-3.5 py-3.5 rounded-[18px]">
           <span className="flex flex-col gap-[3px] min-w-0">
             <h2 className="pp-serif text-xl leading-[1.2] text-[#282828]">{title}</h2>
@@ -100,7 +101,7 @@ function ClaimCheckBody({ product }: { product: ProductScorecard }) {
           </ul>
         </div>
       )}
-      {/* The card opens on the summary above, as in the design; each claim, with its decision and reason, is one row further in. */}
+      {/* Every row on the page starts closed. Opening Claim check shows the bar above; each claim, with its decision and reason, is one row further in. */}
       <details className="border-t border-[#f1ece3]">
         <summary className="pp-sum flex items-center justify-between gap-3 pt-2.5 text-sm font-medium text-[#1d6761]">
           <span>Each claim, one by one ({claims.length})</span>
@@ -111,7 +112,7 @@ function ClaimCheckBody({ product }: { product: ProductScorecard }) {
             <li key={c.claim} className="py-2.5 border-b border-[#f1ece3] last:border-b-0">
               <div className="flex items-start justify-between gap-3">
                 <span className="text-sm leading-[1.5] text-[#282828]">{c.claim}</span>
-                <span className="pp-rate flex-none" data-tone={CLAIM_TONE[c.decision] ?? "fair"}>{c.decision}</span>
+                <span className="pp-rate flex-none" data-marker={CLAIM_MARKER[c.decision] ?? "yellow"}>{c.decision}</span>
               </div>
               {c.note && <p className="mt-1 text-[13px] leading-[1.5] text-[#55504d]">{c.note}</p>}
             </li>
@@ -198,7 +199,8 @@ function IngredientsBody({ product, keyActives }: { product: ProductScorecard; k
 
 export function PillsPage({ product, brand, model }: { product: ProductScorecard; brand: Brand; model: PillsPageModel }) {
   // The rule ids to quote are the decision core's. In the layout-only mode the standing is today's, so no rule of the core is behind it and none is named.
-  const ruleIds = model.mode === "pills" ? model.decision.reasons.filter((r) => r.kind !== "note").map((r) => r.ruleId) : [];
+  // One rule can fire for several ingredients; the footer names each rule once.
+  const ruleIds = model.mode === "pills" ? [...new Set(model.decision.reasons.filter((r) => r.kind !== "note").map((r) => r.ruleId))] : [];
   const how = model.howToUse
     ? ([["Where it fits", model.howToUse.routine], ["Layering", model.howToUse.layering], ["What to expect now", model.howToUse.expect], ["Over time", model.howToUse.later]] as const).filter(([, v]) => v)
     : [];
@@ -211,7 +213,7 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
 
       {/* Claim check, regulatory check and the ingredients: three cards, each a line that opens to the detail */}
       <Band className="pt-6" innerClassName="grid gap-2 sm:gap-3 sm:grid-cols-[repeat(auto-fit,minmax(min(320px,100%),1fr))] items-start">
-        <CheckCard id="claim-check" title="Claim check" oneLiner={model.claimCheck.oneLiner} open>
+        <CheckCard id="claim-check" title="Claim check" oneLiner={model.claimCheck.oneLiner}>
           <ClaimCheckBody product={product} />
         </CheckCard>
         <CheckCard id="regulatory-check" title="Regulatory check" oneLiner={model.regulatoryCheck.oneLiner}>
@@ -229,13 +231,13 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
             <Heading hint="How we read this product across five areas. Open any row for the full reasoning.">The detail</Heading>
           </div>
           <div className="flex-[1_1_600px] min-w-0 flex flex-col gap-2">
-            {model.details.map((d, i) => (
-              <details key={d.n} open={i === 0 && d.body.length > 0} className="pp-card">
+            {model.details.map((d) => (
+              <details key={d.n} className="pp-card">
                 <summary className="pp-sum flex flex-col gap-[5px] pl-4 sm:pl-[18px] pr-3 pt-3 pb-[13px] rounded-[18px]">
                   <span className="flex items-center gap-2 sm:gap-2.5 w-full">
                     <span aria-hidden className="flex-none text-[11.5px] sm:text-xs font-medium text-[#55504d] tabular-nums">{d.n}</span>
                     <h3 className="pp-serif flex-1 min-w-0 text-[17px] sm:text-xl leading-[1.2] text-[#282828]">{d.title}</h3>
-                    <span className="pp-rate" data-tone={d.rating.tone}>{d.rating.word}</span>
+                    <span className="pp-rate" data-marker={d.rating.marker ?? "none"}>{d.rating.word}</span>
                     <Chev size={30} />
                   </span>
                   <span className="text-sm sm:text-[14.5px] leading-[1.5] text-[#3f3b39] pr-1 sm:pr-[42px]">{d.oneLiner}</span>
@@ -300,8 +302,8 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
           <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
             {faqColumns.map((col, c) => (
               <div key={c} className="flex-[1_1_480px] min-w-0 flex flex-col gap-2">
-                {col.map((f, i) => (
-                  <details key={f.q} open={c === 0 && i === 0} className="pp-card rounded-2xl">
+                {col.map((f) => (
+                  <details key={f.q} className="pp-card rounded-2xl">
                     <summary className="pp-sum flex items-center justify-between gap-3 min-h-[52px] py-2 pl-[18px] pr-2.5 rounded-2xl">
                       <h3 className="pp-serif text-[17px] leading-[1.3] text-[#282828]">{f.q}</h3>
                       <Chev />

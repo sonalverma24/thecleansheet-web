@@ -20,6 +20,7 @@
 
 import type { ProductReview } from "@/lib/product-review-types";
 import type { ProductScorecard } from "@/data/brands/types";
+import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/scorecards/pill-palette";
 import { buildAtAGlance } from "@/lib/at-a-glance";
 import { reviewInciList } from "@/lib/review-inci";
 import { pregnancyScreen, type PregnancyScreen } from "@/lib/pregnancy-screen";
@@ -30,7 +31,8 @@ import {
 } from "@/lib/analyser-x";
 
 export type PillTone = "good" | "caution" | "look" | "info" | "med";
-export type RatingTone = "excellent" | "strong" | "good" | "fair" | "concern" | "none";
+/** One of the three colour markers, or null when there is nothing to rate ("Not rated" is the absence of a marker, not a fourth colour). */
+export type RowMarker = MarkerName | null;
 
 export interface Highlight { label: string; state: "yes" | "no" | "unknown"; detail?: string }
 export interface BuyLink { name: string; url: string | null; price: string | null; /** True when the address is the product's own page; false when it is a search for it. */ direct: boolean }
@@ -38,7 +40,7 @@ export interface BuyLink { name: string; url: string | null; price: string | nul
 export interface RegulatoryPanel {
   authorities: { id: Authority; label: string; result: "Meets" | "Falls short" | "None prohibited"; detail: string }[];
 }
-export interface DetailRow { n: string; title: string; oneLiner: string; rating: { word: string; tone: RatingTone }; body: string[] }
+export interface DetailRow { n: string; title: string; oneLiner: string; rating: { word: string; marker: RowMarker }; body: string[] }
 
 /** Today's standing, for the layout-only mode: the page is drawn in the new layout but the take card shows the standing the old page shows. `medicine` is a
     stored Licensed Drug, which the old page does not score; the page then hides what only makes sense for a cosmetic. */
@@ -48,7 +50,8 @@ export interface PillsPageModel {
   /** "pills": the pill and its confidence are the decision core's. "standing": the take card shows today's standing and no confidence (ANALYSER_NEW_LAYOUT). */
   mode: "pills" | "standing";
   decision: { key: DecisionKey; label: string; meaning: string; confidence: Decision["confidence"]; gapKind?: Decision["gapKind"]; reasons: { ruleId: string; kind: string; text: string }[] };
-  pill: { key: DecisionKey; label: string; tone: PillTone };
+  /** `tone` picks the icon, `marker` the colour: green, yellow or red, or null for grey (Not enough info, Medicinal product). */
+  pill: { key: DecisionKey; label: string; tone: PillTone; marker: MarkerName | null };
   /** Block 3 */
   take: {
     summary: string;
@@ -321,10 +324,16 @@ export function regulatoryLine(d: Decision, panel: BenchmarkPanel | null, medici
 
 /* ── block 8: the five detail rows ───────────────────────────── */
 
-const ratingOf = (pct: number): { word: string; tone: RatingTone } =>
-  pct >= 90 ? { word: "Excellent", tone: "excellent" } : pct >= 75 ? { word: "Strong", tone: "strong" } : pct >= 60 ? { word: "Good", tone: "good" }
-  : pct >= 45 ? { word: "Fair", tone: "fair" } : { word: "Concern", tone: "concern" };
-const NOT_RATED = { word: "Not rated", tone: "none" as RatingTone };
+/** A row's marker from its percentage. Green is a clearly strong result (75 and over), red a concern (under 45), yellow everything between. These two
+    cut-offs are the only place the three colours are drawn on a percentage. */
+export const GREEN_FROM = 75;
+export const RED_UNDER = 45;
+const ratingOf = (pct: number): { word: string; marker: RowMarker } => {
+  const marker: MarkerName = pct >= GREEN_FROM ? "green" : pct >= RED_UNDER ? "yellow" : "red";
+  return { word: MARKER_WORD[marker], marker };
+};
+const markerRow = (marker: MarkerName): { word: string; marker: RowMarker } => ({ word: MARKER_WORD[marker], marker });
+const NOT_RATED: { word: string; marker: RowMarker } = { word: "Not rated", marker: null };
 
 /** The public-evidence ladder, in the words a shopper reads. */
 const LADDER_PLAIN: Record<number, string> = {
@@ -336,9 +345,9 @@ const LADDER_PLAIN: Record<number, string> = {
   6: "A clinical study with sample size, duration and method is available.",
   7: "A published or registered study you can look up.",
 };
-/** The grade for test transparency, by the strongest public evidence for what the product promises. */
-const GRADE_OF_LEVEL: Record<number, "A" | "B" | "C" | "D" | "F"> = { 7: "A", 6: "A", 5: "B", 4: "C", 3: "C", 2: "D", 1: "F" };
-const GRADE_RATING: Record<"A" | "B" | "C" | "D" | "F", RatingTone> = { A: "excellent", B: "strong", C: "good", D: "fair", F: "concern" };
+/** The marker for test transparency, by the strongest public evidence for what the product promises: a named lab report or better is green (levels 5 to 7),
+    a brand's own say-so or a disclosed percentage or general research is yellow (levels 2 to 4), and no proof at all is red (level 1). */
+const MARKER_OF_LEVEL: Record<number, MarkerName> = { 7: "green", 6: "green", 5: "green", 4: "yellow", 3: "yellow", 2: "yellow", 1: "red" };
 const PERFORMANCE_TYPES = new Set(["concern", "appearance", "time-bound", "clinical", "functional"]);
 
 /** The strongest public evidence among the claims that promise a result; failing that, among all claims. */
@@ -361,17 +370,17 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   const pillar = (re: RegExp) => product.pillars.find((p) => re.test(p.name))?.note ?? "";
 
   // 1. Ingredient safety: from the decision's own findings.
-  const safetyReasons = d.reasons.filter((r) => r.ruleId.startsWith("block.") || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "caution.screen_partial" || r.ruleId === "support.safety_clear");
-  let safety: { word: string; tone: RatingTone };
-  if ([...settled].some((id) => id.startsWith("block.") && id !== "block.pillars") || d.key === "look-elsewhere") safety = { word: "Concern", tone: "concern" };
-  else if ([...settled].some((id) => INGREDIENT_CAUTIONS.has(id))) safety = { word: "Fair", tone: "fair" };
-  else if (settled.has("caution.screen_partial")) safety = { word: "Good", tone: "good" };
-  else if (settled.has("support.safety_clear")) safety = { word: "Strong", tone: "strong" };
+  const safetyReasons = d.reasons.filter((r) => r.ruleId.startsWith("block.") || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "note.screen_partial" || r.ruleId === "support.safety_clear");
+  let safety: { word: string; marker: RowMarker };
+  if ([...settled].some((id) => id.startsWith("block.") && id !== "block.pillars") || d.key === "look-elsewhere") safety = markerRow("red");
+  else if ([...settled].some((id) => INGREDIENT_CAUTIONS.has(id))) safety = markerRow("yellow");
+  else if (settled.has("note.screen_partial")) safety = markerRow("yellow");
+  else if (settled.has("support.safety_clear")) safety = markerRow("green");
   else safety = NOT_RATED;
   // The row's words leave out the coverage gap ("N of M listed ingredients are not in our reference database"), as the Regulatory check does:
   // the gap still sets the rating above, caps the pill, lowers the confidence and is listed under Gaps.
-  const safetyTexts = safetyReasons.filter((r) => r.ruleId !== "caution.screen_partial");
-  const safetyLine = safety.tone === "none" ? "We could not complete the ingredient screen." : firstSentence(safetyTexts[0]?.text) || "Ingredient list screened for prohibited and flagged ingredients.";
+  const safetyTexts = safetyReasons.filter((r) => r.ruleId !== "note.screen_partial");
+  const safetyLine = safety.marker === null ? "We could not complete the ingredient screen." : firstSentence(safetyTexts[0]?.text) || "Ingredient list screened for prohibited and flagged ingredients.";
 
   // The ingredients the reads singled out as worth a caution or a note, with the reason, for the row's detail. An ingredient we hold no row for
   // has no real note ("Not in our analysed database; ..."), so it is not listed here.
@@ -387,7 +396,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
 
   // 4. Test transparency.
   const level = testLevelOf(review);
-  const grade = GRADE_OF_LEVEL[Math.min(7, Math.max(1, level))];
+  const testMarker = MARKER_OF_LEVEL[Math.min(7, Math.max(1, level))];
   const evidenceNotes = [...(review.claimMap ?? [])].filter((c) => c.evidenceNote).sort((a, b) => b.evidenceLevel - a.evidenceLevel).slice(0, 3).map((c) => `${c.text}: ${c.evidenceNote}`);
 
   // 5. Consumer clarity.
@@ -399,7 +408,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
     { n: "01", title: "Ingredient safety", oneLiner: safetyLine, rating: safety, body: [...flagged.map((i) => `${i.name}: ${i.note}`), ...safetyTexts.slice(1).map((r) => r.text)].filter(Boolean) },
     { n: "02", title: "Formula logic", oneLiner: formulaLine, rating: ratingOf(Math.round(((s?.formulaLogic ?? 0) / 15) * 100)), body: [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
     { n: "03", title: "Claims evidence", oneLiner: claimLine(product), rating: ratingOf(claimsPct), body: [pillar(/claim support|claim/i)].filter(Boolean) },
-    { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: { word: `Grade ${grade}`, tone: GRADE_RATING[grade] }, body: evidenceNotes },
+    { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: markerRow(testMarker), body: evidenceNotes },
     { n: "05", title: "Consumer clarity", oneLiner: gaps.length ? `Clear overall, with ${plural(gaps.length, "gap", "gaps")} in guidance: ${joinAnd(gaps)}.` : "Clear claims, ingredients and instructions.", rating: ratingOf(clarityPct), body: [pillar(/clarity/i), ...(it?.issues ?? [])].filter(Boolean) },
   ];
 }
@@ -408,7 +417,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
 
 const GAP_TEXT: Record<string, (r: { evidence?: { claim?: string } }, d: Decision) => string | null> = {
   "caution.claim_gap": (r) => (r.evidence?.claim ? `A test on the finished product for “${r.evidence.claim}”.` : "A test on the finished product for the main claim."),
-  "caution.screen_partial": () => "Reference data for every listed ingredient, so our screen covers them all.",
+  "note.screen_partial": () => "Reference data for every listed ingredient, so our screen covers them all.",
   "caution.list_trust_2": () => "The ingredient list confirmed against the pack or the brand's own page.",
   "caution.catch_all": () => "A full disclosure of the unnamed entry in the ingredient list.",
   "caution.formula": () => "Evidence that the formula delivers what the claims promise.",
@@ -420,7 +429,6 @@ const GAP_TEXT: Record<string, (r: { evidence?: { claim?: string } }, d: Decisio
   "gap.identity": () => "Confirmation of exactly which product this is.",
   "gap.acquisition": () => "A successful read of the product page. We are checking again.",
   "gap.claims_unreliable": () => "Claims we can confirm from text we read.",
-  "gap.screen_incomplete": () => "Reference data for the ingredients we could not recognise.",
   "note.freshness": (_r, d) => `A fresh check: this analysis is from ${dayText(d.basis.analysedAt)}.`,
 };
 
@@ -506,7 +514,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const base: Omit<PillsPageModel, "faq"> = {
     mode: standing ? "standing" : "pills",
     decision: { key: d.key, label: d.label, meaning: d.meaning, confidence: d.confidence, ...(d.gapKind ? { gapKind: d.gapKind } : {}), reasons: d.reasons.map((r) => ({ ruleId: r.ruleId, kind: r.kind, text: r.text })) },
-    pill: standing ? { key: d.key, label: standing.label, tone: standing.tone } : { key: d.key, label: d.label, tone: TONE[d.key] },
+    pill: standing ? { key: d.key, label: standing.label, tone: standing.tone, marker: MARKER_OF_PILL[standing.tone] } : { key: d.key, label: d.label, tone: TONE[d.key], marker: MARKER_OF_PILL[TONE[d.key]] },
     take: takeOf(d, review, product, inci, now),
     buyLinks: buyLinksOf(review, product),
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),

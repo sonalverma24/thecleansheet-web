@@ -21,6 +21,7 @@ import { makeInciEvidence } from "@/lib/review-verifier";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
+import { productScopeOf } from "@/lib/product-scope";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { pillarStanding } from "@/lib/pillar-standing";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
@@ -504,7 +505,8 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
   // concentration-restricted) can never carry a Clean Sheet approval. This is
   // the one place ingredient safety reaches the stamp, so the badge and the
   // safety screen can no longer contradict each other.
-  const banned = bannedIngredientsInInci(inci);
+  // A ban that names a kind of product (Polyethylene: "banned in rinse-off products") counts only for that kind (src/lib/product-scope.ts).
+  const banned = bannedIngredientsInInci(inci, productScopeOf(r.productName, r.category ?? ""));
   const hasBannedIngredient = banned.length > 0;
 
   // Endocrine-activity flag: legal-but-flagged (e.g. certain chemical UV

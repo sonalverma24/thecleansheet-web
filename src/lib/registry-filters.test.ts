@@ -26,22 +26,22 @@ const f = (over: Partial<RegistryFilters>): RegistryFilters => ({ ...EMPTY_FILTE
 const names = (list: ProductScorecard[]) => list.map((p) => p.productName);
 
 describe("standing", () => {
-  it("uses the real standings and never a certified status", () => {
-    expect(standingOf(A)).toBe("Room to Improve");
-    expect(standingOf(C)).toBe("Good Standing");
-    expect(standingOf(D)).toBe("Not Recommended");
+  it("is a rating colour (green, yellow, red, grey), never a verdict word and never a certified status", () => {
+    expect(standingOf(A)).toBe("Yellow");
+    expect(standingOf(C)).toBe("Green");
+    expect(standingOf(D)).toBe("Red");
     for (const p of ALL) expect(standingOf(p).toLowerCase()).not.toContain("certif");
   });
 });
 
 describe("filters", () => {
   it("ORs the choices inside one group", () => {
-    const out = filterAndSort(ALL, { filters: f({ standing: ["Good Standing", "Not Recommended"] }), query: "", sort: "newest" });
+    const out = filterAndSort(ALL, { filters: f({ standing: ["Green", "Red"] }), query: "", sort: "newest" });
     expect(names(out).sort()).toEqual(["Centella Purifying Toner", "Heartleaf Foam", "Niacinamide 10% Serum"].sort());
   });
 
   it("ANDs different groups", () => {
-    const out = filterAndSort(ALL, { filters: f({ category: ["Cleansers"], standing: ["Good Standing"] }), query: "", sort: "newest" });
+    const out = filterAndSort(ALL, { filters: f({ category: ["Cleansers"], standing: ["Green"] }), query: "", sort: "newest" });
     expect(names(out)).toEqual(["Heartleaf Foam"]);
   });
 
@@ -65,9 +65,9 @@ describe("facets", () => {
   it("counts each group given the choices in the OTHER groups", () => {
     const facets = computeFacets(ALL, f({ category: ["Cleansers"] }), "");
     const standing = Object.fromEntries(facets.standing.map((x) => [x.value, x.count]));
-    expect(standing["Good Standing"]).toBe(1); // only Heartleaf Foam is a Cleanser in good standing
-    expect(standing["Room to Improve"]).toBe(1);
-    expect(standing["Not Recommended"] ?? 0).toBe(0);
+    expect(standing["Green"]).toBe(1); // only Heartleaf Foam is a green Cleanser
+    expect(standing["Yellow"]).toBe(1);
+    expect(standing["Red"] ?? 0).toBe(0);
   });
 
   it("does not shrink a group's own choices when one of them is ticked", () => {
@@ -76,13 +76,13 @@ describe("facets", () => {
   });
 
   it("keeps a ticked choice listed even at zero, so it can be unticked", () => {
-    const facets = computeFacets(ALL, f({ standing: ["Good Standing"], brand: ["COSRX"] }), "");
+    const facets = computeFacets(ALL, f({ standing: ["Green"], brand: ["COSRX"] }), "");
     expect(facets.brand.find((x) => x.value === "COSRX")?.count).toBe(0);
   });
 
   it("lists standings and prices in their natural order", () => {
     const facets = computeFacets(ALL, EMPTY_FILTERS, "");
-    expect(facets.standing.map((x) => x.value)).toEqual(["Good Standing", "Room to Improve", "Not Recommended"]);
+    expect(facets.standing.map((x) => x.value)).toEqual(["Green", "Yellow", "Red"]);
     expect(facets.price.map((x) => x.value)).toEqual(["Under ₹500", "₹500-₹1,000", "₹1,000-₹2,000"]);
   });
 
@@ -105,7 +105,7 @@ describe("search and sort", () => {
   });
 
   it("sorts by standing, price and name", () => {
-    expect(standingOf(filterAndSort(ALL, { filters: EMPTY_FILTERS, query: "", sort: "standing" })[0])).toBe("Good Standing");
+    expect(standingOf(filterAndSort(ALL, { filters: EMPTY_FILTERS, query: "", sort: "standing" })[0])).toBe("Green");
     expect(names(filterAndSort(ALL, { filters: EMPTY_FILTERS, query: "", sort: "price_asc" }))[0]).toBe("Niacinamide 10% Serum");
     expect(names(filterAndSort(ALL, { filters: EMPTY_FILTERS, query: "", sort: "price_desc" }))[0]).toBe("Centella Purifying Toner");
     expect(names(filterAndSort(ALL, { filters: EMPTY_FILTERS, query: "", sort: "name" }))[0]).toBe("Heartleaf Cleansing Oil");
@@ -173,7 +173,7 @@ describe("helpers", () => {
 
 describe("URL state", () => {
   it("round-trips filters, search and sort", () => {
-    const state = { query: "serum", sort: "price_asc" as const, filters: f({ standing: ["Good Standing"], brand: ["Anua", "COSRX"] }) };
+    const state = { query: "serum", sort: "price_asc" as const, filters: f({ standing: ["Green"], brand: ["Anua", "COSRX"] }) };
     const search = searchWithState("", state);
     expect(stateFromParams(new URLSearchParams(search))).toEqual(state);
   });
@@ -196,43 +196,41 @@ describe("URL state", () => {
   });
 });
 
-describe("the pills page: a card of a stored review carries its pill", () => {
-  const withPill = (p: ProductScorecard, label: string, tone: NonNullable<ProductScorecard["pill"]>["tone"]) => ({ ...p, pill: { key: label.toLowerCase().replace(/ /g, "-"), label, tone } });
-  const GOOD = withPill(C, "Good choice", "good");
-  const CAUTION = withPill(A, "Buy with caution", "caution");
-  const LOOK = withPill(D, "Look elsewhere", "look");
-  const NOT_ENOUGH = withPill(E, "Not enough info", "info");
-  const MED = withPill(B, "Medicinal product", "med");
+describe("the pills page: a card of a stored review carries its rating circle", () => {
+  const withPill = (p: ProductScorecard, key: string, marker: NonNullable<ProductScorecard["pill"]>["marker"]) => ({ ...p, pill: { key, marker } });
+  const GOOD = withPill(C, "good-choice", "green");
+  const CAUTION = withPill(A, "buy-with-caution", "yellow");
+  const LOOK = withPill(D, "look-elsewhere", "red");
+  const NOT_ENOUGH = withPill(E, "not-enough-info", null);
+  const MED = withPill(B, "medicinal-product", null);
   const MIXED = [GOOD, CAUTION, LOOK, NOT_ENOUGH, MED];
 
-  it("the standing is the pill's words when there is a pill, and today's standing when there is none", () => {
-    expect(standingOf(GOOD)).toBe("Good choice");
-    expect(standingOf(MED)).toBe("Medicinal product");
-    expect(standingOf(C)).toBe("Good Standing"); // the same product with no pill
-    expect(standingOf({ reviewTier: "approved", score: 90 })).toBe("Good Standing");
+  it("the rating is the pill's colour when there is a pill, and the standing's colour when there is none", () => {
+    expect(standingOf(GOOD)).toBe("Green");
+    expect(standingOf(NOT_ENOUGH)).toBe("Grey");
+    expect(standingOf(MED)).toBe("Grey");
+    expect(standingOf(C)).toBe("Green"); // the same product with no pill
+    expect(standingOf({ reviewTier: "not-assessed", score: 0 })).toBe("Grey");
   });
 
-  it("filters by a pill's words, and a pill never matches the standing it replaces", () => {
-    const out = filterAndSort(MIXED, { filters: f({ standing: ["Good choice", "Look elsewhere"] }), query: "", sort: "newest" });
+  it("filters by colour, and a pill and the standing it replaces share a colour", () => {
+    const out = filterAndSort(MIXED, { filters: f({ standing: ["Green", "Red"] }), query: "", sort: "newest" });
     expect(names(out).sort()).toEqual([GOOD.productName, LOOK.productName].sort());
-    expect(filterAndSort(MIXED, { filters: f({ standing: ["Good Standing"] }), query: "", sort: "newest" })).toEqual([]);
   });
 
-  it("lists the pills in their natural order, each beside the standing it replaces when a listing holds both", () => {
-    expect(computeFacets(MIXED, EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual(["Good choice", "Buy with caution", "Not enough info", "Look elsewhere", "Medicinal product"]);
-    expect(computeFacets([...MIXED, D, C], EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual([
-      "Good choice", "Good Standing", "Buy with caution", "Not enough info", "Look elsewhere", "Not Recommended", "Medicinal product",
-    ]);
+  it("lists the colours in their natural order, once each, however many products have them", () => {
+    expect(computeFacets(MIXED, EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual(["Green", "Yellow", "Red", "Grey"]);
+    expect(computeFacets([...MIXED, D, C], EMPTY_FILTERS, "").standing.map((x) => x.value)).toEqual(["Green", "Yellow", "Red", "Grey"]);
   });
 
-  it("sorts best first: Good choice, Buy with caution, Not enough info, Look elsewhere, Medicinal product", () => {
+  it("sorts best first: green, yellow, red, then the ones we could not rate", () => {
     const sorted = filterAndSort([MED, LOOK, NOT_ENOUGH, CAUTION, GOOD], { filters: EMPTY_FILTERS, query: "", sort: "standing" });
-    expect(sorted.map(standingOf)).toEqual(["Good choice", "Buy with caution", "Not enough info", "Look elsewhere", "Medicinal product"]);
+    expect(sorted.map(standingOf)).toEqual(["Green", "Yellow", "Red", "Grey", "Grey"]);
   });
 
-  it("a pill and the standing it replaces sit at the same rank, so a mixed listing sorts sensibly", () => {
-    const sorted = filterAndSort([LOOK, D, GOOD, C], { filters: EMPTY_FILTERS, query: "", sort: "standing" });
-    expect(sorted.slice(0, 2).map(standingOf).sort()).toEqual(["Good Standing", "Good choice"].sort());
-    expect(sorted.slice(2).map(standingOf).sort()).toEqual(["Look elsewhere", "Not Recommended"].sort());
+  it("no verdict word is ever a filter value", () => {
+    const values = computeFacets([...MIXED, D, C], EMPTY_FILTERS, "").standing.map((x) => x.value).join(" ");
+    expect(values).not.toMatch(/Good choice|Buy with caution|Look elsewhere|Not enough info|Medicinal|Good Standing|Room to Improve|Not Recommended|Licensed/);
   });
 });
+

@@ -12,7 +12,7 @@
 
 import { ambitionOf, residualRisk, type Residual } from "./ladder";
 import { claimFlags } from "./claimflags";
-import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, MIN_SCREEN_COVERAGE, REGISTER_NAMES, REGULATOR_HOST, RX_TEXT_RE, SPF_MINIMUM, STALE_DAYS } from "./kb";
+import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, RX_TEXT_RE, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
 import type { ClaimValue, Finding, Rule, RuleContext, Severity } from "./types";
 
@@ -186,13 +186,6 @@ const gaps: Rule[] = [
       return bad ? [mk(self, { claims: cs.length, corroborated }, [], { gapKind: "acquisition" })] : [];
     },
   }),
-  rule({
-    id: "gap.screen_incomplete", severity: "gap", origin: "code", stratum: 30,
-    evaluate: (ctx, self) =>
-      ctx.screen && ctx.list.ingredients.length >= 3 && ctx.screen.coverage < MIN_SCREEN_COVERAGE
-        ? [mk(self, { recognised: ctx.screen.recognised, total: ctx.screen.total }, fact(ctx), { gapKind: "disclosure" })]
-        : [],
-  }),
 ];
 
 /* ── cautions: meaningful considerations ───────────────────────── */
@@ -255,16 +248,6 @@ const cautions: Rule[] = [
       ctx.profile.isSunscreen && ctx.profile.spf !== null && ctx.profile.spf < SPF_MINIMUM ? [mk(self, { spf: ctx.profile.spf }, [])] : [],
   }),
   rule({
-    id: "caution.screen_partial", severity: "caution", origin: "code", stratum: 40,
-    // Fewer than half recognised is a gap (gap.screen_incomplete). In between, the screen covers part of the list: it
-    // can say what it found, never that the product is clear.
-    evaluate: (ctx, self) => {
-      const s = ctx.screen;
-      if (!s || ctx.list.ingredients.length < 3 || s.coverage < MIN_SCREEN_COVERAGE || s.unresolved.length === 0) return [];
-      return [mk(self, { n: s.unresolved.length, total: s.total, names: s.unresolved.slice(0, 3).join(", ") }, fact(ctx))];
-    },
-  }),
-  rule({
     id: "caution.benchmark_gap", severity: "caution", origin: "code", needsReliableList: true, stratum: 40,
     // Another authority's prohibition (the EU and India already block), or a strength the product itself states above a limit.
     evaluate: (ctx, self) => {
@@ -294,9 +277,10 @@ const supports: Rule[] = [
     id: "support.safety_clear", severity: "support", origin: "code", needsReliableList: true, stratum: 50,
     evaluate: (ctx, self) => {
       const s = ctx.screen;
-      // "Clear" is a statement about every declared ingredient: each one must have a resolved status first.
-      return ctx.list.reliable && s && s.total > 0 && s.unresolved.length === 0 && s.prohibited.length === 0 && s.softAdverse.length === 0
-        ? [mk(self, { total: s.total }, fact(ctx))]
+      // "Clear" is a statement about the ingredients our screen checked: none of them is prohibited or softly adverse (decision X42). How many it
+      // checked is said separately (note.screen_partial) and sets the confidence; it does not decide the pill. At least one must have been checked.
+      return ctx.list.reliable && s && s.total > 0 && s.recognised > 0 && s.prohibited.length === 0 && s.softAdverse.length === 0
+        ? [mk(self, { total: s.total, recognised: s.recognised }, fact(ctx))]
         : [];
     },
   }),
@@ -325,6 +309,16 @@ const supports: Rule[] = [
 /* ── notes: shown, never downgrade ─────────────────────────────── */
 
 const notes: Rule[] = [
+  rule({
+    // Coverage is a fact about OUR reference file, not about the product, so it never moves the pill (decision X42). It is shown, it lowers the
+    // confidence (decision.ts) and it is listed under Gaps, and that is all. Fewer than half recognised lowers the confidence to Low.
+    id: "note.screen_partial", severity: "note", origin: "code", stratum: 60,
+    evaluate: (ctx, self) => {
+      const s = ctx.screen;
+      if (!s || ctx.list.ingredients.length < 3 || s.unresolved.length === 0) return [];
+      return [mk(self, { n: s.unresolved.length, total: s.total, recognised: s.recognised, names: s.unresolved.slice(0, 3).join(", ") }, fact(ctx))];
+    },
+  }),
   rule({
     id: "note.endocrine", severity: "note", origin: "code", needsReliableList: true, stratum: 60,
     evaluate: (ctx, self) => (ctx.screen?.endocrine ?? []).map((e) => mk(self, { ingredient: e.name, note: e.note }, fact(ctx))),

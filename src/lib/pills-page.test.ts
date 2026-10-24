@@ -25,7 +25,7 @@ describe("a Good choice", () => {
   const { model: m } = page(SAMPLE_EXAMPLE_MINERAL_SUNSCREEN);
 
   it("block 3: the take names the product, the pill's recommendation and the confidence, in words", () => {
-    expect(m.pill).toEqual({ key: "good-choice", label: "Good choice", tone: "good" });
+    expect(m.pill).toEqual({ key: "good-choice", label: "Good choice", tone: "good", marker: "green" });
     expect(m.take.summary).toBe("This sunscreen's key actives are zinc oxide and titanium dioxide.");
     expect(m.take.recommendation).toBe("Good choice: we recommend buying it.");
     expect(m.take.reason).toMatch(/No prohibited or flagged ingredient/);
@@ -44,9 +44,10 @@ describe("a Good choice", () => {
     expect(m.regulatoryCheck.panel?.authorities).toHaveLength(6);
   });
 
-  it("block 8: five numbered rows, test transparency graded", () => {
-    expect(m.details?.map((d) => [d.n, d.title, d.rating.word])).toEqual([
-      ["01", "Ingredient safety", "Strong"], ["02", "Formula logic", "Excellent"], ["03", "Claims evidence", "Strong"], ["04", "Test transparency", "Grade B"], ["05", "Consumer clarity", "Good"],
+  it("block 8: five numbered rows, each wearing one of the three colour markers", () => {
+    expect(m.details?.map((d) => [d.n, d.title, d.rating.marker, d.rating.word])).toEqual([
+      ["01", "Ingredient safety", "green", "Strong"], ["02", "Formula logic", "green", "Strong"], ["03", "Claims evidence", "green", "Strong"],
+      ["04", "Test transparency", "green", "Strong"], ["05", "Consumer clarity", "yellow", "Fair"],
     ]);
     expect(m.details?.[1].oneLiner).toBe("Anhydrous silicone gel. The right vehicle for a mineral filter.");
     expect(m.details?.[4].oneLiner).toBe("Clear overall, with 1 gap in guidance: usage warnings.");
@@ -85,7 +86,7 @@ describe("the other pills", () => {
     expect(m.pill.tone).toBe("look");
     expect(m.take.recommendation).toBe("Look elsewhere: we would not buy this one.");
     expect(m.regulatoryCheck.oneLiner).toMatch(/^Falls short in the EU, India, South Korea and Canada; none prohibited in the US and Australia\. Formaldehyde is prohibited in cosmetics in the EU, India, South Korea and Canada\./);
-    expect(m.details?.[0].rating).toEqual({ word: "Concern", tone: "concern" });
+    expect(m.details?.[0].rating).toEqual({ word: "Concern", marker: "red" });
   });
 
   it("Not enough info because the page could not be read: low confidence, nothing rated, no panel", () => {
@@ -279,9 +280,11 @@ describe("the Regulatory check reads as a search of each authority's prohibited 
     expect(us.detail).toMatch(/restricted ingredient could not be checked \(strength or conditions not stated\)/);
   });
 
-  it("the decision itself is unchanged by the wording: the same pill, the same confidence", () => {
-    expect(gap.pill.key).not.toBe("good-choice");
+  it("the decision itself is unchanged by the wording: a gap in our reference data does not move the pill (decision X42)", () => {
+    const whole = page(rv({ productName: "Fluid SPF 50", category: "Sunscreen", inciIngredients: BASE })).model;
+    expect(gap.pill.key).toBe(whole.pill.key);
     expect(["high", "medium", "low"]).toContain(gap.take.confidence.level);
+    expect(gap.take.confidence.level).not.toBe("high");
   });
 });
 
@@ -300,8 +303,9 @@ describe("The detail block leaves out the coverage gap but keeps it in the logic
     expect(safety.oneLiner.length).toBeGreaterThan(15);
   });
 
-  it("the gap still counts: the pill is not Good choice, the confidence says so, Gaps lists it", () => {
-    expect(gap.pill.key).not.toBe("good-choice");
+  it("the gap does not move the pill, but the confidence says so and Gaps lists it", () => {
+    const whole = page(rv({ productName: "Fluid SPF 50", category: "Sunscreen", inciIngredients: [...BASE, "Parfum"] })).model;
+    expect(gap.pill.key).toBe(whole.pill.key);
     expect(gap.take.confidence.sentence).toMatch(/reference database/);
     expect(gap.gaps.join(" ")).toMatch(/Reference data for every listed ingredient/);
   });
@@ -309,13 +313,13 @@ describe("The detail block leaves out the coverage gap but keeps it in the logic
   it("an ingredient list that is only partly covered is still rated below a fully checked one", () => {
     const full = page(SAMPLE_EXAMPLE_MINERAL_SUNSCREEN).model.details!.find((d) => d.title === "Ingredient safety")!;
     const part = gap.details!.find((d) => d.title === "Ingredient safety")!;
-    expect(full.rating.word).toBe("Strong");
-    expect(part.rating.word).not.toBe("Strong");
+    expect(full.rating.marker).toBe("green");
+    expect(part.rating.marker).toBe("yellow");
   });
 
   it("a real finding is still shown: a prohibited ingredient leads the row", () => {
     const bad = page(SAMPLE_EXAMPLE_PROHIBITED).model.details!.find((d) => d.title === "Ingredient safety")!;
-    expect(bad.rating.word).toBe("Concern");
+    expect(bad.rating.marker).toBe("red");
     expect(bad.oneLiner).toMatch(/Formaldehyde is prohibited/);
   });
 });

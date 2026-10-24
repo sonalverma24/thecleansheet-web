@@ -1,5 +1,6 @@
 "use client";
 
+import { RatingDot } from "@/components/scorecards/RatingDot";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -80,12 +81,7 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
               <div className="p-3.5 md:p-5 flex flex-col gap-2 md:gap-2.5 flex-1">
                 <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#4a4a4a] uppercase">{p.brand}</span>
                 <span className="font-bold text-[15px] md:text-[16px] leading-[1.3] text-[#282828]">{p.name}</span>
-                <span
-                  className="self-start text-[9px] md:text-[10px] font-bold tracking-[0.1em] px-[9px] md:px-2.5 py-1 rounded-full border uppercase"
-                  style={{ background: p.pill.bg, color: p.pill.fg, borderColor: p.pill.border }}
-                >
-                  {p.standing}
-                </span>
+                <span className="self-start py-0.5 pl-0.5"><RatingDot marker={p.marker} size={14} /></span>
                 <span className="text-[12px] md:text-[13px] text-[#4a4a4a] leading-[1.45] md:leading-[1.5] flex-1 line-clamp-4">{p.note}</span>
                 <span className="flex justify-between pt-2.5 md:pt-3 border-t border-[#e5dfd6] text-[13px] font-bold text-[#248179]">
                   <span>View the proof</span>

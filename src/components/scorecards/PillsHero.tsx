@@ -14,13 +14,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Check, ExternalLink, MapPin, Minus, ShieldCheck, X } from "lucide-react";
+import { Check, MapPin, Minus, ShieldCheck, X } from "lucide-react";
 import type { Brand, ProductScorecard } from "@/data/brands/types";
 import { hasIngredientPage, toSlug } from "@/lib/ingredient-utils";
 import type { BuyLink, Highlight, PillsPageModel } from "@/lib/pills-page";
 import { generateVerdict } from "./ProductHero";
 import { OpenDetailsLink } from "./OpenDetailsLink";
 import { Band, PillTake } from "./pills-ui";
+import { MARKER_COLOURS } from "./pill-palette";
 
 /** "23 October 2026", or nothing for a date we cannot read. */
 function analysedOn(iso: string): string | null {
@@ -51,9 +52,9 @@ function FitCard({ title, items, tone }: { title: string; items: string[]; tone:
   return (
     <div
       className="flex flex-col gap-1.5 sm:gap-2.5 rounded-2xl sm:rounded-[18px] border px-[11px] py-2.5 sm:p-4"
-      style={suits ? { backgroundColor: "#f0f6f6", borderColor: "#cae1df" } : { backgroundColor: "#fcf1ef", borderColor: "#f0cfcb" }}
+      style={suits ? { backgroundColor: MARKER_COLOURS.green.soft, borderColor: MARKER_COLOURS.green.line } : { backgroundColor: MARKER_COLOURS.red.soft, borderColor: MARKER_COLOURS.red.line }}
     >
-      <h3 className="pp-serif text-[15.5px] sm:text-xl leading-[1.2] min-h-[37px] sm:min-h-0" style={{ color: suits ? "#1d6761" : "#b83f37" }}>{title}</h3>
+      <h3 className="pp-serif text-[15.5px] sm:text-xl leading-[1.2] min-h-[37px] sm:min-h-0" style={{ color: suits ? MARKER_COLOURS.green.ink : MARKER_COLOURS.red.ink }}>{title}</h3>
       <ul className="flex flex-col gap-1 sm:gap-1.5 text-[13px] sm:text-[15px] leading-[1.35] sm:leading-[1.4] text-[#282828]">
         {items.map((s) => <li key={s}>{s}</li>)}
       </ul>
@@ -61,35 +62,32 @@ function FitCard({ title, items, tone }: { title: string; items: string[]; tone:
   );
 }
 
+/** Where to buy: one row of small chips that sits beside the overview (the summary line) on a wide screen and under it on a phone. A chip is just the retailer's
+    name, set small, so the whole row stays on one line (most products have five to seven retailers; the price we last saw is in the chip's tooltip and is read out by a
+    screen reader, not drawn, because six prices do not fit beside the overview). The block is as wide as its chips, never wider than a share of the row, so the overview
+    keeps the rest. A list too long for the row scrolls sideways, fading at the edge, rather than wrapping. A link that is a search for the product (not its own page)
+    says so once, beside the heading, not on every chip; a retailer we hold no address for is a plain dashed chip. */
 function WhereToBuy({ links }: { links: BuyLink[] }) {
   const searches = links.some((b) => b.url && !b.direct);
   return (
-    <div id="where-to-buy" className="flex flex-col gap-2.5 scroll-mt-28">
-      <h2 className="pp-serif text-[22px] leading-[1.15] text-[#282828]">Where to buy</h2>
+    <div id="where-to-buy" className="min-w-0 lg:flex-none lg:max-w-[58%] scroll-mt-28">
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 mb-1.5">
+        <h2 className="pp-serif text-base sm:text-lg leading-none text-[#282828]">Where to buy</h2>
+        {links.length > 0 && searches ? <span className="text-[11px] leading-none text-[#55504d]">links search the retailer</span> : null}
+      </div>
       {links.length ? (
-        <ul className="grid grid-cols-2 gap-2">
+        <ul className="flex flex-nowrap items-center gap-1 overflow-x-auto pb-0.5 pr-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,#000_calc(100%-24px),transparent)]">
           {links.map((b) => {
-            const head = (
-              <span className="flex items-start justify-between gap-1.5 text-sm sm:text-[14.5px] leading-tight">
-                <span>
-                  <strong className="font-semibold">{b.name}</strong>
-                  {b.url && !b.direct ? <>{" "}<span className="text-xs sm:text-[12.5px] text-[#55504d]">· search</span></> : null}
-                </span>
-                {b.url ? <ExternalLink aria-hidden size={15} strokeWidth={1.9} className="flex-none mt-px text-[#1d6761]" /> : null}
-              </span>
-            );
-            const price = b.price
-              ? <span className="pp-serif text-[22px] sm:text-[23px] leading-none text-[#282828]">{b.price}</span>
-              : <span className="text-[12.5px] leading-none text-[#55504d]">Price not available</span>;
-            const card = "flex flex-col justify-between gap-2 min-h-[72px] h-full px-[13px] sm:px-3.5 py-[11px] bg-white rounded-2xl text-[#282828]";
+            const chip = "inline-flex items-center whitespace-nowrap rounded-full bg-white px-2 py-[4px] text-[11px] font-semibold leading-none text-[#282828]";
+            const last = b.price ? `, last seen at ${b.price}` : "";
             return (
-              <li key={b.name}>
+              <li key={b.name} className="flex-none">
                 {b.url ? (
-                  <a href={b.url} target="_blank" rel="noopener noreferrer nofollow" className={`${card} pp-shop border border-[#e8e1d6] no-underline`}>
-                    {head}{price}<span className="sr-only"> (opens in a new tab)</span>
+                  <a href={b.url} target="_blank" rel="noopener noreferrer nofollow" title={`${b.name}${last}`} className={`${chip} pp-shop border border-[#e8e1d6] no-underline`}>
+                    {b.name}<span className="sr-only">{last}{!b.direct ? " (a search for this product)" : ""} (opens in a new tab)</span>
                   </a>
                 ) : (
-                  <div className={`${card} border-[1.5px] border-dashed border-[#cfc6b8]`}>{head}{price}</div>
+                  <span title={`${b.name}${last}`} className={`${chip} border border-dashed border-[#cfc6b8]`}>{b.name}{last ? <span className="sr-only">{last}</span> : null}</span>
                 )}
               </li>
             );
@@ -98,7 +96,6 @@ function WhereToBuy({ links }: { links: BuyLink[] }) {
       ) : (
         <p className="text-sm text-[#55504d]">Check brand website</p>
       )}
-      {searches && <p className="text-[12.5px] leading-[1.45] text-[#55504d]">Links search the retailer for this product. Prices are as last seen.</p>}
     </div>
   );
 }
@@ -145,7 +142,7 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
             </div>
           </div>
         </div>
-        <PillTake tone={model.pill.tone} label={model.pill.label} confidence={model.mode === "pills" ? model.take.confidence : null} className="flex-[0_1_440px] min-w-[min(100%,320px)]" />
+        <PillTake marker={model.pill.marker} className="flex-[0_1_440px] min-w-[min(100%,320px)]" />
       </Band>
 
       {/* At a glance, and who it suits and who should be careful. On a phone the ticks stand free and the two fit lists sit side by side. */}
@@ -170,8 +167,8 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
       )}
 
       {/* The summary line (today's logic) and where to buy */}
-      <Band className="pt-[18px] sm:pt-6" innerClassName="grid gap-y-7 sm:gap-y-5 gap-x-9 items-start sm:grid-cols-[repeat(auto-fit,minmax(min(460px,100%),1fr))]">
-        <p className="text-[15.5px] sm:text-[17px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty">{summary}</p>
+      <Band className="pt-[18px] sm:pt-6" innerClassName="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+        <p className="min-w-0 lg:flex-1 text-[15.5px] sm:text-[17px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty">{summary}</p>
         <WhereToBuy links={model.buyLinks} />
       </Band>
 

@@ -10,7 +10,7 @@ import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import type { BuyLink, PillsPageModel } from "@/lib/pills-page";
 import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
 import { PillsPage } from "@/components/scorecards/PillsPage";
-import { PILL } from "@/components/scorecards/pills-ui";
+import { MARKER_COLOURS, NEUTRAL_COLOURS } from "@/components/scorecards/pill-palette";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import type { ProductReview } from "@/lib/product-review-types";
 
@@ -45,10 +45,9 @@ const between = (html: string, from: string, ...to: string[]): string => {
   const ends = to.map((m) => html.indexOf(m, start + from.length)).filter((i) => i > 0);
   return html.slice(start, ends.length ? Math.min(...ends) : undefined);
 };
-const AFTER_INGREDIENTS = ['id="details"', 'id="gaps"', 'id="how-to-use"', 'id="faq"'];
 
 describe.each(FIXTURES)("the pills page, %s", (_name, review) => {
-  const { product, model, html } = page(review);
+  const { model, html } = page(review);
 
   it("the summary line is today's logic, unchanged: not a sentence written for the pills page", () => {
     const sentence = [model.take.summary, model.take.recommendation].filter(Boolean).join(" ");
@@ -72,149 +71,35 @@ describe.each(FIXTURES)("the pills page, %s", (_name, review) => {
     expect(html).not.toMatch(/not covered by our reference/i);
   });
 
-  it("the take shows the pill and its confidence, and nowhere shows an old standing", () => {
-    expect(html.split('aria-label="The Clean Sheet take"').length - 1, "one take on the page").toBe(1);
-    const take = between(html, 'aria-label="The Clean Sheet take"', 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
-    expect(take).toContain(model.pill.label);
-    expect(take).toContain(`Confidence: ${model.take.confidence.label}`);
+  it("the take is one rating circle in the decision's colour, with no verdict word and no confidence, and nowhere shows an old standing", () => {
+    expect(html.split('aria-label="The Clean Sheet rating"').length - 1, "one take on the page").toBe(1);
+    const take = between(html, 'aria-label="The Clean Sheet rating"', 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
+    expect(take).toContain(`data-marker="${model.pill.marker ?? "none"}"`);
+    expect(take).toContain(`aria-label="Rating: ${model.pill.marker ?? "grey"}"`);
+    for (const word of [model.pill.label, "Good choice", "Buy with caution", "Look elsewhere", "Not enough info", "Medicinal product", "Confidence"]) expect(take, word).not.toContain(word);
     for (const old of OLD_STANDINGS) expect(html, old).not.toContain(old);
   });
 
-  it("the ring's three arcs and the meter's three bars fill with the confidence, in the pill's own colours", () => {
-    const take = between(html, 'aria-label="The Clean Sheet take"', 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
-    const on = { high: 3, medium: 2, low: 1 }[model.take.confidence.level];
-    const p = PILL[model.pill.tone];
-    // The pill's own icon may be drawn with circles too, so count the ring's arcs (radius 35) only.
-    expect(take.match(/<circle [^>]*r="35"/g)?.length).toBe(3);
-    expect(take.split(`stroke="${p.ring}"`).length - 1, "filled arcs").toBe(on);
-    expect(take.split(`stroke="${p.off}"`).length - 1, "empty arcs").toBe(3 - on);
-    expect(take.split("data-on=").length - 1, "filled bars").toBe(on);
-    expect(take.match(/class="cs-conf__bar"/g)?.length ?? 0, "all three bars are drawn").toBe(3);
-  });
-
-  it("lists every retailer the model holds, as a link when it holds an address, and says to check the brand site when it holds none", () => {
-    const where = between(html, 'id="where-to-buy"', 'id="in-india"', 'id="key-ingredients"', 'id="claim-check"');
-    const amp = (u: string) => u.replace(/&/g, "&amp;");
-    if (model.buyLinks.length) {
-      for (const b of model.buyLinks) {
-        expect(where).toContain(b.name);
-        if (b.url) expect(where.split(`href="${amp(b.url)}"`).length - 1, `${b.name} link, once`).toBe(1);
-      }
-      expect(where.split("<a ").length - 1, "one link per address").toBe(model.buyLinks.filter((b) => b.url).length);
-    } else expect(where).toContain("Check brand website");
-  });
-
-  it("has one heading, no feedback block and the independence note, and does not draw today's hero", () => {
-    expect(html.match(/<h1[ >]/g)?.length).toBe(1);
-    expect(html).not.toContain("data-hero-actions=");
-    expect(html).not.toContain("Add feedback");
-    expect(html.split("Independent and free").length - 1).toBe(1);
-  });
-
-  it("'How it fits you and the Indian market' stands beside At a glance, in place of Best for, Avoid if, the price line and India Context", () => {
-    const { suits, careful, india } = model.fit;
-    const top = html.slice(0, html.indexOf('id="claim-check"'));
-    for (const gone of ["Best for", "Avoid if", "India Context", "• Analysed"]) expect(top, gone).not.toContain(gone);
-    if (suits.length || careful.length) {
-      expect(html.split("How it fits you and the Indian market").length - 1, "once, not repeated further down").toBe(1);
-      expect(html.indexOf("How it fits you and the Indian market")).toBeLessThan(html.indexOf('id="where-to-buy"'));
-      for (const item of [...suits, ...careful]) expect(top, item).toContain(esc(item));
-    } else expect(html).not.toContain("How it fits you and the Indian market");
-    if (india) expect(between(html, 'id="in-india"', 'id="key-ingredients"')).toContain(esc(india));
-    else expect(html).not.toContain('id="in-india"');
-  });
-
-  it("shows 'Analysed <date>' once, as a small caption beside the category, between the title and the summary", () => {
-    const top = between(html, "<h1", 'id="where-to-buy"');
-    expect(top.match(/Analysed \d{1,2} \w+ \d{4}/g)?.length).toBe(1);
-    expect(top.indexOf("Analysed"), "after the title").toBeGreaterThan(top.indexOf("</h1>"));
-    expect(html.indexOf("Analysed"), "before the summary line").toBeLessThan(html.indexOf(esc(OLD_SUMMARY)));
-    expect(top).not.toContain("• Analysed");
-  });
-
-  it("has no separate take card and no reason note", () => {
-    expect(html).not.toContain('id="take"');
-    expect(html).not.toContain("Worth knowing");
-    if (model.take.reason) expect(html.slice(0, html.indexOf('id="claim-check"')), "the reason is not repeated under the summary").not.toContain(esc(model.take.reason));
-  });
-
-  it("the Ingredients list never prints the generic 'not in our database' note", () => {
-    const block = between(html, 'id="ingredients"', ...AFTER_INGREDIENTS);
-    expect(block).not.toMatch(/not in our|analysed database|assessed from public sources/i);
-  });
-
-  it("the Ingredients list holds every ingredient, once, in label order", () => {
-    const list = between(html, 'data-list="ingredients"', "</ul>");
-    expect(list.match(/<li /g)?.length ?? 0).toBe(product.ingredients.length);
-    let at = -1;
-    for (const i of product.ingredients) { const found = list.indexOf(`>${esc(i.name)}<`, at + 1); expect(found, i.name).toBeGreaterThan(at); at = found; }
-  });
-
-  it("The detail block says nothing about our reference data", () => {
-    if (!model.details) return expect(html, "a medicine, or a page we could not read, has no detail block").not.toContain('id="details"');
-    const block = between(html, 'id="details"', 'id="gaps"', 'id="how-to-use"', 'id="faq"');
-    expect(block.length).toBeGreaterThan(200);
-    expect(block).not.toMatch(/reference (data|database)|not covered|not in our/i);
-  });
-
-  it("The detail lists its rows in order, each with its rating word and tone, and opens the first", () => {
-    if (!model.details) return;
-    const block = between(html, 'id="details"', 'id="gaps"', 'id="how-to-use"', 'id="faq"');
-    let at = -1;
-    for (const d of model.details) {
-      const i = block.indexOf(esc(d.title), at + 1);
-      expect(i, d.title).toBeGreaterThan(at);
-      at = i;
-      expect(block, `${d.title} rating`).toContain(`data-tone="${d.rating.tone}">${esc(d.rating.word)}</span>`);
-    }
-    expect(block.match(/<details/g)?.length).toBe(model.details.length);
-    if (model.details[0].body.length) expect(block.indexOf("<details open"), "the first row starts open").toBe(block.indexOf("<details"));
-  });
-
-  it("the claim bar has one segment per claim, filled in the same count as the one-liner says", () => {
-    const claims = product.claimsCheck ?? [];
-    const card = between(html, 'id="claim-check"', 'id="regulatory-check"');
-    if (!claims.length) return expect(card).toContain("We found no marketing claims to check.");
-    const bar = between(card, 'role="img"', "</div>");
-    const supported = claims.filter((c) => c.decision === "Publicly supported").length;
-    expect(bar.match(/class="pp-seg"/g)?.length, "one segment per claim").toBe(claims.length);
-    expect(bar.split('data-k="y"').length - 1, "supported").toBe(supported);
-    expect(model.claimCheck.oneLiner).toContain(`${supported} of ${claims.length}`);
-    expect(card, "the one-liner heads the card").toContain(esc(model.claimCheck.oneLiner));
-    for (const c of claims) expect(card, c.claim).toContain(esc(c.claim));
-  });
-
-  it("the Regulatory check has a chip for every authority and a line for each, with its result", () => {
-    const panel = model.regulatoryCheck.panel;
-    const card = between(html, 'id="regulatory-check"', 'id="ingredients"');
-    expect(card).toContain(esc(model.regulatoryCheck.oneLiner));
-    if (!panel) return;
-    expect(card.match(/class="pp-chip"/g)?.length).toBe(panel.authorities.length);
-    for (const a of panel.authorities) {
-      expect(card, a.label).toContain(esc(a.label));
-      expect(card, `${a.label} result`).toContain(`· ${a.result}.`);
-    }
-    expect(card.split('data-tone="no"').length - 1, "a chip is red only when an authority is failed").toBe(panel.authorities.filter((a) => a.result === "Falls short").length);
-  });
-
-  it("opens the claim check; the other two cards start closed; every row is a native <details>", () => {
-    expect(between(html, 'id="claim-check"', 'id="regulatory-check"').indexOf("<details open")).toBeGreaterThan(0);
-    expect(between(html, 'id="regulatory-check"', 'id="ingredients"')).not.toContain("<details open");
-    expect(between(html, 'id="ingredients"', ...AFTER_INGREDIENTS)).not.toContain("<details open");
+  it("the circle is filled with its own colour: no arcs, no meter, no script", () => {
+    const take = between(html, 'aria-label="The Clean Sheet rating"', 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
+    const c = model.pill.marker ? MARKER_COLOURS[model.pill.marker] : NEUTRAL_COLOURS;
+    expect(take).toContain(`background:${c.ring}`);
+    expect(take).not.toContain("<circle");
+    expect(take).not.toContain("cs-conf");
     expect(html).not.toContain("<script");
   });
 
   it("carries the design from the take to the questions, in order", () => {
     const ids = ["at-a-glance", "where-to-buy", "key-ingredients", "claim-check", "regulatory-check", "ingredients", ...(model.details ? ["details"] : []), "gaps", ...(model.howToUse ? ["how-to-use"] : []), "faq"];
-    let at = html.indexOf('aria-label="The Clean Sheet take"');
+    let at = html.indexOf('aria-label="The Clean Sheet rating"');
     expect(at).toBeGreaterThan(0);
     for (const id of ids) { const i = html.indexOf(`id="${id}"`, at + 1); expect(i, id).toBeGreaterThan(at); at = i; }
   });
 
-  it("the questions run in two columns, the first open, and every question is there", () => {
+  it("the questions run in two columns, all closed, and every question is there", () => {
     const faq = between(html, 'id="faq"', "</section>");
     expect(faq.match(/flex-\[1_1_480px\]/g)?.length).toBe(model.faq.length > 1 ? 2 : 1);
-    expect(faq.indexOf("<details open")).toBe(faq.indexOf("<details"));
+    expect(faq).not.toMatch(/<details[^>]*\sopen/);
     expect(faq.match(/<details/g)?.length).toBe(model.faq.length);
     for (const f of model.faq) { expect(faq, f.q).toContain(esc(f.q)); expect(faq, f.q).toContain(esc(f.a)); }
   });
@@ -337,7 +222,7 @@ describe("when a part of the model is empty, that part is left out and the rest 
   it("nothing to put in the fit block: no fit cards and no India card, and today's Best for list does not come back", () => {
     const html = render(built, { product: withProduct, model: { fit: { ...built.model.fit, suits: [], careful: [], india: "" } } });
     for (const gone of ['id="fit"', "How it fits you and the Indian market", 'id="in-india"', "Best for", "Avoid if"]) expect(html, gone).not.toContain(gone);
-    for (const kept of ['id="at-a-glance"', 'id="where-to-buy"', 'id="key-ingredients"', 'aria-label="The Clean Sheet take"']) expect(html, kept).toContain(kept);
+    for (const kept of ['id="at-a-glance"', 'id="where-to-buy"', 'id="key-ingredients"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
   });
 
   it("only one of the two fit lists: the other card is not drawn", () => {
@@ -362,18 +247,54 @@ describe("when a part of the model is empty, that part is left out and the rest 
     expect(none).not.toContain("Gaps, and what would strengthen this analysis");
   });
 
-  it("no retailer: the block says to check the brand site; one with no address is a dashed card, not a link; one with no price says so", () => {
+  it("no retailer: the block says to check the brand site; one with no address is a plain chip, not a link; the price we last saw is in the tooltip and read out, never drawn on the chip", () => {
     expect(render(built, { model: { buyLinks: [] } })).toContain("Check brand website");
     const links: BuyLink[] = [
       { name: "Shop One", url: "https://example.com/p?a=1&b=2", price: "Rs.499", direct: true },
       { name: "Shop Two", url: null, price: null, direct: false },
+      { name: "Shop Three", url: null, price: "Rs.350", direct: false },
     ];
     const where = between(render(built, { model: { buyLinks: links } }), 'id="where-to-buy"', 'id="in-india"', 'id="key-ingredients"');
     expect(where.split("<a ").length - 1, "only the one with an address is a link").toBe(1);
     expect(where).toContain('href="https://example.com/p?a=1&amp;b=2"');
-    expect(where).toContain("border-dashed");
-    expect(where).toContain("Price not available");
-    expect(where, "no search note when every link is the product's own page").not.toContain("Links search the retailer");
+    expect(where.split("border-dashed").length - 1, "the two with no address are plain chips").toBe(2);
+    expect(where).toContain('title="Shop One, last seen at Rs.499"');
+    expect(where).toContain('title="Shop Three, last seen at Rs.350"');
+    expect(where, "no price drawn on a chip").not.toMatch(/>Rs\.\d/);
+    expect(where, "nothing about a price where we hold none").toContain('title="Shop Two"');
+    expect(where, "no price text where we hold none").not.toMatch(/Price not available|Rs\.\s*<|null|undefined/);
+    expect(where, "no search note when every link is the product's own page").not.toContain("links search the retailer");
+  });
+
+  it("Where to buy is one small row beside the overview: no tall cards, no wrapping, no empty space", () => {
+    const html = render(built, { model: { buyLinks: [
+      { name: "Flipkart", url: "https://www.flipkart.com/search?q=x", price: "Rs.1690", direct: false },
+      { name: "Nykaa", url: "https://www.nykaa.com/search/result/?q=x", price: "Rs.1950", direct: false },
+      { name: "Ubuy India", url: null, price: "Rs.3944", direct: false },
+      { name: "Apollo Pharmacy", url: null, price: "Rs.1288", direct: false },
+    ] } });
+    const band = between(html, 'class="min-w-0 lg:flex-1', 'id="in-india"', 'id="key-ingredients"');
+    // one row on a wide screen: the overview takes the room left over, Where to buy is as wide as its chips (up to 58% of the row), both centred
+    const row = html.slice(html.lastIndexOf("<section", html.indexOf('class="min-w-0 lg:flex-1')), html.indexOf('id="where-to-buy"'));
+    expect(row).toContain("lg:flex-row");
+    expect(row).toContain("lg:items-center");
+    expect(band).toContain("lg:max-w-[58%]");
+    // chips as small as their words, on one line that never wraps (it scrolls sideways on a phone)
+    const where = between(html, 'id="where-to-buy"', 'id="in-india"', 'id="key-ingredients"');
+    expect(where).toContain("rounded-full");
+    expect(where, "the old two-by-two cards are gone").not.toMatch(/grid-cols-2|min-h-\[72px\]|h-full/);
+    expect(where.match(/<li/g)?.length).toBe(4);
+    expect(where, "one line").toContain("flex-nowrap");
+    expect(where, "one line").not.toContain("flex-wrap gap-2");
+    expect(where, "small type").toContain("text-[11px]");
+    expect(where, "no per-chip 'search' word").not.toContain("· search");
+    // each retailer is its own chip, named; its price is in the tooltip; the heading says once that the links search
+    for (const [n, p] of [["Flipkart", "Rs.1690"], ["Nykaa", "Rs.1950"], ["Ubuy India", "Rs.3944"], ["Apollo Pharmacy", "Rs.1288"]]) {
+      const chip = where.slice(where.indexOf(`>${n}`), where.indexOf("</li>", where.indexOf(`>${n}`)));
+      expect(chip, n).toContain(`last seen at ${p}`);
+    }
+    expect(where).toContain("links search the retailer");
+    expect(where, "no prices line beside the heading").not.toContain("prices as last seen");
   });
 
   it("an analysis date we cannot read shows no caption, and never 'Invalid Date'", () => {

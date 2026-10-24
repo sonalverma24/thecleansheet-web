@@ -1,5 +1,6 @@
 import type { ProductScorecard } from "@/data/brands/types";
-import { TIER_STYLES, resolveTier } from "@/components/scorecards/pillar-ui";
+import { resolveTier } from "@/components/scorecards/pillar-ui";
+import { MARKER_OF_TIER, ratingName } from "@/components/scorecards/pill-palette";
 import { expandQuery } from "@/lib/search-synonyms";
 import { getProductCategoryLabel } from "@/lib/product-card-helpers";
 
@@ -24,7 +25,7 @@ export const FILTER_KEYS: FilterKey[] = ["standing", "category", "brand", "price
 export const EMPTY_FILTERS: RegistryFilters = { standing: [], category: [], brand: [], price: [], active: [], suitability: [] };
 
 export const FILTER_LABELS: Record<FilterKey, string> = {
-  standing: "Standing",
+  standing: "Rating",
   category: "Product type",
   brand: "Brand",
   price: "Price",
@@ -45,22 +46,22 @@ export const FILTER_PARAM: Record<FilterKey, string> = {
 export const SORT_LABELS: Record<SortKey, string> = {
   newest: "Newest analysis",
   best_match: "Best match",
-  standing: "Standing, best first",
+  standing: "Rating, best first",
   price_asc: "Price, low to high",
   price_desc: "Price, high to low",
   name: "Name, A to Z",
 };
 
-// The four standings (every product with no stored review) and the five pills (a stored review, with the pills page on). A listing can hold both while
-// the static catalogue has no pill, so each sits beside the one it replaces.
-const STANDING_ORDER = ["Good choice", "Good Standing", "Buy with caution", "Room to Improve", "Not enough info", "Look elsewhere", "Not Recommended", "Medicinal product", "Licensed Drug"];
+// A rating is a circle, so the filter is by its colour: green, yellow, red, or grey (not rated). A product of a stored review and a catalogue product with only a
+// standing both have one; no verdict word is used anywhere.
+const STANDING_ORDER = ["Green", "Yellow", "Red", "Grey"];
 const PRICE_ORDER = ["Under ₹500", "₹500-₹1,000", "₹1,000-₹2,000", "₹2,000+"];
 
 // ── Values a product has for each filter group ───────────────────────────────
 
 export function standingOf(p: Pick<ProductScorecard, "reviewTier" | "score"> & { pill?: ProductScorecard["pill"] }): string {
-  if (p.pill) return p.pill.label; // the pills page: the pill its stored review decides
-  return TIER_STYLES[resolveTier({ reviewTier: p.reviewTier, score: p.score })].label;
+  const marker = p.pill ? p.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: p.reviewTier, score: p.score })];
+  return ratingName(marker)[0].toUpperCase() + ratingName(marker).slice(1);
 }
 
 function parseMinPrice(raw: string): number | null {
@@ -184,10 +185,7 @@ function searched(products: ProductScorecard[], query: string): { p: ProductScor
   return products.map((p) => ({ p, rel: searchScore(p, terms) })).filter((x) => x.rel > 0);
 }
 
-const STANDING_RANK: Record<string, number> = {
-  "Good choice": 0, "Good Standing": 0, "Buy with caution": 1, "Room to Improve": 1, "Not enough info": 2,
-  "Look elsewhere": 3, "Not Recommended": 3, "Medicinal product": 4, "Licensed Drug": 4,
-};
+const STANDING_RANK: Record<string, number> = { Green: 0, Yellow: 1, Red: 2, Grey: 3 };
 
 function sortList(list: { p: ProductScorecard; rel: number }[], sort: SortKey): ProductScorecard[] {
   const newest = (a: ProductScorecard, b: ProductScorecard) => (b.analyzedAt ?? "").localeCompare(a.analyzedAt ?? "");

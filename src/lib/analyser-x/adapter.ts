@@ -20,6 +20,7 @@ import { computeScreen } from "./screen";
 import { buildProfile } from "./profile";
 import { listLooksSane } from "./verifier";
 import { computeBenchmark } from "./regulatory";
+import { productScopeOf } from "@/lib/product-scope";
 import { decide, type DecideOutput } from "./decision";
 import type { AcquisitionValue, ClaimValue, ListSource, ListValue, RuleContext, Trust } from "./types";
 
@@ -98,7 +99,7 @@ export function factsFromReview(review: ProductReview, now: string, over: Adapte
   if (inci.length) {
     const screen = computeScreen(review, inci, claimFlags(claimValues, inci));
     store.add({ predicate: "screen", subject, value: screen as unknown as Record<string, unknown>, trust: 5, origin: "derived", spans: [], derivedFrom: listFact ? [listFact.id] : [] });
-    store.add({ predicate: "benchmark", subject, value: computeBenchmark(inci, review.productName, undefined, screen.prohibited) as unknown as Record<string, unknown>, trust: 5, origin: "derived", spans: [], derivedFrom: listFact ? [listFact.id] : [] });
+    store.add({ predicate: "benchmark", subject, value: computeBenchmark(inci, review.productName, undefined, screen.prohibited, productScopeOf(review.productName, review.category ?? "")) as unknown as Record<string, unknown>, trust: 5, origin: "derived", spans: [], derivedFrom: listFact ? [listFact.id] : [] });
   }
   return store;
 }
