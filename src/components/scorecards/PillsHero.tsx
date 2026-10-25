@@ -180,7 +180,7 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
               <MapPin aria-hidden size={22} strokeWidth={1.7} />
               <h2 className="pp-serif text-xl sm:text-[21px] text-[#282828]">In India</h2>
             </div>
-            <p className="text-sm sm:text-[15px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty [column-width:340px] [column-gap:40px]">{india}</p>
+            <p className="text-sm sm:text-[15px] leading-[1.55] sm:leading-[1.6] text-[#282828] text-pretty">{india}</p>
           </div>
         </Band>
       )}
