@@ -8,7 +8,7 @@
 
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
-import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiveImage } from "@/lib/product-image";
+import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
@@ -826,6 +826,53 @@ async function store(slug: string, result: ProductReviewResult): Promise<void> {
   } catch { /* repository unavailable */ }
 }
 
+/** Revisit image sources for an image-less stored review when a shopper runs it
+    again. A day cooldown prevents repeated failed scrapes on every page view. */
+async function retryStoredReviewImage(
+  slug: string,
+  stored: ProductReviewResult,
+  query: string,
+): Promise<ProductReviewResult> {
+  if (stored.type !== "product-review" || stored.review.imageUrl || stored.review.imageLocked) return stored;
+  const lastAttempt = Date.parse(stored.review.imageRetryAt ?? "");
+  if (Number.isFinite(lastAttempt) && Date.now() - lastAttempt < 24 * 60 * 60 * 1000) return stored;
+
+  const retryAt = new Date().toISOString();
+  const pick = await findProductReviewImage(
+    stored.review.brand,
+    stored.review.productName,
+    stored.review.productPageUrl ?? (isURL(query) ? query : undefined),
+  );
+  const review: ProductReview = { ...stored.review, imageRetryAt: retryAt };
+  if (pick) {
+    review.imageUrl = pick.url;
+    review.imageSource = pick.source;
+    review.imageConfidence = pick.confidence;
+    const refreshed = { ...stored, review };
+    await store(review.productSlug ?? slug, refreshed);
+    if (refreshed.verdict.status === "approved") {
+      await upsertVerifiedProduct({
+        slug: review.productSlug ?? slug,
+        productName: review.productName,
+        brand: review.brand,
+        score: review.scores.total,
+        scoreLabel: review.scores.label,
+        integrityScore: null,
+        imageUrl: pick.url,
+        summary: review.verdict?.cleanSheetTakeaway || review.priceInsight || "",
+        usageGuidance: null,
+        verifiedAt: review.reviewedAt || retryAt,
+        methodologyVersion: review.methodologyVersion ?? REVIEW_METHODOLOGY_VERSION,
+      });
+    }
+    return refreshed;
+  }
+
+  const refreshed = { ...stored, review };
+  await store(review.productSlug ?? slug, refreshed);
+  return refreshed;
+}
+
 /** Public lookup for pages that overlay tiers (e.g. /brands). */
 export async function getStoredReviewTier(slug: string): Promise<string | null> {
   if (RETRACTED_SLUGS.has(slug)) return null;
@@ -1093,8 +1140,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
   const stored = await getStored(slug);
   if (stored) {
-    if (stored.type === "product-review" && isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, stored.review.brand, stored.review.productName)) {
-      const review = { ...stored.review };
+    const retried = await retryStoredReviewImage(slug, stored, q);
+    if (retried.type === "product-review" && isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, retried.review.brand, retried.review.productName)) {
+      const review = { ...retried.review };
       const evidence = evidenceForReview(review);
       const ingredients = review.inciIngredients ?? [];
       review.productPageChecks = buildProductPageChecks({
@@ -1107,11 +1155,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
         ingredients,
         reliableIngredientList: ingredients.length >= 3 && !review.inciEvidence?.quoteTruncated && isAnchored(evidence) && evidence.captureTrust >= 3,
       });
-      const result = { ...stored, review, verdict: deriveVerdict(review) };
+      const result = { ...retried, review, verdict: deriveVerdict(review) };
       await store(slug, result);
       return result;
     }
-    return stored;
+    return retried;
   }
 
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
@@ -1228,10 +1276,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     }
   } catch { /* de-dupe is best-effort; never block a review */ }
 
-  // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
-  // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
-  // Every candidate is checked for liveness before it is stored: a 404 or
-  // hotlink-blocked URL renders as a broken image on the product page forever.
+  // Image pulling: admin pin → live INCIDecoder photo → supplied product-page
+  // metadata → strict retailer matches → Google CSE. Search candidates are checked
+  // for liveness; page metadata remains a best-effort source.
   let imageUrl: string | null = null;
   let imageSource: ProductImageSource | null = null;
   let imageConfidence: number | null = null;
@@ -1244,20 +1291,15 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (pinned) { imageUrl = pinned; imageSource = "manual"; imageLocked = true; }
 
   if (!imageUrl && inci?.imageUrl && (await isLiveImage(inci.imageUrl))) { imageUrl = inci.imageUrl; imageSource = "inci"; }
-  if (!imageUrl && isURL(q)) { const u = await resolveProductImage(q); if (u) { imageUrl = u; imageSource = "page"; } }
   if (!imageUrl) {
-    const pick = await findProductImageKeyless(review.brand, review.productName);
-    if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
-  }
-  if (!imageUrl) {
-    const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
-    const pick = await searchProductImage(imgQuery || q, review.brand);
+    const pick = await findProductReviewImage(review.brand, review.productName, isURL(q) ? q : undefined);
     if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
   }
   review.imageUrl = imageUrl;
   review.imageSource = imageSource ?? undefined;
   review.imageConfidence = imageConfidence;
   review.imageLocked = imageLocked;
+  review.productPageUrl = isURL(q) ? q : undefined;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;

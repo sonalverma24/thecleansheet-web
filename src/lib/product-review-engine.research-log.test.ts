@@ -5,15 +5,16 @@ import { makeReview } from "@/lib/review.fixtures";
    INCIDecoder, the scrapers and the image resolvers. */
 const h = vi.hoisted(() => {
   const upserts: Record<string, unknown>[] = [];
+  const state: { stored: unknown } = { stored: null };
   const chain: unknown = new Proxy(function () {}, {
     get: (_t, prop) => {
-      if (prop === "then") return (resolve: (v: unknown) => void) => resolve({ data: null, error: null });
+      if (prop === "then") return (resolve: (v: unknown) => void) => resolve({ data: state.stored ? { result: state.stored, rubric_rev: "r7" } : null, error: null });
       if (prop === "upsert") return (row: Record<string, unknown>) => { upserts.push(row); return chain; };
       return () => chain;
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn() };
+  return { upserts, chain, generate: vi.fn(), findReviewImage: vi.fn(), state };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -24,14 +25,14 @@ vi.mock("@/lib/inci-fetch", async (orig) => ({
 }));
 vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/scrape")>()), fetchPageMarkdown: async () => null }));
 vi.mock("@/lib/product-image", () => ({
-  resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, isLiveImage: async () => false,
+  resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: (...args: unknown[]) => h.findReviewImage(...args), isLiveImage: async () => false,
 }));
 vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
-import { runProductReview } from "@/lib/product-review-engine";
+import { deriveVerdict, runProductReview } from "@/lib/product-review-engine";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { inciGroundTruthBlock } from "@/lib/inci-fetch";
 
@@ -39,6 +40,8 @@ const asModelText = (name: string) => JSON.stringify(makeReview({ productName: n
 
 beforeEach(() => {
   h.upserts.length = 0;
+  h.state.stored = null;
+  h.findReviewImage.mockReset();
   h.generate.mockReset();
 });
 
@@ -94,5 +97,22 @@ describe("runProductReview: researchLog", () => {
       [PRODUCT_REVIEW_SYSTEM_PROMPT, `${userPrompt}\n\nReturn ONLY the product-review JSON, starting directly with { and ending with }. No prose, no code fence, no trailing commas.`],
       [PRODUCT_REVIEW_SYSTEM_PROMPT, `${userPrompt}\n\nYour previous output was not valid JSON. Return ONLY the complete, valid product-review JSON object.`],
     ]);
+  });
+
+  it("retries image discovery for an existing review with no image", async () => {
+    const review = makeReview({ productName: "Retry Image Product", brand: "Research Log Test Brand" });
+    review.imageUrl = null;
+    review.productSlug = "retry-image-product";
+    h.state.stored = { type: "product-review", review, verdict: deriveVerdict(review) };
+    h.findReviewImage.mockResolvedValue({ url: "https://images.example/product.jpg", source: "cse", confidence: 0.9 });
+
+    const out = await runProductReview("Retry Image Product");
+
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
+    expect(out.review.imageUrl).toBe("https://images.example/product.jpg");
+    expect(out.review.imageSource).toBe("cse");
+    expect(out.review.imageRetryAt).toBeTruthy();
+    expect(h.findReviewImage).toHaveBeenCalledWith("Research Log Test Brand", "Retry Image Product", undefined);
   });
 });

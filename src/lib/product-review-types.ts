@@ -248,6 +248,10 @@ export interface ProductReview {
   imageConfidence?: number | null;
   /** True when an admin pinned the image: a fresh re-review must not overwrite it. */
   imageLocked?: boolean;
+  /** Explicit URL analyzed, retained so an image retry can revisit its product page. */
+  productPageUrl?: string;
+  /** Last automatic image retry attempt; admin-triggered retries ignore this cooldown. */
+  imageRetryAt?: string;
   methodologyVersion?: string;
   reviewedAt?: string;
   /** Resolved INCI (ground truth used for grading), for display. */
