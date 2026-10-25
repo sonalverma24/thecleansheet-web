@@ -5,13 +5,16 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import SkinGuidesPopup from '@/components/guides/SkinGuidesPopup';
+import AccountMenu from '@/components/layout/AccountMenu';
 import MobileHeader from '@/components/layout/MobileHeader';
 import NavMenu from '@/components/layout/NavMenu';
 import { BRAND_MENU, CONSUMER_MENU } from '@/components/layout/nav-menus';
 import { GUIDES_OPEN_PARAM } from '@/lib/skin-guide-downloads';
+import { greetingName } from '@/lib/user-display-name';
 
 /* Site header: a dark guide banner, then a white sticky bar with two collapsible
-   menus (For consumers, For brands) and one green Log in button; on a phone, a
+   menus (For consumers, For brands) and one green Log in button (a "Hi, name" menu
+   with Sign out once signed in); on a phone, a
    hamburger drawer with the same two groups (MobileHeader). Each menu's Community
    item scrolls to that page's community write-up; the WhatsApp join buttons live
    inside those write-ups. Reviews, Standard, Verify and About live in the footer,
@@ -96,17 +99,18 @@ export function Navigation() {
             />
           </nav>
 
-          {/* The one green button: Log in (Sign out once signed in). Nothing else lives here. */}
-          {!loading && (
+          {/* The one green button: Log in, or "Hi, name" with a Sign out menu once signed in. Nothing else lives here. */}
+          {!loading && (user ? (
+            <AccountMenu name={greetingName(user)} email={user.email ?? undefined} onSignOut={() => void signOut()} />
+          ) : (
             <button
               type="button"
-              onClick={user ? () => signOut() : login}
-              title={user?.email ?? undefined}
+              onClick={login}
               className="flex-none inline-flex items-center bg-[#248179] hover:bg-[#1d6b64] active:scale-[0.98] text-white rounded-lg px-[22px] py-[11px] text-[14px] font-bold whitespace-nowrap transition-[background-color,transform]"
             >
-              {user ? 'Sign out' : 'Log in'}
+              Log in
             </button>
-          )}
+          ))}
         </div>
       </header>
 

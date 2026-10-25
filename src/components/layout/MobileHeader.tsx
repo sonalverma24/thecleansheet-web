@@ -5,13 +5,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { greetingName } from '@/lib/user-display-name';
 import { BRAND_MENU, CONSUMER_MENU } from './nav-menus';
 import type { NavMenuItem } from './NavMenu';
 
 /* Phone header, following the mobile design: a sticky 64px bar (logo, name,
    one-line tagline, hamburger) and a drawer under it. The drawer has the same two
    collapsible groups as the desktop bar (For consumers, For brands, one open at a
-   time) and one green Log in button (Sign out once signed in). */
+   time) and one green Log in button (a "Hi, name" button that opens Sign out once
+   signed in). */
 
 function Group({
   label, items, open, onToggle, onNavigate,
@@ -58,7 +60,8 @@ export default function MobileHeader() {
   const { user, loading, signOut, openLoginModal } = useAuth();
   const [open, setOpen] = useState(false);
   const [group, setGroup] = useState<'consumers' | 'brands' | null>(null);
-  const close = useCallback(() => { setOpen(false); setGroup(null); }, []);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const close = useCallback(() => { setOpen(false); setGroup(null); setAccountOpen(false); }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -124,15 +127,36 @@ export default function MobileHeader() {
               onToggle={() => setGroup(group === 'brands' ? null : 'brands')}
               onNavigate={close}
             />
-            {!loading && (
+            {!loading && (user ? (
+              <>
+                <button
+                  type="button"
+                  aria-expanded={accountOpen}
+                  onClick={() => setAccountOpen(!accountOpen)}
+                  className="mt-5 h-[52px] px-4 rounded-lg bg-[#248179] active:scale-[0.98] text-white text-[16px] font-bold transition-transform flex items-center justify-center gap-2"
+                >
+                  <span className="truncate">Hi, {greetingName(user)}</span>
+                  <ChevronDown size={16} aria-hidden className={`flex-none transition-transform duration-200 ${accountOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {accountOpen && (
+                  <button
+                    type="button"
+                    onClick={() => { close(); void signOut(); }}
+                    className="mt-2 h-[48px] rounded-lg border border-[#e5dfd6] text-[#282828] text-[15px] active:bg-[#e3f1ef]"
+                  >
+                    Sign out
+                  </button>
+                )}
+              </>
+            ) : (
               <button
                 type="button"
-                onClick={user ? () => { close(); void signOut(); } : login}
+                onClick={login}
                 className="mt-5 h-[52px] rounded-lg bg-[#248179] active:scale-[0.98] text-white text-[16px] font-bold transition-transform"
               >
-                {user ? 'Sign out' : 'Log in'}
+                Log in
               </button>
-            )}
+            ))}
           </nav>
         </>
       )}
