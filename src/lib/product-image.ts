@@ -143,7 +143,9 @@ interface CseItem {
 
 export async function searchProductImage(query: string, brand = ""): Promise<ImagePick | null> {
   const key = process.env.GOOGLE_CSE_API_KEY;
-  const cx = process.env.GOOGLE_CSE_CX;
+  // Existing Vercel projects may still store the Programmable Search Engine ID
+  // under its dashboard-era name. Prefer the canonical name when both exist.
+  const cx = process.env.GOOGLE_CSE_CX?.trim() || process.env.Programmable_search_engine?.trim();
   if (!key || !cx || !query.trim()) return null;
 
   try {
@@ -192,17 +194,43 @@ export async function searchProductImage(query: string, brand = ""): Promise<Ima
       // Among the best-matching results, still prefer a trusted marketplace listing.
       const top = scored[0].score;
       const best = scored.filter((c) => c.score === top);
-      const chosen = best.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))) ?? best[0];
-      return { url: chosen.url, source: "cse", confidence: round2(chosen.score) };
+      const ordered = [
+        ...best.filter((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))),
+        ...best.filter((c) => !TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))),
+      ];
+      for (const chosen of ordered) {
+        if (await isLiveImage(chosen.url)) return { url: chosen.url, source: "cse", confidence: round2(chosen.score) };
+      }
+      return null;
     }
 
     // Brand-only query (no product-specific tokens): fall back to trusted-first.
-    const trusted = candidates.find((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d)));
-    const chosen = trusted ?? candidates[0];
-    return chosen ? { url: chosen.url, source: "cse", confidence: null } : null;
+    const ordered = [
+      ...candidates.filter((c) => TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))),
+      ...candidates.filter((c) => !TRUSTED_IMAGE_DOMAINS.some((d) => c.context.includes(d))),
+    ];
+    for (const chosen of ordered) {
+      if (await isLiveImage(chosen.url)) return { url: chosen.url, source: "cse", confidence: null };
+    }
+    return null;
   } catch {
     return null;
   }
+}
+
+/** Retry the public image sources for a stored review. The image must match the
+    named product and brand; returning no image is safer than picking a neighbour. */
+export async function findProductReviewImage(
+  brand: string,
+  productName: string,
+  productPageUrl?: string | null,
+): Promise<ImagePick | null> {
+  if (productPageUrl && /^https?:\/\//i.test(productPageUrl)) {
+    const pageImage = await resolveProductImage(productPageUrl);
+    if (pageImage) return { url: pageImage, source: "page", confidence: null };
+  }
+  return (await findProductImageKeyless(brand, productName))
+    ?? (await searchProductImage(imageQuery(brand, productName), brand));
 }
 
 /** Extract the most plausible product image from scraped markdown (fallback). */
