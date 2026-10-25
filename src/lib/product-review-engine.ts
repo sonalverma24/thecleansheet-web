@@ -17,7 +17,8 @@ import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
-import { makeInciEvidence } from "@/lib/review-verifier";
+import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
+import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
@@ -1049,6 +1050,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // against the real ingredients instead of reporting "INCI not available".
   let pageInci: import("@/lib/inci-from-page").PageINCI | null = null;
   let pageExcerpt = "";
+  let capturedPageText = "";
+  let capturedPageTitle = "";
+  let capturedPageAt = "";
+  let completePageCapture = false;
   let evidenceBlock = "";
   let pageName: string | null = null;
 
@@ -1057,6 +1062,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (page) {
       pageExcerpt = productBodyExcerpt(page);
       pageName = titleFromMarkdown(page);
+      capturedPageText = productBodyExcerpt(page, 60000);
+      capturedPageTitle = pageName ?? "";
+      capturedPageAt = new Date().toISOString();
+      completePageCapture = page.length < 60000 && capturedPageText.length < 60000;
       if (pageName) inci = (await resolveINCI(pageName)).chosen;
       // INCIDecoder missed it → read the INCI straight off the product page.
       if (!inci) pageInci = await fetchInciFromProductPage(q);
@@ -1083,7 +1092,27 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // ── Repository: same product ⇒ same stored review ──
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
   const stored = await getStored(slug);
-  if (stored) return stored;
+  if (stored) {
+    if (stored.type === "product-review" && isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, stored.review.brand, stored.review.productName)) {
+      const review = { ...stored.review };
+      const evidence = evidenceForReview(review);
+      const ingredients = review.inciIngredients ?? [];
+      review.productPageChecks = buildProductPageChecks({
+        pageText: capturedPageText,
+        pageTitle: capturedPageTitle,
+        productCategory: review.category,
+        sourceUrl: q,
+        capturedAt: capturedPageAt,
+        completeCapture: completePageCapture,
+        ingredients,
+        reliableIngredientList: ingredients.length >= 3 && !review.inciEvidence?.quoteTruncated && isAnchored(evidence) && evidence.captureTrust >= 3,
+      });
+      const result = { ...stored, review, verdict: deriveVerdict(review) };
+      await store(slug, result);
+      return result;
+    }
+    return stored;
+  }
 
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
   // the list read off the brand's product page.
@@ -1256,14 +1285,30 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   /* Evidence envelope: record where the list came from and the source text it was
-     read from, so the review can be audited later. Only INCIDecoder lists carry a
-     quote today; a brand-page list gets its tier but no quote, and a model-transcribed
-     list gets tier 1, so the verifier reports both as unanchored. Recording only: it
-     does not feed the verdict. */
+     read from. Both INCIDecoder and the deterministic brand-page extractor retain
+     source quotes; model-transcribed lists stay unanchored. Recording only: it does
+     not feed the verdict. */
   if (review.inciIngredients?.length) {
     review.inciEvidence = inci
-      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName)
-      : makeInciEvidence(pageInci?.source, undefined, review.reviewedAt ?? new Date().toISOString());
+      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName, inci.sourceQuoteTruncated === true)
+      : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageName ?? undefined);
+  }
+
+  // Page checks are generated from a user-supplied product URL only. They remain
+  // separate from score, rubric, and the three-dot outcome.
+  if (isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, review.brand, review.productName)) {
+    const ingredients = review.inciIngredients ?? [];
+    const evidence = evidenceForReview(review);
+    review.productPageChecks = buildProductPageChecks({
+      pageText: capturedPageText,
+      pageTitle: capturedPageTitle,
+      productCategory: review.category,
+      sourceUrl: q,
+      capturedAt: capturedPageAt,
+      completeCapture: completePageCapture,
+      ingredients,
+      reliableIngredientList: ingredients.length >= 3 && !review.inciEvidence?.quoteTruncated && isAnchored(evidence) && evidence.captureTrust >= 3,
+    });
   }
 
   // Auto-grow the ingredient directory: any ingredient of this product that is

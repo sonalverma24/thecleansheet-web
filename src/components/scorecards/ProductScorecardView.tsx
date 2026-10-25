@@ -849,6 +849,27 @@ function buildMobileTabs({
       </CollapsibleSection>,
     );
   }
+  if (product.productPageChecks?.length) {
+    claims.push(
+      <CollapsibleSection key="page-checks" id="m-product-page-checks" title="Product-page checks" subtitle="Web analysis notes from the captured product page. These do not change the product outcome." >
+        <div className="p-4 space-y-2.5">
+          {product.productPageChecks.map((check, i) => (
+            <div key={`${check.code}-${i}`} className={`rounded-xl border p-4 ${check.kind === "caution" ? "border-amber-200 bg-amber-50/60" : "border-[#efe9e0] bg-[#faf7f2]"}`}>
+              <div className="flex items-start gap-3">
+                <span className={`mt-1.5 block w-2 h-2 rounded-full flex-shrink-0 ${check.kind === "caution" ? "bg-amber-500" : "bg-[#b0a8a4]"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-[#282828] leading-relaxed">{check.message}</p>
+                  {check.sourceQuote && <blockquote className="mt-2 border-l-2 border-[#d8d0c8] pl-2 text-[11px] text-[#77706b]">“{check.sourceQuote}”</blockquote>}
+                  <a href={check.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-[#248179] underline">Captured product page</a>
+                </div>
+              </div>
+            </div>
+          ))}
+          <p className="text-[10px] text-[#b0a8a4]">Page wording can be incomplete or change. Check the full page and product packaging; these notes are not a certification or clinical assessment.</p>
+        </div>
+      </CollapsibleSection>,
+    );
+  }
   if (product.missingProof && product.missingProof.length > 0) {
     claims.push(
       <section key="missing" id="m-missing-proof">
@@ -1288,6 +1309,30 @@ export function ProductScorecardView({
                   </div>
                 </div>
               ))}
+            </div>
+          </CollapsibleSection>
+        )}
+
+        {product.productPageChecks && product.productPageChecks.length > 0 && (
+          <CollapsibleSection
+            id="product-page-checks"
+            title="Product-page checks"
+            subtitle="Web analysis notes from the captured product page. These do not change the product outcome."
+          >
+            <div className="p-4 space-y-2.5">
+              {product.productPageChecks.map((check, i) => (
+                <div key={`${check.code}-${i}`} className={`rounded-xl border p-4 ${check.kind === "caution" ? "border-amber-200 bg-amber-50/60" : "border-[#efe9e0] bg-[#faf7f2]"}`}>
+                  <div className="flex items-start gap-3">
+                    <span className={`mt-1.5 block w-2 h-2 rounded-full flex-shrink-0 ${check.kind === "caution" ? "bg-amber-500" : "bg-[#b0a8a4]"}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-[#282828] leading-relaxed">{check.message}</p>
+                      {check.sourceQuote && <blockquote className="mt-2 border-l-2 border-[#d8d0c8] pl-2 text-[11px] text-[#77706b]">“{check.sourceQuote}”</blockquote>}
+                      <a href={check.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-[#248179] underline">Captured product page</a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <p className="text-[10px] text-[#b0a8a4]">Page wording can be incomplete or change. Check the full page and product packaging; these notes are not a certification or clinical assessment.</p>
             </div>
           </CollapsibleSection>
         )}
