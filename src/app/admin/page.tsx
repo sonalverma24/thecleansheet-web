@@ -215,6 +215,7 @@ export default function AdminDashboard() {
               { href: "/admin/products/new", icon: Plus,     label: "Add product",         sub: "Create a new product manually"       },
               { href: "/admin/products",     icon: Package,  label: "Manage products",      sub: "Edit, approve, publish or unpublish" },
               { href: "/admin/reviews",      icon: Star,     label: "Moderate reviews",     sub: "Approve or reject user reviews"      },
+              { href: "/admin/acquisition", icon: BarChart3, label: "User acquisition",     sub: "See signup sources and landing pages" },
               { href: "/admin/brands",       icon: Users,    label: "Manage brands",        sub: "Add or edit brand profiles"          },
               { href: "/admin/articles",     icon: BarChart3, label: "Manage articles",     sub: "Write and publish learn content"     },
               { href: "/admin/csv-upload",   icon: Upload,   label: "Bulk CSV upload",      sub: "Upload products from a CSV file"     },
