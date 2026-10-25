@@ -1,3 +1,5 @@
+import type { ProductPageCheck } from "@/lib/web-shopper-checks";
+
 export type ScorePillar = {
   name: string;
   score: number;
@@ -101,6 +103,8 @@ export type ProductScorecard = {
   /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
       live-reviewed products — rendered as its own section in the product view. */
   regulatoryFlags?: { claim: string; note: string }[];
+  /** Independent shopper observations from captured product-page text. */
+  productPageChecks?: ProductPageCheck[];
   /** NEW tile badge — only the latest few repository arrivals carry it. */
   newArrival?: boolean;
   /** Pills page only (flag ANALYSER_PILLS_PAGE), for a listing card of a stored review: the pill its page shows, and the At a glance ticks in the

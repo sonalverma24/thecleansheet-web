@@ -183,6 +183,7 @@ export interface InciEvidence {
   quote: string;
   retrievedAt: string;
   matchedTitle?: string;
+  quoteTruncated?: boolean;
 }
 
 /** What the model searched and cited while producing a review (Google Search grounding).
@@ -259,6 +260,8 @@ export interface ProductReview {
   /** Where the ingredient list came from, the source text it was read from, and when.
       Absent on reviews stored before evidence capture (see review-verifier.ts). */
   inciEvidence?: InciEvidence;
+  /** Independent page checks from the explicit product URL; never affect outcome dots. */
+  productPageChecks?: import("@/lib/web-shopper-checks").ProductPageCheck[];
   /** The searches the model ran and the sources it cited for this review. Set by the
       engine from the grounding metadata, never authored by the model. Absent on older reviews. */
   researchLog?: ResearchLog;

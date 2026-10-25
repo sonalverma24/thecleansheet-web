@@ -206,6 +206,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
         claim: c.text.length > 110 ? c.text.slice(0, 110).replace(/\s+\S*$/, "") + "…" : c.text,
         note: c.drugBoundaryNote || c.asciNote || c.evidenceNote || "",
       })),
+    productPageChecks: review.productPageChecks?.slice(0, 8),
   };
 
   const brand: Brand = {

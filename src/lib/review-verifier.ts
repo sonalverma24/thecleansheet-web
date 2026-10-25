@@ -71,6 +71,7 @@ export function makeInciEvidence(
   quote: string | null | undefined,
   retrievedAt: string,
   matchedTitle?: string,
+  quoteTruncated = false,
 ): InciEvidence {
   return {
     sourceUrl: sourceUrl ?? "",
@@ -78,6 +79,7 @@ export function makeInciEvidence(
     quote: (quote ?? "").trim(),
     retrievedAt,
     ...(matchedTitle ? { matchedTitle } : {}),
+    ...(quoteTruncated ? { quoteTruncated: true } : {}),
   };
 }
 
