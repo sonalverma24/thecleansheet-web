@@ -33,6 +33,8 @@ function referrerHost(): string | null {
     const host = new URL(document.referrer).hostname.toLowerCase();
     const own = window.location.hostname.toLowerCase();
     if (host === own || host === "thecleansheet.in" || host === "www.thecleansheet.in") return null;
+    // Authentication redirects must never become marketing referral sources.
+    if (host === "accounts.google.com" || host === "mail.google.com" || host.endsWith(".supabase.co")) return null;
     return limited(host);
   } catch {
     return null;
@@ -69,7 +71,7 @@ function currentTouch(): { touch: AcquisitionTouch; identifiable: boolean } {
       referrerHost: host,
       landingPath: window.location.pathname.slice(0, 500) || "/",
     },
-    identifiable: Boolean(explicitSource || explicitMedium || campaign || host),
+    identifiable: !window.location.pathname.startsWith("/auth/") && Boolean(explicitSource || explicitMedium || campaign || host),
   };
 }
 
