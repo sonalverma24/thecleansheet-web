@@ -16,6 +16,7 @@ type FbqFn = (command: string, eventName: string, params?: Record<string, unknow
 declare global {
   interface Window {
     gtag?: GtagFn;
+    dataLayer?: unknown[];
     fbq?: FbqFn;
   }
 }
@@ -29,7 +30,17 @@ export function track(event: string, data?: Record<string, unknown>) {
   }
 
   try {
-    window.gtag?.("event", event, params);
+    if (window.gtag) {
+      window.gtag("event", event, params);
+    } else {
+      // Queue gtag-shaped commands until the afterInteractive GA script loads.
+      // The gtag.js loader processes the same dataLayer on initialization.
+      window.dataLayer = window.dataLayer || [];
+      function enqueue(command: string, name: string, values: Record<string, unknown>) {
+        window.dataLayer?.push(arguments);
+      }
+      enqueue("event", event, params);
+    }
   } catch {
     /* tracker not ready or blocked — ignore */
   }
