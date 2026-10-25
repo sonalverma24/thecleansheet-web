@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { ProductScorecard, ScorePillar } from "@/data/brands/types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
 import { simplifyPillarName } from "@/lib/pillar-display";
-import { buildAtAGlanceAnalyzedPage } from "@/lib/at-a-glance";
+import { buildAtAGlanceAnalyzedPage, fragranceFromCompleteInci } from "@/lib/at-a-glance";
+import { applyClaimEvidenceDisplay } from "@/lib/claim-evidence-display";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { analysisWording } from "@/lib/analysis-wording";
 
@@ -154,12 +155,9 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
     const isMineral = pass.some(
       (b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("zinc"))
     );
-    const isFragFree = pass.some(
-      (b) => b.includes("fragrance-free") || b.includes("fragrance free")
-    );
-    const isEOFree = pass.some(
-      (b) => b.includes("no essential oils") || b.includes("essential oil free")
-    );
+    const fragrance = fragranceFromCompleteInci(product);
+    const isFragFree = fragrance === "clear";
+    const isEOFree = fragrance === "clear";
     if (isMineral && isFragFree && isEOFree) return "Mineral only UV filter, fragrance free, and no essential oils.";
     if (isMineral && isFragFree) return "Mineral only UV filter with a fragrance free formula.";
     if (isMineral) return "Mineral only UV filter (Zinc Oxide) with no chemical filter concerns.";
@@ -172,11 +170,9 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
   }
 
   if (displayName === "Claims Evidence") {
-    const hasSPFEvidence = pass.some(
-      (b) => b.includes("published spf") || (b.includes("spf") && b.includes("test"))
-    );
-    if (hasSPFEvidence && pct >= 65) return "Published SPF test report available. Some claims need more context.";
-    if (hasSPFEvidence) return "SPF test report available, but some supporting claims are weaker.";
+    if (product.claimsCheck?.some((c) => applyClaimEvidenceDisplay(c, product).evidenceStatus === "Brand claim — TCS evidence not reviewed")) {
+      return "Some claims are brand statements without matching product-specific evidence reviewed by TCS.";
+    }
     if (pct >= 75) return "Good evidence for stated claims based on public information.";
     return getPillarOneLiner(pillar.note);
   }
@@ -193,7 +189,8 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
 
 function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
   if (!product.claimsCheck?.length) return [];
-  return product.claimsCheck.slice(0, 8).map((c) => {
+  return product.claimsCheck.slice(0, 8).map((raw) => {
+    const c = applyClaimEvidenceDisplay(raw, product);
     let status: ProofStatus;
     if (c.decision === "Publicly supported" && c.evidenceStatus === "Evidence visible") status = "verified";
     else if (c.decision === "Publicly supported") status = "supported";
@@ -201,7 +198,7 @@ function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
     else if (c.evidenceStatus === "Missing") status = "not-found";
     else status = "not-verified";
 
-    const evidenceType =
+    const evidenceType = c.evidenceStatus === "Brand claim — TCS evidence not reviewed" ? "Brand claim · TCS evidence not reviewed" :
       c.evidenceStatus === "Evidence visible" ? "Published evidence" :
       c.evidenceStatus === "Mentioned only" ? "Brand claim" :
       "Not found";
@@ -213,97 +210,13 @@ function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
 function buildProofCards(product: ProductScorecard): ProofCard[] {
   const fromData = claimsCheckToProofCards(product);
   if (fromData.length > 0) return fromData;
-
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
-  const warn = product.warn_badges.map((b) => b.toLowerCase());
-  const cards: ProofCard[] = [];
-
-  if (product.productType === "sunscreen") {
-    if (pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")))) {
-      cards.push({
-        claim: "SPF Rating",
-        status: "verified",
-        explanation: "A published SPF test report is available from the brand. This is more public evidence than most Indian sunscreens provide.",
-        evidenceType: "Published test report",
-      });
-    } else if (warn.some((b) => b.includes("spf") && (b.includes("not verified") || b.includes("unusual") || b.includes("unverified")))) {
-      cards.push({
-        claim: "SPF Rating",
-        status: "not-verified",
-        explanation: "The SPF claim could not be verified from publicly available test evidence.",
-        evidenceType: "Not found",
-      });
-    } else {
-      cards.push({
-        claim: "SPF Rating",
-        status: "supported",
-        explanation: "SPF is stated on packaging. No independently published test report found.",
-        evidenceType: "Brand claim",
-      });
-    }
-  }
-
-  if (pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"))) {
-    cards.push({
-      claim: "Fragrance Free",
-      status: "verified",
-      explanation: "No fragrance of any kind found in the INCI. No parfum, no essential oils, no Benzyl Alcohol.",
-      evidenceType: "INCI check",
-    });
-  } else if (warn.some((b) => b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") || b.includes("benzyl alcohol"))) {
-    cards.push({
-      claim: "Fragrance Free",
-      status: "not-verified",
-      explanation: "Brand does not claim fragrance-free. Fragrance allergens are present in the formula.",
-      evidenceType: "INCI check",
-    });
-  }
-
-  if (pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"))) {
-    cards.push({
-      claim: "Essential Oil Free",
-      status: "verified",
-      explanation: "No essential oils found in the ingredient list.",
-      evidenceType: "INCI check",
-    });
-  }
-
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    const hasWarn = warn.some((b) => b.includes("comedogenic") || b.includes("isostearic"));
-    cards.push({
-      claim: "Non-Comedogenic",
-      status: hasWarn ? "needs-context" : "supported",
-      explanation: hasWarn
-        ? "A published non-comedogenic test report exists, but some ingredients may have comedogenic potential."
-        : "A published non-comedogenic test report is available from the brand.",
-      evidenceType: "Published test report",
-    });
-  }
-
-  if (pass.some((b) => b.includes("vegan"))) {
-    const hasVeganContradiction = warn.some(
-      (b) => (b.includes("vegan") && b.includes("whey")) || (b.includes("dairy") && b.includes("vegan"))
-    );
-    cards.push({
-      claim: "Vegan",
-      status: hasVeganContradiction ? "not-verified" : "supported",
-      explanation: hasVeganContradiction
-        ? "Brand claims vegan, but animal-derived ingredients appear in the ingredient list."
-        : "Vegan claim is consistent with the INCI. No animal-derived ingredients found.",
-      evidenceType: hasVeganContradiction ? "INCI check vs brand claim" : "INCI check",
-    });
-  }
-
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    cards.push({
-      claim: "Dermatologist Tested",
-      status: "supported",
-      explanation: "A published dermatologist test report is available from the brand.",
-      evidenceType: "Published test report",
-    });
-  }
-
-  return cards.slice(0, 8);
+  const specialist = /\b(?:spf\s*\d+|pa\+{2,}|broad[- ]spectrum|uva\s*protection|dermatolog(?:ist|ically)[ -]tested|non[- ]?comedogenic|vegan|cruelty[- ]?free|pregnancy[- ]safe|pregnancy tested|safe (?:for|during|in) pregnancy|suitable (?:for|during) pregnancy)\b/i;
+  return (product.claimsMade ?? []).filter((claim) => specialist.test(claim)).slice(0, 8).map((claim) => ({
+    claim,
+    status: "needs-context",
+    explanation: "This is a brand claim. TCS has not reviewed matching product-specific evidence. That evidence gap does not by itself determine the product rating.",
+    evidenceType: "Brand claim · TCS evidence not reviewed",
+  }));
 }
 
 
@@ -675,7 +588,8 @@ export default async function AnalyzedProductPage({
               </div>
             </div>
             <div className="space-y-2.5">
-              {product.claimsCheck.map((c) => {
+              {product.claimsCheck.map((raw) => {
+                const c = applyClaimEvidenceDisplay(raw, product);
                 const isSupported  = c.decision === "Publicly supported";
                 const isNeedsProof = c.decision === "Needs proof";
                 const accent  = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";

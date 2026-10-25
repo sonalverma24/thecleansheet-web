@@ -10,6 +10,18 @@ import { DEFAULT_ONTOLOGY, ontologyTick, type Ontology } from "@/lib/claim-ontol
 
 export type GlanceItem = { label: string; value: boolean };
 
+export type FragranceState = "clear" | "declared" | "essential-oil" | "aromatic-unknown" | "unknown";
+
+export function fragranceFromCompleteInci(product: ProductScorecard): FragranceState {
+  const complete = product.inciCompleteness?.status === "Full INCI on brand PDP" || product.inciCompleteness?.status === "Full INCI in reference database";
+  if (!complete || !product.ingredients.length) return "unknown";
+  const names = product.ingredients.map((i) => i.name.toLowerCase());
+  if (names.some((n) => /\b(?:parfum|perfume|fragrance|aroma)\b/.test(n))) return "declared";
+  if (names.some((n) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(n))) return "essential-oil";
+  if (names.some((n) => /\b(?:lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i.test(n) && /\b(?:extract|water|distillate|hydrosol|oil|essence)\b/i.test(n))) return "aromatic-unknown";
+  return "clear";
+}
+
 /** Labels the ontology takes over when ANALYSER_ONTOLOGY_TICKS is on. The rest of the
     strip is claim- and badge-derived and is left exactly as it was. */
 const ONTOLOGY_LABELS = new Set(["Alcohol free", "Paraben free"]);
@@ -35,23 +47,17 @@ export function applyOntologyTicks(items: GlanceItem[], product: ProductScorecar
   return out;
 }
 
-export function buildAtAGlance(product: ProductScorecard, opts?: { ontology?: boolean }): GlanceItem[] {
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
+export function buildAtAGlance(product: ProductScorecard, opts?: { ontology?: boolean; includeReefSafe?: boolean }): GlanceItem[] {
   const warn = product.warn_badges.map((b) => b.toLowerCase());
   const items: { label: string; value: boolean }[] = [];
 
-  // Fragrance free
-  const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
-  const hasFragAllergen = warn.some((b) =>
-    b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
-    b.includes("benzyl alcohol") || b.includes("parfum")
-  );
-  if (fragFree) items.push({ label: "Fragrance free", value: true });
-  else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
+  // Fragrance-free is derived from a complete captured INCI; unknown stays unlabelled.
+  const fragrance = fragranceFromCompleteInci(product);
+  if (fragrance === "clear") items.push({ label: "Fragrance free", value: true });
+  else if (fragrance === "declared" || fragrance === "essential-oil") items.push({ label: "Fragrance free", value: false });
 
-  // Essential oil free
-  const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
-  if (eoFree) items.push({ label: "Essential oil free", value: true });
+  if (fragrance === "clear") items.push({ label: "Essential oil free", value: true });
+  else if (fragrance === "essential-oil") items.push({ label: "Essential oil free", value: false });
 
   // Alcohol free (check ingredient list)
   const hasAlcohol = product.ingredients.some((i) => {
@@ -66,29 +72,12 @@ export function buildAtAGlance(product: ProductScorecard, opts?: { ontology?: bo
   const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
   items.push({ label: "Paraben free", value: !hasParaben });
 
-  // Non-comedogenic
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    items.push({ label: "Non-comedogenic", value: true });
-  }
-
-  // Dermatologist tested
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    items.push({ label: "Dermatologist tested", value: true });
-  }
-
-  // Vegan
-  const isVegan = pass.some((b) => b.includes("vegan"));
-  const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
-  if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
-  else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
-
-  // Sunscreen-specific
+  // Brand claims stay in the claim evidence panel; they do not become positive ticks.
   if (product.productType === "sunscreen") {
-    const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
-    items.push({ label: "SPF verified", value: spfVerified });
-
+    // No SPF tick without a structured TCS evidence record.
+    const pass = product.pass_badges.map((b) => b.toLowerCase());
     const reefSafe = pass.some((b) => b.includes("reef-safe") || b.includes("reef safe"));
-    if (reefSafe) items.push({ label: "Reef safe", value: true });
+    if (opts?.includeReefSafe !== false && reefSafe) items.push({ label: "Reef safe", value: true });
   }
 
   return (opts?.ontology ? applyOntologyTicks(items, product) : items).slice(0, 8);
@@ -99,49 +88,5 @@ export function buildAtAGlance(product: ProductScorecard, opts?: { ontology?: bo
    copy lives here, byte-for-byte except for the ontology branch, so the parity tests can
    cover it. Do not "fix" the difference without a preview: it changes a displayed tick. */
 export function buildAtAGlanceAnalyzedPage(product: ProductScorecard, opts?: { ontology?: boolean }): GlanceItem[] {
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
-  const warn = product.warn_badges.map((b) => b.toLowerCase());
-  const items: { label: string; value: boolean }[] = [];
-
-  const fragFree = pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"));
-  const hasFragAllergen = warn.some((b) =>
-    b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") ||
-    b.includes("benzyl alcohol") || b.includes("parfum")
-  );
-  if (fragFree) items.push({ label: "Fragrance free", value: true });
-  else if (hasFragAllergen) items.push({ label: "Fragrance free", value: false });
-
-  const eoFree = pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"));
-  if (eoFree) items.push({ label: "Essential oil free", value: true });
-
-  const hasAlcohol = product.ingredients.some((i) => {
-    const n = i.name.toLowerCase();
-    return n === "alcohol" || n.includes("alcohol denat");
-  });
-  const alcoholWarn = warn.some((b) => b.includes("denatured alcohol") || b.includes("alcohol denat"));
-  if (hasAlcohol || alcoholWarn) items.push({ label: "Alcohol free", value: false });
-  else items.push({ label: "Alcohol free", value: true });
-
-  const hasParaben = product.ingredients.some((i) => i.name.toLowerCase().includes("paraben"));
-  items.push({ label: "Paraben free", value: !hasParaben });
-
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    items.push({ label: "Non-comedogenic", value: true });
-  }
-
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    items.push({ label: "Dermatologist tested", value: true });
-  }
-
-  const isVegan = pass.some((b) => b.includes("vegan"));
-  const hasVeganContradiction = warn.some((b) => b.includes("vegan") && (b.includes("whey") || b.includes("dairy")));
-  if (isVegan && !hasVeganContradiction) items.push({ label: "Vegan", value: true });
-  else if (hasVeganContradiction) items.push({ label: "Vegan", value: false });
-
-  if (product.productType === "sunscreen") {
-    const spfVerified = pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")));
-    items.push({ label: "SPF verified", value: spfVerified });
-  }
-
-  return (opts?.ontology ? applyOntologyTicks(items, product) : items).slice(0, 8);
+  return buildAtAGlance(product, { ...opts, includeReefSafe: false });
 }

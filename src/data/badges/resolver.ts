@@ -51,18 +51,35 @@ function deriveFlagLabel(product: ProductScorecard): string | null {
   const cautions      = (product.cautionTags  ?? []).map((c) => c.toLowerCase());
   const warnBadges    = (product.warn_badges   ?? []).map((w) => w.toLowerCase());
   const all           = [...cautions, ...warnBadges];
-  const fragrance     = product.fragranceStatus;
   const alcohol       = product.alcoholStatus;
+  const fragrance = fragranceInciState(product);
 
   if (all.some((c) => c.includes("allergen")))                           return "Allergen risk";
   if (all.some((c) => c.includes("spf not verified") || (c.includes("spf") && c.includes("unverified")))) return "SPF unverified";
   if (alcohol === "contains-drying" || all.some((c) => c.includes("drying alcohol"))) return "Has alcohol";
-  if (fragrance === "synthetic" || fragrance === "both" || all.some((c) => c.includes("contains fragrance"))) return "Has fragrance";
-  if (fragrance === "essential-oil" || all.some((c) => c.includes("essential oil")))  return "Essential oils";
+  if (fragrance === "declared") return "Has fragrance";
+  if (fragrance === "essential-oil") return "Essential oils";
+  if (fragrance === "aromatic-unknown") return "Aromatic extract";
   if (all.some((c) => c.includes("acid active")))                        return "Contains acids";
   if (all.some((c) => c.includes("pregnancy")))                          return "Pregnancy caution";
 
   return null;
+}
+
+type FragranceInciState = "free" | "declared" | "essential-oil" | "aromatic-unknown" | "unknown";
+
+/** Formula-derived status. Claim text never establishes fragrance absence. */
+function fragranceInciState(product: ProductScorecard): FragranceInciState {
+  const complete = product.inciCompleteness?.status === "Full INCI on brand PDP" || product.inciCompleteness?.status === "Full INCI in reference database";
+  if (!complete || product.ingredients.length === 0) return "unknown";
+  const names = product.ingredients.map((ingredient) => ingredient.name.toLowerCase());
+  if (names.some((name) => /\b(?:parfum|perfume|fragrance|aroma)\b/.test(name))) return "declared";
+  if (names.some((name) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(name))) return "essential-oil";
+  const aromatic = names.some((name) =>
+    /\b(?:lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i.test(name)
+      && /\b(?:extract|water|distillate|hydrosol|oil|essence)\b/i.test(name),
+  );
+  return aromatic ? "aromatic-unknown" : "free";
 }
 
 /**
@@ -93,12 +110,8 @@ function matchPassBadge(raw: string): string | null {
   if (s.includes("tcs certified") || s.includes("tcs-certified"))    return "TCS_CERTIFIED";
   if (s.includes("claims verified"))                                  return "CLAIMS_VERIFIED";
   if (s.includes("claims reviewed") || s.includes("claims assessed"))                                  return "CLAIMS_REVIEWED";
-  if (
-    s.includes("spf verified") ||
-    s.includes("spf test report") ||
-    s.includes("published spf") ||
-    s.includes("validated spf")
-  ) return "SPF_VERIFIED";
+  // SPF/dermatologist/non-comedogenic claims need structured TCS evidence;
+  // untrusted free-text pass_badges cannot establish that review.
   if (s.includes("uva verified") || s.includes("uva test"))          return "UVA_VERIFIED";
   if (s.includes("ph verified") || s.includes("ph tested"))          return "PH_VERIFIED";
   if (s.includes("stability reviewed") || s.includes("stability assessed") || s.includes("stability tested")) return "STABILITY_REVIEWED";
@@ -112,13 +125,8 @@ function matchPassBadge(raw: string): string | null {
   if (s.includes("active verified"))                                  return "ACTIVE_VERIFIED";
 
   // Free from
-  if (
-    s.includes("fragrance-free") ||
-    s.includes("fragrance free") ||
-    s.includes("no fragrance") ||
-    s.includes("parfum free")
-  ) return "FRAGRANCE_FREE";
-  if (s.includes("essential oil free") || s.includes("no essential oil")) return "ESSENTIAL_OIL_FREE";
+  // Fragrance-free is formula-derived in resolveBadges, never from this claim text.
+  // Essential-oil absence is also derived from a complete INCI below.
   if (
     s.includes("drying alcohol free") ||
     s.includes("alcohol-free") ||
@@ -131,10 +139,7 @@ function matchPassBadge(raw: string): string | null {
   if (s.includes("retinoid free") || s.includes("retinol free"))     return "RETINOID_FREE";
 
   // Ethics
-  if (s.includes("100% vegan") || s.includes("vegan certified") || s === "vegan") return "VEGAN";
-  // "vegan" as standalone or with qualifier - check it's not part of "non-vegan"
-  if (s.includes("vegan") && !s.includes("non-vegan"))               return "VEGAN";
-  if (s.includes("cruelty-free") || s.includes("cruelty free"))      return "CRUELTY_FREE";
+  // Vegan origin and cruelty-free certification are separate evidence paths.
   if (s.includes("recyclable") || s.includes("recycled pack"))       return "RECYCLABLE_PACK";
   if (s.includes("rspo"))                                             return "RSPO_CLAIMED";
   if (
@@ -249,7 +254,7 @@ function matchSuitabilityTag(tag: string): string | null {
   if (s.includes("sensitive"))                                     return "SENSITIVE_SKIN";
   if (s.includes("acne") || s.includes("acne-prone"))             return "ACNE_PRONE";
   if (s.includes("beginner"))                                      return "BEGINNER_FRIENDLY";
-  if (s.includes("pregnan") || s.includes("expectant"))           return "PREGNANCY_REVIEWED";
+  // Pregnancy screening is added from the source-backed structured screen below.
   if (s.includes("baby") || s.includes("infant"))                 return "BABY_REVIEWED";
   if (s.includes("teen"))                                          return "TEEN_REVIEWED";
 
@@ -291,16 +296,18 @@ export function resolveBadges(product: ProductScorecard): BadgeDefinition[] {
   else if (product.certificationStatus === "under-review") ids.add("UNDER_REVIEW");
 
   // 2. Fragrance + alcohol status (structured)
-  if (product.fragranceStatus === "free") {
+  const fragranceState = fragranceInciState(product);
+  if (fragranceState === "free") {
     ids.add("FRAGRANCE_FREE");
-  } else if (
-    product.fragranceStatus === "synthetic" ||
-    product.fragranceStatus === "both"
-  ) {
+    ids.add("ESSENTIAL_OIL_FREE");
+  } else if (fragranceState === "declared") {
     ids.add("CONTAINS_FRAGRANCE");
-  } else if (product.fragranceStatus === "essential-oil") {
+  } else if (fragranceState === "essential-oil") {
     ids.add("ESSENTIAL_OIL_FLAG");
   }
+
+  if (product.pregnancyScreen?.status === "screened") ids.add("PREGNANCY_REVIEWED");
+  if (product.veganScreen?.status === "screened") ids.add("VEGAN");
 
   if (product.alcoholStatus === "free") {
     ids.add("DRYING_ALCOHOL_FREE");
@@ -329,7 +336,7 @@ export function resolveBadges(product: ProductScorecard): BadgeDefinition[] {
   // 6. pass_badges (free text)
   for (const badge of product.pass_badges ?? []) {
     const id = matchPassBadge(badge);
-    if (id) ids.add(id);
+    if (id && !["FRAGRANCE_FREE", "ESSENTIAL_OIL_FREE", "SPF_VERIFIED", "VEGAN", "CRUELTY_FREE", "PREGNANCY_REVIEWED"].includes(id)) ids.add(id);
   }
 
   // 7. warn_badges (free text)
