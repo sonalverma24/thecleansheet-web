@@ -514,6 +514,23 @@ export function gapsOf(d: Decision, product: ProductScorecard, review: ProductRe
 
 /* ── block 12: how to use ────────────────────────────────────── */
 
+/**
+ * "Who should be careful" is a TCS product-fit summary, not a channel for
+ * replaying a model-written pregnancy note or another publisher's caution label.
+ * Pregnancy and teen context is rendered from the structured TCS ingredient
+ * screen in the highlight and FAQ, where its flags, exposure and unknowns are explicit.
+ */
+const MEDICAL_AUDIENCE_NOTE_RE = /\b(?:pregnan(?:cy|t)|breast[\s-]?feed(?:ing)?|lactat(?:e|ed|ing|ion)|teen(?:s|ager)?|adolescen(?:t|ts|ce)|infants?|children?|minors?)\b/i;
+const THIRD_PARTY_ATTRIBUTION_RE = /\b(?:according to|as (?:reported|stated|noted|flagged|reviewed) by|(?:review(?:er)?|site|website|report|publisher)\s+(?:flags?|notes?|states?|says?|warns?|advises?)|[a-z0-9-]+\.(?:com|org|net|in)\b|dermatocare|incidecoder|nykaa|(?:pregnancy|teens)caution)\b/i;
+
+function fitCautionsOf(review: ProductReview): string[] {
+  return (review.consumerSuitability?.avoidIf ?? [])
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0 && !MEDICAL_AUDIENCE_NOTE_RE.test(item) && !THIRD_PARTY_ATTRIBUTION_RE.test(item))
+    .slice(0, 4);
+}
+
 function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
   const c = review.consumerSuitability;
   const pick = (t: string | undefined) => (t && t.trim().length > 3 ? t.trim() : null);
@@ -576,7 +593,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     highlights: highlightsOf(product, inci, preg),
     fit: {
       suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
-      careful: [...(review.consumerSuitability?.avoidIf ?? []), ...(review.consumerSuitability?.pregnancyOrTeenNote ? [review.consumerSuitability.pregnancyOrTeenNote] : [])].filter(Boolean),
+      careful: fitCautionsOf(review),
       india: product.indiaContext,
       price: priceLineOf(review),
     },
