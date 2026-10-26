@@ -14,7 +14,8 @@ import { ingredientSafety, lookupIngredient, rowLooksValid } from "@/lib/ingredi
 import { enrichIngredients, keyActivesFrom } from "@/lib/inci-enrich";
 import { globalScreenFor } from "@/lib/global-screen";
 import { analysisWording } from "@/lib/analysis-wording";
-import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyScreen, VeganScreen } from "@/data/brands/types";
+import { RETINOID_RE } from "@/lib/pregnancy-screen";
+import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyIngredientFlag, PregnancyScreen, VeganScreen } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
@@ -68,13 +69,26 @@ function buildPregnancyScreen(review: ProductReview, ingredients: string[]): Pre
     const safety = ingredientSafety(ingredient);
     const confidence = safety.confidence.toLowerCase();
     const sourced = safety.valid && !!safety.source && (confidence === "high" || confidence === "medium");
-    if (!sourced) { unknownIngredients.push(ingredient); continue; }
-    const restriction = safety.pregnancyRestriction;
-    if (restriction && !/^(?:no|none|not)\b/i.test(restriction)) {
+    const restriction = sourced ? safety.pregnancyRestriction : null;
+    if (sourced && restriction && !/^(?:no|none|not)\b/i.test(restriction)) {
       flags.push({ ingredient, restriction, source: safety.source, confidence: confidence as "high" | "medium" });
+      continue;
     }
+    const retinoid = retinoidFlag(ingredient);
+    if (retinoid) { flags.push(retinoid); continue; }
+    if (!sourced) unknownIngredients.push(ingredient);
   }
   return { status: "screened", exposure, sourceUrl: evidence.sourceUrl || undefined, flags, unknownIngredients };
+}
+
+/** The database holds no row for plain Retinol (or the acid and aldehyde forms), so without this a retinol serum would read "not checked" and show no flag.
+    A retinoid is flagged on the vitamin A row's own source and confidence; if that row is ever missing or unsourced, nothing is flagged on its authority. */
+function retinoidFlag(ingredient: string): PregnancyIngredientFlag | null {
+  if (!RETINOID_RE.test(ingredient.replace(/\([^)]*\)/g, " "))) return null;
+  const vitaminA = ingredientSafety("Retinyl Palmitate");
+  const confidence = vitaminA.confidence.toLowerCase();
+  if (!vitaminA.valid || !vitaminA.source || (confidence !== "high" && confidence !== "medium")) return null;
+  return { ingredient, restriction: "A retinoid; generally advised against during pregnancy.", source: vitaminA.source, confidence: confidence as "high" | "medium" };
 }
 
 function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {

@@ -20,7 +20,7 @@ const NO_RESTRICTION_RE = /^no specific restriction/i;
 /** The retinoids the decision core's retinoid note names (src/lib/analyser-x/rules.ts), plus their acid and ester forms. The database holds no row for plain
     "Retinol", so without this a retinol serum would read as not checked and the pregnancy chip would vanish from the product that most needs it. Brackets are
     dropped first, so "Bakuchiol (a retinol alternative)" is not caught. */
-const RETINOID_RE = /\b(retinol|retinal|retinaldehyde|retinyl|retinoic|retinoate|tretinoin|isotretinoin|adapalene|tazarotene)\b/i;
+export const RETINOID_RE = /\b(retinol|retinal|retinaldehyde|retinyl|retinoic|retinoate|tretinoin|isotretinoin|adapalene|tazarotene)\b/i;
 
 export interface PregnancyScreen {
   /** clear: every ingredient resolved and none cautioned. caution: at least one is cautioned. unknown: nothing cautioned, but some ingredient could not be checked
