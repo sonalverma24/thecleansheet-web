@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · build the rule context from the fact store
+   Analyser Version X1 · build the rule context from the fact store
 
    Chooses the ingredient list to judge (the highest-trust sane list), decides whether
    it is reliable, and gathers the other facts the rules read. All judgement about
