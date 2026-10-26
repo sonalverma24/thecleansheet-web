@@ -254,7 +254,7 @@ function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight {
     return { label: "Pregnancy ingredient screen incomplete", state: "unknown", detail: `This ingredient screen is incomplete; it is not a product safety assessment. ${exposure}${unknown} Ask a healthcare professional about individual use.` };
   }
   if (p.flags.length) {
-    const flags = p.flags.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source}.`).join(" ");
+    const flags = p.flags.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source} (confidence: ${f.confidence}).`).join(" ");
     const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
     return { label: `Pregnancy ingredient flag${p.flags.length === 1 ? "" : "s"}: ${joinAnd(p.flags.map((f) => f.ingredient))}`, state: "no", detail: `${flags} ${exposure}${unknown} This is an ingredient screen, not a product safety conclusion.` };
   }
@@ -297,7 +297,7 @@ function veganOriginHighlight(product: ProductScorecard): Highlight | null {
   return { label, state, ...(detail ? { detail } : {}) };
 }
 
-export function highlightsOf(review: ProductReview, product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
+export function highlightsOf(product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
   const have = FULL_INCI_STATUSES.has(product.inciCompleteness?.status ?? "") && inci.length > 0;
   const named = (re: RegExp) => inci.some((i) => re.test(i.trim()));
   const fragranceState = !have ? "unknown" : named(FRAGRANCE_RE) || named(ESSENTIAL_OIL_RE) ? "no"
@@ -570,7 +570,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     take: takeOf(d, review, product, inci, now),
     buyLinks: buyLinksOf(review, product),
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),
-    highlights: highlightsOf(review, product, inci, preg),
+    highlights: highlightsOf(product, inci, preg),
     fit: {
       suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
       careful: [...(review.consumerSuitability?.avoidIf ?? []), ...(review.consumerSuitability?.pregnancyOrTeenNote ? [review.consumerSuitability.pregnancyOrTeenNote] : [])].filter(Boolean),
