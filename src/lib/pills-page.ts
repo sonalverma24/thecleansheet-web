@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ · The product page, as one model
+   THE CLEAN SHEET™ · Version X1 product page model
 
    Turns a stored review, its scorecard and the buying decision into the 13 blocks of the pills page, in the order the page
    shows them:
@@ -26,7 +26,7 @@ import { reviewInciList } from "@/lib/review-inci";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import {
-  AUTHORITIES, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
+  ANALYSER_RELEASE, AUTHORITIES, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
 } from "@/lib/analyser-x";
 
@@ -47,6 +47,8 @@ export interface DetailRow { n: string; title: string; oneLiner: string; rating:
 export interface StandingView { label: string; tone: PillTone; medicine: boolean }
 
 export interface PillsPageModel {
+  /** The analyser release that produced this page model. */
+  release: typeof ANALYSER_RELEASE;
   /** "pills": the pill and its confidence are the decision core's. "standing": the take card shows today's standing and no confidence (ANALYSER_NEW_LAYOUT). */
   mode: "pills" | "standing";
   decision: { key: DecisionKey; label: string; meaning: string; confidence: Decision["confidence"]; gapKind?: Decision["gapKind"]; reasons: { ruleId: string; kind: string; text: string }[] };
@@ -564,6 +566,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const preg = product.pregnancyScreen;
   const panel = benchmarkPanel(d);
   const base: Omit<PillsPageModel, "faq"> = {
+    release: ANALYSER_RELEASE,
     mode: standing ? "standing" : "pills",
     decision: { key: d.key, label: d.label, meaning: d.meaning, confidence: d.confidence, ...(d.gapKind ? { gapKind: d.gapKind } : {}), reasons: d.reasons.map((r) => ({ ruleId: r.ruleId, kind: r.kind, text: r.text })) },
     pill: standing ? { key: d.key, label: standing.label, tone: standing.tone, marker: MARKER_OF_PILL[standing.tone] } : { key: d.key, label: d.label, tone: TONE[d.key], marker: MARKER_OF_PILL[TONE[d.key]] },
