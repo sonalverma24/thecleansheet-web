@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the fact store
+   Analyser Version X1 · the fact store
 
    Facts are append-only and carry their provenance. Two sources that disagree are
    a CONFLICT, never a winner: the store records both and lets the rules decide what
