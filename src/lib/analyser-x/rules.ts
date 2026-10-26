@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the rule registry
+   Analyser Version X1 · the rule registry
 
    One table of named rules. Each rule reads the context and returns findings; each
    finding names the rule, says whether it rests on code or on a model's judgement,
