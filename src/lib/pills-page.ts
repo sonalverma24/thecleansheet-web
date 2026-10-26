@@ -239,11 +239,11 @@ export function buyLinksOf(review: ProductReview, product: ProductScorecard): Bu
 
 const MINERAL_FILTER_RE = /^(zinc oxide|titanium dioxide)$/i;
 const CHEMICAL_FILTER_RE = /avobenzone|butyl methoxydibenzoylmethane|octocrylene|homosalate|octisalate|ethylhexyl salicylate|ethylhexyl methoxycinnamate|octinoxate|oxybenzone|benzophenone-3|tinosorb|bis-ethylhexyloxyphenol|methylene bis-benzotriazolyl|uvinul|diethylamino hydroxybenzoyl|ethylhexyl triazone|drometrizole|terephthalylidene|phenylbenzimidazole sulfonic/i;
-const FRAGRANCE_RE = /\\b(parfum|perfume|fragrance|aroma)\\b/i;
-const ESSENTIAL_OIL_RE = /\\bessential\\s+oil\\b|\\b(lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\\b.{0,35}\\boil\\b/i;
-const AROMATIC_EXTRACT_RE = /\\b(lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\\b/i;
-const AROMATIC_FORM_RE = /\\b(extract|water|distillate|hydrosol|oil|essence)\\b/i;
-const DRYING_ALCOHOL_RE = /^alcohol( denat\\.?)?$|^sd alcohol/i;
+const FRAGRANCE_RE = /\b(parfum|perfume|fragrance|aroma)\b/i;
+const ESSENTIAL_OIL_RE = /\bessential\s+oil\b|\b(lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i;
+const AROMATIC_EXTRACT_RE = /\b(lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i;
+const AROMATIC_FORM_RE = /\b(extract|water|distillate|hydrosol|oil|essence)\b/i;
+const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
 const FULL_INCI_STATUSES = new Set(["Full INCI on brand PDP", "Full INCI in reference database"]);
 
 /** Pregnancy flags describe ingredients and recorded exposure context. No flags found is not a product safety clearance. */
@@ -264,10 +264,10 @@ function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight {
 
 function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
   const categories = [
-    { label: "SPF", pattern: /\\bspf\\b/i },
+    { label: "SPF", pattern: /\bspf\b/i },
     { label: "Dermatologist-tested", pattern: /dermatolog(?:ist|ically)[ -]tested/i },
     { label: "Non-comedogenic", pattern: /non[- ]?comedogenic/i },
-    { label: "Vegan claim", pattern: /\\bvegan\\b/i },
+    { label: "Vegan claim", pattern: /\bvegan\b/i },
     { label: "Cruelty-free claim", pattern: /cruelty[- ]?free/i },
   ];
   const checks = product.claimsCheck ?? [];
@@ -525,7 +525,7 @@ function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: P
   const name = product.productName;
   const out: PillsPageModel["faq"] = [];
   const frag = m.highlights.find((h) => h.label === "Fragrance free");
-  if (frag && frag.state !== "unknown") out.push({ q: `Is ${name} fragrance free?`, a: frag.state === "yes" ? "Yes. There is no fragrance or parfum in the ingredient list we read." : "No. The ingredient list includes fragrance (parfum), a common contact allergen." });
+  if (frag && frag.state !== "unknown") out.push({ q: `Is ${name} fragrance free?`, a: frag.state === "yes" ? "The complete ingredient list we reviewed contains no explicit fragrance declaration or essential oil." : "The complete ingredient list names an explicit fragrance declaration or essential oil." });
   const pregExposure = preg?.exposure ?? "unknown";
   const pregAnswer = !preg || preg.status !== "screened"
     ? `The ingredient screen is incomplete; unknown ingredients remain. Exposure category: ${pregExposure}. This is not a product safety conclusion. Ask a healthcare professional.`
