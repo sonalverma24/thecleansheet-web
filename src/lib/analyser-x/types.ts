@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · shared types
+   Analyser Version X1 · shared types
 
    The artifacts of the neurosymbolic loop, in the order they are made:
 
