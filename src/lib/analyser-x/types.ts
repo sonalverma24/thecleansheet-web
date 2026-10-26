@@ -274,6 +274,8 @@ export interface DecisionReason {
   evidence?: { ingredient?: string; claim?: string; source?: string; capturedAt?: string };
 }
 
+import { ANALYSER_METHOD_VERSION } from "./version";
+
 export interface Decision {
   key: DecisionKey;
   label: string;
@@ -293,5 +295,5 @@ export interface Decision {
     /** The global benchmark: each authority's result for the declared ingredients. Null when not computed. */
     benchmark: Record<Authority, BenchmarkSummary> | null;
   };
-  version: "TCS-X 1.0";
+  version: typeof ANALYSER_METHOD_VERSION;
 }
