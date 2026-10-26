@@ -531,7 +531,7 @@ function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: P
     ? `The ingredient screen is incomplete; unknown ingredients remain. Exposure category: ${pregExposure}. This is not a product safety conclusion. Ask a healthcare professional.`
     : preg.flags.length
       ? `Ingredient-level flags from our reference data: ${preg.flags.map((f) => `${f.ingredient}: ${f.restriction} (source: ${f.source})`).join("; ")}. Exposure category: ${pregExposure}. This is not a product safety conclusion. Ask a healthcare professional.`
-      : `No sourced pregnancy flags were found for the ingredients screened. This is not proof that the product is safe during pregnancy. Exposure category: ${pregExposure}.${preg.unknownIngredients.length ? ` Ingredients not resolved: ${joinAnd(preg.unknownIngredients)}.` : ""} Ask a healthcare professional.`
+      : `No sourced pregnancy flags were found for the ingredients screened. This is not proof that the product is safe during pregnancy. Exposure category: ${pregExposure}.${preg.unknownIngredients.length ? ` Ingredients not resolved: ${joinAnd(preg.unknownIngredients)}.` : ""} Ask a healthcare professional.`;
   if (!medicine) out.push({ q: "Can I use it during pregnancy?", a: pregAnswer });
   const india = m.regulatoryCheck.panel?.authorities.find((a) => a.id === "IN");
   if (india) out.push({ q: "Is it allowed in India?", a: india.result === "Meets" ? "We found no ingredient in the list we read that is prohibited or over a stated limit under India's Cosmetics Rules 2020." : india.detail });
