@@ -13,6 +13,8 @@
    Decision except through the verifier and the rules.
 ──────────────────────────────────────────────────────────────── */
 
+import { ANALYSER_METHOD_VERSION } from "./version";
+
 /** How reliably the source text was captured: 1 model transcription, 2 retailer,
     3 reference database, 4 brand page, 5 a label photograph published online and read legibly (never a physical
     sample: a public review works only from what is published). 0 means no source. */
@@ -273,8 +275,6 @@ export interface DecisionReason {
   text: string;
   evidence?: { ingredient?: string; claim?: string; source?: string; capturedAt?: string };
 }
-
-import { ANALYSER_METHOD_VERSION } from "./version";
 
 export interface Decision {
   key: DecisionKey;
