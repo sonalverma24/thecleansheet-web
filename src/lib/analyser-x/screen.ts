@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the safety and compliance screen, as facts
+   Analyser Version X1 · the safety and compliance screen, as facts
 
    Calls the existing deterministic engines (runAnalysis, pillarStanding, the
    ingredient database) and reduces them to the values the rules read. It is the

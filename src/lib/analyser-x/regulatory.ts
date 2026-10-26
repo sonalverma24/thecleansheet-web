@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the regulatory benchmark
+   Analyser Version X1 · the regulatory benchmark
 
    "Is this product up to the standards of the EU, Australia, and the other major markets?"
    For every declared ingredient and every authority, the existing ingredient database says

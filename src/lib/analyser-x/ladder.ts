@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · evidence ladder and residual risk, in code
+   Analyser Version X1 · evidence ladder and residual risk, in code
 
    In v3.0 the model assigns each claim's evidence level and risk level. In vX
    the model only READS an evidence document into a structured record, with

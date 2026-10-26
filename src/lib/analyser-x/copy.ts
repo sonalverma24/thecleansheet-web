@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the copy engine
+   Analyser Version X1 · the copy engine
 
    Every sentence that states or explains an outcome is built here, from a rule id and
    fixed parameters. No model text appears in a reason. Templates use British spelling
