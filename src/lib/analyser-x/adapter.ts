@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the v3.0 adapter (strangler)
+   Analyser Version X1 · the v3.0 adapter (strangler)
 
    Turns a stored v3.0 ProductReview into facts, so the new decision can run over
    every existing analysis without calling a model. This is the shadow-mode path:
