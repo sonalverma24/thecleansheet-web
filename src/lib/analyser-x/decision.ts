@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the decision
+   Analyser Version X1 · the decision
 
    Precedence is fixed:  Medicinal  >  Look elsewhere  >  Not enough info
                          >  Buy with caution  >  Good choice.
@@ -15,6 +15,7 @@ import { MIN_SCREEN_COVERAGE } from "./kb";
 import { AUTHORITIES } from "./regulatory";
 import { PILLS, render } from "./copy";
 import type { BenchmarkValue, Decision, DecisionKey, DecisionReason, Finding, RuleContext } from "./types";
+import { ANALYSER_METHOD_VERSION } from "./version";
 
 /** Convert list-dependent findings into gaps when the list is not reliable. Pure. */
 export function settle(findings: Finding[], ctx: RuleContext): Finding[] {
@@ -144,7 +145,7 @@ export function decide(ctx: RuleContext): DecideOutput {
       analysedAt: ctx.profile.analysedAt,
       benchmark: ctx.benchmark ? summarise(ctx.benchmark) : null,
     },
-    version: "TCS-X 1.0",
+    version: ANALYSER_METHOD_VERSION,
   };
   return { decision, findings, settled };
 }
