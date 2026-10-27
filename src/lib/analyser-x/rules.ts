@@ -12,8 +12,9 @@
 
 import { ambitionOf, residualRisk, type Residual } from "./ladder";
 import { claimFlags } from "./claimflags";
-import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, RX_TEXT_RE, SPF_MINIMUM, STALE_DAYS } from "./kb";
+import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
+import { drugNoticeOf } from "@/lib/drug-signals";
 import type { ClaimValue, Finding, Rule, RuleContext, Severity } from "./types";
 
 const DAY_MS = 86_400_000;
@@ -92,7 +93,7 @@ const medicinal: Rule[] = [
   }),
   rule({
     id: "med.rx_text", severity: "medicinal", origin: "code", stratum: 10,
-    evaluate: (ctx, self) => (ctx.signals.rxText || RX_TEXT_RE.test(ctx.profile.name) ? [mk(self, {}, [])] : []),
+    evaluate: (ctx, self) => (ctx.signals.rxText || drugNoticeOf({ productName: ctx.profile.name })?.kind === "prescription-drug" ? [mk(self, {}, [])] : []),
   }),
   rule({
     // The only route that supports the word "licensed": an official register lists THIS product (matched by code).

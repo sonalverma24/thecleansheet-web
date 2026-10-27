@@ -125,7 +125,7 @@ function isIngredientClaim(t: string): boolean {
    the review "not assessed as a cosmetic" rather than condemning it for claims it
    is actually licensed to make. Salicylic acid, niacinamide, zinc pyrithione,
    piroctone olamine, climbazole and the like are cosmetic actives and are NOT on
-   this list. */
+   this list. No entry is concentration-gated today; `minConcentration` is kept for the day one is. */
 const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: number }[] = [
   { re: /ketoconazole/i, name: "Ketoconazole" },
   { re: /\bminoxidil\b/i, name: "Minoxidil" },
@@ -141,13 +141,9 @@ const LICENSED_DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: numb
   { re: /\bterbinafine\b/i, name: "Terbinafine" },
   { re: /\bfluconazole\b/i, name: "Fluconazole" },
   { re: /\bpermethrin\b/i, name: "Permethrin" },
-  // Azelaic acid is dual-use: at ~10% and below it is a widely sold cosmetic
-  // brightening/exfoliating serum active (Minimalist, Dot & Key, The Ordinary -
-  // see the Hyphen/Foxtale entries where it sits undisclosed/low-dose as a
-  // supporting active). At 15%+ it is the clinically studied prescription
-  // strength sold in India as a Schedule-H drug (Finacea 15%, Aziderm/Azelex
-  // 20%). Gate on concentration so it isn't a blanket drug flag.
-  { re: /azelaic\s+acid/i, name: "Azelaic acid", minConcentration: 15 },
+  // Azelaic acid is not here, at any strength: it is dual-use, and a product is a prescription
+  // drug only when it says so itself (a prescription notice, src/lib/drug-signals.ts), never
+  // because of an ingredient and a percentage.
 ];
 
 /** Best-effort concentration (%) for a given active, read from the product

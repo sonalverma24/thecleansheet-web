@@ -5,8 +5,9 @@
    table is a rule change: it needs a preview and a sign-off, like any other.
 ──────────────────────────────────────────────────────────────── */
 
-/** Mirrors LICENSED_DRUG_ACTIVES in src/lib/product-review-engine.ts (14 named actives plus azelaic acid at
-    15% or more). Export that constant from the engine and import it here so there is one list. */
+/** Mirrors LICENSED_DRUG_ACTIVES in src/lib/product-review-engine.ts (14 named actives). Export that constant from the engine and import it here so there is
+    one list. Azelaic acid is not on it at any strength: a product is a prescription drug only when it says so (src/lib/drug-signals.ts). No entry is
+    concentration-gated today; `minConcentration` is kept for the day one is. */
 export const DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: number }[] = [
   { re: /ketoconazole/i, name: "Ketoconazole" },
   { re: /\bminoxidil\b/i, name: "Minoxidil" },
@@ -22,11 +23,10 @@ export const DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: number
   { re: /\bterbinafine\b/i, name: "Terbinafine" },
   { re: /\bfluconazole\b/i, name: "Fluconazole" },
   { re: /\bpermethrin\b/i, name: "Permethrin" },
-  { re: /azelaic\s+acid/i, name: "Azelaic acid", minConcentration: 15 },
 ];
 
-/** Wording that marks a product as a prescription medicine. Read from the product name and page text. */
-export const RX_TEXT_RE = /\bprescription\b|\brx\s+only\b|\bschedule\s+(?:h1?|x)\b|\bon\s+the\s+advice\s+of\s+a\s+registered\s+medical\s+practitioner\b/i;
+/* What marks a product as a prescription medicine lives in src/lib/drug-signals.ts: a prescription notice (Rx, Prescription Required, Rx only, Schedule H), as a whole phrase and
+   not negated. It replaces the loose RX_TEXT_RE that matched the bare word "prescription", which took "Prescription Strength Moisturizer" for a medicine. */
 
 /** Manufacturers licensed to make drugs only, never cosmetics. A product page or label that names one as its maker marks the product as a drug (src/lib/drug-signals.ts).
     OWNER-SIGNED, LIKE EVERY TABLE HERE: an entry counts only with `reviewed: true` and a `source` that shows the maker holds a drug licence and no cosmetic one (a licensing
