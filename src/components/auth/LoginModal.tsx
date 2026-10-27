@@ -24,14 +24,16 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [subscribe, setSubscribe] = useState(false);
 
   // Build the redirect URL that the auth callback will forward to
   const redirectTo = useCallback(() => {
     const base = typeof window !== "undefined" ? window.location.origin : "";
     const next = returnPath ?? "/";
     const openReview = openReviewOnReturn ? "&openReview=true" : "";
-    return `${base}/auth/callback?next=${encodeURIComponent(next)}${openReview}`;
-  }, [returnPath, openReviewOnReturn]);
+    const sub = subscribe ? "&subscribe=true" : "";
+    return `${base}/auth/callback?next=${encodeURIComponent(next)}${openReview}${sub}`;
+  }, [returnPath, openReviewOnReturn, subscribe]);
 
   // Close on Escape
   useEffect(() => {
@@ -137,6 +139,8 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
               {screen === "options" && (
                 <OptionsScreen
                   onGoogle={handleGoogle}
+                  subscribe={subscribe}
+                  onSubscribeChange={setSubscribe}
                   onEmailLogin={() => setScreen("email_login")}
                   onEmailSignup={() => setScreen("email_signup")}
                   loading={loading}
@@ -150,6 +154,8 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
                   onEmailChange={setEmail}
                   onSubmit={handleEmailSubmit}
                   onBack={() => setScreen("options")}
+                  subscribe={subscribe}
+                  onSubscribeChange={setSubscribe}
                   loading={loading}
                 />
               )}
@@ -165,17 +171,35 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
 
 function OptionsScreen({
   onGoogle,
+  subscribe,
+  onSubscribeChange,
   onEmailLogin,
   onEmailSignup,
   loading,
 }: {
   onGoogle: () => void;
+  subscribe: boolean;
+  onSubscribeChange: (v: boolean) => void;
   onEmailLogin: () => void;
   onEmailSignup: () => void;
   loading: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3" style={{ fontFamily: "var(--font-sans)" }}>
+      {/* Newsletter opt-in (applies to Google sign-in) */}
+      <label className="flex items-start gap-2.5 cursor-pointer mb-1">
+        <input
+          type="checkbox"
+          checked={subscribe}
+          onChange={(e) => onSubscribeChange(e.target.checked)}
+          className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#248179]"
+        />
+        <span className="text-[13px] leading-snug text-[#282828]">
+          I agree to subscribe to The Clean Sheet newsletter.{" "}
+          <span className="text-[#b0a8a4]">Unsubscribe anytime.</span>
+        </span>
+      </label>
+
       {/* Google button */}
       <button
         onClick={onGoogle}
@@ -222,6 +246,8 @@ function EmailScreen({
   onEmailChange,
   onSubmit,
   onBack,
+  subscribe,
+  onSubscribeChange,
   loading,
 }: {
   mode: "login" | "signup";
@@ -229,6 +255,8 @@ function EmailScreen({
   onEmailChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onBack: () => void;
+  subscribe: boolean;
+  onSubscribeChange: (v: boolean) => void;
   loading: boolean;
 }) {
   return (
@@ -251,6 +279,19 @@ function EmailScreen({
           className="w-full px-4 py-3 rounded-xl border border-[#b0a8a4]/40 text-sm text-[#282828] placeholder-[#b0a8a4] focus:outline-none focus:border-[#248179] focus:ring-1 focus:ring-[#248179] transition-colors"
         />
       </div>
+
+      <label className="flex items-start gap-2.5 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={subscribe}
+          onChange={(e) => onSubscribeChange(e.target.checked)}
+          className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-[#248179]"
+        />
+        <span className="text-[13px] leading-snug text-[#282828]">
+          I agree to subscribe to The Clean Sheet newsletter.{" "}
+          <span className="text-[#b0a8a4]">Unsubscribe anytime.</span>
+        </span>
+      </label>
 
       <button
         type="submit"
