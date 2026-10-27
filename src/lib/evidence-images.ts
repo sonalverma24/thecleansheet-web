@@ -8,6 +8,9 @@
    model TRANSCRIBE any that are test reports / certificates (verbatim numbers
    only, no inference). The result is fed to the review as BRAND-PUBLISHED
    EVIDENCE alongside the linked-document block.
+
+   The same downloaded graphics are read a second time, with their own prompt, for label artwork that says the product is a DRUG (a "Drug Facts" panel, an Rx or
+   Schedule H notice). That text is handed back through `out.labelText`; see src/lib/drug-signals.ts for what is made of it.
 ──────────────────────────────────────────────────────────────── */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -124,12 +127,33 @@ Caveats: <anything printed such as "results apply only to the test article", or 
 
 Rules: transcribe ONLY what is legible. Never infer, round, or fill in a value you cannot read; write "illegible" instead. Do not judge the product.`;
 
-async function transcribeBatch(key: string, imgs: { url: string; mimeType: string; data: string }[]): Promise<string> {
+const LABEL_PROMPT = `You are reading product pack and label artwork from a skincare, haircare or personal-care product page. For EACH image (in order) decide whether it shows printed text saying the product is a DRUG: a "Drug Facts" panel, an "Rx" or "Rx only" or "prescription only" notice, or a "Schedule H" or "Schedule H1" warning.
+
+For each image output exactly one block, separated by a line of ---:
+IMAGE <n>: DRUG_LABEL
+Text: <the words that say so, exactly as printed>
+or
+IMAGE <n>: NONE
+
+Rules: transcribe ONLY what is legible. Never infer. A cosmetic's ordinary directions, "for external use only", warnings and ingredient list are NONE. Do not judge the product.`;
+
+/** The words printed on each image the model marked DRUG_LABEL, one per line. Anything else it wrote is ignored. */
+export function parseLabelNotices(text: string): string[] {
+  const out: string[] = [];
+  for (const block of text.split(/\n-{3,}\n?/)) {
+    if (!/IMAGE\s+\d+:\s*DRUG_LABEL/i.test(block)) continue;
+    const printed = block.match(/Text:\s*([\s\S]+)/i)?.[1]?.trim().slice(0, 300);
+    if (printed) out.push(printed);
+  }
+  return out;
+}
+
+async function transcribeBatch(key: string, imgs: { url: string; mimeType: string; data: string }[], prompt: string = VISION_PROMPT): Promise<string> {
   const model = new GoogleGenerativeAI(key).getGenerativeModel({
     model: "gemini-2.5-flash",
     generationConfig: { temperature: 0 },
   });
-  const parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [{ text: VISION_PROMPT }];
+  const parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [{ text: prompt }];
   imgs.forEach((im, i) => {
     parts.push({ text: `IMAGE ${i + 1} (${im.url}):` });
     parts.push({ inlineData: { mimeType: im.mimeType, data: im.data } });
@@ -147,7 +171,7 @@ async function transcribeBatch(key: string, imgs: { url: string; mimeType: strin
 
 /** Read the page's graphics and return a BRAND-PUBLISHED EVIDENCE sub-block of
     transcribed test reports, or "" when none are found / no key / any failure. */
-export async function imageEvidenceBlock(pageUrl: string): Promise<string> {
+export async function imageEvidenceBlock(pageUrl: string, out?: { labelText?: string }): Promise<string> {
   const key = process.env.GOOGLE_AI_API_KEY;
   if (!key) return "";
   const [raw, rendered] = await Promise.all([fetchHtml(pageUrl), fetchRenderedHtml(pageUrl)]);
@@ -157,6 +181,13 @@ export async function imageEvidenceBlock(pageUrl: string): Promise<string> {
   if (!urls.length) return "";
   const loaded = (await Promise.all(urls.map(async (u) => { const i = await fetchImage(u); return i ? { url: u, ...i } : null; })))
     .filter((x): x is { url: string; mimeType: string; data: string } => x !== null);
+  // Label artwork that says "drug": read once per analysis (the caller may come back for a retry), best-effort like the rest.
+  if (out && out.labelText === undefined) {
+    const batches: (typeof loaded)[] = [];
+    for (let i = 0; i < loaded.length; i += BATCH) batches.push(loaded.slice(i, i + BATCH));
+    const read = await Promise.all(batches.map(async (batch) => parseLabelNotices(await transcribeBatch(key, batch, LABEL_PROMPT))));
+    out.labelText = read.flat().join("\n");
+  }
   const reports: string[] = [];
   for (let i = 0; i < loaded.length; i += BATCH) {
     const batch = loaded.slice(i, i + BATCH);

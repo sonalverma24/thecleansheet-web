@@ -8,10 +8,11 @@ import { track } from "@/lib/analytics";
 /* ────────────────────────────────────────────────────────────────
    THE CLEAN SHEET™ · The notice for a product we do not rate
 
-   A nutraceutical or a prescription drug gets no review and no rating. Where its review would be (the product's own page, or the search box that just analysed
+   A nutraceutical or a drug gets no review and no rating. Where its review would be (the product's own page, or the search box that just analysed
    it) this notice is shown instead, as a popup:
      nutraceutical     "We can't rate nutraceuticals yet", with an email box: we write when we can.
      prescription-drug "This is a prescription drug", and nothing to sign up for: we do not plan to rate those.
+     drug              "This is a drug, not a cosmetic" (a Drug Facts label, or a drug-only maker), and nothing to sign up for.
 
    mode "popup": a dialog until it is closed.  mode "page": a dialog that opens with the page, and when it is closed leaves the same words in the page, so a closed
    popup does not leave an empty page behind.
@@ -29,6 +30,11 @@ export const UNRATED_COPY: Record<UnratedKind, { title: string; body: (name: str
   "prescription-drug": {
     title: "This is a prescription drug",
     body: (name) => `${name} is a prescription medicine, not a cosmetic, so we don't rate it. Use it only as your doctor has prescribed, and ask your doctor or pharmacist if you have questions about it.`,
+  },
+  // A "Drug Facts" label, or a maker that only makes drugs: a drug, but not necessarily one that needs a prescription, so the words do not say so.
+  drug: {
+    title: "This is a drug, not a cosmetic",
+    body: (name) => `${name} is sold as a drug, not a cosmetic, so we don't rate it. Ask your doctor or pharmacist if you have questions about using it.`,
   },
 };
 

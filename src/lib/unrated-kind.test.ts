@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ALL_BRANDS } from "@/data/brands";
-import { isRated, unratedKindOf } from "./unrated-kind";
+import { isRated, unratedInputOf, unratedKindOf } from "./unrated-kind";
 
-const kind = (productName: string, category = "", inci: string[] = []) => unratedKindOf({ productName, category, inci });
+const kind = (productName: string, category = "") => unratedKindOf({ productName, category });
 
 describe("a nutraceutical", () => {
   it("is named by its category: the model's own 'Oral Supplement / Beauty Drink Mix'", () => {
@@ -44,33 +44,55 @@ describe("cosmetics that look like nutraceuticals stay rated", () => {
   });
 });
 
-describe("a prescription drug", () => {
-  it("is named by explicit prescription wording", () => {
+describe("a prescription drug is one that says so", () => {
+  it("is named by an Rx or prescription notice in its name or category", () => {
     expect(kind("Tretinoin Cream 0.025% (Rx only)", "Topical")).toBe("prescription-drug");
-    expect(kind("Clindamycin Gel", "Prescription acne treatment")).toBe("prescription-drug");
+    expect(kind("Clindamycin Gel", "Prescription medicine")).toBe("prescription-drug");
     expect(kind("Some Gel Schedule H1 drug", "")).toBe("prescription-drug");
+    expect(kind("Aziderm Rx Cream", "")).toBe("prescription-drug");
   });
 
-  it("is named by an active listed at prescription strength: azelaic acid at 15% or more, as the engine already gates it", () => {
-    const inci = ["Azelaic Acid", "Benzoic Acid", "Propylene Glycol", "Cetearyl Octanoate", "Purified Water"];
-    expect(kind("Aziderm 20% Cream", "Topical Acne Treatment / Dermaceutical", inci)).toBe("prescription-drug");
-    expect(kind("Finacea 15% Gel", "", inci)).toBe("prescription-drug");
+  it("is named by what a retailer's listing says: the note a stored review keeps for each retailer", () => {
+    const review = { productName: "Aziderm 20% Cream", category: "Topical Acne Treatment / Dermaceutical", priceAcrossPlatforms: [
+      { platform: "Nykaa", note: "Listed at the brand price." },
+      { platform: "Flipkart", note: "Price appears to be an error or placeholder; product listed as 'Prescription Required'." },
+    ] };
+    expect(unratedKindOf(unratedInputOf(review))).toBe("prescription-drug");
   });
 
-  it("is not claimed for an active below prescription strength, or one whose strength we cannot read", () => {
-    const inci = ["Aqua", "Azelaic Acid"];
-    expect(kind("Azelaic Acid 10% Serum", "Face Serum", inci)).toBeNull();
-    expect(kind("Azelaic Acid Serum", "Face Serum", inci)).toBeNull();
+  it("is NOT named by its ingredients: azelaic acid at 20%, or a ketoconazole shampoo, with no notice, is still reviewed", () => {
+    expect(kind("Aziderm 20% Cream", "Topical Acne Treatment / Dermaceutical")).toBeNull();
+    expect(kind("Finacea 15% Gel", "")).toBeNull();
+    expect(kind("Scalpe Plus Expert Anti-Dandruff Shampoo", "Medicated Anti-Dandruff Shampoo")).toBeNull();
   });
 
-  it("is not claimed for a medicine we cannot call prescription-only: a ketoconazole shampoo keeps the Medicinal product page", () => {
-    expect(kind("Scalpe Plus Expert Anti-Dandruff Shampoo", "Medicated Anti-Dandruff Shampoo", ["Aqua", "Ketoconazole IP (2.0% w/v)"])).toBeNull();
+  it("is not claimed for a cosmetic whose copy merely mentions prescriptions", () => {
+    const review = { productName: "Scalpe Plus Expert Anti-Dandruff Shampoo", category: "Medicated Anti-Dandruff Shampoo", priceAcrossPlatforms: [
+      { platform: "Nykaa", note: "Cited 'IMS Prescription Audit MAT (Mar 20)' as the basis for 'most prescribed'." },
+      { platform: "Amazon", note: "Not a prescription drug; sold over the counter. No prescription needed." },
+    ] };
+    expect(unratedKindOf(unratedInputOf(review))).toBeNull();
+  });
+});
+
+describe("a drug that is not marked as prescription", () => {
+  it("is named by a Drug Facts label read off the artwork, or the page", () => {
+    expect(unratedKindOf({ productName: "Daily Shield SPF 30", category: "Sunscreen", labelText: "Drug Facts Active ingredient Purpose Zinc oxide 8% Sunscreen" })).toBe("drug");
+    expect(unratedKindOf({ productName: "Daily Shield SPF 30", category: "Sunscreen", pageText: "## Details\nDrug Facts: active ingredient zinc oxide" })).toBe("drug");
+  });
+
+  it("a prescription notice wins: it is a prescription drug, not just a drug", () => {
+    expect(unratedKindOf({ productName: "X", pageText: "Drug Facts ... Rx only" })).toBe("prescription-drug");
+  });
+
+  it("is not claimed for a sunscreen with no such label", () => {
+    expect(unratedKindOf({ productName: "Daily Shield SPF 30", category: "Sunscreen", pageText: "Broad spectrum SPF 30. Dermatologist tested. Apply generously." })).toBeNull();
   });
 });
 
 describe("the static catalogue", () => {
   it("has nothing we would stop rating", () => {
-    const hits = ALL_BRANDS.flatMap((b) => b.products.filter((p) => unratedKindOf({ productName: p.productName, category: p.category, inci: p.ingredients.map((i) => i.name) })).map((p) => `${b.slug}/${p.slug}`));
+    const hits = ALL_BRANDS.flatMap((b) => b.products.filter((p) => unratedKindOf({ productName: p.productName, category: p.category })).map((p) => `${b.slug}/${p.slug}`));
     expect(hits).toEqual([]);
   });
 });

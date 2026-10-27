@@ -12,7 +12,7 @@ import { runAnalysis } from "@/lib/analysis-engine";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { PillsPage } from "@/components/scorecards/PillsPage";
 import { UnratedProductPage } from "@/components/scorecards/UnratedProductPage";
-import { unratedKindOf } from "@/lib/unrated-kind";
+import { unratedInputOf, unratedKindOf } from "@/lib/unrated-kind";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { keepOutOfSearch, layoutFor, pillsFor } from "@/lib/pills-for-review";
 import { TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") return {};
   const { review, verdict } = result;
-  // A nutraceutical or a prescription drug has no review to describe, and stays out of search.
-  if (unratedKindOf({ productName: review.productName, category: review.category, inci: review.inciIngredients })) {
+  // A nutraceutical or a drug has no review to describe, and stays out of search.
+  if (unratedKindOf(unratedInputOf(review))) {
     return { title: `${review.productName} | The Clean Sheet`, robots: { index: false, follow: true } };
   }
   // The pills page (flag on): a rating is a coloured circle and nothing else, so the title, the description and the search listing carry no verdict word,
@@ -60,8 +60,8 @@ export default async function StoredReviewPage({ params }: { params: Promise<{ s
   const result = await getStoredReview(slug, { strict: true });
   if (!result || result.type !== "product-review") notFound();
 
-  // A nutraceutical or a prescription drug: no review, no rating, no structured data. Only the product and a popup saying why.
-  const unrated = unratedKindOf({ productName: result.review.productName, category: result.review.category, inci: result.review.inciIngredients });
+  // A nutraceutical or a drug: no review, no rating, no structured data. Only the product and a popup saying why.
+  const unrated = unratedKindOf(unratedInputOf(result.review));
   if (unrated) {
     return <UnratedProductPage slug={slug} kind={unrated} productName={result.review.productName} brand={result.review.brand ?? ""} category={result.review.category} image={result.review.imageUrl} />;
   }

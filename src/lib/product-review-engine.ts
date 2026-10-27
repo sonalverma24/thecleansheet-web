@@ -23,7 +23,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
 import { productScopeOf } from "@/lib/product-scope";
-import { unratedKindOf, type UnratedKind } from "@/lib/unrated-kind";
+import { unratedInputOf, unratedKindOf, type UnratedKind } from "@/lib/unrated-kind";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { pillarStanding } from "@/lib/pillar-standing";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
@@ -748,8 +748,12 @@ export const RETRACTED_SLUGS = new Set<string>([
 ]);
 
 /** The "unrated" answer for a review that turns out to be a nutraceutical or a prescription drug, or null for a cosmetic. */
-function unratedResultOf(review: Pick<ProductReview, "productName" | "brand" | "category" | "inciIngredients">): Extract<ProductReviewResult, { type: "unrated" }> | null {
-  const kind = unratedKindOf({ productName: review.productName, category: review.category, inci: review.inciIngredients });
+function unratedResultOf(
+  review: Pick<ProductReview, "productName" | "brand" | "category" | "priceAcrossPlatforms">,
+  /** While a new analysis runs, what the product page and its label artwork say. A stored review keeps neither. */
+  read?: { pageText?: string; labelText?: string },
+): Extract<ProductReviewResult, { type: "unrated" }> | null {
+  const kind = unratedKindOf({ ...unratedInputOf(review), ...read });
   return kind ? { type: "unrated", kind, productName: review.productName, brand: review.brand ?? "" } : null;
 }
 
@@ -769,12 +773,12 @@ export async function getUnratedSlugs(): Promise<Map<string, UnratedKind>> {
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await db
         .from("product_reviews")
-        .select("product_slug, product_name, category:result->review->>category, inci:result->review->inciIngredients")
+        .select("product_slug, product_name, category:result->review->>category, listing:result->review->priceAcrossPlatforms")
         .order("product_slug", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error || !data) throw error ?? new Error("no data");
       for (const r of data) {
-        const kind = unratedKindOf({ productName: r.product_name as string, category: r.category as string | null, inci: Array.isArray(r.inci) ? (r.inci as string[]) : null });
+        const kind = unratedKindOf(unratedInputOf({ productName: r.product_name as string, category: r.category as string | null, priceAcrossPlatforms: Array.isArray(r.listing) ? (r.listing as { note?: string | null }[]) : null }));
         if (kind) kinds.set(String(r.product_slug), kind);
       }
       if (data.length < PAGE) break;
@@ -1078,7 +1082,7 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       const rv = res?.review;
       if (!rv?.productName) return [];
       // Not a cosmetic (a nutraceutical, a prescription drug): no tile.
-      if (unratedKindOf({ productName: rv.productName, category: rv.category, inci: rv.inciIngredients })) return [];
+      if (unratedKindOf(unratedInputOf(rv))) return [];
       // Re-derive the tier AND re-sum the score from current logic so scoring /
       // approval-rule changes apply to already-stored reviews without re-running
       // the batch (this read path bypasses withFreshVerdict).
@@ -1150,6 +1154,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   let capturedPageAt = "";
   let completePageCapture = false;
   let evidenceBlock = "";
+  /** What the vision pass read off the page's label artwork (Drug Facts, Rx), filled in by imageEvidenceBlock. */
+  const labelRead: { labelText?: string } = {};
   let pageName: string | null = null;
 
   if (isURL(q)) {
@@ -1246,7 +1252,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   for (const p of prompts) {
       // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
       // the text scrape; a vision pass transcribes them so they count as evidence.
-      evidenceBlock += await imageEvidenceBlock(q);
+      evidenceBlock += await imageEvidenceBlock(q, labelRead);
     const gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, p);
     parsed = parseJSON(gen.text);
     grounding = gen.groundingMetadata;
@@ -1263,9 +1269,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
 
-  /* A nutraceutical or a prescription drug is not a cosmetic: no review, nothing stored, nothing added to the registry or the ingredient directory. The name and category
-     are enough to tell most of them, so this runs first; the second check below also reads the ingredient list (prescription-strength azelaic acid). */
-  const notACosmetic = unratedResultOf({ ...review, inciIngredients: undefined });
+  /* A nutraceutical or a drug is not a cosmetic: no review, nothing stored, nothing added to the registry or the ingredient directory. This runs first, before anything is
+     written. A drug is named by what the product says: a prescription notice, a Drug Facts label, a drug-only maker; so here the product page and the label artwork are read
+     too (a stored review keeps neither, so later checks read only its name, category and listing notes). */
+  const notACosmetic = unratedResultOf(review, { pageText: `${capturedPageText}\n${evidenceBlock}`, labelText: labelRead.labelText });
   if (notACosmetic) return notACosmetic;
 
   /* Guardrail 2 (corroboration): verify that each claim we might penalise the
@@ -1422,9 +1429,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // reach the approval bar. Runs after markClaimCorroboration so the ceiling
   // ignores claims the corroboration guardrail rejected.
   review.scores = reconcileReviewScores(review).scores;
-
-  const prescription = unratedResultOf(review);
-  if (prescription) return prescription;
 
   const verdict = deriveVerdict(review);
 

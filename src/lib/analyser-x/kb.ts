@@ -28,6 +28,12 @@ export const DRUG_ACTIVES: { re: RegExp; name: string; minConcentration?: number
 /** Wording that marks a product as a prescription medicine. Read from the product name and page text. */
 export const RX_TEXT_RE = /\bprescription\b|\brx\s+only\b|\bschedule\s+(?:h1?|x)\b|\bon\s+the\s+advice\s+of\s+a\s+registered\s+medical\s+practitioner\b/i;
 
+/** Manufacturers licensed to make drugs only, never cosmetics. A product page or label that names one as its maker marks the product as a drug (src/lib/drug-signals.ts).
+    OWNER-SIGNED, LIKE EVERY TABLE HERE: an entry counts only with `reviewed: true` and a `source` that shows the maker holds a drug licence and no cosmetic one (a licensing
+    register entry, the maker's own statement). A group that also sells cosmetics under the same name does not belong here. Empty until the owner supplies the list. */
+export interface DrugOnlyManufacturer { name: string; re: RegExp; source: string; reviewed: boolean }
+export const DRUG_ONLY_MANUFACTURERS: DrugOnlyManufacturer[] = [];
+
 /** Category family that is itself a medicine class in the closed category list. */
 export const MEDICINAL_FAMILIES = ["OTC (Eczema)"] as const;
 

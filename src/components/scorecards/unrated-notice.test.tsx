@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { UnratedKind } from "@/lib/unrated-kind";
 import UnratedNotice, { UNRATED_COPY } from "./UnratedNotice";
 import { UnratedProductPage } from "./UnratedProductPage";
 
 const NAME = "H2Glow Beauty Hydration Electrolyte Drink Mix";
-const draw = (kind: "nutraceutical" | "prescription-drug", name = NAME) => renderToStaticMarkup(<UnratedNotice kind={kind} productName={name} brand="H2Glow" productSlug="h2glow-drink-mix" />);
+const draw = (kind: UnratedKind, name = NAME) => renderToStaticMarkup(<UnratedNotice kind={kind} productName={name} brand="H2Glow" productSlug="h2glow-drink-mix" />);
 
 describe("the popup for a nutraceutical", () => {
   const html = draw("nutraceutical");
@@ -45,6 +46,21 @@ describe("the popup for a prescription drug", () => {
     expect(html).not.toContain('type="email"');
     expect(html).not.toContain("Notify me");
     expect(UNRATED_COPY["prescription-drug"].ask).toBeUndefined();
+  });
+});
+
+describe("the popup for a drug that is not marked as prescription", () => {
+  const html = draw("drug", "Daily Shield SPF 30");
+
+  it("says it is a drug, not a cosmetic, and never says prescription", () => {
+    expect(html).toContain("This is a drug, not a cosmetic");
+    expect(html).toContain("Daily Shield SPF 30 is sold as a drug, not a cosmetic, so we don&#x27;t rate it");
+    expect(html).not.toMatch(/prescription/i);
+  });
+
+  it("has nothing to sign up for", () => {
+    expect(html).not.toContain('type="email"');
+    expect(UNRATED_COPY.drug.ask).toBeUndefined();
   });
 });
 

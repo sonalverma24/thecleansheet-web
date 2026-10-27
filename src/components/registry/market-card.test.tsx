@@ -59,7 +59,9 @@ describe("a listing card with the pills page on", () => {
     expect(html).toContain(">Pregnancy caution<");
     expect(html).not.toContain(">Pregnancy caution: Homosalate");
     expect(html).toContain('title="Pregnancy caution: Homosalate and Benzophenone-3"');
-    expect(cardGlanceText("Pregnancy safe")).toBe("Pregnancy safe");
+    expect(cardGlanceText("No pregnancy flags found")).toBe("No pregnancy flags found");
+    expect(cardGlanceText("Pregnancy ingredient flag: Retinol")).toBe("Pregnancy ingredient flag");
+    expect(cardGlanceText("Pregnancy ingredient flags: Homosalate and Benzophenone-3")).toBe("Pregnancy ingredient flags");
     expect(cardGlanceText("Pregnancy caution: Formaldehyde")).toBe("Pregnancy caution");
   });
 

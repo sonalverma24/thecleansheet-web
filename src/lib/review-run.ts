@@ -51,7 +51,7 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
   if (d.type === "disambiguation" && Array.isArray(d.options) && d.options.length) {
     return { kind: "disambig", query: d.query ?? query, options: d.options };
   }
-  if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug") && d.productName) {
+  if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug" || d.kind === "drug") && d.productName) {
     return { kind: "unrated", unrated: d.kind, productName: d.productName, brand: d.brand ?? "" };
   }
   if (d.type === "out_of_scope") return { kind: "error", error: "scope" };
