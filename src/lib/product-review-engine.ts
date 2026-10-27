@@ -999,27 +999,41 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
     the table because PostgREST silently caps one response at 1,000 rows, so a
     single `.limit(5000)` would quietly truncate the sitemap once the repository
     grows past that. Same gating as listStoredReviews (current rubric, not retracted). */
-export async function listReviewIndex(): Promise<{ slug: string; productName: string; brand: string; reviewedAt: string }[]> {
+export async function listReviewIndex(): Promise<{ slug: string; productName: string; brand: string; reviewedAt: string; outOfSearch?: boolean }[]> {
   const PAGE = 1000;
-  const out: { slug: string; productName: string; brand: string; reviewedAt: string }[] = [];
+  const out: { slug: string; productName: string; brand: string; reviewedAt: string; outOfSearch?: boolean }[] = [];
+  // With the pills page on, a page we could not rate is kept out of search (noindex), so the sitemap must not list it: a listed URL that says noindex is a
+  // contradiction search engines report as an error. Reading each review is only done then.
+  const pills = isFlagOn(ANALYSER_FLAGS.pillsPage);
+  const outOfSearch = pills ? (await import("@/lib/pills-for-review")).keepOutOfSearch : null;
+  const pillsFor = pills ? (await import("@/lib/pills-for-review")).pillsFor : null;
   try {
     const db = createAdminClient();
     const unrated = await getUnratedSlugs();
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await db
         .from("product_reviews")
-        .select("product_slug, product_name, brand, reviewed_at")
+        .select((pills ? "product_slug, product_name, brand, reviewed_at, result" : "product_slug, product_name, brand, reviewed_at") as "product_slug, product_name, brand, reviewed_at, result")
         .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
         .order("product_slug", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error || !data) break;
       for (const r of data) {
+        // Retracted reviews and nutraceuticals / prescription drugs are never listed; of the rest, a page we could not rate is listed but marked out of search.
         if (!RETRACTED_SLUGS.has(String(r.product_slug)) && !unrated.has(String(r.product_slug))) {
+          let hidden = false;
+          if (pillsFor && outOfSearch) {
+            const stored = r.result as ProductReviewResult | null | undefined;
+            try {
+              if (stored && stored.type === "product-review") hidden = outOfSearch(pillsFor(stored.review, deriveVerdict(stored.review)).model.pill.key);
+            } catch { /* a review we cannot read stays listed, as before */ }
+          }
           out.push({
             slug: String(r.product_slug),
             productName: String(r.product_name ?? ""),
             brand: String(r.brand ?? ""),
             reviewedAt: String(r.reviewed_at ?? ""),
+            ...(hidden ? { outOfSearch: true } : {}),
           });
         }
       }

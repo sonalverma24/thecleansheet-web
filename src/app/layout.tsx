@@ -174,7 +174,7 @@ export default function RootLayout({
                   operatingSystem: "Web",
                   url: "https://thecleansheet.in/review",
                   description:
-                    "Paste any product name or URL to check every marketing claim against real evidence and the actual ingredient list, and get one clear Clean Sheet standing.",
+                    "Paste any product name or URL to check every marketing claim against real evidence and the actual ingredient list, and get one clear Clean Sheet rating.",
                   publisher: { "@id": "https://thecleansheet.in/#organization" },
                   offers: {
                     "@type": "Offer",

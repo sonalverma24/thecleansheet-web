@@ -14,15 +14,15 @@ export const buildHomeFaqs = (stats: SiteStats) => [
   },
   {
     q: "Is The Clean Sheet's ingredient analysis free?",
-    a: "Yes. The Product Analyser is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full analysis: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet standing.",
+    a: "Yes. The Product Analyser is completely free to use. Paste any product name or URL (Nykaa, Amazon, brand website) and you get a full analysis: every claim graded against evidence, the real ingredient list, price parity, and a clear Clean Sheet rating.",
   },
   {
-    q: "What does the Clean Sheet standing mean?",
-    a: "Every analysed product gets one of three standings. Good Standing (our highest): a well-made, transparent product that passes our independent checks on ingredient safety, regulatory compliance and claim substantiation. Room to Improve: nothing wrong with it, but the proof and transparency don't yet match the claims. Not Recommended: the product makes a claim that isn't permitted in India, or one its own ingredient list contradicts.",
+    q: "What does the Clean Sheet rating mean?",
+    a: "Every analysed product gets one rating circle, in one of four colours. Green: our checks found no concern in what we could read, and the claims are in proportion to the evidence. Yellow: there is something to read first, such as a claim with no test behind it, an ingredient worth noting or a point in the formula. Red: we found a prohibited ingredient or a serious shortfall in our checks. Grey: we could not rate it, usually because we could not find a full ingredient list, or because it is assessed as a medicine. Open any product page for the reasons and sources behind its colour. A colour is our reading of public information, not a statement about the brand.",
   },
   {
     q: "Which beauty products are analysed by The Clean Sheet in India?",
-    a: "You can browse every analysed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet standing, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
+    a: "You can browse every analysed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet rating, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
   },
   {
     q: "Is niacinamide safe for Indian skin?",
