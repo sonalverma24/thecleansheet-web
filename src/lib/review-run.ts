@@ -23,7 +23,7 @@ export const REVIEW_STEPS = [
 
 import type { UnratedKind } from "@/lib/unrated-kind";
 
-export type ReviewRunError = "scope" | "busy" | "fail";
+export type ReviewRunError = "scope" | "busy" | "fail" | "unidentified";
 
 export type ReviewRunOutcome =
   | { kind: "done"; slug: string }
@@ -55,11 +55,13 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
     return { kind: "unrated", unrated: d.kind, productName: d.productName, brand: d.brand ?? "" };
   }
   if (d.type === "out_of_scope") return { kind: "error", error: "scope" };
+  if (d.type === "unidentified") return { kind: "error", error: "unidentified" };
   return { kind: "error", error: "fail" };
 }
 
 export const REVIEW_ERROR_MESSAGE: Record<ReviewRunError, string> = {
   busy: "The engine is at capacity. Please try again in a minute.",
   scope: "That doesn't look like a beauty or personal-care product.",
+  unidentified: "I couldn't identify the product from this URL, so I haven't saved it. Try the direct product page link or enter the product name.",
   fail: "Couldn't complete the analysis. Please try again, or paste the product page link for a more reliable read.",
 };
