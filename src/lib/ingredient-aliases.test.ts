@@ -95,7 +95,7 @@ describe("the two gates: an alias applies only when the flag is on AND the pair 
     for (const e of INGREDIENT_ALIASES) expect(lookupKeys(e.alias, everythingSigned), e.alias).toEqual(first(e.alias));
   });
 
-  it("flag on, nothing signed off: nothing changes (the state this draft ships in)", () => {
+  it("flag on: a pair that is not signed off changes nothing", () => {
     vi.stubEnv(FLAG, "1");
     const unsigned = INGREDIENT_ALIASES.filter((e) => !isSignedOff(e));
     expect(activeAliasKeys(unsigned).size).toBe(0);
@@ -123,6 +123,35 @@ describe("the two gates: an alias applies only when the flag is on AND the pair 
     const keys = lookupKeys("Glycerin", wrong);
     expect(keys[0]).toBe("glycerin");
     expect(lookupIngredient("Glycerin")?.INCI_Name).toBe("Glycerin");
+  });
+
+  describe("the state the table ships in: reviewer TCS-P-024 signed 23 of 24 pairs on 2026-10-27", () => {
+    const signedNow = INGREDIENT_ALIASES.filter(isSignedOff);
+
+    it("every pair but CI 77891 is signed off, and CI 77891 is held until the colourant question is settled", () => {
+      expect(signedNow).toHaveLength(23);
+      expect(INGREDIENT_ALIASES.filter((e) => !isSignedOff(e)).map((e) => e.alias)).toEqual(["CI 77891"]);
+    });
+
+    it("a sign-off records only an opaque reviewer reference and a real past date, never a name", () => {
+      for (const e of signedNow) {
+        expect(e.signedOffBy, e.alias).toMatch(/^TCS-P-\d{3}$/);
+        expect(Date.parse(e.signedOffOn!), e.alias).toBeLessThanOrEqual(Date.now());
+      }
+    });
+
+    it("with the flag off, the shipped table changes no lookup at all", () => {
+      vi.stubEnv(FLAG, "0");
+      for (const e of INGREDIENT_ALIASES) expect(lookupKeys(e.alias), e.alias).toEqual(first(e.alias));
+    });
+
+    it("with the flag on, the shipped table reaches the target for every signed pair and still not for CI 77891", () => {
+      vi.stubEnv(FLAG, "1");
+      expect(lookupKeys("Water")).toEqual(["water", "aqua"]);
+      expect(lookupKeys("Water/Aqua/Eau")).toEqual(["water", "aqua"]);
+      for (const e of signedNow) expect(lookupKeys(e.alias).at(-1), e.alias).toBe(lookupKeys(e.target)[0]);
+      expect(lookupKeys("CI 77891")).toEqual(first("CI 77891"));
+    });
   });
 
   it("a half-filled or blank sign-off does not count", () => {
