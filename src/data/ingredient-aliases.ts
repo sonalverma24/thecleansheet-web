@@ -1,9 +1,9 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ · Ingredient alias table (23 of 24 pairs signed off by reviewer TCS-P-024 on 2026-10-27; NOT IN USE: the flag is off)
+   THE CLEAN SHEET™ · Ingredient alias table (all 24 pairs signed off by reviewer TCS-P-024 on 2026-10-27; NOT IN USE: the flag is off)
 
-   Status: the reviewer answered Yes to all 24 pairs. 23 are signed off below. "CI 77891" is HELD: it maps a colour-index number onto the
-   plain Titanium Dioxide row, which is the sunscreen-filter entry, and the reviewer's colourant answers (Part C) disagree with each other
-   on whether that entry's sunscreen limit applies. Do not sign it off until that is settled. The flag ANALYSER_INGREDIENT_ALIASES is still off.
+   Status: the reviewer answered Yes to all 24 pairs and all 24 are signed off below. "CI 77891" was held until the colourant question was settled: the
+   reviewer's later answer is that the sunscreen limit does not apply to colourant use and that titanium dioxide stays ONE entry with limits by use, which
+   the Titanium Dioxide row now states (its US status reads as a sunscreen restriction only). The flag ANALYSER_INGREDIENT_ALIASES is still off.
 
    A label often names an ingredient we already hold under another spelling or name ("Water" for the row
    "Aqua", "Glycerine" for "Glycerin"). Today those fail the exact-name lookup, so the ingredient counts as
@@ -13,7 +13,7 @@
    What it is not: it adds no ingredient and no regulatory fact. Every target below is a row that is already
    in src/data/ingredients.json, named exactly as that row names itself. An alias can only point at a row that exists.
 
-   Two gates. Gate 1 is open for 23 pairs; gate 2 (the flag) is closed today:
+   Two gates. Gate 1 is open for all 24 pairs; gate 2 (the flag) is closed today:
      1. An entry applies only when it is signed off: both `signedOffBy` and `signedOffOn` are set on it.
      2. Signed-off entries apply only when the flag ANALYSER_INGREDIENT_ALIASES is on (off by default).
    To sign off: set those two fields on each entry you approve, then turn the flag on in its own deploy.
@@ -107,7 +107,7 @@ export const INGREDIENT_ALIASES: readonly IngredientAlias[] = [
   { alias: "D-Panthenol", target: "Panthenol", source: pubchem(131204, "81-13-0", "dexpanthenol"),
     reason: "D-Panthenol is dexpanthenol, the D form this row records (CAS 81-13-0). DL-panthenol is deliberately not aliased.", ...REVIEWED },
   { alias: "CI 77891", target: "Titanium Dioxide", source: pubchem(26042, "13463-67-7", "titanium dioxide"),
-    reason: "CI 77891 is the colour-index number of titanium dioxide. It maps to the plain row, as 'Titanium Dioxide' already does, and says nothing about nano." },
+    reason: "CI 77891 is the colour-index number of titanium dioxide. It maps to the plain row, as 'Titanium Dioxide' already does, and says nothing about nano.", ...REVIEWED },
 
   // ── The row already names the INCI form in brackets ──
   { alias: "Butylated Hydroxytoluene", target: "BHT (Butylated Hydroxytoluene)", source: rowName("BHT (Butylated Hydroxytoluene)"),

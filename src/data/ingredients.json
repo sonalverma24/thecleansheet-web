@@ -4012,7 +4012,7 @@
     "EU_Status": "Permitted",
     "EU_Annex": "EU Annex VI",
     "India_Status": "Permitted",
-    "US_FDA_Status": "Permitted (OTC Drug)",
+    "US_FDA_Status": "Permitted as an exempt colour additive in cosmetics (21 CFR Part 73 Subpart C); an OTC drug when used as a sunscreen active",
     "Korea_Status": "Permitted",
     "Australia_TGA_Status": "Regulated as a primary sunscreen active under TGA ARTG requirements when SPF claims are made; cosmetic use (non-SPF) subject to standard cosmetic framework",
     "Canada_NHPID_Status": "UV filter; may require Health Canada NPN registration if drug (sunscreen) claims are made; cosmetic use subject to Canada Consumer Product Safety Act",
@@ -4035,9 +4035,9 @@
     "Key_Safety_Notes": "Excellent UVB filter; nano prohibited in sprays EU 2022; check heavy metal impurities; also colorant CI 77891",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "High",
-    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge",
+    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge; non-sunscreen colourant use (CI 77891) answered by reviewer TCS-P-024 on 2026-10-27: sunscreen limits apply to the UV-filter use only, one entry with limits by use",
     "Source_Reference": "EU Annex VI; EU Regulation 2022/1176; SCCS; FDA 21 CFR 352",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-10-27"
   },
   {
     "INCI_Name": "Homosalate",
