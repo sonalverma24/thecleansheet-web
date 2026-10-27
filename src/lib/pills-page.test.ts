@@ -165,15 +165,24 @@ describe("the pregnancy chip", () => {
     expect(chips).toEqual([expect.objectContaining({ label: "Pregnancy ingredient flag: Retinyl Palmitate", state: "no" })]);
   });
 
-  it("a retinol serum gets the caution, though the database holds no row for plain retinol", () => {
+  it("a retinol serum gets the caution from retinol's own reviewed entry", () => {
     const chips = pregnancyChips(page(rv({ productName: "Retinol Serum", category: "Serum", inciIngredients: [...BASE, "Retinol"] })).model);
     expect(chips).toEqual([expect.objectContaining({ label: "Pregnancy ingredient flag: Retinol", state: "no" })]);
   });
 
-  it("a retinoid is flagged on the vitamin A row's own source, and is not also listed as not checked", () => {
+  it("retinol is flagged on its own entry's wording and sources, and is not also listed as not checked", () => {
     const { model: m } = page(rv({ productName: "Retinol Serum", category: "Serum", inciIngredients: [...BASE, "Retinol"] }));
     const [chip] = pregnancyChips(m);
-    expect(chip.detail).toMatch(/Retinol: A retinoid; generally advised against during pregnancy\. Source: .*SCCS.* \(confidence: (high|medium)\)\./);
+    expect(chip.detail).toMatch(/^Retinol: Caution during pregnancy: precaution is commonly advised for topical retinol\./);
+    expect(chip.detail).toMatch(/Source: EU Reg\. 2024\/996 Annex III entry 376; SCCS\/1639\/21.* \(confidence: high\)\./);
+    expect(chip.detail).not.toMatch(/Not checked:/);
+  });
+
+  it("a retinoid with no entry of its own (retinal) is still flagged, on the vitamin A entry's source", () => {
+    const { model: m } = page(rv({ productName: "Retinal Serum", category: "Serum", inciIngredients: [...BASE, "Retinal"] }));
+    const [chip] = pregnancyChips(m);
+    expect(chip.label).toBe("Pregnancy ingredient flag: Retinal");
+    expect(chip.detail).toMatch(/Retinal: A retinoid; generally advised against during pregnancy\. Source: .*SCCS.* \(confidence: (high|medium)\)\./);
     expect(chip.detail).not.toMatch(/Not checked:/);
   });
 
