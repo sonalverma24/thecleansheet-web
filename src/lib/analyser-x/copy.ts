@@ -71,7 +71,10 @@ const T: Record<string, (p: P) => string> = {
   "caution.soft_adverse": (p) => `${s(p.label)}: ${s(p.detail)}`,
   "caution.audience": (p) => `${s(p.ingredient)} is ${s(p.note)}. This matters most for ${s(p.audience)} use.`,
   "caution.catch_all": (p) => `The list includes an unnamed entry (${s(p.entry)}), so part of the formula is not disclosed.`,
-  "caution.claim_gap": (p) => `The main claim, “${s(p.claim)}”, is not backed by a test on this product that we could find publicly.`,
+  // The claim named is the one with the widest gap, not necessarily the product's main promise, so the wording must not say "main".
+  "caution.claim_gap": (p) => Number(p.count) > 1
+    ? `${s(p.count)} claims are not backed by a test on this product that we could find publicly, for example “${s(p.claim)}”.`
+    : `One claim, “${s(p.claim)}”, is not backed by a test on this product that we could find publicly.`,
   "caution.boundary": () => "Some wording goes further than a cosmetic can say in India. Treat it as a cosmetic benefit, not a treatment.",
   "caution.formula": () => "The formula may not deliver everything the claims promise.",
   "caution.list_trust_2": () => "The ingredient list comes from a retailer page only, so check it against the pack.",

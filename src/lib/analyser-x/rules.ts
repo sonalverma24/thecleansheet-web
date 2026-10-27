@@ -57,6 +57,9 @@ export function needsProof(c: ClaimValue): boolean {
 
 export const residualOf = (c: ClaimValue): Residual => residualRisk(ambitionOf(c.text, c.primaryType), c.evidenceLevel);
 
+/** How wide a claim's gap is, so the widest can lead a finding. */
+const RESIDUAL_RANK: Record<Residual, number> = { low: 0, medium: 1, high: 2, "very-high": 3 };
+
 const mk = (
   rule: Pick<Rule, "id" | "severity" | "origin" | "needsReliableList">,
   params: Finding["params"],
@@ -217,7 +220,8 @@ const cautions: Rule[] = [
     evaluate: (ctx, self) => {
       const short = ctx.claims.filter((c) => needsProof(c.value) && residualOf(c.value) !== "low");
       if (!short.length) return [];
-      const worst = short[0];
+      // The widest gap leads, whatever order the claims were listed in; among equals the first listed wins.
+      const worst = short.reduce((a, b) => (RESIDUAL_RANK[residualOf(b.value)] > RESIDUAL_RANK[residualOf(a.value)] ? b : a));
       // The finding is code-origin only when every short claim's level came from the ladder rather than a model.
       const fromLadder = short.every((c) => c.value.levelOrigin === "ladder");
       return [mk(self, { claim: worst.value.text, residual: residualOf(worst.value), count: short.length }, short.map((c) => c.fact), { origin: fromLadder ? "code" : "model" })];
