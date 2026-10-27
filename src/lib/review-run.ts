@@ -21,11 +21,15 @@ export const REVIEW_STEPS = [
   "Writing your verdict",
 ];
 
+import type { UnratedKind } from "@/lib/unrated-kind";
+
 export type ReviewRunError = "scope" | "busy" | "fail";
 
 export type ReviewRunOutcome =
   | { kind: "done"; slug: string }
   | { kind: "disambig"; query: string; options: { name: string }[] }
+  /** A nutraceutical or a prescription drug: there is no review, so the UI shows a popup instead of opening a page. */
+  | { kind: "unrated"; unrated: UnratedKind; productName: string; brand: string }
   | { kind: "auth" }
   | { kind: "error"; error: ReviewRunError };
 
@@ -35,6 +39,9 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
   const d = (data ?? {}) as {
     error?: string;
     type?: string;
+    kind?: string;
+    productName?: string;
+    brand?: string;
     query?: string;
     options?: { name: string }[];
     review?: { productSlug?: string };
@@ -43,6 +50,9 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
   if (d.type === "product-review" && d.review?.productSlug) return { kind: "done", slug: d.review.productSlug };
   if (d.type === "disambiguation" && Array.isArray(d.options) && d.options.length) {
     return { kind: "disambig", query: d.query ?? query, options: d.options };
+  }
+  if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug") && d.productName) {
+    return { kind: "unrated", unrated: d.kind, productName: d.productName, brand: d.brand ?? "" };
   }
   if (d.type === "out_of_scope") return { kind: "error", error: "scope" };
   return { kind: "error", error: "fail" };

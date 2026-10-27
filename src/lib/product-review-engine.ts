@@ -23,6 +23,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
 import { productScopeOf } from "@/lib/product-scope";
+import { unratedKindOf, type UnratedKind } from "@/lib/unrated-kind";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { pillarStanding } from "@/lib/pillar-standing";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
@@ -677,6 +678,8 @@ export function deriveVerdict(r: ProductReview): DerivedVerdict {
 export type ProductReviewResult =
   | { type: "product-review"; review: ProductReview; verdict: DerivedVerdict }
   | { type: "disambiguation"; query: string; options: { name: string }[] }
+  /** A nutraceutical or a prescription drug: not a cosmetic, so there is no review. Never stored, never listed (see unrated-kind.ts). */
+  | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -743,6 +746,46 @@ export const RETRACTED_SLUGS = new Set<string>([
   // claim look false. Pending re-review.
   "nat-habit-nat-habit-multi-nut-shea-omega3-malai-body-butter-for-dry-skin-body-ac",
 ]);
+
+/** The "unrated" answer for a review that turns out to be a nutraceutical or a prescription drug, or null for a cosmetic. */
+function unratedResultOf(review: Pick<ProductReview, "productName" | "brand" | "category" | "inciIngredients">): Extract<ProductReviewResult, { type: "unrated" }> | null {
+  const kind = unratedKindOf({ productName: review.productName, category: review.category, inci: review.inciIngredients });
+  return kind ? { type: "unrated", kind, productName: review.productName, brand: review.brand ?? "" } : null;
+}
+
+/** A stored result as the API serves it: "unrated" when it is a nutraceutical or a prescription drug, else as stored. */
+const servedAsStored = (r: ProductReviewResult): ProductReviewResult => (r.type === "product-review" && unratedResultOf(r.review)) || r;
+
+/* Slugs of stored reviews that are not cosmetics. They get no review on their page and no place in a list, the sitemap or the stats. Read once for all of them from
+   the few fields the classifier needs (the rest of a row is large), and kept for five minutes like the review cache. A database error leaves the last answer (or none),
+   so a list shows everything rather than nothing. */
+let UNRATED_SLUGS: { at: number; kinds: Map<string, UnratedKind> } | null = null;
+export async function getUnratedSlugs(): Promise<Map<string, UnratedKind>> {
+  if (UNRATED_SLUGS && Date.now() - UNRATED_SLUGS.at < REVIEW_CACHE_TTL_MS) return UNRATED_SLUGS.kinds;
+  const PAGE = 1000;
+  const kinds = new Map<string, UnratedKind>();
+  try {
+    const db = createAdminClient();
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await db
+        .from("product_reviews")
+        .select("product_slug, product_name, category:result->review->>category, inci:result->review->inciIngredients")
+        .order("product_slug", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error || !data) throw error ?? new Error("no data");
+      for (const r of data) {
+        const kind = unratedKindOf({ productName: r.product_name as string, category: r.category as string | null, inci: Array.isArray(r.inci) ? (r.inci as string[]) : null });
+        if (kind) kinds.set(String(r.product_slug), kind);
+      }
+      if (data.length < PAGE) break;
+    }
+  } catch (e) {
+    console.error("[unrated] could not read the repository", e instanceof Error ? e.message : e);
+    return UNRATED_SLUGS?.kinds ?? kinds;
+  }
+  UNRATED_SLUGS = { at: Date.now(), kinds };
+  return kinds;
+}
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
    review - verdict rule changes then apply without re-running the model. The
@@ -903,7 +946,8 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
       .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
       .order("reviewed_at", { ascending: false })
       .limit(limit);
-    return (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug))).map((r) => ({
+    const unrated = await getUnratedSlugs();
+    return (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug)) && !unrated.has(String(r.product_slug))).map((r) => ({
       productSlug: String(r.product_slug),
       productName: String(r.product_name ?? ""),
       brand: String(r.brand ?? ""),
@@ -926,6 +970,7 @@ export async function listReviewIndex(): Promise<{ slug: string; productName: st
   const out: { slug: string; productName: string; brand: string; reviewedAt: string }[] = [];
   try {
     const db = createAdminClient();
+    const unrated = await getUnratedSlugs();
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await db
         .from("product_reviews")
@@ -935,7 +980,7 @@ export async function listReviewIndex(): Promise<{ slug: string; productName: st
         .range(from, from + PAGE - 1);
       if (error || !data) break;
       for (const r of data) {
-        if (!RETRACTED_SLUGS.has(String(r.product_slug))) {
+        if (!RETRACTED_SLUGS.has(String(r.product_slug)) && !unrated.has(String(r.product_slug))) {
           out.push({
             slug: String(r.product_slug),
             productName: String(r.product_name ?? ""),
@@ -962,7 +1007,8 @@ export async function getRepositoryStats(): Promise<{ productCount: number; bran
       .from("product_reviews")
       .select("product_slug, brand")
       .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS]);
-    const rows = (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug)));
+    const unrated = await getUnratedSlugs();
+    const rows = (data ?? []).filter((r) => !RETRACTED_SLUGS.has(String(r.product_slug)) && !unrated.has(String(r.product_slug)));
     const brandSlugs = new Set(rows.map((r) => slugify(String(r.brand ?? ""), "")));
     return { productCount: rows.length, brandSlugs: [...brandSlugs] };
   } catch {
@@ -1031,6 +1077,8 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
       const res = row.result as { review?: ProductReview; verdict?: DerivedVerdict } | null;
       const rv = res?.review;
       if (!rv?.productName) return [];
+      // Not a cosmetic (a nutraceutical, a prescription drug): no tile.
+      if (unratedKindOf({ productName: rv.productName, category: rv.category, inci: rv.inciIngredients })) return [];
       // Re-derive the tier AND re-sum the score from current logic so scoring /
       // approval-rule changes apply to already-stored reviews without re-running
       // the batch (this read path bypasses withFreshVerdict).
@@ -1140,6 +1188,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
   const stored = await getStored(slug);
   if (stored) {
+    // A nutraceutical or a prescription drug stored before we drew the line: answer "unrated" now, with no image retry and nothing written back.
+    const notACosmeticYet = stored.type === "product-review" ? unratedResultOf(stored.review) : null;
+    if (notACosmeticYet) return notACosmeticYet;
     const retried = await retryStoredReviewImage(slug, stored, q);
     if (retried.type === "product-review" && isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, retried.review.brand, retried.review.productName)) {
       const review = { ...retried.review };
@@ -1212,6 +1263,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
 
+  /* A nutraceutical or a prescription drug is not a cosmetic: no review, nothing stored, nothing added to the registry or the ingredient directory. The name and category
+     are enough to tell most of them, so this runs first; the second check below also reads the ingredient list (prescription-strength azelaic acid). */
+  const notACosmetic = unratedResultOf({ ...review, inciIngredients: undefined });
+  if (notACosmetic) return notACosmetic;
+
   /* Guardrail 2 (corroboration): verify that each claim we might penalise the
      brand for is genuinely present in a source we actually read. A red-flag /
      drug-boundary claim whose subject never appears is treated as uncorroborated
@@ -1246,7 +1302,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   for (const candidate of dedupeSlugs) {
     if (candidate === slug) continue;
     const existing = await getStored(candidate);
-    if (existing) return existing;
+    if (existing) return servedAsStored(existing);
   }
 
   /* The slug is built from the model's wording, which varies run to run ("… SPF 50
@@ -1271,7 +1327,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
         ? (rr.review.inciIngredients ?? rr.review.ingredientReads?.map((r) => r.name) ?? []) : [];
       if (isSameProduct(incoming, { productName: String(row.product_name), brand: String(row.brand), inci: rinci })) {
         const existing = await getStored(rslug);
-        if (existing) return existing;
+        if (existing) return servedAsStored(existing);
       }
     }
   } catch { /* de-dupe is best-effort; never block a review */ }
@@ -1366,6 +1422,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // reach the approval bar. Runs after markClaimCorroboration so the ceiling
   // ignores claims the corroboration guardrail rejected.
   review.scores = reconcileReviewScores(review).scores;
+
+  const prescription = unratedResultOf(review);
+  if (prescription) return prescription;
 
   const verdict = deriveVerdict(review);
 
