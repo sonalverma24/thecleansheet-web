@@ -2,7 +2,13 @@
 
 Written 2026-10-21. Source of truth for the neuro-symbolic work so a new session does not
 need the original plan. Describes local code, not verified as deployed. Companion to
-[ANALYSER.md](ANALYSER.md), which describes the analyser itself.
+[ANALYSER-X1.md](ANALYSER-X1.md), which describes Version X1 as it stands (it replaces the
+`ANALYSER.md` this note used to point at, which does not exist in this repository).
+
+Updated 2026-10-27: everything that changed since is recorded in [ANALYSER-X1.md](ANALYSER-X1.md): one
+shared definition of a source-backed list, the pregnancy screen, the claim-gap wording, the signed-off
+name pairs, the titanium dioxide and retinol decisions and the reviewer return. The anchoring counts in
+the table below are from 2026-10-21 and do not match the production database today (see "Held, and open").
 
 ## What the first release ships, and what it does not
 
