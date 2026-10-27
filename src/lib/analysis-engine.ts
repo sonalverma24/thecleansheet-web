@@ -13,6 +13,7 @@
 
 import type { ProductReview } from "@/lib/product-review-types";
 import { reviewInciList } from "@/lib/review-inci";
+import { isSourceBackedInci } from "@/lib/inci-source-backing";
 import type { AnalysisReport, CheckResult, CheckState, AuditPillar, CheckAxis, Obtainability } from "@/lib/analysis-types";
 import { categorise, categoryLabel } from "@/lib/product-categorise";
 import type { ProductCategory } from "@/data/analysis/categories";
@@ -135,9 +136,17 @@ function inciSourceLabel(sourceUrl?: string): string {
 const CHECKS: CheckDef[] = [
   // ── Ingredient Safety & Toxicity ──
   { id: "inci_verified", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "INCI verification", axis: "safety", obtainability: "public",
-    evaluate: (c) => c.hasInci
-      ? { state: "verified", detail: `Full ingredient list retrieved and verified against ${inciSourceLabel(c.review.inciSourceUrl)}.`, source: c.review.inciSourceUrl }
-      : { state: "not-disclosed", detail: "A verified INCI list could not be retrieved from a public source." } },
+    evaluate: (c) => {
+      if (!c.hasInci) return { state: "not-disclosed", detail: "A verified INCI list could not be retrieved from a public source." };
+      // "Verified" needs a captured source quote, the same test the badges and the pregnancy screen use. Without one the list was
+      // read but not independently verified, so the page makes no claim about it (a not-disclosed row is not drawn).
+      if (isSourceBackedInci(c.review, reviewInciList(c.review))) {
+        return { state: "verified", detail: `Full ingredient list retrieved and verified against ${inciSourceLabel(c.review.inciSourceUrl)}.`, source: c.review.inciSourceUrl };
+      }
+      return { state: "not-disclosed", detail: c.review.inciSourceUrl
+        ? `The ingredient list was read from ${inciSourceLabel(c.review.inciSourceUrl)}, but no source quote was captured, so it is not independently verified.`
+        : "The ingredient list has no recorded source, so it is not independently verified.", source: c.review.inciSourceUrl };
+    } },
   { id: "cas_synonyms", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "CAS numbers & synonyms", axis: "proof", obtainability: "private",
     evaluate: () => ({ state: "not-disclosed", detail: "Per-ingredient CAS identity is not published on the product page (available in a full dossier)." }) },
   { id: "source_type", pillar: "Ingredient Safety & Toxicity", subCategory: "Identity & Purity", label: "Ingredient source (synthetic / natural / biotech)", axis: "proof", obtainability: "brand",
@@ -268,13 +277,16 @@ const CHECKS: CheckDef[] = [
       if (filters.length) return { state: "not-disclosed", detail: `UV filters are present (${filters.slice(0, 3).join(", ")}), which supports the SPF claim, but no ISO 24444 test evidence is published.` };
       return { state: "not-disclosed", detail: "No SPF (ISO 24444) test evidence is published." };
     } },
-  { id: "pregnancy_safe", pillar: "Standards & Compliance", subCategory: "Special Categories", label: "Pregnancy-safe assessment", axis: "safety", obtainability: "public",
+  // This checks retinoids only. It never says "clear": the pregnancy ingredient screen on the page (src/lib/review-to-scorecard.ts)
+  // is the one place that reports what was and was not screened, so a no-retinoid result here is a not-disclosed row, which is not drawn.
+  { id: "pregnancy_safe", pillar: "Standards & Compliance", subCategory: "Special Categories", label: "Pregnancy ingredient check", axis: "safety", obtainability: "public",
     applies: (c) => !c.isRinseOff && (c.isFacial || /serum|treatment|anti-aging|moisturizer/i.test(c.category.type)),
     evaluate: (c) => {
       const hits = inciHas(c.inciJoined, RETINOIDS);
-      return hits.length
-        ? { state: "adverse", detail: `Contains a retinoid (${hits.join(", ")}) - generally advised against during pregnancy. Not a general-safety issue.`, penalty: 6 }
-        : { state: "verified", detail: "No retinoid or other pregnancy-cautioned active found in the screen." };
+      if (hits.length) return { state: "adverse", detail: `Contains a retinoid (${hits.join(", ")}) - generally advised against during pregnancy. Not a general-safety issue.`, penalty: 6 };
+      return { state: "not-disclosed", detail: isSourceBackedInci(c.review, reviewInciList(c.review))
+        ? "No retinoid was found among the listed ingredients. This check covers retinoids only and is not a pregnancy-safety assessment; see the pregnancy ingredient screen."
+        : "Not screened: a complete, source-backed ingredient list is needed first." };
     } },
   { id: "baby_safe", pillar: "Standards & Compliance", subCategory: "Special Categories", label: "Baby-safe toxicology thresholds", axis: "safety", obtainability: "brand",
     applies: (c) => c.isBaby,
