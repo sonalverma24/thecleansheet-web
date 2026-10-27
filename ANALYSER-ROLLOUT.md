@@ -43,6 +43,7 @@ never an auto-applied correction and never a statement that a product or brand i
 | 4. Policy engine and the Provisional state | Not started. |
 | 5. Staged flip, one flag per deploy | Not started. Needs signed previews. |
 | 6. Strict identity and merging twins | Not started. |
+| Release 2026-10-27: products we do not rate, drug signals, the pregnancy chip | **Live, no flag.** See "Release 2026-10-27" below. |
 
 ## Modules
 
@@ -64,6 +65,12 @@ never an auto-applied correction and never a statement that a product or brand i
 | `src/lib/reviewer-audit.ts`, `scripts/audit-reviewer-register.mts` | Checks reviewer references against the private register. Prints references, never names. |
 | `scripts/mutation-check.mts` | Targeted mutation sweep over the rules. |
 | `scripts/reanchor-incidecoder.mts` | Re-fetches source pages and anchors exact matches. Dry run by default. |
+| `src/lib/unrated-kind.ts` | Decides whether a product is a nutraceutical or a drug, so it gets no review. One place for the product page, the lists, the sitemap and the analysis. |
+| `src/lib/drug-signals.ts` | The drug signs: a prescription notice, a "Drug Facts" label, a signed-off drug-only maker. Reads only what the product says, never its ingredients. |
+| `src/lib/analyser-x/kb.ts` | Also holds `DRUG_ONLY_MANUFACTURERS` (owner-signed, empty). Azelaic acid is no longer in `DRUG_ACTIVES`. |
+| `src/lib/evidence-images.ts` | Also reads the page's images for label artwork that says "Drug Facts" or Rx (`imageEvidenceBlock(url, out)` fills `out.labelText`). |
+| `src/components/scorecards/UnratedNotice.tsx`, `UnratedProductPage.tsx` | The popup for a product we do not rate, and the page that carries it. |
+| `src/app/api/unrated-notify/route.ts` | Email signup for the nutraceutical popup. |
 
 ## Rules that must not be broken
 
@@ -182,6 +189,37 @@ changed what shoppers see.
 Measure cache lag per flip rather than assuming five minutes: `/reviews/[slug]` and
 `/brands` use ISR (`revalidate = 300`, stale-while-revalidate), the in-memory review cache
 adds up to 5 minutes per instance, and the CDN may add more.
+
+## Release 2026-10-27: products we do not rate, drug signals, the pregnancy chip (live, no flag)
+
+Unlike everything above, this release has **no rollout flag**: the owner asked for it live, and it changes what shoppers see. It is not covered by the parity promise above. It reached production as PRs #30 and #31 (merge commits `a587214` and `c1fed56`).
+
+**What it does**
+
+- A nutraceutical or a drug gets no review, no rating and no place in a list. `src/lib/unrated-kind.ts` decides; `src/lib/drug-signals.ts` reads the drug signs.
+  - Nutraceutical: an explicit word in the name or category, or a swallowed format (capsules, gummies, tablets) only when the category is not a cosmetic type.
+  - Drug: only what the product says. A prescription notice (Rx, Prescription Required, Rx only, Schedule H; negations such as "not a prescription drug" excluded) makes it a prescription drug. A "Drug Facts" label (page text, or label artwork) or a maker the owner has signed off as drug-only makes it a drug. Never an ingredient or a percentage: azelaic acid is off `DRUG_ACTIVES` and off the legacy `LICENSED_DRUG_ACTIVES`.
+- Where it applies: `/analysis/[slug]` shows a popup page (no review, no JSON-LD, `noindex`). `getUnratedSlugs()` takes stored ones out of the `/brands` grid, the home shelf, the directory index, the sitemap and the counts (five-minute cache; a database error keeps the last answer, so a list is never emptied). `runProductReview` answers `{ type: "unrated" }` and stores nothing. The search box shows the popup.
+- A stored review is re-checked from its name, category and each retailer's listing note (where "Prescription Required" is quoted). Of the 395 stored reviews on 2026-10-27 this flags two: the H2Glow drink mix and Aziderm 20% Cream. A new URL analysis also reads the page text and the label artwork, which a stored review does not keep.
+- X1's `med.rx_text` rule uses the same prescription-notice check; the loose `RX_TEXT_RE` is retired.
+- The At a glance pregnancy chip appears for a flagged ingredient, or for a complete screen with no flag ("No pregnancy flags found"). Anything in between shows no chip.
+- Email signup for nutraceuticals: `POST /api/unrated-notify` writes `public.category_waitlist` (migration `20261024000000_category_waitlist.sql`, applied to the production database on 2026-10-27; row level security on, no policy) and emails the owner.
+
+**Rollback**
+
+| Item | On rollback |
+| --- | --- |
+| Whole release | Revert the two merge commits (`git revert -m 1 c1fed56`, then `git revert -m 1 a587214`) and deploy, or roll Vercel back to the deployment built from `c03474a`. Nothing was deleted: unrated products are only hidden, so they return with the revert. |
+| Waitlist table | Additive; leave it. Its rows are personal data: export them before any drop. |
+| One wrong match | Fix the rule in `unrated-kind.ts` or `drug-signals.ts` (tests: `unrated-kind.test.ts`, `drug-signals.test.ts`). A manufacturer entry is retired by removing it from `DRUG_ONLY_MANUFACTURERS`. |
+
+**Known limits of this release**
+
+- The label-artwork reader is a second vision pass over the images already downloaded. It is tested with a stand-in model, not on real photographs. It runs only for new URL analyses with `GOOGLE_AI_API_KEY`. It sits in the same call, inside the retry loop, as the known production bug at the top of this note; the label read is guarded to run once per analysis, and the bug itself is unchanged.
+- `DRUG_ONLY_MANUFACTURERS` ships empty, so the manufacturer sign does nothing until the owner supplies names and a source for each.
+- A "Drug Facts" label marks an over-the-counter drug, so those products show "This is a drug, not a cosmetic", never "prescription". A sunscreen whose label artwork shows a Drug Facts panel is not rated.
+- A medicine recognised only by an active ingredient (a ketoconazole shampoo) is not on this list: it keeps the Medicinal product page.
+- A new analysis of a nutraceutical still spends the model run before it is recognised.
 
 ## Commands
 
