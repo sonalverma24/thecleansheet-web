@@ -10,6 +10,7 @@ import { TransientModelError, busyResponse } from "@/lib/gemini";
 import { rateLimit, rateLimited } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logSearch } from "@/lib/search-log";
 
 export const maxDuration = 180;
 export const dynamic = "force-dynamic";
@@ -40,11 +41,11 @@ export async function POST(req: Request) {
     try {
       const productSlug =
         result.type === "product-review" ? result.review.productSlug : null;
-      await createAdminClient().from("product_searches").insert({
+      await logSearch(createAdminClient(), {
         user_id: user.id,
         user_email: user.email ?? null,
         query: String(query),
-        product_slug: productSlug,
+        product_slug: productSlug ?? null,
       });
     } catch (logErr) {
       console.error("[review] search-log insert failed", logErr);

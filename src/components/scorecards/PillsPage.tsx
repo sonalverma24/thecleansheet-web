@@ -198,9 +198,6 @@ function IngredientsBody({ product, keyActives }: { product: ProductScorecard; k
 }
 
 export function PillsPage({ product, brand, model }: { product: ProductScorecard; brand: Brand; model: PillsPageModel }) {
-  // The rule ids to quote are the decision core's. In the layout-only mode the standing is today's, so no rule of the core is behind it and none is named.
-  // One rule can fire for several ingredients; the footer names each rule once.
-  const ruleIds = model.mode === "pills" ? [...new Set(model.decision.reasons.filter((r) => r.kind !== "note").map((r) => r.ruleId))] : [];
   const how = model.howToUse
     ? ([["Where it fits", model.howToUse.routine], ["Layering", model.howToUse.layering], ["What to expect now", model.howToUse.expect], ["Over time", model.howToUse.later]] as const).filter(([, v]) => v)
     : [];
@@ -321,13 +318,7 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
         <footer className="flex flex-col gap-1.5 border-t border-[#e8e1d6] pt-[18px] text-[13px] leading-[1.6] text-[#55504d]">
           <p>This is an independent analysis of publicly available information. It is not medical advice.</p>
           <p>
-            Found a mistake? <Link href="/contact" className="text-[#1d6761] underline underline-offset-[3px]">Report a problem</Link> and quote{" "}
-            {ruleIds.length
-              ? ruleIds.map((r, i) => (
-                  <span key={r}>{i > 0 ? ", " : ""}<code className="font-mono text-xs bg-[#f1ece3] text-[#282828] px-1.5 py-px rounded-md">{r}</code></span>
-                ))
-              : "this page's address"}{" "}
-            so we can check the exact rule and the exact source.
+            Found a mistake? <Link href="/contact" className="text-[#1d6761] underline underline-offset-[3px]">Report a problem</Link> so we can check the exact rule and the exact source.
           </p>
         </footer>
       </Band>

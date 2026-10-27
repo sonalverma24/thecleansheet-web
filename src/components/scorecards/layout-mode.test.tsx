@@ -55,8 +55,8 @@ describe.each(FIXTURES)("the new layout with today's standing, %s", (_name, revi
 
   it("names no rule of the decision core: the standing is not theirs", () => {
     const footer = html.slice(html.indexOf("<footer"));
-    expect(footer).toContain("quote this page&#x27;s address");
     expect(footer).not.toMatch(/\b(block|gap|caution|support|med|note)\.[a-z_]+/);
+    expect(footer).not.toMatch(/quote/i);
   });
 
   it("changes nothing else: every block below the take is the pills page's own", () => {
