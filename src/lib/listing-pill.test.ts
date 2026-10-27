@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { SAMPLE_EXAMPLE_MEDICINAL, SAMPLE_EXAMPLE_MINERAL_SUNSCREEN, SAMPLE_EXAMPLE_PROHIBITED, SAMPLE_EXAMPLE_SUNSCREEN, SAMPLE_MINIMALIST_B5 } from "@/data/analysis/sample-reviews";
 import { ANALYSER_FLAGS } from "@/lib/analyser-flags";
 import { listingPill } from "@/lib/listing-pill";
+import { GLANCE_MAX } from "@/lib/pills-page";
 import { pillsFor } from "@/lib/pills-for-review";
 import { deriveVerdict } from "@/lib/product-review-engine";
 import type { ProductReview } from "@/lib/product-review-types";
@@ -19,7 +20,9 @@ describe.each(FIXTURES)("the card's pill and ticks, %s", (_name, review) => {
   it("are the page's own: the same pill, the same ticks, in the same order", () => {
     expect(card.pill).toEqual({ key: model.pill.key, marker: model.pill.marker });
     expect(card.glance).toEqual(model.highlights.map((h) => ({ label: h.label, state: h.state })));
-    expect(card.glance!.length).toBeGreaterThan(0);
+    // Only checks we can stand behind, at most five; a product whose list is not source-backed has none, and its card shows the pill alone.
+    expect(card.glance!.length).toBeLessThanOrEqual(GLANCE_MAX);
+    for (const g of card.glance!) expect(g.state, g.label).not.toBe("unknown");
   });
 
   it("carry no verdict word at all: a card gets a colour, never a label", () => {

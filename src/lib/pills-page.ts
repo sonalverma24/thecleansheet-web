@@ -279,9 +279,8 @@ function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
     if (!check) return [];
     const reviewed = check.evidenceStatus === "Evidence visible" && check.decision === "Publicly supported";
     const contradicted = check.evidenceStatus === "Evidence visible" && check.decision === "Not publicly supported";
-    const claimLabel = reviewed ? `TCS evidence reviewed: ${label}`
-      : check.evidenceStatus === "Brand claim — TCS evidence not reviewed" ? `${label}: brand claim; TCS evidence not reviewed`
-      : `${label}: evidence not confirmed`;
+    // Short on purpose: the chip is a keyword. The note and the source stay in `detail`, and the Claim check block has the full story.
+    const claimLabel = reviewed ? `${label}: supported` : contradicted ? `${label}: not supported` : `${label}: brand claim`;
     const detail = [check.note, check.sourceUrl ? `Source: ${check.sourceUrl}` : ""].filter(Boolean).join(" ");
     return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
   });
@@ -300,7 +299,14 @@ function veganOriginHighlight(product: ProductScorecard): Highlight | null {
   return { label, state, ...(detail ? { detail } : {}) };
 }
 
-export function highlightsOf(product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
+/** The strip shows at most this many chips. */
+export const GLANCE_MAX = 5;
+
+/** Every check we can stand behind, a tick or a cross, ticks first and then the crosses (the order the strip shows them in).
+    A check we could not make (state "unknown": the ingredient list is not source-backed, the claim is only the brand's, the origin screen is unresolved)
+    is not drawn at all: a row of grey "not known" chips says nothing, and where each stands is still in the Claim check, Regulatory check and Gaps blocks.
+    Not capped: the FAQ reads its answers from here, so the cap in `capGlance` can never cost one. */
+export function verifiedChecks(product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
   const have = FULL_INCI_STATUSES.has(product.inciCompleteness?.status ?? "") && inci.length > 0;
   const named = (re: RegExp) => inci.some((i) => re.test(i.trim()));
   const fragranceState = !have ? "unknown" : named(FRAGRANCE_RE) || named(ESSENTIAL_OIL_RE) ? "no"
@@ -325,7 +331,20 @@ export function highlightsOf(product: ProductScorecard, inci: string[], preg?: P
     if (handled.test(t.label)) continue;
     out.push({ label: t.label, state: t.value ? "yes" : "no" });
   }
-  return out.slice(0, 12);
+  return [...out.filter((h) => h.state === "yes"), ...out.filter((h) => h.state === "no")];
+}
+
+/** At most GLANCE_MAX chips, shown ticks first and then crosses. When there are more checks than room, the crosses are kept before the ticks are:
+    the strip never drops a concern to make room for a tick. Empty when nothing could be verified, and then the strip is not drawn. */
+export function capGlance(checks: Highlight[]): Highlight[] {
+  const crosses = checks.filter((h) => h.state === "no").slice(0, GLANCE_MAX);
+  const ticks = checks.filter((h) => h.state === "yes").slice(0, GLANCE_MAX - crosses.length);
+  return [...ticks, ...crosses];
+}
+
+/** The chips on the page for a product. */
+export function highlightsOf(product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
+  return capGlance(verifiedChecks(product, inci, preg));
 }
 
 /* ── blocks 6 and 7: the one-liners ──────────────────────────── */
@@ -542,10 +561,11 @@ function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
 
 /* ── block 13: FAQ ───────────────────────────────────────────── */
 
-function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: ProductScorecard, preg: ProductPregnancyScreen | undefined, medicine: boolean): PillsPageModel["faq"] {
+function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: ProductScorecard, preg: ProductPregnancyScreen | undefined, medicine: boolean, checks: Highlight[]): PillsPageModel["faq"] {
   const name = product.productName;
   const out: PillsPageModel["faq"] = [];
-  const frag = m.highlights.find((h) => h.label === "Fragrance free");
+  // From every verified check, not the chips on the page: the strip is capped and the answer must not depend on the cap.
+  const frag = checks.find((h) => h.label === "Fragrance free");
   if (frag && frag.state !== "unknown") out.push({ q: `Is ${name} fragrance free?`, a: frag.state === "yes" ? "The complete ingredient list we reviewed contains no explicit fragrance declaration or essential oil." : "The complete ingredient list names an explicit fragrance declaration or essential oil." });
   const pregExposure = preg?.exposure ?? "unknown";
   const pregAnswer = !preg || preg.status !== "screened"
@@ -583,6 +603,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const settled = new Set(out.settled.map((f) => f.ruleId));
   const inci = reviewInciList(review);
   const preg = product.pregnancyScreen;
+  const checks = verifiedChecks(product, inci, preg);
   const panel = benchmarkPanel(d);
   const base: Omit<PillsPageModel, "faq"> = {
     release: ANALYSER_RELEASE,
@@ -592,7 +613,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     take: takeOf(d, review, product, inci, now),
     buyLinks: buyLinksOf(review, product),
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),
-    highlights: highlightsOf(product, inci, preg),
+    highlights: capGlance(checks),
     fit: {
       suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
       careful: fitCautionsOf(review),
@@ -608,5 +629,5 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     analysedAt: d.basis.analysedAt,
     stale: ageDays(d.basis.analysedAt, now) > STALE_DAYS,
   };
-  return { ...base, faq: faqOf(base, review, product, preg, medicine) };
+  return { ...base, faq: faqOf(base, review, product, preg, medicine, checks) };
 }

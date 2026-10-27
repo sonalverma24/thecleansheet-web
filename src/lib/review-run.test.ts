@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { interpretReviewResponse } from "./review-run";
+import { interpretReviewResponse, REVIEW_ERROR_MESSAGE } from "./review-run";
 
 describe("interpretReviewResponse", () => {
   it("opens the review's own page when the review comes back", () => {
@@ -26,6 +26,11 @@ describe("interpretReviewResponse", () => {
     expect(interpretReviewResponse(200, { error: "busy" }, "x")).toEqual({ kind: "error", error: "busy" });
     expect(interpretReviewResponse(200, { type: "out_of_scope" }, "x")).toEqual({ kind: "error", error: "scope" });
     expect(interpretReviewResponse(500, { type: "error" }, "x")).toEqual({ kind: "error", error: "fail" });
+  });
+
+  it("says so when a link did not identify a product, instead of calling it a failure", () => {
+    expect(interpretReviewResponse(200, { type: "unidentified" }, "https://example.com/p/123")).toEqual({ kind: "error", error: "unidentified" });
+    expect(REVIEW_ERROR_MESSAGE.unidentified).toMatch(/couldn't identify the product/i);
   });
 
   it("shows the popup, not a page, for a nutraceutical or a prescription drug", () => {

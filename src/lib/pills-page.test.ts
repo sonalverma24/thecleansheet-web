@@ -6,8 +6,10 @@ import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { decideReview } from "@/lib/analyser-x";
 import { lint } from "@/lib/analyser-x/copy";
 import { BASE, claimOf, evidence, rv } from "@/lib/analyser-x/test-helpers";
+import { reviewInciList } from "@/lib/review-inci";
+import type { ClaimsCheckItem } from "@/data/brands/types";
 import type { ProductReview } from "@/lib/product-review-types";
-import { buildPillsPage, buyLinksOf, claimLine, dayText, shortActives, testLevelOf, type PillsPageModel } from "./pills-page";
+import { GLANCE_MAX, buildPillsPage, buyLinksOf, claimLine, dayText, highlightsOf, shortActives, testLevelOf, verifiedChecks, type PillsPageModel } from "./pills-page";
 
 const NOW = "2026-10-23T00:00:00.000Z";
 const page = (review: ProductReview, now = NOW, over?: Parameters<typeof decideReview>[2]) => {
@@ -33,12 +35,13 @@ describe("a Good choice", () => {
     expect(m.take.confidence.sentence).toBe("We are highly confident in this: the ingredient list comes from INCIDecoder, all 10 ingredients were checked and 4 of 4 claims were checked against pages we read.");
   });
 
-  it("block 4: highlights say only what the evidence lets us say, including the pregnancy check", () => {
+  it("block 4: highlights say only what the evidence lets us say: a tick or a cross, never a grey 'not known'", () => {
     const by = Object.fromEntries(m.highlights.map((h) => [h.label, h.state]));
-    expect(by).toMatchObject({ "No pregnancy flags found": "unknown", "Paraben free": "yes", "Fragrance free": "yes", "Alcohol free": "yes", "Mineral filters only": "yes", "SPF: brand claim; TCS evidence not reviewed": "unknown" });
-    // No product is called pregnancy safe, and a brand's SPF claim is not a verified tick without a TCS evidence record.
-    expect(m.highlights.map((h) => h.label)).not.toContain("Pregnancy safe");
-    expect(m.highlights.map((h) => h.label)).not.toContain("SPF verified");
+    expect(by).toEqual({ "Fragrance free": "yes", "Paraben free": "yes", "Alcohol free": "yes", "Mineral filters only": "yes", "Essential oil free": "yes" });
+    // No product is called pregnancy safe. A brand's SPF claim with no TCS evidence record, and a screen that found no flag (which is not proof), are not drawn at all.
+    const labels = m.highlights.map((h) => h.label);
+    for (const gone of ["Pregnancy safe", "SPF verified", "No pregnancy flags found"]) expect(labels).not.toContain(gone);
+    expect(labels.filter((l) => /brand claim|TCS evidence/i.test(l))).toEqual([]);
   });
 
   it("blocks 6 and 7: one line each", () => {
@@ -131,7 +134,7 @@ describe("what changes the confidence sentence", () => {
 describe("at a glance", () => {
   it("names a pregnancy-flagged ingredient instead of ticking", () => {
     const { model: m } = page(rv({ productName: "Night Serum", category: "Serum", inciIngredients: [...BASE, "Retinyl Palmitate"] }));
-    const h = m.highlights[0];
+    const h = m.highlights.find((x) => x.label.startsWith("Pregnancy ingredient flag"));
     expect(h).toMatchObject({ label: "Pregnancy ingredient flag: Retinyl Palmitate", state: "no" });
     const answer = m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a;
     expect(answer).toMatch(/^Ingredient-level flags from our reference data: Retinyl Palmitate: .*\(source: .+\)\./);
@@ -144,20 +147,85 @@ describe("at a glance", () => {
     expect(m.faq[0].a).toBe("The complete ingredient list names an explicit fragrance declaration or essential oil.");
   });
 
-  it("is never a tick while the list is unknown", () => {
+  it("is never a tick while the list is unknown, and is then not drawn at all", () => {
     const review = rv({ productName: "Cream", category: "Moisturizer", inciIngredients: [], ingredientReads: [] }, evidence.model());
-    const by = Object.fromEntries(page(review).model.highlights.map((h) => [h.label, h.state]));
-    expect(by["Paraben free"]).toBe("unknown");
-    expect(by["Fragrance free"]).toBe("unknown");
+    const { model: m } = page(review);
+    expect(m.highlights).toEqual([]);
+    // Nothing is claimed in words either: the FAQ does not answer "is it fragrance free" from a list we could not read.
+    expect(m.faq.map((f) => f.q)).not.toContain("Is Cream fragrance free?");
+  });
+
+  it("a list with no captured source quote is not drawn as ticks, however complete it looks", () => {
+    const review = rv({ productName: "Cream", category: "Moisturizer" }, evidence.model());
+    expect(review.inciIngredients?.length).toBeGreaterThan(3);
+    expect(page(review).model.highlights).toEqual([]);
+  });
+});
+
+describe("the At a glance strip: only what we can stand behind, short, and at most five", () => {
+  const supported = (claim: string): ClaimsCheckItem => ({ claim, evidenceStatus: "Evidence visible", decision: "Publicly supported", note: "A named test report is public." });
+  const contradicted = (claim: string): ClaimsCheckItem => ({ claim, evidenceStatus: "Evidence visible", decision: "Not publicly supported", note: "The public report says otherwise." });
+  const brandOnly = (claim: string): ClaimsCheckItem => ({ claim, evidenceStatus: "Brand claim — TCS evidence not reviewed", decision: "Needs proof", note: "" });
+  /** The page model for a review whose claim checks are replaced by `claims`. */
+  const withClaims = (review: ProductReview, claims: ClaimsCheckItem[]) => {
+    const { product } = reviewToScorecard(review, deriveVerdict(review));
+    const withChecks = { ...product, claimsCheck: claims };
+    return { model: buildPillsPage(review, withChecks, NOW, decideReview(review, NOW)), product: withChecks };
+  };
+  const SIX = ["SPF 50", "Dermatologist-tested", "Non-comedogenic", "Vegan formula", "Cruelty-free"];
+
+  it("draws no chip for a claim that is only the brand's word: it is not a tick, a cross or a grey chip", () => {
+    const { model: m } = withClaims(rv({ productName: "Sun Gel", category: "Sunscreen" }), SIX.map(brandOnly));
+    expect(m.highlights.filter((h) => /SPF|Dermatologist|comedogenic|Vegan claim|Cruelty/i.test(h.label))).toEqual([]);
+    for (const h of m.highlights) expect(h.state, h.label).not.toBe("unknown");
+  });
+
+  it("names a claim in a few words: supported is a tick, not supported is a cross", () => {
+    const { model: m } = withClaims(rv({ productName: "Sun Gel", category: "Sunscreen" }), [supported("SPF 50"), contradicted("Non-comedogenic")]);
+    const by = Object.fromEntries(m.highlights.map((h) => [h.label, h.state]));
+    expect(by).toMatchObject({ "SPF: supported": "yes", "Non-comedogenic: not supported": "no" });
+    for (const h of m.highlights) expect(h.label.length, h.label).toBeLessThanOrEqual(34);
+  });
+
+  it("shows at most five, ticks first and then crosses, and never drops a cross to make room for a tick", () => {
+    const review = rv({ productName: "Sun Gel", category: "Sunscreen", inciIngredients: [...BASE, "Parfum", "Methylparaben", "Alcohol Denat."] });
+    const all = withClaims(review, SIX.map(supported));
+    const inci = reviewInciList(review);
+    const checks = verifiedChecks(all.product, inci, all.product.pregnancyScreen);
+    const crosses = checks.filter((h) => h.state === "no");
+    // More checks than room: the fragrance, paraben and alcohol crosses are there, and five claim ticks.
+    expect(checks.length).toBeGreaterThan(GLANCE_MAX);
+    for (const label of ["Fragrance free", "Paraben free", "Alcohol free"]) expect(crosses.map((h) => h.label)).toContain(label);
+    const shown = all.model.highlights;
+    expect(shown).toHaveLength(GLANCE_MAX);
+    // Every cross made it onto the strip; the ticks only fill what room is left.
+    expect(shown.filter((h) => h.state === "no")).toEqual(crosses);
+    // Ticks lead, crosses follow: once a cross appears, no tick comes after it.
+    const firstCross = shown.findIndex((h) => h.state === "no");
+    expect(firstCross).toBeGreaterThan(0);
+    expect(shown.slice(0, firstCross).every((h) => h.state === "yes")).toBe(true);
+    expect(shown.slice(firstCross).every((h) => h.state === "no")).toBe(true);
+    expect(highlightsOf(all.product, inci, all.product.pregnancyScreen)).toEqual(shown);
+  });
+
+  it("the FAQ still answers 'is it fragrance free' when that tick falls beyond the cap", () => {
+    // At least five crosses (two from the list, three contradicted claims) fill the strip, so the Fragrance free tick is not on it.
+    const review = rv({ productName: "Sun Gel", category: "Sunscreen", inciIngredients: [...BASE, "Methylparaben", "Alcohol Denat."] });
+    const { model: m } = withClaims(review, ["SPF 50", "Dermatologist-tested", "Non-comedogenic"].map(contradicted));
+    expect(m.highlights).toHaveLength(GLANCE_MAX);
+    expect(m.highlights.every((h) => h.state === "no")).toBe(true);
+    expect(m.highlights.map((h) => h.label)).not.toContain("Fragrance free");
+    expect(m.faq.find((f) => f.q === "Is Sun Gel fragrance free?")?.a).toMatch(/contains no explicit fragrance declaration or essential oil/);
   });
 });
 
 describe("the pregnancy chip", () => {
   const pregnancyChips = (m: PillsPageModel) => m.highlights.filter((h) => /pregnan/i.test(h.label));
 
-  it("says 'No pregnancy flags found' when the list was screened and nothing is flagged: never 'safe'", () => {
-    const chips = pregnancyChips(page(rv({ productName: "Plain Cream", category: "Moisturizer" })).model);
-    expect(chips).toEqual([expect.objectContaining({ label: "No pregnancy flags found", state: "unknown", detail: expect.stringMatching(/not proof that the product is safe during pregnancy/) })]);
+  it("draws no chip when the list was screened and nothing is flagged: not a tick (never 'safe') and not a grey one; the FAQ says it in words", () => {
+    const { model: m } = page(rv({ productName: "Plain Cream", category: "Moisturizer" }));
+    expect(pregnancyChips(m)).toEqual([]);
+    expect(m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toMatch(/No sourced pregnancy flags were found.*not proof that the product is safe during pregnancy/);
   });
 
   it("says 'Pregnancy ingredient flag' only for a product that has one, and names the ingredient", () => {
@@ -188,7 +256,8 @@ describe("the pregnancy chip", () => {
 
   it("a retinol alternative is not mistaken for a retinoid", () => {
     const { model: m } = page(rv({ productName: "Bakuchiol Serum", category: "Serum", inciIngredients: [...BASE, "Bakuchiol (a retinol alternative)"] }));
-    expect(pregnancyChips(m)).toEqual([expect.objectContaining({ label: "No pregnancy flags found", state: "unknown" })]);
+    // Not flagged as a retinoid, and nothing else to say: no chip.
+    expect(pregnancyChips(m)).toEqual([]);
   });
 
   it("shows no chip when some ingredient could not be checked and nothing is flagged: in between is neither a flag nor 'no flags found'", () => {

@@ -78,9 +78,10 @@ export async function getSitemapEntries(section: SitemapSection): Promise<Sitema
 
     case "reviews":
       // Reviews of products that also have a catalogue page canonicalise to that
-      // page, so they are not their own canonical and must not be listed.
+      // page, so they are not their own canonical and must not be listed. A page kept
+      // out of search (a rating we could not give it) is noindex, so it is not listed either.
       return (await listReviewIndex())
-        .filter((r) => !cataloguePathFor(r.brand, r.productName))
+        .filter((r) => !cataloguePathFor(r.brand, r.productName) && !r.outOfSearch)
         .map((r) => ({ url: absoluteUrl(`/analysis/${r.slug}`), lastModified: validDate(r.reviewedAt) }));
 
     case "ingredients": {

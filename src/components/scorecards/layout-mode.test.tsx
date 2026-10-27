@@ -16,7 +16,12 @@ const FIXTURES: [string, ProductReview][] = [
   ["prohibited ingredient", SAMPLE_EXAMPLE_PROHIBITED], ["medicinal shampoo", SAMPLE_EXAMPLE_MEDICINAL],
 ];
 const draw = (v: ReturnType<typeof pillsFor>) => renderToStaticMarkup(<PillsPage product={v.product} brand={v.brand} model={v.model} />);
-const take = (html: string) => html.slice(html.indexOf('aria-label="The Clean Sheet rating"'), html.indexOf('id="at-a-glance"'));
+/** The take card: from its marker to whichever block follows it (the At a glance strip is not drawn when nothing could be verified). */
+const take = (html: string) => {
+  const from = html.indexOf('aria-label="The Clean Sheet rating"');
+  const ends = ['id="at-a-glance"', 'id="fit"', 'id="where-to-buy"'].map((m) => html.indexOf(m, from)).filter((i) => i > from);
+  return html.slice(from, Math.min(...ends));
+};
 
 describe("the standing as the take card shows it", () => {
   it.each([
@@ -50,8 +55,8 @@ describe.each(FIXTURES)("the new layout with today's standing, %s", (_name, revi
 
   it("names no rule of the decision core: the standing is not theirs", () => {
     const footer = html.slice(html.indexOf("<footer"));
-    expect(footer).toContain("quote this page&#x27;s address");
     expect(footer).not.toMatch(/\b(block|gap|caution|support|med|note)\.[a-z_]+/);
+    expect(footer).not.toMatch(/quote/i);
   });
 
   it("changes nothing else: every block below the take is the pills page's own", () => {

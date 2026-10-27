@@ -33,6 +33,9 @@ export async function POST(req: Request) {
     if (result.type === "answer") {
       return Response.json({ type: "answer", answer: result.answer });
     }
+    if (result.type === "unidentified") {
+      return Response.json({ type: "unidentified", message: "I couldn't identify the product from this URL, so I haven't saved it." });
+    }
     return outOfScope();
   } catch (err: unknown) {
     console.error("[analyze]", err instanceof Error ? err.message : err);

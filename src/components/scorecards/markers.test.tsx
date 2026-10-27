@@ -78,7 +78,7 @@ describe("the three colour markers", () => {
     expect(html).not.toMatch(/data-marker="(?!green|yellow|red|none)[a-z]+"/);
   });
 
-  it("the footer names a rule once, however many ingredients fire it", () => {
+  it("the footer asks for a report and names no rule, however many ingredients fire one", () => {
     const built = pillsFor(SAMPLE_EXAMPLE_SUNSCREEN, deriveVerdict(SAMPLE_EXAMPLE_SUNSCREEN));
     const dup = { ruleId: "caution.soft_adverse", kind: "caution", text: "x" };
     const model = { ...built.model, mode: "pills" as const, decision: { ...built.model.decision, reasons: [dup, dup, dup] } };
@@ -86,7 +86,12 @@ describe("the three colour markers", () => {
     const spy = vi.spyOn(console, "error").mockImplementation((...a) => { errors.push(a); });
     const html = renderToStaticMarkup(<PillsPage product={built.product} brand={built.brand} model={model} />);
     spy.mockRestore();
-    expect(html.match(/<code[^>]*>caution\.soft_adverse<\/code>/g)).toHaveLength(1);
+    const footer = html.slice(html.indexOf("<footer"));
+    // The reader is not asked to quote a rule: no rule id is printed, and nothing says "quote".
+    expect(footer).not.toContain("caution.soft_adverse");
+    expect(footer).not.toMatch(/<code|quote/i);
+    expect(footer).toContain("Found a mistake?");
+    expect(footer).toContain(">Report a problem</a> so we can check the exact rule and the exact source.");
     expect(errors.filter((e) => String(e[0]).includes("same key"))).toEqual([]);
   });
 });

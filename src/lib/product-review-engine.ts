@@ -35,6 +35,38 @@ export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
 const isURL = (t: string) => /^https?:\/\//i.test(t.trim());
 
+const IDENTITY_PLACEHOLDER = /\b(?:unknown product|product not identified|could not be identified|unable to identify|not identified from|page not found|not found|service unavailable|temporarily unavailable|product unavailable|not available|n\s*\/\s*a)\b|\b404\b/i;
+
+const SKIP_URL_SEGMENTS = new Set([
+  "collections", "products", "pages", "categories", "category",
+  "all", "shop", "store", "product", "items", "listing", "p", "dp",
+]);
+
+function identityPlaceholder(value: string | null | undefined): boolean {
+  if (!value?.trim()) return true;
+  const normalized = value.trim().replace(/[.!?]+$/, "");
+  return /^(?:unknown(?:\s+brand|\s+product)?|n\s*\/\s*a|not available|amazon(?:\.(?:in|com))?)$/i.test(normalized) || IDENTITY_PLACEHOLDER.test(value);
+}
+
+function productNameHintFromURL(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split("/").filter(Boolean);
+    const candidates = segments
+      .filter((segment) => segment.length > 3 && !/^\d+$/.test(segment) && !SKIP_URL_SEGMENTS.has(segment.toLowerCase()))
+      .map((segment) => segment.replace(/\.(?:html?|php)$/i, "").replace(/[-_]+/g, " ").trim());
+    return candidates.find((candidate) => (candidate.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2)
+      ?? candidates.at(-1) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function hasDescriptiveProductPath(url: string): boolean {
+  const hint = productNameHintFromURL(url);
+  if (identityPlaceholder(hint)) return false;
+  return (hint.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2;
+}
+
 /* A bare INCI paste (an ingredient list on its own) identifies no product: it
    carries a formula but no brand or product name. Reviews of such scans are shown
    to the user but never added to the public directory - the directory is for
@@ -676,6 +708,8 @@ export type ProductReviewResult =
   | { type: "disambiguation"; query: string; options: { name: string }[] }
   /** A nutraceutical or a prescription drug: not a cosmetic, so there is no review. Never stored, never listed (see unrated-kind.ts). */
   | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
+  /** A URL that did not establish which product it is (an error page, a bare store link). Never stored, never listed. */
+  | { type: "unidentified" }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -965,27 +999,41 @@ export async function listStoredReviews(limit = 60): Promise<StoredReviewSummary
     the table because PostgREST silently caps one response at 1,000 rows, so a
     single `.limit(5000)` would quietly truncate the sitemap once the repository
     grows past that. Same gating as listStoredReviews (current rubric, not retracted). */
-export async function listReviewIndex(): Promise<{ slug: string; productName: string; brand: string; reviewedAt: string }[]> {
+export async function listReviewIndex(): Promise<{ slug: string; productName: string; brand: string; reviewedAt: string; outOfSearch?: boolean }[]> {
   const PAGE = 1000;
-  const out: { slug: string; productName: string; brand: string; reviewedAt: string }[] = [];
+  const out: { slug: string; productName: string; brand: string; reviewedAt: string; outOfSearch?: boolean }[] = [];
+  // With the pills page on, a page we could not rate is kept out of search (noindex), so the sitemap must not list it: a listed URL that says noindex is a
+  // contradiction search engines report as an error. Reading each review is only done then.
+  const pills = isFlagOn(ANALYSER_FLAGS.pillsPage);
+  const outOfSearch = pills ? (await import("@/lib/pills-for-review")).keepOutOfSearch : null;
+  const pillsFor = pills ? (await import("@/lib/pills-for-review")).pillsFor : null;
   try {
     const db = createAdminClient();
     const unrated = await getUnratedSlugs();
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await db
         .from("product_reviews")
-        .select("product_slug, product_name, brand, reviewed_at")
+        .select((pills ? "product_slug, product_name, brand, reviewed_at, result" : "product_slug, product_name, brand, reviewed_at") as "product_slug, product_name, brand, reviewed_at, result")
         .in("rubric_rev", [...ACCEPTED_RUBRIC_REVS])
         .order("product_slug", { ascending: true })
         .range(from, from + PAGE - 1);
       if (error || !data) break;
       for (const r of data) {
+        // Retracted reviews and nutraceuticals / prescription drugs are never listed; of the rest, a page we could not rate is listed but marked out of search.
         if (!RETRACTED_SLUGS.has(String(r.product_slug)) && !unrated.has(String(r.product_slug))) {
+          let hidden = false;
+          if (pillsFor && outOfSearch) {
+            const stored = r.result as ProductReviewResult | null | undefined;
+            try {
+              if (stored && stored.type === "product-review") hidden = outOfSearch(pillsFor(stored.review, deriveVerdict(stored.review)).model.pill.key);
+            } catch { /* a review we cannot read stays listed, as before */ }
+          }
           out.push({
             slug: String(r.product_slug),
             productName: String(r.product_name ?? ""),
             brand: String(r.brand ?? ""),
             reviewedAt: String(r.reviewed_at ?? ""),
+            ...(hidden ? { outOfSearch: true } : {}),
           });
         }
       }
@@ -1156,9 +1204,15 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   if (isURL(q)) {
     const page = await fetchPageMarkdown(q);
+    if (page) pageName = titleFromMarkdown(page);
+    // This URL can itself be an analyser failure page. Its title and slug are
+    // explicit evidence that no product identity was recovered; do not feed
+    // that failure text to the model or let it create a repository row.
+    if (identityPlaceholder(pageName) && !hasDescriptiveProductPath(q)) {
+      return { type: "unidentified" };
+    }
     if (page) {
       pageExcerpt = productBodyExcerpt(page);
-      pageName = titleFromMarkdown(page);
       capturedPageText = productBodyExcerpt(page, 60000);
       capturedPageTitle = pageName ?? "";
       capturedPageAt = new Date().toISOString();
@@ -1431,7 +1485,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // A scan of a bare INCI list (no URL, no product name) has no confirmed product
   // identity, so its review is returned to the user but kept OUT of the public
   // directory - neither the /brands repository grid nor the verified library.
-  const productIdentified = isURL(q) || !!inci || !looksLikeInciList(q);
+  const productIdentified = isURL(q)
+    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
+      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
+    : !!inci || !looksLikeInciList(q);
+
+  // A URL that did not establish a product fails closed. A pasted ingredient list has no product
+  // by design: it falls through to be returned and cached in-process below, never saved.
+  if (isURL(q) && !productIdentified) return { type: "unidentified" };
 
   // Approved products join the registry (shown as tiles on /review and /brands).
   if (verdict.status === "approved" && productIdentified) {
