@@ -97,6 +97,7 @@ A `slug` is computed: `inci?.slug` if INCI resolved, otherwise `slugify(name)`.
 - **L1:** in-memory `REVIEW_CACHE` (Map).
 - **L2:** Supabase `public.product_reviews`, matched on `product_slug` **and** `rubric_rev === RUBRIC_REV` (currently `"r5"`). Stale-rubric rows are ignored so old scoring never resurfaces.
 - **Retracted slugs** (a hard-coded `RETRACTED_SLUGS` set) always return null - used to suppress known-wrong or duplicate reviews without deleting the row.
+- **Not a cosmetic:** a stored review that is a nutraceutical or a drug (see §3.4a) is answered `{ type: "unrated" }` instead, with no image retry and nothing written back.
 
 If a stored review is found, it is returned **with a freshly re-derived verdict** (`withFreshVerdict`): the stored model output is reused, but `deriveVerdict()` runs again against current code, so verdict-rule changes apply to old reviews without re-running the model. **A repository hit is instant and costs no model call.**
 
@@ -121,6 +122,13 @@ The user prompt tells the model to also search Nykaa, Amazon.in, Flipkart and th
 3. Same + "Your previous output was not valid JSON. Return ONLY the complete, valid JSON."
 
 After each, `parseJSON()` tolerantly extracts the object (strips code fences, slices from first `{` to last `}`, removes trailing commas). If the parse yields `type: "out_of_scope"`, it returns out-of-scope immediately. If it validates as a product review (`isValidProductReview`: has `type: "product-review"`, a non-empty `productName`, a `claimMap` array, and a numeric `scores.total`), the loop breaks. If all 3 fail validation → `{ type: "error" }`.
+
+### 3.4a The first gate: is it even a cosmetic?
+
+Right after the model's JSON is parsed and the brand is canonicalised, before anything is written, `unratedResultOf` asks `unratedKindOf` (`src/lib/unrated-kind.ts`) whether the product is a **nutraceutical** or a **drug**. If it is, `runProductReview` returns `{ type: "unrated", kind, productName, brand }`: no review is built, nothing is stored, nothing reaches the verified registry or the ingredient directory.
+
+- **Nutraceutical:** an explicit word in the name or category ("drink mix", "nutraceutical", "protein powder"), or a swallowed format ("capsules", "gummies", "tablets", "supplement") only when `categorise()` cannot place the product in a cosmetic type.
+- **Drug** (`src/lib/drug-signals.ts`): only what the product says, never its ingredients. A prescription notice (Rx, Prescription Required, Rx only, Schedule H; negations excluded) is a prescription drug. A "Drug Facts" label, or a maker named in the owner-signed `DRUG_ONLY_MANUFACTURERS`, is a drug. The text read is the product's name and category, the retailers' listing notes, and, for a URL, the page text and the label artwork (`imageEvidenceBlock(url, out)` reads the page's images a second time for it).
 
 ### 3.5 Canonical re-slug and de-dupe
 
@@ -325,6 +333,7 @@ Each tier carries a fixed label + headline (e.g. approved: "Claims hold up to th
 - **Verdict always re-derived on read** (`withFreshVerdict`) - verdict-logic changes apply to already-stored reviews without re-running the model.
 - **Permanent shareable page:** after a successful review, `page.tsx` rewrites the address bar to `/reviews/<slug>` (`window.history.replaceState`). That route (`src/app/reviews/[slug]/page.tsx`) reads the same stored review via `getStoredReview(slug)` and server-renders it, so it can be shared, bookmarked, reloaded, and crawled.
 - **Registry:** approved products are upserted into the verified-products store and surface as tiles on `/brands` and `/review`. `listRepositoryCatalogueProducts` maps stored reviews into the `/brands` grid tile format (re-deriving the tier each time), with a NEW badge on the latest 5 arrivals within 30 days.
+- **Unrated products are never stored,** and ones stored earlier are left out of every list: `getUnratedSlugs()` (five-minute cache) feeds `listStoredReviews`, `listReviewIndex` (the sitemap and directory) and `getRepositoryStats`, and `listRepositoryCatalogueProducts` checks each row. The row itself is left in place.
 - **Retraction:** `RETRACTED_SLUGS` suppresses specific reviews on every read path without deleting the row (used for known-wrong source data and duplicates).
 
 ---
@@ -339,7 +348,8 @@ The stored `ProductReview` + `DerivedVerdict` are mapped by `reviewToScorecard()
 - Ingredient reads, key actives, India context (a category-level climate line is supplied by the mapper when the engine's per-product `indiaContext` is absent), consumer suitability, price spread, platform parity.
 - Product image (or branded monogram fallback).
 
-Three non-review outcomes:
+Four non-review outcomes:
+- **Unrated** (a nutraceutical or a drug, §3.4a) → a popup, not a page: "We can't rate nutraceuticals yet" (with an email box), "This is a prescription drug", or "This is a drug, not a cosmetic". On the product's own page the popup opens with the page (`noindex`, no JSON-LD) and, once closed, leaves the same words in the page.
 - **Disambiguation** → "Which one did you mean?" list.
 - **Out of scope** → "That doesn't look like a beauty or personal-care product."
 - **Busy / fail** → retry message (busy = model overloaded; fail = suggests pasting the product link for a more reliable read).
