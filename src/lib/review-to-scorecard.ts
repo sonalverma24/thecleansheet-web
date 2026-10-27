@@ -15,6 +15,7 @@ import { enrichIngredients, keyActivesFrom } from "@/lib/inci-enrich";
 import { globalScreenFor } from "@/lib/global-screen";
 import { analysisWording } from "@/lib/analysis-wording";
 import { RETINOID_RE } from "@/lib/pregnancy-screen";
+import { isListReadWithoutQuote, isSourceBackedInci } from "@/lib/inci-source-backing";
 import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyIngredientFlag, PregnancyScreen, VeganScreen } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
@@ -24,7 +25,7 @@ function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: 
   const fragranceFreeClaim = /\b(?:fragrance|parfum|perfume|aroma)[\s-]*free\b|\b(?:no|without)\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b|\bfree from\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b/i.test(c.text);
   if (fragranceFreeClaim) {
     const evidence = evidenceForReview(review);
-    const fullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+    const fullList = isSourceBackedInci(review, ingredients);
     const explicit = ingredients.find((name) => /\b(?:parfum|perfume|fragrance|aroma)\b/i.test(name));
     const essentialOil = ingredients.find((name) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(name));
     const aromatic = ingredients.find((name) => /\b(?:lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i.test(name) && /\b(?:extract|water|distillate|hydrosol|oil|essence)\b/i.test(name));
@@ -55,7 +56,7 @@ function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: 
 
 function buildPregnancyScreen(review: ProductReview, ingredients: string[]): PregnancyScreen {
   const evidence = evidenceForReview(review);
-  const anchoredFullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+  const anchoredFullList = isSourceBackedInci(review, ingredients);
   const category = (review.category ?? "").toLowerCase();
   const exposure: PregnancyScreen["exposure"] = /cleanser|face wash|body wash|shampoo|soap|rinse[- ]off|conditioner|hair mask/.test(category)
     ? "rinse-off"
@@ -244,8 +245,9 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   // written without a list. One shared definition (src/lib/global-screen.ts).
   const globalScreen: GlobalScreen | undefined = globalScreenFor(review, inci);
   const inciEvidence = evidenceForReview(review);
-  const completeInci = inci.length >= 3 && inciEvidence.captureTrust >= 3 && !!inciEvidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
-  const completeInciStatus = !completeInci ? (inci.length ? "Partial" as const : "Missing" as const) : inciEvidence.captureTrust === 4
+  const completeInci = isSourceBackedInci(review, inci);
+  // A list with no captured quote is not partial: it was read in full, and only the source quote is missing.
+  const completeInciStatus = !completeInci ? (isListReadWithoutQuote(review, inci) ? "List read, source quote not captured" as const : inci.length ? "Partial" as const : "Missing" as const) : inciEvidence.captureTrust === 4
     ? "Full INCI on brand PDP" as const
     : inciEvidence.captureTrust === 3
       ? "Full INCI in reference database" as const

@@ -65,7 +65,7 @@ export type GlobalScreen = {
 };
 
 export type InciCompleteness = {
-  status: "Full INCI on brand PDP" | "Full INCI in reference database" | "Marketplace only" | "Partial" | "Missing";
+  status: "Full INCI on brand PDP" | "Full INCI in reference database" | "Marketplace only" | "List read, source quote not captured" | "Partial" | "Missing";
   flags: string[];
 };
 
