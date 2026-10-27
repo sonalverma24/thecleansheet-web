@@ -14,7 +14,9 @@ import { ingredientSafety, lookupIngredient, rowLooksValid } from "@/lib/ingredi
 import { enrichIngredients, keyActivesFrom } from "@/lib/inci-enrich";
 import { globalScreenFor } from "@/lib/global-screen";
 import { analysisWording } from "@/lib/analysis-wording";
-import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyScreen, VeganScreen } from "@/data/brands/types";
+import { RETINOID_RE } from "@/lib/pregnancy-screen";
+import { isListReadWithoutQuote, isSourceBackedInci } from "@/lib/inci-source-backing";
+import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyIngredientFlag, PregnancyScreen, VeganScreen } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
@@ -23,7 +25,7 @@ function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: 
   const fragranceFreeClaim = /\b(?:fragrance|parfum|perfume|aroma)[\s-]*free\b|\b(?:no|without)\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b|\bfree from\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b/i.test(c.text);
   if (fragranceFreeClaim) {
     const evidence = evidenceForReview(review);
-    const fullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+    const fullList = isSourceBackedInci(review, ingredients);
     const explicit = ingredients.find((name) => /\b(?:parfum|perfume|fragrance|aroma)\b/i.test(name));
     const essentialOil = ingredients.find((name) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(name));
     const aromatic = ingredients.find((name) => /\b(?:lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i.test(name) && /\b(?:extract|water|distillate|hydrosol|oil|essence)\b/i.test(name));
@@ -54,7 +56,7 @@ function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: 
 
 function buildPregnancyScreen(review: ProductReview, ingredients: string[]): PregnancyScreen {
   const evidence = evidenceForReview(review);
-  const anchoredFullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+  const anchoredFullList = isSourceBackedInci(review, ingredients);
   const category = (review.category ?? "").toLowerCase();
   const exposure: PregnancyScreen["exposure"] = /cleanser|face wash|body wash|shampoo|soap|rinse[- ]off|conditioner|hair mask/.test(category)
     ? "rinse-off"
@@ -68,13 +70,26 @@ function buildPregnancyScreen(review: ProductReview, ingredients: string[]): Pre
     const safety = ingredientSafety(ingredient);
     const confidence = safety.confidence.toLowerCase();
     const sourced = safety.valid && !!safety.source && (confidence === "high" || confidence === "medium");
-    if (!sourced) { unknownIngredients.push(ingredient); continue; }
-    const restriction = safety.pregnancyRestriction;
-    if (restriction && !/^(?:no|none|not)\b/i.test(restriction)) {
+    const restriction = sourced ? safety.pregnancyRestriction : null;
+    if (sourced && restriction && !/^(?:no|none|not)\b/i.test(restriction)) {
       flags.push({ ingredient, restriction, source: safety.source, confidence: confidence as "high" | "medium" });
+      continue;
     }
+    const retinoid = retinoidFlag(ingredient);
+    if (retinoid) { flags.push(retinoid); continue; }
+    if (!sourced) unknownIngredients.push(ingredient);
   }
   return { status: "screened", exposure, sourceUrl: evidence.sourceUrl || undefined, flags, unknownIngredients };
+}
+
+/** The database holds no row for plain Retinol (or the acid and aldehyde forms), so without this a retinol serum would read "not checked" and show no flag.
+    A retinoid is flagged on the vitamin A row's own source and confidence; if that row is ever missing or unsourced, nothing is flagged on its authority. */
+function retinoidFlag(ingredient: string): PregnancyIngredientFlag | null {
+  if (!RETINOID_RE.test(ingredient.replace(/\([^)]*\)/g, " "))) return null;
+  const vitaminA = ingredientSafety("Retinyl Palmitate");
+  const confidence = vitaminA.confidence.toLowerCase();
+  if (!vitaminA.valid || !vitaminA.source || (confidence !== "high" && confidence !== "medium")) return null;
+  return { ingredient, restriction: "A retinoid; generally advised against during pregnancy.", source: vitaminA.source, confidence: confidence as "high" | "medium" };
 }
 
 function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {
@@ -230,8 +245,9 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   // written without a list. One shared definition (src/lib/global-screen.ts).
   const globalScreen: GlobalScreen | undefined = globalScreenFor(review, inci);
   const inciEvidence = evidenceForReview(review);
-  const completeInci = inci.length >= 3 && inciEvidence.captureTrust >= 3 && !!inciEvidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
-  const completeInciStatus = !completeInci ? (inci.length ? "Partial" as const : "Missing" as const) : inciEvidence.captureTrust === 4
+  const completeInci = isSourceBackedInci(review, inci);
+  // A list with no captured quote is not partial: it was read in full, and only the source quote is missing.
+  const completeInciStatus = !completeInci ? (isListReadWithoutQuote(review, inci) ? "List read, source quote not captured" as const : inci.length ? "Partial" as const : "Missing" as const) : inciEvidence.captureTrust === 4
     ? "Full INCI on brand PDP" as const
     : inciEvidence.captureTrust === 3
       ? "Full INCI in reference database" as const

@@ -95,7 +95,7 @@ describe("the two gates: an alias applies only when the flag is on AND the pair 
     for (const e of INGREDIENT_ALIASES) expect(lookupKeys(e.alias, everythingSigned), e.alias).toEqual(first(e.alias));
   });
 
-  it("flag on, nothing signed off: nothing changes (the state this draft ships in)", () => {
+  it("flag on: a pair that is not signed off changes nothing", () => {
     vi.stubEnv(FLAG, "1");
     const unsigned = INGREDIENT_ALIASES.filter((e) => !isSignedOff(e));
     expect(activeAliasKeys(unsigned).size).toBe(0);
@@ -123,6 +123,35 @@ describe("the two gates: an alias applies only when the flag is on AND the pair 
     const keys = lookupKeys("Glycerin", wrong);
     expect(keys[0]).toBe("glycerin");
     expect(lookupIngredient("Glycerin")?.INCI_Name).toBe("Glycerin");
+  });
+
+  describe("the state the table ships in: reviewer TCS-P-024 signed all 24 pairs on 2026-10-27", () => {
+    const signedNow = INGREDIENT_ALIASES.filter(isSignedOff);
+
+    it("every pair is signed off", () => {
+      expect(signedNow).toHaveLength(24);
+      expect(INGREDIENT_ALIASES.filter((e) => !isSignedOff(e))).toEqual([]);
+    });
+
+    it("a sign-off records only an opaque reviewer reference and a real past date, never a name", () => {
+      for (const e of signedNow) {
+        expect(e.signedOffBy, e.alias).toMatch(/^TCS-P-\d{3}$/);
+        expect(Date.parse(e.signedOffOn!), e.alias).toBeLessThanOrEqual(Date.now());
+      }
+    });
+
+    it("with the flag off, the shipped table changes no lookup at all", () => {
+      vi.stubEnv(FLAG, "0");
+      for (const e of INGREDIENT_ALIASES) expect(lookupKeys(e.alias), e.alias).toEqual(first(e.alias));
+    });
+
+    it("with the flag on, the shipped table reaches the target for every signed pair", () => {
+      vi.stubEnv(FLAG, "1");
+      expect(lookupKeys("Water")).toEqual(["water", "aqua"]);
+      expect(lookupKeys("Water/Aqua/Eau")).toEqual(["water", "aqua"]);
+      for (const e of signedNow) expect(lookupKeys(e.alias).at(-1), e.alias).toBe(lookupKeys(e.target)[0]);
+      expect(lookupKeys("CI 77891").at(-1)).toBe("titanium dioxide");
+    });
   });
 
   it("a half-filled or blank sign-off does not count", () => {
@@ -165,10 +194,12 @@ describe("a slash label: an alias matches its first part, never a later one", ()
     vi.stubEnv(FLAG, "0");
     expect(lookupKeys("Water/Aqua", all)).toEqual(["water"]);
     vi.stubEnv(FLAG, "1");
-    const unsigned = INGREDIENT_ALIASES.filter((e) => !isSignedOff(e));
-    expect(unsigned.length).toBeGreaterThan(0);
+    // Independent of what the shipped table has signed off: strip every sign-off, and nothing may apply.
+    const unsigned = INGREDIENT_ALIASES.map((e) => ({ ...e, signedOffBy: undefined, signedOffOn: undefined }));
+    const table = activeAliasKeys(unsigned);
+    expect(table.size).toBe(0);
     // The baseline is the lookup with no aliases at all (the colour-index rule may keep a part after the slash, which is its own, older rule).
-    for (const e of unsigned) expect(lookupKeys(`${e.alias}/Zorbaflux`), e.alias).toEqual(lookupKeys(`${e.alias}/Zorbaflux`, new Map()));
+    for (const e of unsigned) expect(lookupKeys(`${e.alias}/Zorbaflux`, table), e.alias).toEqual(lookupKeys(`${e.alias}/Zorbaflux`, new Map()));
   });
 
   it("an exact first part still wins: a name that resolves on its own is never redirected", () => {

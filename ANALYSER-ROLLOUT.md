@@ -161,7 +161,10 @@ cache test and a soak (suggest 48 h). Vercel applies an env change on the next d
 | 5g | `ANALYSER_STRICT_IDENTITY` | Only confirmed identity serves an existing review. |
 
 **Parity promise.** With all flags off, verdicts, the At a glance ticks (both copies),
-the scorecard, JSON-LD, listings and pitch stamps equal today's. Pinned by
+the scorecard, JSON-LD, listings and pitch stamps equal today's. The one exception is the
+"Fragrance free" and "Essential oil free" ticks: since the evidence-backed badges they are read
+from a complete captured ingredient list, so they appear only with one. Ratings never depend
+on them. Pinned by
 `src/lib/verdict-parity.test.ts`; its snapshot is the preview. A step that changes it has
 changed what shoppers see.
 

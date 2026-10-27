@@ -7,8 +7,11 @@ import { buildStanding, makeReview, type StandingTarget } from "@/lib/review.fix
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 
 /* PARITY: with every analyser flag off, verdicts, the At a glance ticks (both copies of
-   the function) and the JSON-LD rating are identical to today. Pitch-stamp eligibility is
-   pinned too once the pitch demo is on this branch's base.
+   the function) and the JSON-LD rating are identical to today. The one deliberate exception
+   is the "Fragrance free" and "Essential oil free" ticks: since the evidence-backed badges
+   (1454080) they are read from a complete captured ingredient list, so they appear only
+   with one. Ratings never depend on it. Pitch-stamp eligibility is pinned too once the
+   pitch demo is on this branch's base.
    The snapshot below was recorded from the code as it stands BEFORE any policy change.
    A rollout step that alters it has changed what shoppers see, and the diff is the
    preview. Regenerating it is a deliberate act that belongs in the same commit as the
@@ -28,6 +31,14 @@ function observe(r: ReturnType<typeof buildStanding>) {
     jsonLdRating: tierToRating(v.tier) ?? null,
   };
 }
+
+/** The ticks derived from a complete captured ingredient list rather than from the brand's claims. */
+const EVIDENCE_TICKS = /^(Fragrance free|Essential oil free):/;
+const withoutEvidenceTicks = (o: ReturnType<typeof observe>) => ({
+  ...o,
+  ticksMain: o.ticksMain.filter((t) => !EVIDENCE_TICKS.test(t)),
+  ticksAnalyzedPage: o.ticksAnalyzedPage.filter((t) => !EVIDENCE_TICKS.test(t)),
+});
 
 const MATRIX = TARGETS.flatMap((target) =>
   [false, true].flatMap((catchAll) =>
@@ -53,14 +64,28 @@ describe("parity matrix: standing x catch-all x ingredient list", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("today's output ignores evidence status and disputes entirely", () => {
+  it("today's ratings ignore evidence status and disputes entirely", () => {
     for (const m of MATRIX) {
-      const base = observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList }));
+      const base = withoutEvidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList })));
       for (const evidence of ["anchored", "unverified"] as const) {
         for (const dispute of [false, true]) {
-          const variant = observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList, evidence, dispute }));
+          const variant = withoutEvidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList, evidence, dispute })));
           expect(variant, `${m.key} evidence=${evidence} dispute=${dispute}`).toEqual(base);
         }
+      }
+    }
+  });
+
+  it("fragrance ticks need a complete captured list: none without one, and a dispute never moves them", () => {
+    const evidenceTicks = (o: ReturnType<typeof observe>) => [...o.ticksMain, ...o.ticksAnalyzedPage].filter((t) => EVIDENCE_TICKS.test(t));
+    const listed = MATRIX.filter((m) => !m.noList);
+    expect(listed.every((m) => evidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, evidence: "anchored" }))).length > 0), "an anchored list earns the fragrance ticks").toBe(true);
+    for (const m of MATRIX) {
+      const opts = { catchAll: m.catchAll, noList: m.noList };
+      expect(evidenceTicks(observe(buildStanding(m.target, opts))), `${m.key} evidence=none`).toEqual([]);
+      expect(evidenceTicks(observe(buildStanding(m.target, { ...opts, evidence: "unverified" }))), `${m.key} evidence=unverified`).toEqual([]);
+      for (const evidence of ["anchored", "unverified"] as const) {
+        expect(observe(buildStanding(m.target, { ...opts, evidence, dispute: true })), `${m.key} evidence=${evidence}`).toEqual(observe(buildStanding(m.target, { ...opts, evidence })));
       }
     }
   });
