@@ -248,20 +248,21 @@ const AROMATIC_FORM_RE = /\b(extract|water|distillate|hydrosol|oil|essence)\b/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
 const FULL_INCI_STATUSES = new Set(["Full INCI on brand PDP", "Full INCI in reference database"]);
 
-/** Pregnancy flags describe ingredients and recorded exposure context. No flags found is not a product safety clearance. */
-function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight {
-  const exposure = p?.exposure ? `Recorded exposure category: ${p.exposure}.` : "Exposure category is unknown.";
-  if (!p || p.status !== "screened") {
-    const unknown = p?.unknownIngredients?.length ? ` Unknown ingredients: ${joinAnd(p.unknownIngredients)}.` : "";
-    return { label: "Pregnancy ingredient screen incomplete", state: "unknown", detail: `This ingredient screen is incomplete; it is not a product safety assessment. ${exposure}${unknown} Ask a healthcare professional about individual use.` };
-  }
+/** The pregnancy chip shows only when the screen is sure, in one of two ways:
+      a flagged ingredient       "Pregnancy ingredient flag: <names>", even when some other ingredient could not be checked (a caution is a caution);
+      a complete screen, no flag "No pregnancy flags found".
+    Anything in between (the ingredient list is not source-backed, or an ingredient could not be checked and nothing is flagged) shows no chip at all, neither a caution nor a
+    reassurance; the FAQ still answers the question in words. Pregnancy flags describe ingredients and recorded exposure context: no flags found is not a product safety clearance. */
+function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight | null {
+  if (!p || p.status !== "screened") return null;
+  const exposure = p.exposure ? `Recorded exposure category: ${p.exposure}.` : "Exposure category is unknown.";
   if (p.flags.length) {
     const flags = p.flags.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source} (confidence: ${f.confidence}).`).join(" ");
     const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
     return { label: `Pregnancy ingredient flag${p.flags.length === 1 ? "" : "s"}: ${joinAnd(p.flags.map((f) => f.ingredient))}`, state: "no", detail: `${flags} ${exposure}${unknown} This is an ingredient screen, not a product safety conclusion.` };
   }
-  const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
-  return { label: "No pregnancy flags found", state: "unknown", detail: `No sourced pregnancy flag was found for the ingredients screened. This is not proof that the product is safe during pregnancy. ${exposure}${unknown} Ask a healthcare professional about individual use.` };
+  if (p.unknownIngredients.length) return null;
+  return { label: "No pregnancy flags found", state: "unknown", detail: `No sourced pregnancy flag was found for the ingredients screened. This is not proof that the product is safe during pregnancy. ${exposure} Ask a healthcare professional about individual use.` };
 }
 
 function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
@@ -304,7 +305,8 @@ export function highlightsOf(product: ProductScorecard, inci: string[], preg?: P
   const named = (re: RegExp) => inci.some((i) => re.test(i.trim()));
   const fragranceState = !have ? "unknown" : named(FRAGRANCE_RE) || named(ESSENTIAL_OIL_RE) ? "no"
     : inci.some((i) => AROMATIC_EXTRACT_RE.test(i) && AROMATIC_FORM_RE.test(i)) ? "unknown" : "yes";
-  const out: Highlight[] = [pregnancyHighlight(preg)];
+  const pregnancy = pregnancyHighlight(preg);
+  const out: Highlight[] = pregnancy ? [pregnancy] : [];
   out.push({ label: "Fragrance free", state: fragranceState, detail: fragranceState === "unknown"
     ? "A complete ingredient list is unavailable, or an aromatic botanical needs review; no fragrance-free conclusion is made."
     : fragranceState === "yes" ? "Derived from a complete ingredient list. Explicit fragrance declarations and essential oils are treated as not fragrance-free."

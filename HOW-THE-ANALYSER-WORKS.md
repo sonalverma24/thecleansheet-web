@@ -114,6 +114,31 @@ One exception: if someone just pastes a bare list of ingredients with no product
 
 ---
 
+## Products we do not rate
+
+The Clean Sheet rates cosmetics. Two kinds of product are not cosmetics, and they get **no review, no rating and no place in any product list**. Their page shows a popup saying why, and nothing else.
+
+- **Nutraceuticals** (things you swallow: supplements, drink mixes, gummies). Named by an explicit word in the product's name or category ("drink mix", "nutraceutical", "protein powder"), or by a swallowed format ("capsules", "gummies", "tablets") **only when the category is not a cosmetic type**, so a "Vitamin C capsule serum" or a "multivitamin serum" stays rated. The popup says "We can't rate nutraceuticals yet" and takes an email address, so we can write when we do.
+- **Drugs.** Only what the product itself says, **never its ingredients**. A percentage of an active is not a sign (azelaic acid at 20% is still a cosmetic unless the product says otherwise). Three signs count:
+  1. A **prescription notice**: "Rx", "Prescription Required", "Rx only", "Schedule H". It makes the product a **prescription drug**. "Not a prescription drug", "no prescription needed" and "most prescribed" do not count.
+  2. A **"Drug Facts" label**, in the page's text or on its label artwork (the page's images are read for it). It makes the product a **drug**, not necessarily a prescription one, so the popup says "This is a drug, not a cosmetic".
+  3. A **manufacturer the owner has signed off as making drugs only**, never cosmetics. The list lives in `src/lib/analyser-x/kb.ts` and is empty until the owner supplies it.
+
+A new analysis of one of these stores nothing. A medicine we can only recognise by an active ingredient (a ketoconazole shampoo) is not on this list: it keeps its "Medicinal product" page.
+
+The decision is made in one place (`src/lib/unrated-kind.ts` and `src/lib/drug-signals.ts`), and the product page, every list, the sitemap and the analysis itself all ask it. The analyser's own "Medicinal product" pill uses the same prescription-notice check.
+
+## The pregnancy chip
+
+On a product page and on its card, the "At a glance" pregnancy chip appears only when the screen is sure:
+
+- an ingredient is **flagged**: "Pregnancy ingredient flag: ..." (a flag shows even when another ingredient could not be checked);
+- the ingredient list was **fully screened and nothing is flagged**: "No pregnancy flags found". That describes the ingredients; it is not a statement that the product is safe.
+
+Anything in between (the ingredient list is not source-backed, or an ingredient could not be checked and nothing is flagged) shows **no chip**. The FAQ answers the question in words either way.
+
+---
+
 ## Why the verdict can change without re-running the AI
 
 Because the **code** is the judge, not the AI, we can improve the judging rules and re-apply them to every stored review instantly, without paying to research thousands of products again. When we change the rulebook, we bump a version tag (`RUBRIC_REV`), and older reviews are re-graded under the new rules the next time they are served.

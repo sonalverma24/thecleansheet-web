@@ -191,14 +191,18 @@ describe("the pregnancy chip", () => {
     expect(pregnancyChips(m)).toEqual([expect.objectContaining({ label: "No pregnancy flags found", state: "unknown" })]);
   });
 
-  it("keeps the chip when some ingredient could not be checked, but names it as not checked: not a flag, not 'safe'", () => {
+  it("shows no chip when some ingredient could not be checked and nothing is flagged: in between is neither a flag nor 'no flags found'", () => {
     const { model: m } = page(rv({ productName: "Serum", category: "Serum", inciIngredients: [...BASE, "Zorbaflux"] }));
-    expect(pregnancyChips(m)).toEqual([expect.objectContaining({ label: "No pregnancy flags found", state: "unknown", detail: expect.stringMatching(/Not checked: Zorbaflux\./) })]);
+    expect(pregnancyChips(m)).toEqual([]);
+    // The FAQ still answers the question in words.
+    expect(m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toMatch(/Ingredients not resolved: Zorbaflux\./);
   });
 
-  it("says the screen is incomplete when there is no ingredient list to check", () => {
+  it("shows no chip when there is no ingredient list to check", () => {
     const review = rv({ productName: "Cream", category: "Moisturizer", inciIngredients: [], ingredientReads: [] }, evidence.model());
-    expect(pregnancyChips(page(review).model)).toEqual([expect.objectContaining({ label: "Pregnancy ingredient screen incomplete", state: "unknown" })]);
+    const { model: m } = page(review);
+    expect(pregnancyChips(m)).toEqual([]);
+    expect(m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toMatch(/screen is incomplete/);
   });
 
   it("a flag still shows when another ingredient could not be checked, and the unchecked one is named", () => {

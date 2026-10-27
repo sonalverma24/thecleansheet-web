@@ -36,8 +36,8 @@ const GLANCE_TONE = {
   unknown: { bg: "#f1ece3", border: "#e8e1d6", dot: "#6f6a66", Icon: Minus, sr: " (not known)" },
 } as const;
 
-/** On a card, "Pregnancy caution: Homosalate and Benzophenone-3" reads as "Pregnancy caution": the names would be cut off mid-word, and the page lists them. */
-export const cardGlanceText = (label: string): string => label.replace(/^(Pregnancy caution): .+$/, "$1");
+/** On a card, "Pregnancy ingredient flags: Homosalate and Benzophenone-3" reads as "Pregnancy ingredient flags": the names would be cut off mid-word, and the page lists them. */
+export const cardGlanceText = (label: string): string => label.replace(/^(Pregnancy (?:caution|ingredient flags?)): .+$/, "$1");
 
 function GlanceRow({ items }: { items: NonNullable<ProductScorecard["glance"]> }) {
   return (

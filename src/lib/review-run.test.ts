@@ -33,6 +33,8 @@ describe("interpretReviewResponse", () => {
       .toEqual({ kind: "unrated", unrated: "nutraceutical", productName: "H2Glow Drink Mix", brand: "H2Glow" });
     expect(interpretReviewResponse(200, { type: "unrated", kind: "prescription-drug", productName: "Aziderm 20% Cream" }, "aziderm"))
       .toEqual({ kind: "unrated", unrated: "prescription-drug", productName: "Aziderm 20% Cream", brand: "" });
+    expect(interpretReviewResponse(200, { type: "unrated", kind: "drug", productName: "Daily Shield SPF 30", brand: "Shield" }, "shield"))
+      .toEqual({ kind: "unrated", unrated: "drug", productName: "Daily Shield SPF 30", brand: "Shield" });
   });
 
   it("does not trust an unrated answer it cannot read: an unknown kind or no product name is a failure", () => {

@@ -126,11 +126,22 @@ describe("claims and wording", () => {
 });
 
 describe("medicinal triggers", () => {
-  it("azelaic acid is a medicine at 15% or more in the name, a cosmetic below it or when the strength is unknown", () => {
+  it("azelaic acid is never a medicine on its own, at any strength: only what the product says makes it one", () => {
     const azelaic = (name: string) => decideReview(rv({ productName: name, inciIngredients: [...BASE, "Azelaic Acid"] }), NOW).decision.key;
-    expect(azelaic("Azelaic Acid 20% Gel")).toBe("medicinal-product");
+    expect(azelaic("Azelaic Acid 20% Gel")).not.toBe("medicinal-product");
     expect(azelaic("Azelaic Acid 10% Serum")).not.toBe("medicinal-product");
     expect(azelaic("Azelaic Acid Serum")).not.toBe("medicinal-product");
+    // ... and when the name does carry a prescription notice, it is one
+    expect(azelaic("Azelaic Acid 20% Gel (Rx only)")).toBe("medicinal-product");
+  });
+
+  it("a prescription notice in the name makes it a medicine; the bare word 'prescription' in marketing copy does not", () => {
+    const key = (name: string) => decideReview(rv({ productName: name }), NOW).decision.key;
+    expect(key("Tretinoin Cream 0.025% Rx only")).toBe("medicinal-product");
+    expect(key("Clindamycin Gel Prescription Required")).toBe("medicinal-product");
+    expect(key("Prescription Strength Moisturizer")).not.toBe("medicinal-product");
+    expect(key("Dermatologists' most prescribed face wash")).not.toBe("medicinal-product");
+    expect(key("Not a prescription drug: Gentle Face Wash")).not.toBe("medicinal-product");
   });
 
   it("an OTC medicine category is Medicinal whatever the list", () => {
