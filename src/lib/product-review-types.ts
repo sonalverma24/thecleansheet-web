@@ -183,6 +183,7 @@ export interface InciEvidence {
   quote: string;
   retrievedAt: string;
   matchedTitle?: string;
+  quoteTruncated?: boolean;
 }
 
 /** What the model searched and cited while producing a review (Google Search grounding).
@@ -247,6 +248,10 @@ export interface ProductReview {
   imageConfidence?: number | null;
   /** True when an admin pinned the image: a fresh re-review must not overwrite it. */
   imageLocked?: boolean;
+  /** Explicit URL analyzed, retained so an image retry can revisit its product page. */
+  productPageUrl?: string;
+  /** Last automatic image retry attempt; admin-triggered retries ignore this cooldown. */
+  imageRetryAt?: string;
   methodologyVersion?: string;
   reviewedAt?: string;
   /** Resolved INCI (ground truth used for grading), for display. */
@@ -259,6 +264,8 @@ export interface ProductReview {
   /** Where the ingredient list came from, the source text it was read from, and when.
       Absent on reviews stored before evidence capture (see review-verifier.ts). */
   inciEvidence?: InciEvidence;
+  /** Independent page checks from the explicit product URL; never affect outcome dots. */
+  productPageChecks?: import("@/lib/web-shopper-checks").ProductPageCheck[];
   /** The searches the model ran and the sources it cited for this review. Set by the
       engine from the grounding metadata, never authored by the model. Absent on older reviews. */
   researchLog?: ResearchLog;

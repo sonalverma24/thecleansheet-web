@@ -11,7 +11,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { invalidateReviewCache } from "@/lib/product-review-engine";
-import type { ProductImageSource } from "@/lib/product-review-types";
+import { findProductReviewImage } from "@/lib/product-image";
+import { upsertVerifiedProduct } from "@/lib/verified-store";
+import type { DerivedVerdict, ProductImageSource, ProductReview } from "@/lib/product-review-types";
+
+export const maxDuration = 60;
 
 type ReviewImageFields = {
   imageUrl?: string | null;
@@ -84,6 +88,64 @@ export async function POST(req: NextRequest) {
 
     invalidateReviewCache(slug);
     return NextResponse.json({ ok: true, action, slug, imageUrl });
+  }
+
+  if (action === "retry-image") {
+    const { data, error } = await db
+      .from("product_reviews").select("result").eq("product_slug", slug).maybeSingle();
+    if (error || !data) return NextResponse.json({ error: error?.message ?? "review not found" }, { status: 404 });
+
+    const stored = data.result as { type?: string; review?: ProductReview; verdict?: DerivedVerdict } | null;
+    if (!stored || stored.type !== "product-review" || !stored.review || !stored.verdict) {
+      return NextResponse.json({ error: "product review not found" }, { status: 404 });
+    }
+    if (stored.review.imageUrl) {
+      return NextResponse.json({ error: "review already has an image" }, { status: 409 });
+    }
+    if (stored.review.imageLocked) {
+      return NextResponse.json({ error: "image is pinned; unpin it before retrying" }, { status: 409 });
+    }
+
+    const retryAt = new Date().toISOString();
+    const pick = await findProductReviewImage(
+      stored.review.brand,
+      stored.review.productName,
+      stored.review.productPageUrl ?? stored.review.productPageChecks?.[0]?.sourceUrl,
+    );
+    const review = {
+      ...stored.review,
+      imageRetryAt: retryAt,
+      ...(pick ? {
+        imageUrl: pick.url,
+        imageSource: pick.source,
+        imageConfidence: pick.confidence,
+        imageLocked: false,
+      } : {}),
+    };
+    const result = { ...stored, review };
+    const { error: updateError } = await db
+      .from("product_reviews")
+      .update({ image_url: pick?.url ?? null, result })
+      .eq("product_slug", slug);
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+
+    invalidateReviewCache(slug);
+    if (pick && stored.verdict.status === "approved") {
+      await upsertVerifiedProduct({
+        slug: review.productSlug ?? slug,
+        productName: review.productName,
+        brand: review.brand,
+        score: review.scores.total,
+        scoreLabel: review.scores.label,
+        integrityScore: null,
+        imageUrl: pick.url,
+        summary: review.verdict?.cleanSheetTakeaway || review.priceInsight || "",
+        usageGuidance: null,
+        verifiedAt: review.reviewedAt || retryAt,
+        methodologyVersion: review.methodologyVersion ?? "",
+      });
+    }
+    return NextResponse.json({ ok: true, action, slug, found: !!pick, imageUrl: pick?.url ?? null, imageSource: pick?.source ?? null });
   }
 
   if (action === "unlock-image") {

@@ -28,7 +28,7 @@ export const ANALYSER_FLAGS = {
   strictIdentity: "ANALYSER_STRICT_IDENTITY",
   /** Standing from the four pillars (well 70, floor 50) instead of the 7-section total; stamps rows r9. See STAMPS.md. */
   pillarStanding: "ANALYSER_PILLAR_STANDING",
-  /** The pills page: the five buying decisions (Good choice, Buy with caution, Look elsewhere, Not enough info, Medicinal product)
+  /** Version X1's pills page: the five buying decisions (Good choice, Buy with caution, Look elsewhere, Not enough info, Medicinal product)
       replace the four standings, and the stored-review product page uses the 13-block layout (src/lib/pills-page.ts). The decision is
       computed at render time from the stored review; nothing is written. Static catalogue pages have no review and are unchanged. */
   pillsPage: "ANALYSER_PILLS_PAGE",

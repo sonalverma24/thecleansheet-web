@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the product profile
+   Analyser Version X1 · the product profile
 
    Facts about WHAT the product is, derived by code from the name, the category and
    the stated target user. Mirrors the context built inside analysis-engine.ts so the

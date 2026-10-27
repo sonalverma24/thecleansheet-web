@@ -74,6 +74,23 @@ describe("parity matrix: standing x catch-all x ingredient list", () => {
 });
 
 describe("invariants any later policy must keep", () => {
+  it("surfaces web page checks without changing the three-dot standing", () => {
+    const review = makeReview({ inciIngredients: ["Aqua", "Glycerin", "Retinol"] });
+    const before = deriveVerdict(review);
+    review.productPageChecks = [{
+      code: "pregnancy-retinol",
+      kind: "caution",
+      message: "Page promotes pregnancy use while Retinol appears in the source-backed INCI.",
+      sourceUrl: "https://example.com/product",
+      capturedAt: "2026-10-25T00:00:00.000Z",
+      sourceQuote: "Suitable for use during pregnancy",
+    }];
+    const after = deriveVerdict(review);
+    const { product } = reviewToScorecard(review, after);
+    expect(after).toEqual(before);
+    expect(product.productPageChecks).toEqual(review.productPageChecks);
+  });
+
   it("only displayed Good Standing can ever be eligible for a Provisional state", () => {
     const eligible = TARGETS.filter((t) => ["Good Standing"].includes(deriveVerdict(buildStanding(t)).tierLabel));
     expect(eligible).toEqual(["approved", "mostly-clean"]);

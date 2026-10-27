@@ -8,7 +8,7 @@
 
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
-import { resolveProductImage, searchProductImage, findProductImageKeyless, isLiveImage } from "@/lib/product-image";
+import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
@@ -17,7 +17,8 @@ import { fetchInciFromProductPage } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
-import { makeInciEvidence } from "@/lib/review-verifier";
+import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
+import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
 import { bannedIngredientsInInci, endocrineFlaggedInInci } from "@/lib/ingredient-db";
@@ -752,6 +753,9 @@ function unratedResultOf(review: Pick<ProductReview, "productName" | "brand" | "
   return kind ? { type: "unrated", kind, productName: review.productName, brand: review.brand ?? "" } : null;
 }
 
+/** A stored result as the API serves it: "unrated" when it is a nutraceutical or a prescription drug, else as stored. */
+const servedAsStored = (r: ProductReviewResult): ProductReviewResult => (r.type === "product-review" && unratedResultOf(r.review)) || r;
+
 /* Slugs of stored reviews that are not cosmetics. They get no review on their page and no place in a list, the sitemap or the stats. Read once for all of them from
    the few fields the classifier needs (the rest of a row is large), and kept for five minutes like the review cache. A database error leaves the last answer (or none),
    so a list shows everything rather than nothing. */
@@ -863,6 +867,53 @@ async function store(slug: string, result: ProductReviewResult): Promise<void> {
       { onConflict: "product_slug" },
     );
   } catch { /* repository unavailable */ }
+}
+
+/** Revisit image sources for an image-less stored review when a shopper runs it
+    again. A day cooldown prevents repeated failed scrapes on every page view. */
+async function retryStoredReviewImage(
+  slug: string,
+  stored: ProductReviewResult,
+  query: string,
+): Promise<ProductReviewResult> {
+  if (stored.type !== "product-review" || stored.review.imageUrl || stored.review.imageLocked) return stored;
+  const lastAttempt = Date.parse(stored.review.imageRetryAt ?? "");
+  if (Number.isFinite(lastAttempt) && Date.now() - lastAttempt < 24 * 60 * 60 * 1000) return stored;
+
+  const retryAt = new Date().toISOString();
+  const pick = await findProductReviewImage(
+    stored.review.brand,
+    stored.review.productName,
+    stored.review.productPageUrl ?? (isURL(query) ? query : undefined),
+  );
+  const review: ProductReview = { ...stored.review, imageRetryAt: retryAt };
+  if (pick) {
+    review.imageUrl = pick.url;
+    review.imageSource = pick.source;
+    review.imageConfidence = pick.confidence;
+    const refreshed = { ...stored, review };
+    await store(review.productSlug ?? slug, refreshed);
+    if (refreshed.verdict.status === "approved") {
+      await upsertVerifiedProduct({
+        slug: review.productSlug ?? slug,
+        productName: review.productName,
+        brand: review.brand,
+        score: review.scores.total,
+        scoreLabel: review.scores.label,
+        integrityScore: null,
+        imageUrl: pick.url,
+        summary: review.verdict?.cleanSheetTakeaway || review.priceInsight || "",
+        usageGuidance: null,
+        verifiedAt: review.reviewedAt || retryAt,
+        methodologyVersion: review.methodologyVersion ?? REVIEW_METHODOLOGY_VERSION,
+      });
+    }
+    return refreshed;
+  }
+
+  const refreshed = { ...stored, review };
+  await store(review.productSlug ?? slug, refreshed);
+  return refreshed;
 }
 
 /** Public lookup for pages that overlay tiers (e.g. /brands). */
@@ -1094,6 +1145,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // against the real ingredients instead of reporting "INCI not available".
   let pageInci: import("@/lib/inci-from-page").PageINCI | null = null;
   let pageExcerpt = "";
+  let capturedPageText = "";
+  let capturedPageTitle = "";
+  let capturedPageAt = "";
+  let completePageCapture = false;
   let evidenceBlock = "";
   let pageName: string | null = null;
 
@@ -1102,6 +1157,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (page) {
       pageExcerpt = productBodyExcerpt(page);
       pageName = titleFromMarkdown(page);
+      capturedPageText = productBodyExcerpt(page, 60000);
+      capturedPageTitle = pageName ?? "";
+      capturedPageAt = new Date().toISOString();
+      completePageCapture = page.length < 60000 && capturedPageText.length < 60000;
       if (pageName) inci = (await resolveINCI(pageName)).chosen;
       // INCIDecoder missed it → read the INCI straight off the product page.
       if (!inci) pageInci = await fetchInciFromProductPage(q);
@@ -1128,7 +1187,31 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // ── Repository: same product ⇒ same stored review ──
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
   const stored = await getStored(slug);
-  if (stored) return (stored.type === "product-review" && unratedResultOf(stored.review)) || stored;
+  if (stored) {
+    // A nutraceutical or a prescription drug stored before we drew the line: answer "unrated" now, with no image retry and nothing written back.
+    const notACosmeticYet = stored.type === "product-review" ? unratedResultOf(stored.review) : null;
+    if (notACosmeticYet) return notACosmeticYet;
+    const retried = await retryStoredReviewImage(slug, stored, q);
+    if (retried.type === "product-review" && isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, retried.review.brand, retried.review.productName)) {
+      const review = { ...retried.review };
+      const evidence = evidenceForReview(review);
+      const ingredients = review.inciIngredients ?? [];
+      review.productPageChecks = buildProductPageChecks({
+        pageText: capturedPageText,
+        pageTitle: capturedPageTitle,
+        productCategory: review.category,
+        sourceUrl: q,
+        capturedAt: capturedPageAt,
+        completeCapture: completePageCapture,
+        ingredients,
+        reliableIngredientList: ingredients.length >= 3 && !review.inciEvidence?.quoteTruncated && isAnchored(evidence) && evidence.captureTrust >= 3,
+      });
+      const result = { ...retried, review, verdict: deriveVerdict(review) };
+      await store(slug, result);
+      return result;
+    }
+    return retried;
+  }
 
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
   // the list read off the brand's product page.
@@ -1219,7 +1302,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   for (const candidate of dedupeSlugs) {
     if (candidate === slug) continue;
     const existing = await getStored(candidate);
-    if (existing) return existing;
+    if (existing) return servedAsStored(existing);
   }
 
   /* The slug is built from the model's wording, which varies run to run ("… SPF 50
@@ -1244,15 +1327,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
         ? (rr.review.inciIngredients ?? rr.review.ingredientReads?.map((r) => r.name) ?? []) : [];
       if (isSameProduct(incoming, { productName: String(row.product_name), brand: String(row.brand), inci: rinci })) {
         const existing = await getStored(rslug);
-        if (existing) return existing;
+        if (existing) return servedAsStored(existing);
       }
     }
   } catch { /* de-dupe is best-effort; never block a review */ }
 
-  // Image pulling (all keyless): INCIDecoder photo → pasted-page og:image →
-  // Amazon.in/Nykaa search scrape → Google CSE (only if a key is configured).
-  // Every candidate is checked for liveness before it is stored: a 404 or
-  // hotlink-blocked URL renders as a broken image on the product page forever.
+  // Image pulling: admin pin → live INCIDecoder photo → supplied product-page
+  // metadata → strict retailer matches → Google CSE. Search candidates are checked
+  // for liveness; page metadata remains a best-effort source.
   let imageUrl: string | null = null;
   let imageSource: ProductImageSource | null = null;
   let imageConfidence: number | null = null;
@@ -1265,20 +1347,15 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (pinned) { imageUrl = pinned; imageSource = "manual"; imageLocked = true; }
 
   if (!imageUrl && inci?.imageUrl && (await isLiveImage(inci.imageUrl))) { imageUrl = inci.imageUrl; imageSource = "inci"; }
-  if (!imageUrl && isURL(q)) { const u = await resolveProductImage(q); if (u) { imageUrl = u; imageSource = "page"; } }
   if (!imageUrl) {
-    const pick = await findProductImageKeyless(review.brand, review.productName);
-    if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
-  }
-  if (!imageUrl) {
-    const imgQuery = [review.brand, review.productName].filter(Boolean).join(" ");
-    const pick = await searchProductImage(imgQuery || q, review.brand);
+    const pick = await findProductReviewImage(review.brand, review.productName, isURL(q) ? q : undefined);
     if (pick) { imageUrl = pick.url; imageSource = pick.source; imageConfidence = pick.confidence; }
   }
   review.imageUrl = imageUrl;
   review.imageSource = imageSource ?? undefined;
   review.imageConfidence = imageConfidence;
   review.imageLocked = imageLocked;
+  review.productPageUrl = isURL(q) ? q : undefined;
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;
@@ -1306,14 +1383,30 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
 
   /* Evidence envelope: record where the list came from and the source text it was
-     read from, so the review can be audited later. Only INCIDecoder lists carry a
-     quote today; a brand-page list gets its tier but no quote, and a model-transcribed
-     list gets tier 1, so the verifier reports both as unanchored. Recording only: it
-     does not feed the verdict. */
+     read from. Both INCIDecoder and the deterministic brand-page extractor retain
+     source quotes; model-transcribed lists stay unanchored. Recording only: it does
+     not feed the verdict. */
   if (review.inciIngredients?.length) {
     review.inciEvidence = inci
-      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName)
-      : makeInciEvidence(pageInci?.source, undefined, review.reviewedAt ?? new Date().toISOString());
+      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName, inci.sourceQuoteTruncated === true)
+      : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageName ?? undefined);
+  }
+
+  // Page checks are generated from a user-supplied product URL only. They remain
+  // separate from score, rubric, and the three-dot outcome.
+  if (isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, review.brand, review.productName)) {
+    const ingredients = review.inciIngredients ?? [];
+    const evidence = evidenceForReview(review);
+    review.productPageChecks = buildProductPageChecks({
+      pageText: capturedPageText,
+      pageTitle: capturedPageTitle,
+      productCategory: review.category,
+      sourceUrl: q,
+      capturedAt: capturedPageAt,
+      completeCapture: completePageCapture,
+      ingredients,
+      reliableIngredientList: ingredients.length >= 3 && !review.inciEvidence?.quoteTruncated && isAnchored(evidence) && evidence.captureTrust >= 3,
+    });
   }
 
   // Auto-grow the ingredient directory: any ingredient of this product that is

@@ -10,7 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2, AlertCircle, HelpCircle, MapPin, Pill } from "lucide-react";
 import type { ProductScorecard, ScorePillar, Brand } from "@/data/brands/types";
-import { buildAtAGlance } from "@/lib/at-a-glance";
+import { buildAtAGlance, fragranceFromCompleteInci } from "@/lib/at-a-glance";
 import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import type { AnalysisReport, CheckResult } from "@/lib/analysis-types";
 import { ProductHero } from "@/components/scorecards/ProductHero";
@@ -18,6 +18,7 @@ import { resolveTier, TierBadge } from "@/components/scorecards/pillar-ui";
 import { ScorecardTabs, type ScorecardTab } from "@/components/scorecards/ScorecardTabs";
 import { simplifyPillarName } from "@/lib/pillar-display";
 import { toSlug, hasIngredientPage } from "@/lib/ingredient-utils";
+import { applyClaimEvidenceDisplay } from "@/lib/claim-evidence-display";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -195,12 +196,9 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
     const isMineral = pass.some(
       (b) => b.includes("100% mineral") || (b.includes("mineral") && b.includes("zinc"))
     );
-    const isFragFree = pass.some(
-      (b) => b.includes("fragrance-free") || b.includes("fragrance free")
-    );
-    const isEOFree = pass.some(
-      (b) => b.includes("no essential oils") || b.includes("essential oil free")
-    );
+    const fragrance = fragranceFromCompleteInci(product);
+    const isFragFree = fragrance === "clear";
+    const isEOFree = fragrance === "clear";
     if (isMineral && isFragFree && isEOFree) return "Mineral only UV filter, fragrance free, and no essential oils.";
     if (isMineral && isFragFree) return "Mineral only UV filter with a fragrance free formula.";
     if (isMineral) return "Mineral only UV filter (Zinc Oxide) with no chemical filter concerns.";
@@ -225,17 +223,9 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
   }
 
   if (displayName === "Claims Evidence") {
-    const hasSPFEvidence = pass.some(
-      (b) => b.includes("published spf") || (b.includes("spf") && b.includes("test"))
-    );
-    const hasMultipleReports = pass.filter(
-      (b) => b.includes("published") || b.includes("test report") || b.includes("dermatologist")
-    ).length >= 2;
-    if (hasSPFEvidence && hasMultipleReports && pct >= 80) {
-      return "Strong public evidence compared with most sunscreen product pages.";
+    if (product.claimsCheck?.some((c) => c.evidenceStatus === "Brand claim — TCS evidence not reviewed")) {
+      return "Some claims are brand statements without matching product-specific evidence reviewed by TCS.";
     }
-    if (hasSPFEvidence && pct >= 65) return "Published SPF test report available. Some claims need more context.";
-    if (hasSPFEvidence) return "SPF test report available, but some supporting claims are weaker.";
     if (pct >= 75) return "Good evidence for stated claims based on public information.";
     return getPillarOneLiner(pillar.note);
   }
@@ -252,15 +242,26 @@ function generatePillarSummary(pillar: ScorePillar, product: ProductScorecard): 
 
 function claimsCheckToProofCards(product: ProductScorecard): ProofCard[] {
   if (!product.claimsCheck?.length) return [];
-  return product.claimsCheck.slice(0, 8).map((c) => {
+  return product.claimsCheck.slice(0, 8).map((raw) => {
+    const c = applyClaimEvidenceDisplay(raw, product);
+    const specialistClaim = /\b(?:spf\s*\d+|pa\+{2,}|broad[- ]spectrum|uva\s*protection|dermatolog(?:ist|ically)[ -]tested|non[- ]?comedogenic|vegan|cruelty[- ]?free|pregnancy[- ]safe|pregnancy tested|safe (?:for|during|in) pregnancy|suitable (?:for|during) pregnancy)\b/i.test(c.claim);
+    if (specialistClaim && c.evidenceStatus !== "Brand claim — TCS evidence not reviewed") {
+      return {
+        claim: c.claim,
+        status: "needs-context",
+        explanation: "This is a brand claim. TCS has not reviewed matching product-specific evidence. That evidence gap does not by itself determine the product rating.",
+        evidenceType: "Brand claim · TCS evidence not reviewed",
+      };
+    }
     let status: ProofStatus;
-    if (c.decision === "Publicly supported" && c.evidenceStatus === "Evidence visible") status = "verified";
+    if (c.evidenceStatus === "Brand claim — TCS evidence not reviewed") status = "needs-context";
+    else if (c.decision === "Publicly supported" && c.evidenceStatus === "Evidence visible") status = "verified";
     else if (c.decision === "Publicly supported") status = "supported";
     else if (c.decision === "Needs proof") status = "needs-context";
     else if (c.evidenceStatus === "Missing") status = "not-found";
     else status = "not-verified";
 
-    const evidenceType =
+    const evidenceType = c.evidenceStatus === "Brand claim — TCS evidence not reviewed" ? "Brand claim · TCS evidence not reviewed" :
       c.evidenceStatus === "Evidence visible" ? "Published evidence" :
       c.evidenceStatus === "Mentioned only" ? "Brand claim" :
       "Not found";
@@ -274,118 +275,16 @@ function buildProofCards(product: ProductScorecard): ProofCard[] {
   const fromData = claimsCheckToProofCards(product);
   if (fromData.length > 0) return fromData;
 
-  // Fallback: generate from badges for products without claimsCheck
-  const pass = product.pass_badges.map((b) => b.toLowerCase());
-  const warn = product.warn_badges.map((b) => b.toLowerCase());
+  // Fallback for static catalogue products: render specialist claims as claims,
+  // never infer a reviewed test report from badge text.
   const cards: ProofCard[] = [];
-
-  if (product.productType === "sunscreen") {
-    if (pass.some((b) => b.includes("published spf") || (b.includes("spf") && b.includes("test")))) {
-      cards.push({
-        claim: "SPF Rating",
-        status: "verified",
-        explanation: "A published SPF test report is available from the brand. This is more public evidence than most Indian sunscreens provide.",
-        evidenceType: "Published test report",
-      });
-    } else if (warn.some((b) => b.includes("spf") && (b.includes("not verified") || b.includes("unusual") || b.includes("unverified")))) {
-      cards.push({
-        claim: "SPF Rating",
-        status: "not-verified",
-        explanation: "The SPF claim could not be verified from publicly available test evidence.",
-        evidenceType: "Not found",
-      });
-    } else {
-      cards.push({
-        claim: "SPF Rating",
-        status: "supported",
-        explanation: "SPF is stated on packaging. No independently published test report found.",
-        evidenceType: "Brand claim",
-      });
-    }
-
+  const specialist = /\b(?:spf\s*\d+|pa\+{2,}|broad[- ]spectrum|uva\s*protection|dermatolog(?:ist|ically)[ -]tested|non[- ]?comedogenic|vegan|cruelty[- ]?free|pregnancy[- ]safe|pregnancy tested|safe (?:for|during|in) pregnancy|suitable (?:for|during) pregnancy)\b/i;
+  for (const claim of (product.claimsMade ?? []).filter((text) => specialist.test(text)).slice(0, 8)) {
     cards.push({
-      claim: "UVA / PA Protection",
-      status: "supported",
-      explanation: "PA rating is stated on packaging. The brand's pattern of publishing test reports supports this claim.",
-      evidenceType: "Brand claim + test report pattern",
-    });
-
-    if (pass.some((b) => b.includes("100% mineral") || (b.includes("mineral") && (b.includes("zinc") || b.includes("only"))))) {
-      cards.push({
-        claim: "100% Mineral Formula",
-        status: "verified",
-        explanation: "Zinc Oxide is the only UV filter in the ingredient list. No chemical filters present. Confirmed directly from the INCI.",
-        evidenceType: "INCI check",
-      });
-    }
-
-    if (pass.some((b) => b.includes("water resist"))) {
-      cards.push({
-        claim: "Water Resistant",
-        status: "supported",
-        explanation: "A published water resistance test report is available from the brand.",
-        evidenceType: "Published test report",
-      });
-    }
-  }
-
-  if (pass.some((b) => b.includes("fragrance-free") || b.includes("fragrance free"))) {
-    cards.push({
-      claim: "Fragrance Free",
-      status: "verified",
-      explanation: "No fragrance of any kind found in the INCI. No parfum, no essential oils, no Benzyl Alcohol.",
-      evidenceType: "INCI check",
-    });
-  } else if (warn.some((b) => b.includes("fragrance allergen") || b.includes("lemongrass") || b.includes("citral") || b.includes("benzyl alcohol"))) {
-    cards.push({
-      claim: "Fragrance Free",
-      status: "not-verified",
-      explanation: "Brand does not claim fragrance-free. Fragrance allergens are present in the formula.",
-      evidenceType: "INCI check",
-    });
-  }
-
-  if (pass.some((b) => b.includes("no essential oils") || b.includes("essential oil free"))) {
-    cards.push({
-      claim: "Essential Oil Free",
-      status: "verified",
-      explanation: "No essential oils found in the ingredient list.",
-      evidenceType: "INCI check",
-    });
-  }
-
-  if (pass.some((b) => b.includes("non-comedogenic"))) {
-    const hasWarn = warn.some((b) => b.includes("comedogenic") || b.includes("isostearic"));
-    cards.push({
-      claim: "Non-Comedogenic",
-      status: hasWarn ? "needs-context" : "supported",
-      explanation: hasWarn
-        ? "A published non-comedogenic test report exists, but Isostearic Acid is in the formula and has comedogenic potential on some rating scales."
-        : "A published non-comedogenic test report is available from the brand.",
-      evidenceType: "Published test report",
-    });
-  }
-
-  if (pass.some((b) => b.includes("vegan"))) {
-    const hasVeganContradiction = warn.some(
-      (b) => (b.includes("vegan") && b.includes("whey")) || (b.includes("dairy") && b.includes("vegan"))
-    );
-    cards.push({
-      claim: "Vegan",
-      status: hasVeganContradiction ? "not-verified" : "supported",
-      explanation: hasVeganContradiction
-        ? "Brand claims vegan, but Whey Protein (dairy-derived) appears in the ingredient list. This is a direct public evidence contradiction."
-        : "A published vegan test report is available. No animal-derived ingredients found in the INCI.",
-      evidenceType: hasVeganContradiction ? "INCI check vs brand claim" : "Published test report",
-    });
-  }
-
-  if (pass.some((b) => b.includes("dermatologist"))) {
-    cards.push({
-      claim: "Dermatologist Tested",
-      status: "supported",
-      explanation: "A published dermatologist test report is available from the brand.",
-      evidenceType: "Published test report",
+      claim,
+      status: "needs-context",
+      explanation: "This is a brand claim. TCS has not reviewed matching product-specific evidence. That evidence gap does not by itself determine the product rating.",
+      evidenceType: "Brand claim · TCS evidence not reviewed",
     });
   }
 
@@ -563,6 +462,60 @@ function SafetyScreen({ analysis }: { analysis: AnalysisReport }) {
   );
 }
 
+function PregnancyIngredientScreen({ product }: { product: ProductScorecard }) {
+  const screen = product.pregnancyScreen;
+  if (!screen) return null;
+  return (
+    <section id="pregnancy-ingredient-screen" className="bg-white rounded-[20px] border border-[#efe9e0] p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Pregnancy ingredient screen</h2>
+        <span className="text-[10px] uppercase tracking-[0.1em] text-[#8A6A16]">{screen.status === "screened" ? "Screened" : "Not screened"}</span>
+      </div>
+      <p className="text-xs text-[#282828]/60 mt-2">
+        {screen.status === "screened" ? `Sourced ingredient flags and unknowns from the disclosed list. Exposure context: ${screen.exposure}.` : screen.reason}
+      </p>
+      {screen.status === "screened" && screen.flags.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {screen.flags.map((flag) => (
+            <li key={flag.ingredient} className="text-xs text-[#282828]">
+              <strong>{flag.ingredient}</strong>: {flag.restriction} ({flag.confidence} confidence)
+              <span className="block text-[10px] text-[#b0a8a4]">Source: {flag.source}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {screen.unknownIngredients.length > 0 && (
+        <p className="text-xs text-[#8A6A16] mt-3">Unknown or unrecorded pregnancy guidance: {screen.unknownIngredients.slice(0, 8).join(", ")}{screen.unknownIngredients.length > 8 ? ` and ${screen.unknownIngredients.length - 8} more` : ""}.</p>
+      )}
+      {screen.status === "screened" && screen.flags.length === 0 && <p className="text-xs text-[#282828]/60 mt-3">No sourced flags found in the checked reference records. No flag found is not proof of safety.</p>}
+      {screen.sourceUrl && <a href={screen.sourceUrl} target="_blank" rel="noreferrer" className="inline-block text-[10px] text-[#248179] hover:underline mt-3">Open ingredient-list source</a>}
+      <p className="text-[10px] text-[#b0a8a4] mt-3">An ingredient screen, not a blanket safe-use assurance or medical advice. Unknowns remain visible; individual circumstances matter.</p>
+    </section>
+  );
+}
+
+function VeganIngredientScreen({ product }: { product: ProductScorecard }) {
+  const screen = product.veganScreen;
+  if (!screen) return null;
+  const label = screen.status === "screened" ? "Resolved" : screen.status === "conflict" ? "Origin conflict" : "Unknown";
+  return (
+    <section id="vegan-ingredient-screen" className="bg-white rounded-[20px] border border-[#efe9e0] p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm text-[#282828]" style={{ fontFamily: "'Cooper BT', sans-serif" }}>Vegan ingredient-origin screen</h2>
+        <span className="text-[10px] uppercase tracking-[0.1em] text-[#8A6A16]">{label}</span>
+      </div>
+      {screen.animalIngredients.length > 0 && <p className="text-xs text-[#282828] mt-2">Animal-origin records: {screen.animalIngredients.join(", ")}.</p>}
+      {screen.unknownIngredients.length > 0 && <p className="text-xs text-[#8A6A16] mt-2">Origin unknown or not high-confidence: {screen.unknownIngredients.slice(0, 8).join(", ")}{screen.unknownIngredients.length > 8 ? ` and ${screen.unknownIngredients.length - 8} more` : ""}.</p>}
+      {screen.status === "screened" && <p className="text-xs text-[#282828]/60 mt-2">All named ingredients have a sourced, high-confidence non-animal origin record.</p>}
+      {screen.sources.length > 0 && <details className="mt-3">
+        <summary className="cursor-pointer text-[10px] text-[#248179]">Show ingredient-origin sources</summary>
+        <ul className="mt-2 space-y-1">{screen.sources.slice(0, 12).map((entry) => <li key={entry.ingredient} className="text-[10px] text-[#b0a8a4]">{entry.ingredient}: {entry.source}</li>)}</ul>
+      </details>}
+      <p className="text-[10px] text-[#b0a8a4] mt-3">This screens named ingredients only. Processing aids are not assessed. Cruelty-free certification is a separate check.</p>
+    </section>
+  );
+}
+
 /* Mobile-only tab deck for the verdict page. Mirrors the desktop section stack
    but grouped into Overview · Ingredients · Claims · Method so each is one short
    screen. Reuses the same module-level section helpers, so data logic stays in
@@ -713,6 +666,8 @@ function buildMobileTabs({
     </CollapsibleSection>,
   );
   if (analysis) ingredients.push(<SafetyScreen key="safety" analysis={analysis} />);
+  if (product.pregnancyScreen) ingredients.push(<PregnancyIngredientScreen key="pregnancy-screen" product={product} />);
+  if (product.veganScreen) ingredients.push(<VeganIngredientScreen key="vegan-screen" product={product} />);
 
   // ── Claims & evidence ─────────────────────────────────────────────────────
   const claims: ReactNode[] = [];
@@ -795,11 +750,12 @@ function buildMobileTabs({
   }
   if (product.claimsCheck && product.claimsCheck.length > 0) {
     const claimPillar = findPillar(product.pillars, /claim/i);
-    const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
+    const displayedClaims = product.claimsCheck.map((c) => applyClaimEvidenceDisplay(c, product));
+    const supported = displayedClaims.filter((c) => c.decision === "Publicly supported").length;
     claims.push(
-      <CollapsibleSection key="claimscheck" id="m-claims-check" title="Claims checked" subtitle={`${supported} of ${product.claimsCheck.length} publicly supported`} headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}>
+      <CollapsibleSection key="claimscheck" id="m-claims-check" title="Claims checked" subtitle={`${supported} of ${displayedClaims.length} publicly supported`} headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}>
         <div className="p-4 space-y-2.5">
-          {product.claimsCheck.map((c) => {
+            {displayedClaims.map((c) => {
             const isSupported = c.decision === "Publicly supported";
             const isNeedsProof = c.decision === "Needs proof";
             const accent = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
@@ -816,6 +772,7 @@ function buildMobileTabs({
                     </div>
                     <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
                     <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
+                    {c.sourceUrl && <a href={c.sourceUrl} target="_blank" rel="noreferrer" className="inline-block text-[10px] text-[#248179] hover:underline mt-1">Open ingredient-list source</a>}
                   </div>
                 </div>
               </div>
@@ -845,6 +802,27 @@ function buildMobileTabs({
               </div>
             </div>
           ))}
+        </div>
+      </CollapsibleSection>,
+    );
+  }
+  if (product.productPageChecks?.length) {
+    claims.push(
+      <CollapsibleSection key="page-checks" id="m-product-page-checks" title="Product-page checks" subtitle="Web analysis notes from the captured product page. These do not change the product outcome." >
+        <div className="p-4 space-y-2.5">
+          {product.productPageChecks.map((check, i) => (
+            <div key={`${check.code}-${i}`} className={`rounded-xl border p-4 ${check.kind === "caution" ? "border-amber-200 bg-amber-50/60" : "border-[#efe9e0] bg-[#faf7f2]"}`}>
+              <div className="flex items-start gap-3">
+                <span className={`mt-1.5 block w-2 h-2 rounded-full flex-shrink-0 ${check.kind === "caution" ? "bg-amber-500" : "bg-[#b0a8a4]"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-[#282828] leading-relaxed">{check.message}</p>
+                  {check.sourceQuote && <blockquote className="mt-2 border-l-2 border-[#d8d0c8] pl-2 text-[11px] text-[#77706b]">“{check.sourceQuote}”</blockquote>}
+                  <a href={check.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-[#248179] underline">Captured product page</a>
+                </div>
+              </div>
+            </div>
+          ))}
+          <p className="text-[10px] text-[#b0a8a4]">Page wording can be incomplete or change. Check the full page and product packaging; these notes are not a certification or clinical assessment.</p>
         </div>
       </CollapsibleSection>,
     );
@@ -1081,6 +1059,8 @@ export function ProductScorecardView({
 
         {/* 2b. Category-driven safety & compliance screen (live reviews) */}
         {analysis && <SafetyScreen analysis={analysis} />}
+        {product.pregnancyScreen && <PregnancyIngredientScreen product={product} />}
+        {product.veganScreen && <VeganIngredientScreen product={product} />}
 
         {/* 3. The detail - per-area rationale (no scores).
              Live reviews lead with the Safety & compliance screen above, so this
@@ -1292,19 +1272,44 @@ export function ProductScorecardView({
           </CollapsibleSection>
         )}
 
+        {product.productPageChecks && product.productPageChecks.length > 0 && (
+          <CollapsibleSection
+            id="product-page-checks"
+            title="Product-page checks"
+            subtitle="Web analysis notes from the captured product page. These do not change the product outcome."
+          >
+            <div className="p-4 space-y-2.5">
+              {product.productPageChecks.map((check, i) => (
+                <div key={`${check.code}-${i}`} className={`rounded-xl border p-4 ${check.kind === "caution" ? "border-amber-200 bg-amber-50/60" : "border-[#efe9e0] bg-[#faf7f2]"}`}>
+                  <div className="flex items-start gap-3">
+                    <span className={`mt-1.5 block w-2 h-2 rounded-full flex-shrink-0 ${check.kind === "caution" ? "bg-amber-500" : "bg-[#b0a8a4]"}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs text-[#282828] leading-relaxed">{check.message}</p>
+                      {check.sourceQuote && <blockquote className="mt-2 border-l-2 border-[#d8d0c8] pl-2 text-[11px] text-[#77706b]">“{check.sourceQuote}”</blockquote>}
+                      <a href={check.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[10px] text-[#248179] underline">Captured product page</a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <p className="text-[10px] text-[#b0a8a4]">Page wording can be incomplete or change. Check the full page and product packaging; these notes are not a certification or clinical assessment.</p>
+            </div>
+          </CollapsibleSection>
+        )}
+
         {/* 6. Claims check - collapsible */}
         {product.claimsCheck && product.claimsCheck.length > 0 && (() => {
           const claimPillar = findPillar(product.pillars, /claim/i);
-          const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
+          const displayedClaims = product.claimsCheck.map((c) => applyClaimEvidenceDisplay(c, product));
+          const supported = displayedClaims.filter((c) => c.decision === "Publicly supported").length;
           return (
             <CollapsibleSection
               id="claims-check"
               title="Claims checked"
-              subtitle={`${supported} of ${product.claimsCheck.length} publicly supported`}
+              subtitle={`${supported} of ${displayedClaims.length} publicly supported`}
               headerRight={claimPillar ? <SectionRating score={claimPillar.score} max={claimPillar.max} /> : undefined}
             >
               <div className="p-4 space-y-2.5">
-                {product.claimsCheck.map((c) => {
+          {displayedClaims.map((c) => {
                   const isSupported  = c.decision === "Publicly supported";
                   const isNeedsProof = c.decision === "Needs proof";
                   const accent  = isSupported ? "#248179" : isNeedsProof ? "#f59e0b" : "#fd6158";
@@ -1321,6 +1326,7 @@ export function ProductScorecardView({
                           </div>
                           <p className="text-xs text-[#282828]/65 leading-relaxed">{c.note}</p>
                           <p className="text-[10px] text-[#b0a8a4] mt-1">{c.evidenceStatus}</p>
+                          {c.sourceUrl && <a href={c.sourceUrl} target="_blank" rel="noreferrer" className="inline-block text-[10px] text-[#248179] hover:underline mt-1">Open ingredient-list source</a>}
                         </div>
                       </div>
                     </div>

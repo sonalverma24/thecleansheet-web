@@ -25,7 +25,7 @@ vi.mock("@/lib/inci-fetch", async (orig) => ({
 }));
 vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/scrape")>()), fetchPageMarkdown: async () => null }));
 vi.mock("@/lib/product-image", () => ({
-  resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, isLiveImage: async () => false,
+  resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: async () => null, isLiveImage: async () => false,
 }));
 vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
@@ -55,6 +55,16 @@ describe("runProductReview", () => {
     h.generate.mockResolvedValueOnce(model({ productName: "Aziderm 20% Cream", category: "Topical Acne Treatment / Dermaceutical", inciIngredients: AZELAIC }));
     const out = await runProductReview("Aziderm 20% Cream");
     expect(out).toMatchObject({ type: "unrated", kind: "prescription-drug", productName: "Aziderm 20% Cream" });
+    expect(h.upserts).toEqual([]);
+  });
+
+  it("answers 'unrated' for a nutraceutical stored before the line was drawn: no model run, nothing written back", async () => {
+    const review = makeReview({ productName: "H2Glow Beauty Hydration Electrolyte Drink Mix", brand: "H2Glow", category: "Oral Supplement / Beauty Drink Mix" });
+    // getStored reads one row: { result, rubric_rev }
+    h.state.rows = { result: { type: "product-review", review, verdict: {} }, rubric_rev: "r7" } as unknown as unknown[];
+    const out = await runProductReview("H2Glow Beauty Hydration Electrolyte Drink Mix");
+    expect(out).toEqual({ type: "unrated", kind: "nutraceutical", productName: "H2Glow Beauty Hydration Electrolyte Drink Mix", brand: "H2Glow" });
+    expect(h.generate).not.toHaveBeenCalled();
     expect(h.upserts).toEqual([]);
   });
 

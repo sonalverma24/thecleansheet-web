@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the knowledge base the rules read
+   Analyser Version X1 · the knowledge base the rules read
 
    Data, not logic. Each table carries the owner who must review it. Changing a
    table is a rule change: it needs a preview and a sign-off, like any other.

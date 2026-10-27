@@ -9,15 +9,39 @@ import type { ProductReview, DerivedVerdict, ClaimAnalysis } from "@/lib/product
 import type { ProductScorecard, Brand, ClaimsCheckItem, ScorePillar } from "@/data/brands/types";
 import { slugify } from "@/lib/verified-store";
 import { reviewInciList } from "@/lib/review-inci";
+import { evidenceForReview } from "@/lib/review-verifier";
+import { ingredientSafety, lookupIngredient, rowLooksValid } from "@/lib/ingredient-db";
 import { enrichIngredients, keyActivesFrom } from "@/lib/inci-enrich";
 import { globalScreenFor } from "@/lib/global-screen";
 import { analysisWording } from "@/lib/analysis-wording";
-import type { GlobalScreen, IngredientEntry, KeyActive } from "@/data/brands/types";
+import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyScreen, VeganScreen } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
 
-function claimToCheckItem(c: ClaimAnalysis): ClaimsCheckItem {
+function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: string[]): ClaimsCheckItem {
+  const fragranceFreeClaim = /\b(?:fragrance|parfum|perfume|aroma)[\s-]*free\b|\b(?:no|without)\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b|\bfree from\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b/i.test(c.text);
+  if (fragranceFreeClaim) {
+    const evidence = evidenceForReview(review);
+    const fullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+    const explicit = ingredients.find((name) => /\b(?:parfum|perfume|fragrance|aroma)\b/i.test(name));
+    const essentialOil = ingredients.find((name) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(name));
+    const aromatic = ingredients.find((name) => /\b(?:lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i.test(name) && /\b(?:extract|water|distillate|hydrosol|oil|essence)\b/i.test(name));
+    const sourceUrl = evidence.sourceUrl || undefined;
+    if (!fullList) return { claim: c.text, decision: "Needs proof", evidenceStatus: "Missing", note: "Fragrance status cannot be derived because a complete, source-backed ingredient list is unavailable.", sourceUrl };
+    if (explicit || essentialOil) return { claim: c.text, decision: "Not publicly supported", evidenceStatus: "Evidence visible", note: `The complete ingredient list names ${explicit ?? essentialOil}.`, sourceUrl };
+    if (aromatic) return { claim: c.text, decision: "Needs proof", evidenceStatus: "Missing", note: `Fragrance status remains unknown because the complete ingredient list includes the aromatic extract ${aromatic}.`, sourceUrl };
+    return { claim: c.text, decision: "Publicly supported", evidenceStatus: "Evidence visible", note: "Derived from the complete, source-backed ingredient list; no explicit fragrance declaration or essential oil was found.", sourceUrl };
+  }
+  const needsProductEvidence = /\b(?:spf\s*\d+|pa\+{2,}|broad[- ]spectrum|uva\s*protection|dermatolog(?:ist|ically)[ -]tested|non[- ]?comedogenic|vegan|cruelty[- ]?free|pregnancy[- ]safe|pregnancy tested|safe (?:for|during|in) pregnancy|suitable (?:for|during) pregnancy)\b/i.test(c.text);
+  if (needsProductEvidence) {
+    return {
+      claim: c.text.length > 90 ? c.text.slice(0, 90).replace(/\s+\S*$/, "") + "…" : c.text,
+      decision: "Needs proof",
+      evidenceStatus: "Brand claim — TCS evidence not reviewed",
+      note: "This is a brand claim. TCS has not reviewed matching product-specific evidence for the claim. Its presence does not change the product rating by itself.",
+    };
+  }
   const supported = c.riskLevel === "low";
   const contradicted = c.riskLevel === "red-flag" || c.drugBoundaryRisk;
   return {
@@ -26,6 +50,55 @@ function claimToCheckItem(c: ClaimAnalysis): ClaimsCheckItem {
     evidenceStatus: c.evidenceLevel >= 4 ? "Evidence visible" : c.evidenceLevel >= 2 ? "Mentioned only" : "Missing",
     note: c.evidenceNote || "",
   };
+}
+
+function buildPregnancyScreen(review: ProductReview, ingredients: string[]): PregnancyScreen {
+  const evidence = evidenceForReview(review);
+  const anchoredFullList = ingredients.length >= 3 && evidence.captureTrust >= 3 && !!evidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+  const category = (review.category ?? "").toLowerCase();
+  const exposure: PregnancyScreen["exposure"] = /cleanser|face wash|body wash|shampoo|soap|rinse[- ]off|conditioner|hair mask/.test(category)
+    ? "rinse-off"
+    : /serum|treatment|toner|lotion|cream|sunscreen|moisturi[sz]er|leave[- ]on/.test(category) ? "leave-on" : "unknown";
+  if (!anchoredFullList) {
+    return { status: "not-screened", exposure, flags: [], unknownIngredients: ingredients, reason: "A complete, source-backed ingredient list is not available." };
+  }
+  const flags: PregnancyScreen["flags"] = [];
+  const unknownIngredients: string[] = [];
+  for (const ingredient of ingredients) {
+    const safety = ingredientSafety(ingredient);
+    const confidence = safety.confidence.toLowerCase();
+    const sourced = safety.valid && !!safety.source && (confidence === "high" || confidence === "medium");
+    if (!sourced) { unknownIngredients.push(ingredient); continue; }
+    const restriction = safety.pregnancyRestriction;
+    if (restriction && !/^(?:no|none|not)\b/i.test(restriction)) {
+      flags.push({ ingredient, restriction, source: safety.source, confidence: confidence as "high" | "medium" });
+    }
+  }
+  return { status: "screened", exposure, sourceUrl: evidence.sourceUrl || undefined, flags, unknownIngredients };
+}
+
+function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {
+  if (!reliableList) return { status: "unknown", animalIngredients: [], unknownIngredients: ingredients, sources: [] };
+  const animalIngredients: string[] = [];
+  const unknownIngredients: string[] = [];
+  const sources: VeganScreen["sources"] = [];
+  for (const name of ingredients) {
+    const row = lookupIngredient(name);
+    if (!row || !rowLooksValid(row) || !row.Source_Reference.trim() || !/^high$/i.test(row.Data_Confidence ?? "")) {
+      unknownIngredients.push(name);
+      continue;
+    }
+    sources.push({ ingredient: name, source: row.Source_Reference });
+    const origin = row.Ingredient_Origin.toLowerCase();
+    if (/animal[- ]derived|animal origin|dairy|milk|whey|beeswax|lanolin|carmine|shellac|silk|collagen|keratin|snail|fish|crustacean/.test(origin)) {
+      animalIngredients.push(name);
+      continue;
+    }
+    const nonAnimal = /\b(?:plant|botanical|vegetable|synthetic|microbial|ferment(?:ation)?|mineral|inorganic)\b/.test(origin);
+    if (!nonAnimal || !/^yes$/i.test(row.Vegan.trim())) unknownIngredients.push(name);
+  }
+  const status = animalIngredients.length ? "conflict" : unknownIngredients.length || !ingredients.length ? "unknown" : "screened";
+  return { status, animalIngredients, unknownIngredients, sources };
 }
 
 function guessProductType(category: string): ProductScorecard["productType"] {
@@ -113,13 +186,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
 
   // Badges drive "At a glance" + proof fallbacks in the shared view.
   const pass_badges: string[] = [];
-  const lowClaims = claims.filter((c) => c.riskLevel === "low").map((c) => c.text.toLowerCase());
-  const hasLow = (kw: RegExp) => lowClaims.some((t) => kw.test(t));
-  if (hasLow(/fragrance[- ]?free/)) pass_badges.push("Fragrance-Free");
-  if (hasLow(/non[- ]?comedogenic/)) pass_badges.push("Non-Comedogenic");
-  if (hasLow(/dermatolog/)) pass_badges.push("Dermatologist Tested");
-  if (hasLow(/vegan/)) pass_badges.push("Vegan");
-  if (hasLow(/essential oil/)) pass_badges.push("No Essential Oils");
+  // Brand claim text alone does not create verification badges or positive ticks.
 
   const warn_badges: string[] = [...(review.formulaLogic?.irritancyConcerns ?? [])];
   const inci = reviewInciList(review);
@@ -162,6 +229,15 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   // The displayed 10-authority screen: the model's, or rebuilt from the ingredient database when it was
   // written without a list. One shared definition (src/lib/global-screen.ts).
   const globalScreen: GlobalScreen | undefined = globalScreenFor(review, inci);
+  const inciEvidence = evidenceForReview(review);
+  const completeInci = inci.length >= 3 && inciEvidence.captureTrust >= 3 && !!inciEvidence.quote.trim() && review.inciEvidence?.quoteTruncated !== true;
+  const completeInciStatus = !completeInci ? (inci.length ? "Partial" as const : "Missing" as const) : inciEvidence.captureTrust === 4
+    ? "Full INCI on brand PDP" as const
+    : inciEvidence.captureTrust === 3
+      ? "Full INCI in reference database" as const
+      : "Marketplace only" as const;
+  const pregnancyScreen = buildPregnancyScreen(review, inci);
+  const veganScreen = buildVeganScreen(inci, completeInci);
 
   const product: ProductScorecard = {
     productName: review.productName,
@@ -181,7 +257,10 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     keyActives,
     ingredients,
     globalScreen,
-    claimsCheck: claims.slice(0, 10).map(claimToCheckItem),
+    inciCompleteness: { status: completeInciStatus, flags: [] },
+    pregnancyScreen,
+    veganScreen,
+    claimsCheck: claims.slice(0, 10).map((claim) => claimToCheckItem(claim, review, inci)),
     missingProof,
     cleanSheetNote: review.cleanSheetNote ? analysisWording(review.cleanSheetNote) : review.cleanSheetNote,
     pass_badges,
@@ -206,6 +285,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
         claim: c.text.length > 110 ? c.text.slice(0, 110).replace(/\s+\S*$/, "") + "…" : c.text,
         note: c.drugBoundaryNote || c.asciNote || c.evidenceNote || "",
       })),
+    productPageChecks: review.productPageChecks?.slice(0, 8),
   };
 
   const brand: Brand = {

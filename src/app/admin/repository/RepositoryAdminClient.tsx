@@ -110,6 +110,32 @@ export function RepositoryAdminClient() {
     }
   }
 
+  async function retryImage(slug: string) {
+    setBusy(slug);
+    setFlash(null);
+    try {
+      const res = await fetch("/api/admin/repository", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "retry-image", slug }),
+      });
+      const d = await res.json();
+      if (!res.ok || d.error) throw new Error(d.error ?? `HTTP ${res.status}`);
+      if (d.found && d.imageUrl) {
+        setRows((prev) => prev.map((r) => (r.product_slug === slug
+          ? { ...r, image_url: d.imageUrl, image_source: d.imageSource, image_confidence: d.imageConfidence == null ? null : String(d.imageConfidence), image_locked: "false" }
+          : r)));
+        setFlash(`Image found for ${slug}.`);
+      } else {
+        setFlash(`No matching image source found for ${slug}. You can still pin an image URL manually.`);
+      }
+    } catch (e) {
+      setFlash(`Retry failed: ${String(e instanceof Error ? e.message : e)}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function unlockImage(slug: string) {
     setBusy(slug);
     setFlash(null);
@@ -207,6 +233,15 @@ export function RepositoryAdminClient() {
                 >
                   {busy === r.product_slug ? "…" : "Pin image"}
                 </button>
+                {!r.image_url && (
+                  <button
+                    onClick={() => retryImage(r.product_slug)}
+                    disabled={busy === r.product_slug}
+                    className="rounded-lg border border-[#248179]/40 text-[#248179] text-xs px-3 py-1.5 disabled:opacity-50"
+                  >
+                    {busy === r.product_slug ? "Searching…" : "Retry search"}
+                  </button>
+                )}
                 {r.image_locked === "true" && (
                   <button
                     onClick={() => unlockImage(r.product_slug)}

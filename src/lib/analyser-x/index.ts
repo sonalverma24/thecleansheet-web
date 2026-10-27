@@ -1,7 +1,7 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the buying decision, as used by the product page
+   Analyser Version X1 · the buying decision, as used by the product page
 
-   The decision core of the vX reference core: the facts, the 34 named rules, the five pills and the reasons behind them.
+   The decision core of the Version X1 decision core: the facts, the 34 named rules, the five pills and the reasons behind them.
    It is pure: no network, no database, no model, no clock (the date is passed in). `decideReview` reads a stored
    ProductReview, so nothing new is written anywhere.
 
@@ -16,3 +16,5 @@ export { AUTHORITIES, AUTHORITY_LABEL, AUTHORITY_SHORT, shortList } from "./regu
 export { PILLS, sourceName } from "./copy";
 export { STALE_DAYS } from "./kb";
 export type { Authority, Decision, DecisionKey, DecisionReason } from "./types";
+
+export { ANALYSER_RELEASE, ANALYSER_METHOD_VERSION } from "./version";

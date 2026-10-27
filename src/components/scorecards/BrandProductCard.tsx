@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { TileChip } from "./TileChip";
 import { resolveTier, TileTierMark } from "@/components/scorecards/pillar-ui";
 import type { ProductScorecard } from "@/data/brands/types";
@@ -14,6 +15,7 @@ interface BrandProductCardProps {
 }
 
 export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) {
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const chips = getTileChips(product);
   const categoryLabel = getProductCategoryLabel(product);
   const isPending = categoryLabel === "Category Pending";
@@ -24,13 +26,21 @@ export function BrandProductCard({ product, brandSlug }: BrandProductCardProps) 
 
         {/* Product image */}
         <div className="relative aspect-square bg-ink-50 overflow-hidden">
-          <Image
-            src={product.image}
-            alt={product.productName}
-            fill
-            className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
+          {product.image && failedImageUrl !== product.image ? (
+            <Image
+              src={product.image}
+              alt={product.productName}
+              fill
+              onError={() => setFailedImageUrl(product.image)}
+              className="object-contain p-2 group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-[#b0a8a4]" aria-label="Product image unavailable">
+              <span className="text-4xl" aria-hidden="true">🧴</span>
+              <span className="text-[10px]">Image pending</span>
+            </div>
+          )}
 
           {/* Tier mark - top right */}
           <div className="absolute top-2 right-2" style={{ zIndex: 10 }}>

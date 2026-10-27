@@ -1,3 +1,5 @@
+import type { ProductPageCheck } from "@/lib/web-shopper-checks";
+
 export type ScorePillar = {
   name: string;
   score: number;
@@ -20,9 +22,33 @@ export type KeyActive = {
 
 export type ClaimsCheckItem = {
   claim: string;
-  evidenceStatus: "Evidence visible" | "Mentioned only" | "Missing";
+  evidenceStatus: "Evidence visible" | "Mentioned only" | "Missing" | "Brand claim — TCS evidence not reviewed";
   decision: "Publicly supported" | "Needs proof" | "Not publicly supported";
   note: string;
+  sourceUrl?: string;
+};
+
+export type PregnancyIngredientFlag = {
+  ingredient: string;
+  restriction: string;
+  source: string;
+  confidence: "high" | "medium";
+};
+
+export type PregnancyScreen = {
+  status: "screened" | "not-screened";
+  exposure: "leave-on" | "rinse-off" | "unknown";
+  sourceUrl?: string;
+  flags: PregnancyIngredientFlag[];
+  unknownIngredients: string[];
+  reason?: string;
+};
+
+export type VeganScreen = {
+  status: "screened" | "conflict" | "unknown";
+  animalIngredients: string[];
+  unknownIngredients: string[];
+  sources: { ingredient: string; source: string }[];
 };
 
 export type GlobalScreen = {
@@ -39,7 +65,7 @@ export type GlobalScreen = {
 };
 
 export type InciCompleteness = {
-  status: "Full INCI on brand PDP" | "Marketplace only" | "Partial" | "Missing";
+  status: "Full INCI on brand PDP" | "Full INCI in reference database" | "Marketplace only" | "Partial" | "Missing";
   flags: string[];
 };
 
@@ -65,6 +91,9 @@ export type ProductScorecard = {
   ingredients: IngredientEntry[];
   globalScreen?: GlobalScreen;
   inciCompleteness?: InciCompleteness;
+  /** Source-backed screen of the disclosed INCI, never a product safety assurance. */
+  pregnancyScreen?: PregnancyScreen;
+  veganScreen?: VeganScreen;
   claimsCheck?: ClaimsCheckItem[];
   missingProof?: string[];
   cleanSheetNote?: string;
@@ -101,6 +130,8 @@ export type ProductScorecard = {
   /** Claim-level regulatory screen (ASCI / India drug-cosmetic boundary) for
       live-reviewed products — rendered as its own section in the product view. */
   regulatoryFlags?: { claim: string; note: string }[];
+  /** Independent shopper observations from captured product-page text. */
+  productPageChecks?: ProductPageCheck[];
   /** NEW tile badge — only the latest few repository arrivals carry it. */
   newArrival?: boolean;
   /** Pills page only (flag ANALYSER_PILLS_PAGE), for a listing card of a stored review: the pill its page shows, and the At a glance ticks in the

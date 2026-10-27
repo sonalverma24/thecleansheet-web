@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   THE CLEAN SHEET™ · The product page, as one model
+   THE CLEAN SHEET™ · Version X1 product page model
 
    Turns a stored review, its scorecard and the buying decision into the 13 blocks of the pills page, in the order the page
    shows them:
@@ -19,14 +19,14 @@
 ──────────────────────────────────────────────────────────────── */
 
 import type { ProductReview } from "@/lib/product-review-types";
-import type { ProductScorecard } from "@/data/brands/types";
+import type { ProductScorecard, PregnancyScreen as ProductPregnancyScreen } from "@/data/brands/types";
 import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/scorecards/pill-palette";
 import { buildAtAGlance } from "@/lib/at-a-glance";
 import { reviewInciList } from "@/lib/review-inci";
-import { pregnancyScreen, type PregnancyScreen } from "@/lib/pregnancy-screen";
+
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import {
-  AUTHORITIES, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
+  ANALYSER_RELEASE, AUTHORITIES, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
 } from "@/lib/analyser-x";
 
@@ -47,6 +47,8 @@ export interface DetailRow { n: string; title: string; oneLiner: string; rating:
 export interface StandingView { label: string; tone: PillTone; medicine: boolean }
 
 export interface PillsPageModel {
+  /** The analyser release that produced this page model. */
+  release: typeof ANALYSER_RELEASE;
   /** "pills": the pill and its confidence are the decision core's. "standing": the take card shows today's standing and no confidence (ANALYSER_NEW_LAYOUT). */
   mode: "pills" | "standing";
   decision: { key: DecisionKey; label: string; meaning: string; confidence: Decision["confidence"]; gapKind?: Decision["gapKind"]; reasons: { ruleId: string; kind: string; text: string }[] };
@@ -239,41 +241,89 @@ export function buyLinksOf(review: ProductReview, product: ProductScorecard): Bu
 
 const MINERAL_FILTER_RE = /^(zinc oxide|titanium dioxide)$/i;
 const CHEMICAL_FILTER_RE = /avobenzone|butyl methoxydibenzoylmethane|octocrylene|homosalate|octisalate|ethylhexyl salicylate|ethylhexyl methoxycinnamate|octinoxate|oxybenzone|benzophenone-3|tinosorb|bis-ethylhexyloxyphenol|methylene bis-benzotriazolyl|uvinul|diethylamino hydroxybenzoyl|ethylhexyl triazone|drometrizole|terephthalylidene|phenylbenzimidazole sulfonic/i;
-const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
+const FRAGRANCE_RE = /\b(parfum|perfume|fragrance|aroma)\b/i;
+const ESSENTIAL_OIL_RE = /\bessential\s+oil\b|\b(lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i;
+const AROMATIC_EXTRACT_RE = /\b(lavender|lavandula|rose|rosa|jasmine|jasminum|geranium|pelargonium|ylang|citrus|bergamot|rosemary|rosmarinus|peppermint|mentha|eucalyptus|eugenia|clove|cinnamon|cananga)\b/i;
+const AROMATIC_FORM_RE = /\b(extract|water|distillate|hydrosol|oil|essence)\b/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
+const FULL_INCI_STATUSES = new Set(["Full INCI on brand PDP", "Full INCI in reference database"]);
 
-/** The pregnancy chip shows only when the screen is sure: "Pregnancy safe" when every ingredient was checked and none is cautioned, "Pregnancy caution" when one is.
-    When some ingredient could not be checked there is no chip at all, neither a caution nor a tick (the FAQ still answers the question in words). */
-function pregnancyHighlight(p: PregnancyScreen): Highlight | null {
-  if (p.status === "clear") return { label: "Pregnancy safe", state: "yes", detail: "None of the listed ingredients carries a pregnancy caution in our reference data. Ask your doctor if you are pregnant." };
-  if (p.status === "caution") return { label: `Pregnancy caution: ${joinAnd(p.cautioned.map((c) => c.name))}`, state: "no", detail: p.cautioned.map((c) => `${c.name}: ${c.note}`).join(". ") };
-  return null;
+/** Pregnancy flags describe ingredients and recorded exposure context. No flags found is not a product safety clearance. */
+function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight {
+  const exposure = p?.exposure ? `Recorded exposure category: ${p.exposure}.` : "Exposure category is unknown.";
+  if (!p || p.status !== "screened") {
+    const unknown = p?.unknownIngredients?.length ? ` Unknown ingredients: ${joinAnd(p.unknownIngredients)}.` : "";
+    return { label: "Pregnancy ingredient screen incomplete", state: "unknown", detail: `This ingredient screen is incomplete; it is not a product safety assessment. ${exposure}${unknown} Ask a healthcare professional about individual use.` };
+  }
+  if (p.flags.length) {
+    const flags = p.flags.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source} (confidence: ${f.confidence}).`).join(" ");
+    const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
+    return { label: `Pregnancy ingredient flag${p.flags.length === 1 ? "" : "s"}: ${joinAnd(p.flags.map((f) => f.ingredient))}`, state: "no", detail: `${flags} ${exposure}${unknown} This is an ingredient screen, not a product safety conclusion.` };
+  }
+  const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
+  return { label: "No pregnancy flags found", state: "unknown", detail: `No sourced pregnancy flag was found for the ingredients screened. This is not proof that the product is safe during pregnancy. ${exposure}${unknown} Ask a healthcare professional about individual use.` };
 }
 
-export function highlightsOf(review: ProductReview, product: ProductScorecard, inci: string[], preg: PregnancyScreen): Highlight[] {
-  const have = inci.length > 0;
+function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
+  const categories = [
+    { label: "SPF", pattern: /\bspf\b/i },
+    { label: "Dermatologist-tested", pattern: /dermatolog(?:ist|ically)[ -]tested/i },
+    { label: "Non-comedogenic", pattern: /non[- ]?comedogenic/i },
+    { label: "Vegan claim", pattern: /\bvegan\b/i },
+    { label: "Cruelty-free claim", pattern: /cruelty[- ]?free/i },
+  ];
+  const checks = product.claimsCheck ?? [];
+  return categories.flatMap(({ label, pattern }) => {
+    const check = checks.find((item) => pattern.test(item.claim));
+    if (!check) return [];
+    const reviewed = check.evidenceStatus === "Evidence visible" && check.decision === "Publicly supported";
+    const contradicted = check.evidenceStatus === "Evidence visible" && check.decision === "Not publicly supported";
+    const claimLabel = reviewed ? `TCS evidence reviewed: ${label}`
+      : check.evidenceStatus === "Brand claim — TCS evidence not reviewed" ? `${label}: brand claim; TCS evidence not reviewed`
+      : `${label}: evidence not confirmed`;
+    const detail = [check.note, check.sourceUrl ? `Source: ${check.sourceUrl}` : ""].filter(Boolean).join(" ");
+    return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
+  });
+}
+
+function veganOriginHighlight(product: ProductScorecard): Highlight | null {
+  const screen = product.veganScreen;
+  if (!screen) return null;
+  const state = screen.status === "screened" ? "yes" : screen.status === "conflict" ? "no" : "unknown";
+  const label = screen.status === "screened" ? "Vegan ingredient origin screened"
+    : screen.status === "conflict" ? `Animal-origin ingredient: ${joinAnd(screen.animalIngredients)}`
+    : "Vegan ingredient origin unknown";
+  const sources = screen.sources.map((s) => `${s.ingredient}: ${s.source}`).join("; ");
+  const unknown = screen.unknownIngredients.length ? ` Unresolved origin: ${joinAnd(screen.unknownIngredients)}.` : "";
+  const detail = [sources ? `Ingredient-origin sources: ${sources}.` : "", unknown, "This screen is separate from cruelty-free certification."].filter(Boolean).join(" ");
+  return { label, state, ...(detail ? { detail } : {}) };
+}
+
+export function highlightsOf(product: ProductScorecard, inci: string[], preg?: ProductPregnancyScreen): Highlight[] {
+  const have = FULL_INCI_STATUSES.has(product.inciCompleteness?.status ?? "") && inci.length > 0;
   const named = (re: RegExp) => inci.some((i) => re.test(i.trim()));
-  const pregnancy = pregnancyHighlight(preg);
-  const out: Highlight[] = pregnancy ? [pregnancy] : [];
+  const fragranceState = !have ? "unknown" : named(FRAGRANCE_RE) || named(ESSENTIAL_OIL_RE) ? "no"
+    : inci.some((i) => AROMATIC_EXTRACT_RE.test(i) && AROMATIC_FORM_RE.test(i)) ? "unknown" : "yes";
+  const out: Highlight[] = [pregnancyHighlight(preg)];
+  out.push({ label: "Fragrance free", state: fragranceState, detail: fragranceState === "unknown"
+    ? "A complete ingredient list is unavailable, or an aromatic botanical needs review; no fragrance-free conclusion is made."
+    : fragranceState === "yes" ? "Derived from a complete ingredient list. Explicit fragrance declarations and essential oils are treated as not fragrance-free."
+    : "The complete ingredient list contains an explicit fragrance declaration or an essential oil." });
   out.push({ label: "Paraben free", state: !have ? "unknown" : named(/paraben/i) ? "no" : "yes" });
-  out.push({ label: "Fragrance free", state: !have ? "unknown" : named(FRAGRANCE_RE) ? "no" : "yes" });
   out.push({ label: "Alcohol free", state: !have ? "unknown" : named(DRYING_ALCOHOL_RE) ? "no" : "yes" });
   if (product.productType === "sunscreen") {
     const minerals = inci.filter((i) => MINERAL_FILTER_RE.test(i.trim()));
     if (minerals.length && !inci.some((i) => CHEMICAL_FILTER_RE.test(i))) out.push({ label: "Mineral filters only", state: "yes", detail: `The only UV filters listed are ${joinAnd(minerals.map((m) => m.toLowerCase()))}.` });
-    // SPF is verified only by a named lab's report, not by the brand's say-so.
-    const spf = (review.claimMap ?? []).filter((c) => /\bspf\b/i.test(c.text));
-    if (spf.length) {
-      const verified = spf.some((c) => c.evidenceLevel >= 5);
-      out.push({ label: "SPF verified", state: verified ? "yes" : "no", detail: verified ? "A named lab's SPF report is public." : "No published SPF test report." });
-    }
   }
+  out.push(...claimEvidenceHighlights(product));
+  const vegan = veganOriginHighlight(product);
+  if (vegan) out.push(vegan);
   const handled = /^(fragrance free|alcohol free|paraben free|spf verified)$/i;
   for (const t of buildAtAGlance(product)) {
     if (handled.test(t.label)) continue;
     out.push({ label: t.label, state: t.value ? "yes" : "no" });
   }
-  return out.slice(0, 8);
+  return out.slice(0, 12);
 }
 
 /* ── blocks 6 and 7: the one-liners ──────────────────────────── */
@@ -464,6 +514,23 @@ export function gapsOf(d: Decision, product: ProductScorecard, review: ProductRe
 
 /* ── block 12: how to use ────────────────────────────────────── */
 
+/**
+ * "Who should be careful" is a TCS product-fit summary, not a channel for
+ * replaying a model-written pregnancy note or another publisher's caution label.
+ * Pregnancy and teen context is rendered from the structured TCS ingredient
+ * screen in the highlight and FAQ, where its flags, exposure and unknowns are explicit.
+ */
+const MEDICAL_AUDIENCE_NOTE_RE = /\b(?:pregnan(?:cy|t)|breast[\s-]?feed(?:ing)?|lactat(?:e|ed|ing|ion)|teen(?:s|ager)?|adolescen(?:t|ts|ce)|infants?|children?|minors?)\b/i;
+const THIRD_PARTY_ATTRIBUTION_RE = /\b(?:according to|as (?:reported|stated|noted|flagged|reviewed) by|(?:review(?:er)?|site|website|report|publisher)\s+(?:flags?|notes?|states?|says?|warns?|advises?)|[a-z0-9-]+\.(?:com|org|net|in)\b|dermatocare|incidecoder|nykaa|(?:pregnancy|teens)caution)\b/i;
+
+function fitCautionsOf(review: ProductReview): string[] {
+  return (review.consumerSuitability?.avoidIf ?? [])
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0 && !MEDICAL_AUDIENCE_NOTE_RE.test(item) && !THIRD_PARTY_ATTRIBUTION_RE.test(item))
+    .slice(0, 4);
+}
+
 function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
   const c = review.consumerSuitability;
   const pick = (t: string | undefined) => (t && t.trim().length > 3 ? t.trim() : null);
@@ -473,16 +540,17 @@ function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
 
 /* ── block 13: FAQ ───────────────────────────────────────────── */
 
-function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: ProductScorecard, preg: PregnancyScreen, medicine: boolean): PillsPageModel["faq"] {
+function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: ProductScorecard, preg: ProductPregnancyScreen | undefined, medicine: boolean): PillsPageModel["faq"] {
   const name = product.productName;
   const out: PillsPageModel["faq"] = [];
   const frag = m.highlights.find((h) => h.label === "Fragrance free");
-  if (frag && frag.state !== "unknown") out.push({ q: `Is ${name} fragrance free?`, a: frag.state === "yes" ? "Yes. There is no fragrance or parfum in the ingredient list we read." : "No. The ingredient list includes fragrance (parfum), a common contact allergen." });
-  const pregAnswer = preg.status === "clear"
-    ? "We found no ingredient on our pregnancy-caution list. That describes the ingredients, not the whole product, so ask your doctor if you are pregnant or planning a pregnancy."
-    : preg.status === "caution"
-      ? `Our reference data cautions against ${joinAnd(preg.cautioned.map((c) => c.name))} during pregnancy. Ask your doctor before using it.`
-      : "We could not check every ingredient, so we cannot say. Ask your doctor if you are pregnant or planning a pregnancy.";
+  if (frag && frag.state !== "unknown") out.push({ q: `Is ${name} fragrance free?`, a: frag.state === "yes" ? "The complete ingredient list we reviewed contains no explicit fragrance declaration or essential oil." : "The complete ingredient list names an explicit fragrance declaration or essential oil." });
+  const pregExposure = preg?.exposure ?? "unknown";
+  const pregAnswer = !preg || preg.status !== "screened"
+    ? `The ingredient screen is incomplete; unknown ingredients remain. Exposure category: ${pregExposure}. This is not a product safety conclusion. Ask a healthcare professional.`
+    : preg.flags.length
+      ? `Ingredient-level flags from our reference data: ${preg.flags.map((f) => `${f.ingredient}: ${f.restriction} (source: ${f.source})`).join("; ")}. Exposure category: ${pregExposure}. This is not a product safety conclusion. Ask a healthcare professional.`
+      : `No sourced pregnancy flags were found for the ingredients screened. This is not proof that the product is safe during pregnancy. Exposure category: ${pregExposure}.${preg.unknownIngredients.length ? ` Ingredients not resolved: ${joinAnd(preg.unknownIngredients)}.` : ""} Ask a healthcare professional.`;
   if (!medicine) out.push({ q: "Can I use it during pregnancy?", a: pregAnswer });
   const india = m.regulatoryCheck.panel?.authorities.find((a) => a.id === "IN");
   if (india) out.push({ q: "Is it allowed in India?", a: india.result === "Meets" ? "We found no ingredient in the list we read that is prohibited or over a stated limit under India's Cosmetics Rules 2020." : india.detail });
@@ -512,19 +580,20 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const medicine = standing ? standing.medicine : d.key === "medicinal-product";
   const settled = new Set(out.settled.map((f) => f.ruleId));
   const inci = reviewInciList(review);
-  const preg = pregnancyScreen(inci);
+  const preg = product.pregnancyScreen;
   const panel = benchmarkPanel(d);
   const base: Omit<PillsPageModel, "faq"> = {
+    release: ANALYSER_RELEASE,
     mode: standing ? "standing" : "pills",
     decision: { key: d.key, label: d.label, meaning: d.meaning, confidence: d.confidence, ...(d.gapKind ? { gapKind: d.gapKind } : {}), reasons: d.reasons.map((r) => ({ ruleId: r.ruleId, kind: r.kind, text: r.text })) },
     pill: standing ? { key: d.key, label: standing.label, tone: standing.tone, marker: MARKER_OF_PILL[standing.tone] } : { key: d.key, label: d.label, tone: TONE[d.key], marker: MARKER_OF_PILL[TONE[d.key]] },
     take: takeOf(d, review, product, inci, now),
     buyLinks: buyLinksOf(review, product),
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),
-    highlights: highlightsOf(review, product, inci, preg),
+    highlights: highlightsOf(product, inci, preg),
     fit: {
       suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
-      careful: [...(review.consumerSuitability?.avoidIf ?? []), ...(review.consumerSuitability?.pregnancyOrTeenNote ? [review.consumerSuitability.pregnancyOrTeenNote] : [])].filter(Boolean),
+      careful: fitCautionsOf(review),
       india: product.indiaContext,
       price: priceLineOf(review),
     },

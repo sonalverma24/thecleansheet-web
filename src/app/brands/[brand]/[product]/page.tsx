@@ -4,6 +4,8 @@ import type { Brand, ProductScorecard } from "@/data/brands";
 import { resolveTier, TIER_STYLES, tierToRating } from "@/components/scorecards/pillar-ui";
 import { ProductScorecardView } from "@/components/scorecards/ProductScorecardView";
 import { clipDescription } from "@/lib/seo";
+import { applyClaimEvidenceDisplay } from "@/lib/claim-evidence-display";
+import { fragranceFromCompleteInci } from "@/lib/at-a-glance";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // FAQ builder — phrased as the questions people actually ask an AI assistant
@@ -39,14 +41,15 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
 
   // Claims-check summary — how many of the brand's on-pack claims stood up.
   if (product.claimsCheck?.length) {
-    const total = product.claimsCheck.length;
-    const supported = product.claimsCheck.filter((c) => c.decision === "Publicly supported").length;
-    const needsProof = product.claimsCheck.filter((c) => c.decision === "Needs proof").length;
-    const notSupported = product.claimsCheck.filter((c) => c.decision === "Not publicly supported").length;
+    const claims = product.claimsCheck.map((c) => applyClaimEvidenceDisplay(c, product));
+    const total = claims.length;
+    const supported = claims.filter((c) => c.decision === "Publicly supported").length;
+    const needsProof = claims.filter((c) => c.decision === "Needs proof").length;
+    const notSupported = claims.filter((c) => c.decision === "Not publicly supported").length;
     const parts = [`${supported} of ${total} ${supported === 1 ? "is" : "are"} publicly supported`];
     if (needsProof) parts.push(`${needsProof} ${needsProof === 1 ? "needs" : "need"} more proof`);
     if (notSupported) parts.push(`${notSupported} ${notSupported === 1 ? "is" : "are"} not publicly supported`);
-    const example = product.claimsCheck[0];
+    const example = claims[0];
     faqs.push({
       q: `Do ${brand.name}'s claims about ${name} hold up?`,
       a: `We checked ${total} on-pack claim${total === 1 ? "" : "s"}: ${parts.join(", ")}. For example, "${example.claim}" — ${example.decision.toLowerCase()}.`,
@@ -54,16 +57,15 @@ function buildProductFaqs(product: ProductScorecard, brand: Brand): { q: string;
   }
 
   // Fragrance status — a top question for sensitive / acne-prone skin.
-  if (product.fragranceStatus && product.fragranceStatus !== "unknown") {
-    const fragranceAnswer: Record<string, string> = {
-      "free": `Yes. Our analysis of the published INCI list found no synthetic fragrance (Parfum) or scent-use essential oils in ${name}.`,
-      "synthetic": `No. ${name} contains synthetic fragrance (Parfum) in its ingredient list — worth noting if you have sensitive or fragrance-reactive skin.`,
-      "essential-oil": `${name} is scented with essential oils rather than synthetic fragrance. Essential oils can still trigger reactions in sensitive skin, so patch-test first.`,
-      "both": `${name} contains both synthetic fragrance and essential oils. If you are fragrance-sensitive, patch-test before regular use.`,
-    };
-    const a = fragranceAnswer[product.fragranceStatus];
-    if (a) faqs.push({ q: `Is ${name} fragrance-free?`, a });
-  }
+  const fragrance = fragranceFromCompleteInci(product);
+  const fragranceAnswer: Record<typeof fragrance, string> = {
+    clear: `Yes. TCS derived this from the complete ingredient list: no explicit fragrance declaration, scent-use essential oil, or unresolved aromatic extract was identified.`,
+    declared: `No. The complete ingredient list names an explicit fragrance ingredient.`,
+    "essential-oil": `No. The complete ingredient list names an essential oil. Essential oils can still trigger reactions in sensitive skin.`,
+    "aromatic-unknown": `Unknown. The complete ingredient list includes an aromatic botanical, and its scent function is not established from the available evidence.`,
+    unknown: `Unknown. TCS does not have a complete, source-backed ingredient list to determine fragrance status.`,
+  };
+  faqs.push({ q: `Is ${name} fragrance-free?`, a: fragranceAnswer[fragrance] });
 
   if (product.priceRange) {
     faqs.push({

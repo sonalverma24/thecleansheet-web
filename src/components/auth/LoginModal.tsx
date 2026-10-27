@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { noteAuthIntent } from "@/lib/acquisition";
 
 interface Props {
   onClose: () => void;
@@ -46,6 +47,7 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
   }, []);
 
   async function handleGoogle() {
+    noteAuthIntent();
     setLoading(true);
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
@@ -58,6 +60,7 @@ export default function LoginModal({ onClose, returnPath, openReviewOnReturn, ti
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
+    noteAuthIntent();
     setLoading(true);
     setError("");
     const { error } = await supabase.auth.signInWithOtp({

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import { noteAuthIntent } from "@/lib/acquisition";
 import {
   Heart, GitCompare, Layers, LogOut, Settings,
   ChevronRight, User, Shield
@@ -96,6 +97,7 @@ export default function AccountPage() {
   };
 
   const signInWithGoogle = async () => {
+    noteAuthIntent();
     setSigningIn(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -106,6 +108,7 @@ export default function AccountPage() {
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+    noteAuthIntent();
     setEmailLoading(true);
     setEmailError(null);
     const { error } = await supabase.auth.signInWithOtp({

@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · decision invariants
+   Analyser Version X1 · decision invariants
 
    Checks a finished decision against the rules that must hold whatever the inputs.
    Used by the post_decide hook at run time (a violation holds the analysis for a

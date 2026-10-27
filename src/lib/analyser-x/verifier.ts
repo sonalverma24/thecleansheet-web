@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · the verifier: the only door from neural to symbolic
+   Analyser Version X1 · the verifier: the only door from neural to symbolic
 
    A proposal becomes a fact only if:
      1. its payload matches the schema for its kind;

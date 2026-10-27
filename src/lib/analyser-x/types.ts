@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · shared types
+   Analyser Version X1 · shared types
 
    The artifacts of the neurosymbolic loop, in the order they are made:
 
@@ -12,6 +12,8 @@
    Neural components may only produce proposals. Nothing neural reaches a
    Decision except through the verifier and the rules.
 ──────────────────────────────────────────────────────────────── */
+
+import { ANALYSER_METHOD_VERSION } from "./version";
 
 /** How reliably the source text was captured: 1 model transcription, 2 retailer,
     3 reference database, 4 brand page, 5 a label photograph published online and read legibly (never a physical
@@ -293,5 +295,5 @@ export interface Decision {
     /** The global benchmark: each authority's result for the declared ingredients. Null when not computed. */
     benchmark: Record<Authority, BenchmarkSummary> | null;
   };
-  version: "TCS-X 1.0";
+  version: typeof ANALYSER_METHOD_VERSION;
 }

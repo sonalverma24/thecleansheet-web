@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
-   Analyser vX · claim flags, by code
+   Analyser Version X1 · claim flags, by code
 
    Mirrors the hard-flag logic in deriveVerdict (src/lib/product-review-engine.ts):
    a contradiction against the ingredient list, a fairness claim, or drug-style
