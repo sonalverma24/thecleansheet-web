@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         result.type === "product-review" ? result.review.productSlug : null;
       await createAdminClient().from("product_searches").insert({
         user_id: user.id,
+        user_email: user.email ?? null,
         query: String(query),
         product_slug: productSlug,
       });
