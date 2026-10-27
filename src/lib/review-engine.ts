@@ -35,11 +35,12 @@ export type ReviewResult =
     }
   | { kind: "comparison"; comparison: ComparisonResult }
   | { kind: "answer"; answer: ExpertAnswer }
+  | { kind: "unidentified" }
   | { kind: "out_of_scope" };
 
 /* ═══════════════ One cache, one key, full results only ═══════════════ */
 
-const CACHE_VERSION = "v5"; // v5: unified single-pipeline engine
+const CACHE_VERSION = "v6"; // v6: fail closed when a URL does not establish product identity
 const REVIEW_CACHE = new Map<string, ReviewResult>();
 
 function cacheKey(input: string): string {
@@ -185,6 +186,27 @@ function productNameFromURL(url: string): string {
   } catch {
     return "";
   }
+}
+
+const IDENTITY_PLACEHOLDER = /\b(?:unknown product|product not identified|could not be identified|unable to identify|not identified from|page not found|not found|service unavailable|temporarily unavailable|product unavailable|not available|n\s*\/\s*a)\b|\b404\b/i;
+
+function identityPlaceholder(value: unknown): boolean {
+  if (typeof value !== "string" || !value.trim()) return true;
+  const t = value.trim().replace(/[.!?]+$/, "");
+  return /^(?:unknown(?:\s+brand|\s+product)?|n\s*\/\s*a|not available)$/i.test(t) || IDENTITY_PLACEHOLDER.test(value);
+}
+
+function pageIdentityHint(content: string): string {
+  const title = content.match(/^Title:\s*(.+)$/im)?.[1]?.trim();
+  const heading = title ?? content.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? "";
+  return /^(?:amazon(?:\.(?:in|com))?|shop|home(?:page)?|product page)$/i.test(heading) ? "" : heading;
+}
+
+function hasDescriptiveProductPath(url: string): boolean {
+  const hint = productNameFromURL(url);
+  if (identityPlaceholder(hint)) return false;
+  const words = hint.toLowerCase().match(/[a-z]{2,}/g) ?? [];
+  return words.length >= 2;
 }
 
 function parseJSON(text: string) {
@@ -345,6 +367,7 @@ export type DeepScanResult =
   | { type: "single"; scorecard: Scorecard; verdict: FinalVerdict }
   | { type: "comparison"; comparison: ComparisonResult }
   | { type: "answer"; answer: ExpertAnswer }
+  | { type: "unidentified" }
   | { type: "out_of_scope" };
 
 /** Runs Layer 2 (or comparison/expert path). Throws TransientModelError when the model is unavailable. */
@@ -352,14 +375,20 @@ export async function runDeepScan(query: string, claimFindings: Compact): Promis
   let q = query.trim();
   let scrapedContext = "";
   let urlInput = "";
+  let sourceIdentityHint = "";
 
   if (isURL(q)) {
     urlInput = q;
     const pageContent = await scrapeURL(q, 6000);
     if (pageContent) {
       scrapedContext = pageContent;
+      sourceIdentityHint = pageIdentityHint(pageContent);
+      if (identityPlaceholder(sourceIdentityHint) && !hasDescriptiveProductPath(urlInput)) {
+        return { type: "unidentified" };
+      }
       q = extractProductHint(pageContent) || productNameFromURL(q);
     } else {
+      if (!hasDescriptiveProductPath(urlInput)) return { type: "unidentified" };
       q = productNameFromURL(q);
       if (!q) return { type: "out_of_scope" };
     }
@@ -458,10 +487,16 @@ ${scrapedContext}`;
   if (!isValidScorecard(parsed as Record<string, unknown>)) return { type: "out_of_scope" };
 
   const scorecard = validateScorecard(parsed as Scorecard, claimFindings);
+  if (urlInput && ((identityPlaceholder(sourceIdentityHint) && !hasDescriptiveProductPath(urlInput)) ||
+    identityPlaceholder(scorecard.productName) || identityPlaceholder(scorecard.brand))) {
+    return { type: "unidentified" };
+  }
   const verdict = computeVerdict(scorecard, claimFindings);
   // A URL is a specific product page; anything else is identified only if it isn't
   // a bare INCI-list paste. Unidentified scans are reviewed but not registered.
-  const identified = !!urlInput || !looksLikeInciList(query);
+  const identified = urlInput
+    ? !identityPlaceholder(sourceIdentityHint) || hasDescriptiveProductPath(urlInput)
+    : !looksLikeInciList(query);
   await registerIfVerified(scorecard, verdict, claimFindings, identified);
   return { type: "single", scorecard, verdict };
 }
@@ -498,6 +533,8 @@ export async function runFullReview(query: string): Promise<ReviewResult> {
 
   const cf = compactClaimFindings(claimCheck);
   const deep = await runDeepScan(query, cf);
+
+  if (deep.type === "unidentified") return { kind: "unidentified" };
 
   if (deep.type === "single") {
     const result: ReviewResult = { kind: "product", claimCheck, claimLayerDown, scorecard: deep.scorecard, verdict: deep.verdict };

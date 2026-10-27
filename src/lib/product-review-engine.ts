@@ -35,6 +35,38 @@ export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
 const isURL = (t: string) => /^https?:\/\//i.test(t.trim());
 
+const IDENTITY_PLACEHOLDER = /\b(?:unknown product|product not identified|could not be identified|unable to identify|not identified from|page not found|not found|service unavailable|temporarily unavailable|product unavailable|not available|n\s*\/\s*a)\b|\b404\b/i;
+
+const SKIP_URL_SEGMENTS = new Set([
+  "collections", "products", "pages", "categories", "category",
+  "all", "shop", "store", "product", "items", "listing", "p", "dp",
+]);
+
+function identityPlaceholder(value: string | null | undefined): boolean {
+  if (!value?.trim()) return true;
+  const normalized = value.trim().replace(/[.!?]+$/, "");
+  return /^(?:unknown(?:\s+brand|\s+product)?|n\s*\/\s*a|not available|amazon(?:\.(?:in|com))?)$/i.test(normalized) || IDENTITY_PLACEHOLDER.test(value);
+}
+
+function productNameHintFromURL(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split("/").filter(Boolean);
+    const candidates = segments
+      .filter((segment) => segment.length > 3 && !/^\d+$/.test(segment) && !SKIP_URL_SEGMENTS.has(segment.toLowerCase()))
+      .map((segment) => segment.replace(/\.(?:html?|php)$/i, "").replace(/[-_]+/g, " ").trim());
+    return candidates.find((candidate) => (candidate.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2)
+      ?? candidates.at(-1) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function hasDescriptiveProductPath(url: string): boolean {
+  const hint = productNameHintFromURL(url);
+  if (identityPlaceholder(hint)) return false;
+  return (hint.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2;
+}
+
 /* A bare INCI paste (an ingredient list on its own) identifies no product: it
    carries a formula but no brand or product name. Reviews of such scans are shown
    to the user but never added to the public directory - the directory is for
@@ -676,6 +708,8 @@ export type ProductReviewResult =
   | { type: "disambiguation"; query: string; options: { name: string }[] }
   /** A nutraceutical or a prescription drug: not a cosmetic, so there is no review. Never stored, never listed (see unrated-kind.ts). */
   | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
+  /** A URL that did not establish which product it is (an error page, a bare store link). Never stored, never listed. */
+  | { type: "unidentified" }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -1156,9 +1190,15 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   if (isURL(q)) {
     const page = await fetchPageMarkdown(q);
+    if (page) pageName = titleFromMarkdown(page);
+    // This URL can itself be an analyser failure page. Its title and slug are
+    // explicit evidence that no product identity was recovered; do not feed
+    // that failure text to the model or let it create a repository row.
+    if (identityPlaceholder(pageName) && !hasDescriptiveProductPath(q)) {
+      return { type: "unidentified" };
+    }
     if (page) {
       pageExcerpt = productBodyExcerpt(page);
-      pageName = titleFromMarkdown(page);
       capturedPageText = productBodyExcerpt(page, 60000);
       capturedPageTitle = pageName ?? "";
       capturedPageAt = new Date().toISOString();
@@ -1431,7 +1471,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // A scan of a bare INCI list (no URL, no product name) has no confirmed product
   // identity, so its review is returned to the user but kept OUT of the public
   // directory - neither the /brands repository grid nor the verified library.
-  const productIdentified = isURL(q) || !!inci || !looksLikeInciList(q);
+  const productIdentified = isURL(q)
+    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
+      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
+    : !!inci || !looksLikeInciList(q);
+
+  // A URL that did not establish a product fails closed. A pasted ingredient list has no product
+  // by design: it falls through to be returned and cached in-process below, never saved.
+  if (isURL(q) && !productIdentified) return { type: "unidentified" };
 
   // Approved products join the registry (shown as tiles on /review and /brands).
   if (verdict.status === "approved" && productIdentified) {
