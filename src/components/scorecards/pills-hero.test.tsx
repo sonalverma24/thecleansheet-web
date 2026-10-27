@@ -57,12 +57,19 @@ describe.each(FIXTURES)("the pills page, %s", (_name, review) => {
   });
 
   it("At a glance shows keywords only: none of the model's explainer lines is printed there", () => {
+    // Nothing verified, nothing drawn: the strip is left out rather than shown as a row of grey chips (checked below).
+    if (model.highlights.length === 0) return;
     const section = between(html, 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
-    expect(model.highlights.length).toBeGreaterThan(0);
     for (const h of model.highlights) {
       expect(section, h.label).toContain(esc(h.label));
       if (h.detail) expect(section, `explainer for ${h.label}`).not.toContain(esc(h.detail));
     }
+  });
+
+  it("At a glance never draws a grey 'not known' chip, and the strip exists exactly when there is a verified check to show", () => {
+    expect(html.includes('id="at-a-glance"')).toBe(model.highlights.length > 0);
+    expect(html).not.toContain("(not known)");
+    expect(html).not.toContain('data-tone="na"');
   });
 
   it("the Regulatory check says nothing about our reference data", () => {
@@ -90,7 +97,7 @@ describe.each(FIXTURES)("the pills page, %s", (_name, review) => {
   });
 
   it("carries the design from the take to the questions, in order", () => {
-    const ids = ["at-a-glance", "where-to-buy", "key-ingredients", "claim-check", "regulatory-check", "ingredients", ...(model.details ? ["details"] : []), "gaps", ...(model.howToUse ? ["how-to-use"] : []), "faq"];
+    const ids = [...(model.highlights.length ? ["at-a-glance"] : []), "where-to-buy", "key-ingredients", "claim-check", "regulatory-check", "ingredients", ...(model.details ? ["details"] : []), "gaps", ...(model.howToUse ? ["how-to-use"] : []), "faq"];
     let at = html.indexOf('aria-label="The Clean Sheet rating"');
     expect(at).toBeGreaterThan(0);
     for (const id of ids) { const i = html.indexOf(`id="${id}"`, at + 1); expect(i, id).toBeGreaterThan(at); at = i; }
@@ -222,7 +229,24 @@ describe("when a part of the model is empty, that part is left out and the rest 
   it("nothing to put in the fit block: no fit cards and no India card, and today's Best for list does not come back", () => {
     const html = render(built, { product: withProduct, model: { fit: { ...built.model.fit, suits: [], careful: [], india: "" } } });
     for (const gone of ['id="fit"', "How it fits you and the Indian market", 'id="in-india"', "Best for", "Avoid if"]) expect(html, gone).not.toContain(gone);
-    for (const kept of ['id="at-a-glance"', 'id="where-to-buy"', 'id="key-ingredients"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
+    for (const kept of ['id="where-to-buy"', 'id="key-ingredients"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
+  });
+
+  it("nothing verified for At a glance: the strip is left out, and the fit cards and the rest still stand", () => {
+    const html = render(built, { model: { highlights: [], fit: { ...built.model.fit, suits: ["High UV protection"], careful: [] } } });
+    for (const gone of ['id="at-a-glance"', ">At a glance<"]) expect(html, gone).not.toContain(gone);
+    for (const kept of ['id="fit"', "Who it suits", 'id="where-to-buy"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
+  });
+
+  it("a strip with ticks and a cross draws each as a keyword, ticks before the cross, and nothing grey", () => {
+    const html = render(built, { model: { highlights: [{ label: "Fragrance free", state: "yes" }, { label: "Paraben free", state: "yes" }, { label: "Alcohol free", state: "no" }] } });
+    const section = between(html, 'id="at-a-glance"', 'id="fit"', 'id="where-to-buy"');
+    expect(section.indexOf("Fragrance free")).toBeLessThan(section.indexOf("Alcohol free"));
+    expect(section.indexOf("Paraben free")).toBeLessThan(section.indexOf("Alcohol free"));
+    expect(section).toContain('data-tone="ok"');
+    expect(section).toContain('data-tone="no"');
+    expect(section).not.toContain('data-tone="na"');
+    expect(section).not.toContain("(not known)");
   });
 
   it("only one of the two fit lists: the other card is not drawn", () => {
