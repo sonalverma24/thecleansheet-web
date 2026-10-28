@@ -1,5 +1,8 @@
 # The Clean Sheet - Product Analysis Logic (End-to-End)
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 This document traces exactly what happens from the moment a user types a product name or pastes a link into the review box, through research, claim extraction, scoring, verdict, storage, and display. It is written from the actual code, not the marketing description.
 
 The live tool lives at `/review`. There is an older, parallel engine (`/api/analyze`, `/api/claim-check`) kept only for the admin flow. This document covers the **real user path first**, then notes the legacy engine at the end so the two are not confused.

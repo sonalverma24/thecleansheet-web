@@ -14,7 +14,7 @@ const h = vi.hoisted(() => {
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn(), findReviewImage: vi.fn(), state };
+  return { upserts, chain, generate: vi.fn(), findReviewImage: vi.fn(), brandInci: vi.fn(), state };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -27,6 +27,7 @@ vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/s
 vi.mock("@/lib/product-image", () => ({
   resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: (...args: unknown[]) => h.findReviewImage(...args), isLiveImage: async () => false,
 }));
+vi.mock("@/lib/brand-inci", () => ({ findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
 vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
@@ -43,6 +44,7 @@ beforeEach(() => {
   h.state.stored = null;
   h.findReviewImage.mockReset();
   h.generate.mockReset();
+  h.brandInci.mockReset().mockResolvedValue(null);
 });
 
 describe("runProductReview: researchLog", () => {
@@ -114,5 +116,28 @@ describe("runProductReview: researchLog", () => {
     expect(out.review.imageSource).toBe("cse");
     expect(out.review.imageRetryAt).toBeTruthy();
     expect(h.findReviewImage).toHaveBeenCalledWith("Research Log Test Brand", "Retry Image Product", undefined);
+  });
+});
+
+describe("primary ingredient sources", () => {
+  it("uses and quotes the brand list in both the model prompt and the saved review", async () => {
+    const ingredients = ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"];
+    const quote = ingredients.join(", ");
+    h.brandInci.mockResolvedValue({ ingredients, quote, source: "https://researchlogtestbrand.com/products/primary-serum", pageTitles: ["Primary Serum"] });
+    h.generate.mockResolvedValue({ text: asModelText("Primary Serum"), groundingMetadata: null });
+    const result = await runProductReview("Primary Serum");
+    if (result.type !== "product-review") throw new Error("expected review");
+    expect(h.generate.mock.calls[0][1]).toContain(quote);
+    expect(result.review.inciIngredients).toEqual(ingredients);
+    expect(result.review.inciEvidence).toMatchObject({ sourceUrl: "https://researchlogtestbrand.com/products/primary-serum", quote, captureTrust: 4, matchedTitle: "Primary Serum" });
+  });
+  it("does not publish the model's ingredient list when both primary lookups fail", async () => {
+    h.generate.mockResolvedValue({ text: asModelText("Unattributed Serum"), groundingMetadata: null });
+    const result = await runProductReview("Unattributed Serum");
+    if (result.type !== "product-review") throw new Error("expected review");
+    expect(h.brandInci).toHaveBeenCalled();
+    expect(result.review.inciIngredients).toEqual([]);
+    expect(result.review.ingredientReads).toEqual([]);
+    expect(result.review.inciEvidence).toBeUndefined();
   });
 });

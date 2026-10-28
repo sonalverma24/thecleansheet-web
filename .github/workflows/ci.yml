@@ -1,0 +1,25 @@
+name: CI
+
+# Runs the type check and the whole test suite on every pull request and on main. The suite includes the check that
+# ANALYSER-REFERENCE.md is up to date with the code (run `npm run docs:analyser` locally when it fails).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test

@@ -61,7 +61,8 @@ Step 5 - Check platform claim parity.
   Note where claims are stronger, weaker, or differently worded.
 
 Step 6 - Find INCI and assess ingredient transparency.
-  Search: "[brand] [product name] ingredients" on brand PDP, InciDecoder, Nykaa, Amazon.
+  Search: "[brand] [product name] ingredients" on the official brand product page or INKEE Decoder (formerly INCIDecoder).
+  Ingredient-source policy: use only a retrieved list for the exact product from one of these sources. Retailer listings and search snippets can identify the product or its claims, but are not authoritative INCI. Never fill a missing list from memory; leave ingredient-dependent tags unverified when neither primary source can be read.
   Check: whether active percentages are disclosed, pH disclosed where relevant, fragrance disclosed.
 
 Step 7 - Apply formula logic.

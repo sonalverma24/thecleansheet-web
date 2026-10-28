@@ -66,8 +66,13 @@ describe.each(FIXTURES)("the pills page, %s", (_name, review) => {
     }
   });
 
-  it("At a glance never draws a grey 'not known' chip, and the strip exists exactly when there is a verified check to show", () => {
-    expect(html.includes('id="at-a-glance"')).toBe(model.highlights.length > 0);
+  it("At a glance stays visible and explains missing evidence without inventing verified checks", () => {
+    expect(html).toContain('id="at-a-glance"');
+    if (model.highlights.length === 0) {
+      expect(html).toContain('No verified checks to show yet.');
+      expect(html).toContain('href="#claim-check"');
+      expect(html).toContain('href="#gaps"');
+    } else expect(html).not.toContain('No verified checks to show yet.');
     expect(html).not.toContain("(not known)");
     expect(html).not.toContain('data-tone="na"');
   });
@@ -232,9 +237,9 @@ describe("when a part of the model is empty, that part is left out and the rest 
     for (const kept of ['id="where-to-buy"', 'id="key-ingredients"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
   });
 
-  it("nothing verified for At a glance: the strip is left out, and the fit cards and the rest still stand", () => {
+  it("nothing verified for At a glance: explain the gap and keep the fit cards and other sections", () => {
     const html = render(built, { model: { highlights: [], fit: { ...built.model.fit, suits: ["High UV protection"], careful: [] } } });
-    for (const gone of ['id="at-a-glance"', ">At a glance<"]) expect(html, gone).not.toContain(gone);
+    for (const kept of ['id="at-a-glance"', '>At a glance<', 'No verified checks to show yet.']) expect(html, kept).toContain(kept);
     for (const kept of ['id="fit"', "Who it suits", 'id="where-to-buy"', 'aria-label="The Clean Sheet rating"']) expect(html, kept).toContain(kept);
   });
 

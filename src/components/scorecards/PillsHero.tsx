@@ -12,7 +12,7 @@
    Server component. The one link that needs script ("View all ingredients" also opens the list) is its own small client component.
 ──────────────────────────────────────────────────────────────── */
 
-import Image from "next/image";
+import { AnalysisProductImage } from "./AnalysisProductImage";
 import Link from "next/link";
 import { Check, MapPin, Minus, ShieldCheck, X } from "lucide-react";
 import type { Brand, ProductScorecard } from "@/data/brands/types";
@@ -126,12 +126,8 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
       {/* The product, and the take */}
       <Band className="pt-2.5 sm:pt-3.5" innerClassName="flex flex-wrap items-center justify-between gap-x-9 gap-y-3 sm:gap-y-5">
         <div className="flex-[1_1_560px] min-w-0 flex items-start gap-3 sm:gap-5">
-          <div className="relative flex-none w-[68px] h-[104px] sm:w-[92px] sm:h-[142px] bg-white border border-[#e8e1d6] rounded-2xl sm:rounded-[20px] shadow-[0_12px_24px_-18px_rgba(40,40,40,0.4)] sm:shadow-[0_14px_28px_-20px_rgba(40,40,40,0.4)]">
-            {product.image ? (
-              <Image src={product.image} alt={product.productName} fill sizes="92px" className="object-contain p-2 sm:p-3" />
-            ) : (
-              <span aria-hidden className="absolute inset-0 flex items-center justify-center text-3xl text-[#d8d2cc] select-none">🧴</span>
-            )}
+          <div className="relative flex-none w-[104px] h-[120px] sm:w-[144px] sm:h-[160px] bg-white border border-[#e8e1d6] rounded-2xl sm:rounded-[20px] shadow-[0_12px_24px_-18px_rgba(40,40,40,0.4)] sm:shadow-[0_14px_28px_-20px_rgba(40,40,40,0.4)]">
+            <AnalysisProductImage src={product.image ?? ""} alt={product.productName} />
           </div>
           <div className="min-w-0 flex flex-col gap-[5px] sm:gap-1.5">
             <div className="pp-eyebrow text-[#1d6761]">{brand.name}</div>
@@ -146,14 +142,18 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
       </Band>
 
       {/* At a glance, and who it suits and who should be careful. On a phone the ticks stand free and the two fit lists sit side by side. */}
-      {(model.highlights.length > 0 || hasFitCards) && (
-        <Band className="pt-3 sm:pt-4" innerClassName="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] items-stretch">
-          {model.highlights.length > 0 && (
-            <div id="at-a-glance" className="flex flex-col gap-[7px] sm:gap-2.5 sm:bg-white sm:border sm:border-[#e8e1d6] sm:rounded-[18px] sm:p-4">
+      <Band className="pt-3 sm:pt-4" innerClassName="grid gap-3 sm:grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] items-stretch">
+          <div id="at-a-glance" className="flex flex-col gap-[7px] sm:gap-2.5 sm:bg-white sm:border sm:border-[#e8e1d6] sm:rounded-[18px] sm:p-4">
               <h2 className="pp-eyebrow text-[#55504d]">At a glance</h2>
-              <ul className="flex flex-wrap gap-1.5 sm:gap-[7px]">{model.highlights.map((h) => <HighlightChip key={h.label} h={h} />)}</ul>
+              {model.highlights.length > 0 ? (
+                <ul className="flex flex-wrap gap-1.5 sm:gap-[7px]">{model.highlights.map((h) => <HighlightChip key={h.label} h={h} />)}</ul>
+              ) : (
+                <div className="text-[13px] sm:text-sm leading-relaxed text-[#55504d]">
+                  <p>No verified checks to show yet. Ingredient and claim checks need more evidence.</p>
+                  <p className="mt-1"><a href="#claim-check" className="underline underline-offset-4">See claim checks</a><span aria-hidden> · </span><a href="#gaps" className="underline underline-offset-4">What is missing</a></p>
+                </div>
+              )}
             </div>
-          )}
           {hasFitCards && (
             <div id="fit" className="flex flex-col gap-[7px] sm:contents">
               <h2 className="pp-eyebrow text-[#55504d] sm:sr-only">How it fits you and the Indian market</h2>
@@ -164,7 +164,6 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
             </div>
           )}
         </Band>
-      )}
 
       {/* The summary line (today's logic) and where to buy */}
       <Band className="pt-[18px] sm:pt-6" innerClassName="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-10">

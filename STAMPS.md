@@ -1,5 +1,8 @@
 # The Clean Sheet - Standings (Stamps)
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 The single source of truth for what each standing means and exactly when it is
 assigned. The stamp is **computed in code** (`deriveVerdict` in
 `src/lib/product-review-engine.ts`), never by the language model, so the same

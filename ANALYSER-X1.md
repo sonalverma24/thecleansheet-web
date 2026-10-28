@@ -1,5 +1,8 @@
 # Analyser Version X1: what it is and where it stands
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 Written 2026-10-27, on `main` at `2cf36e2`. This is the reference for Version X1 as it exists in this repository. It describes code and data that are
 committed here; it does not record which flags are on in production (those are set in Vercel). Companion to
 [ANALYSER-ROLLOUT.md](ANALYSER-ROLLOUT.md) (the verifier rollout plan and its rules) and [HOW-THE-ANALYSER-WORKS.md](HOW-THE-ANALYSER-WORKS.md)
@@ -21,6 +24,8 @@ committed here; it does not record which flags are on in production (those are s
   unflagged image-evidence prompt fix); its own notes say it is not a complete replacement.
 
 ## Evidence rules
+
+**Ingredient-source policy (28 October 2026):** fresh analyses must check the exact product on the brand website or INKEE Decoder (formerly INCIDecoder). Retailer inputs trigger primary-source lookup; model-generated ingredient lists are not published as INCI. Source URL and quotation are retained. See [the policy](docs/ingredient-sources.md).
 
 **A source-backed list** is defined once, in `src/lib/inci-source-backing.ts`: at least 3 ingredients, captured from a reference database or a brand page
 (capture trust 3 or more), with a non-empty captured quote that was not cut short. It means the list was captured as stated. It does not mean the formula is

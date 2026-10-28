@@ -26,7 +26,7 @@ import type { AcquisitionValue, ClaimValue, ListSource, ListValue, RuleContext, 
 
 function sourceOf(url: string | undefined, trust: Trust, hasList: boolean): ListSource {
   if (!hasList) return "none";
-  if (url && /incidecoder\.com/i.test(url)) return "incidecoder";
+  if (url && /(?:inci|inkee)decoder\.com/i.test(url)) return "incidecoder";
   if (trust >= 5) return "pack";
   if (trust === 4) return "brand_page";
   if (trust === 2) return "retailer";
