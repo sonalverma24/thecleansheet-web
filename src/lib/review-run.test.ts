@@ -33,6 +33,11 @@ describe("interpretReviewResponse", () => {
     expect(REVIEW_ERROR_MESSAGE.unidentified).toMatch(/couldn't identify the product/i);
   });
 
+  it("treats an analysis the engine would not keep (no web search behind it) as a plain retry", () => {
+    expect(interpretReviewResponse(200, { type: "unverified", issues: ["web-search-missing"] }, "x")).toEqual({ kind: "error", error: "fail" });
+    expect(interpretReviewResponse(200, { type: "unverified" }, "x")).toEqual({ kind: "error", error: "fail" });
+  });
+
   it("shows the popup, not a page, for a nutraceutical or a prescription drug", () => {
     expect(interpretReviewResponse(200, { type: "unrated", kind: "nutraceutical", productName: "H2Glow Drink Mix", brand: "H2Glow" }, "h2glow"))
       .toEqual({ kind: "unrated", unrated: "nutraceutical", productName: "H2Glow Drink Mix", brand: "H2Glow" });

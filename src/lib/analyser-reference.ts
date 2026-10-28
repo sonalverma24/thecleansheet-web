@@ -207,6 +207,7 @@ export function buildAnalyserReference(root: string = process.cwd()): string {
     "",
     "- `src/lib/product-review-engine.ts`: `runProductReview` (one analysis, start to finish) and `deriveVerdict`",
     "- `src/lib/product-review-context.ts`: the model prompt",
+    "- `src/lib/review-checks.ts`: the checks a fresh analysis must pass before it is kept (the live search and the re-runs both apply them)",
     "- `src/lib/pillar-standing.ts`, `src/lib/pills-page.ts`, `src/lib/pills-for-review.ts`: standing, and the page built from a stored analysis",
     "- `src/lib/analyser-flags.ts`: the flags above",
     "",

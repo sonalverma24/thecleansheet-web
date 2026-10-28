@@ -22,3 +22,10 @@ Older root documents are historical explanations. They do not override this base
 `/api/analyser-version` returns the baseline and the four relevant display/method switches without exposing secrets. Compare its response between localhost and the live website. Production deploys the merged main branch through Vercel. Keep the local preview checkout at that same source revision; preserve unrelated work in other checkouts.
 
 The PLIX local preview is `/analysis-preview/plix`. It is disabled in production and reads the private local result file `.local-preview/plix-approved-2026-10-28.json`; that result is never committed. Existing production analyses are not automatically rerun by this release. The versioned source and git release tag provide the rollback reference.
+
+## Changes since the baseline was frozen
+
+The baseline identifier above is unchanged. Behaviour changes made after it, each with the owner's reason in `docs/analyser-decisions.md`:
+
+- 2026-10-28: a live search that comes back without a web search behind it is asked again, and refused if it still has none (`src/lib/review-checks.ts`). A product with no primary-source ingredient list is still saved, as the line "can still be grey" under Agreed behaviour says.
+- 2026-10-28: candidate ingredient pages are found with Firecrawl search, a Decoder product page that the search surfaces is accepted as a primary source, and a short web-grounded model call may name a page (`src/lib/brand-inci.ts`).

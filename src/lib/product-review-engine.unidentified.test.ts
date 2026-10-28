@@ -17,7 +17,7 @@ const h = vi.hoisted(() => {
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn(), fetchPage: vi.fn() };
+  return { upserts, chain, generate: vi.fn(), fetchPage: vi.fn(), brandInci: vi.fn() };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -27,6 +27,7 @@ vi.mock("@/lib/inci-fetch", async (orig) => ({
   resolveINCI: async () => ({ chosen: null, distinct: [], ambiguous: false }),
 }));
 vi.mock("@/lib/inci-from-page", async (orig) => ({ ...(await orig<typeof import("@/lib/inci-from-page")>()), fetchInciFromProductPage: async () => null }));
+vi.mock("@/lib/brand-inci", async (orig) => ({ ...(await orig<typeof import("@/lib/brand-inci")>()), findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
 vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/scrape")>()), fetchPageMarkdown: (...a: unknown[]) => h.fetchPage(...a) }));
 vi.mock("@/lib/product-image", async (orig) => ({
   ...(await orig<typeof import("@/lib/product-image")>()),
@@ -39,7 +40,7 @@ vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
 import { runProductReview } from "@/lib/product-review-engine";
 
-const modelSays = (over: Parameters<typeof makeReview>[0] = {}) => ({ text: JSON.stringify(makeReview(over)), groundingMetadata: null });
+const modelSays = (over: Parameters<typeof makeReview>[0] = {}) => ({ text: JSON.stringify(makeReview(over)), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
 const page = (title: string) => `Title: ${title}\n\n${"This is the product page. ".repeat(20)}`;
 /** Rows written to the review repository (the engine stores `{ result }`; nothing else carries it). */
 const savedReviews = () => h.upserts.filter((row) => "result" in row);
@@ -77,6 +78,8 @@ describe("runProductReview: a URL that does not establish the product", () => {
   });
 
   it("reviews and saves a URL whose page and address both name the product", async () => {
+    const ingredients = ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"];
+    h.brandInci.mockResolvedValue({ ingredients, quote: ingredients.join(", "), source: "https://betabrand.com/products/beta-glow-serum", pageTitles: ["Beta Glow Serum"] });
     h.fetchPage.mockResolvedValue(page("Beta Glow Serum"));
     h.generate.mockResolvedValue(modelSays({ productName: "Beta Glow Serum", brand: "Beta Brand" }));
     const out = await runProductReview("https://brand.example.test/products/beta-glow-serum");

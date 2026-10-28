@@ -802,6 +802,7 @@ Core code:
 
 - `src/lib/product-review-engine.ts`: `runProductReview` (one analysis, start to finish) and `deriveVerdict`
 - `src/lib/product-review-context.ts`: the model prompt
+- `src/lib/review-checks.ts`: the checks a fresh analysis must pass before it is kept (the live search and the re-runs both apply them)
 - `src/lib/pillar-standing.ts`, `src/lib/pills-page.ts`, `src/lib/pills-for-review.ts`: standing, and the page built from a stored analysis
 - `src/lib/analyser-flags.ts`: the flags above
 
@@ -833,6 +834,30 @@ Written by a person, newest first. It records what was decided about the analyse
 
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
+
+### 2026-10-28: A web-grounded model call is asked where the product's page is
+- **Decided by:** the owner: “Let's do this - Use the web search the engine already pays for.” This accepted an offer to have the grounded Gemini call return only the brand's product page URL, with the code fetching the page and reading the list itself.
+- **Reason:** a list must stay a quoted source, never model-written. The model is asked for a lead only.
+- **What it touched:** `src/lib/brand-inci.ts`: when Decoder, Firecrawl search and Decoder pages gave no list, `askModelForProductPage` makes one short grounded call (prompt `PAGE_FINDER_SYSTEM_PROMPT`, 30 second limit) that answers with a URL or null. The search tool hands the model Google redirect links, so the code follows a `vertexaisearch.cloud.google.com/grounding-api-redirect/` link by hand (no other redirect is ever followed) to the real page. An answer from a call that did not search is ignored. The page is then fetched and read by the code and must pass the same brand-domain, product-name and captured-quote rules as any candidate. It runs on the first lookup only, not after the brand is known.
+- **Cost:** one extra grounded model call (billed as a grounded prompt, not free) and about 4 to 16 seconds, only for products whose list nothing cheaper found.
+- **Measured:** on 19 products that had failed, it added none. It found the right page 5 times (a retailer's own-label page, two brand pages with no readable list, one wrong variant that the title check correctly refused) and returned nothing for the rest. What worked was Firecrawl search plus Decoder pages (2 of 7, and 3 more of 12 beyond the engine's own Decoder name lookup). A small sample.
+- **Undo:** revert the change, or remove `askModel` from `defaultBrandInciDeps` in `src/lib/brand-inci.ts` to turn only this step off.
+
+### 2026-10-28: Ingredient pages are found with Firecrawl search
+- **Decided by:** the owner: “Firecrawl can be used.” This answered the finding that the engine's Google search for a brand's product page was being refused, and an offer to use Firecrawl, which the site already uses for product photos.
+- **Reason:** the search that finds a brand's own product page returned `403 PERMISSION_DENIED: This project does not have the access to Custom Search JSON API`, so brand-page discovery was finding nothing. The same Google key also drives product photo search.
+- **What it touched:** `src/lib/brand-inci.ts`: candidate pages come from Firecrawl search first (URLs only), then Google Custom Search, then the existing public-search fallback. A Decoder product page that the search surfaces is now accepted as a primary source and tried before brand pages, with the same product-name match and captured-quote rules; a quote cut short is refused. The brand-domain rule is unchanged.
+- **Measured:** on 7 products whose analysis found no primary-source list, 2 now do (Amahvas from its own page, 42 ingredients; Dot & Key from its Decoder page, 47). The other 5 have no primary-source product page in the results (a retailer's own label, brands with no indexed product page). A small sample.
+- **Not changed:** the brand-domain rule, which still rejects dotandkey.com for “Dot & Key” and nykaa.com for “Nykaa Cosmetics”; product photo search, which still uses Google's refused key.
+- **Undo:** revert the change. Setting `FIRECRAWL_API_KEY` to empty also turns it off.
+
+### 2026-10-28: A live search is held to the re-runs' web-search check, and retried
+- **Decided by:** the owner: first “Yes, live searches should use the same checks.”, then, shown that the full set of checks would refuse most new searches for want of a primary-source ingredient list, “B”: keep the retry and the web-search refusal, but still save a grey page when no primary list is found.
+- **Reason:** a product searched live and the same product re-run should not be held to different standards where that is possible, without turning a product whose ingredients are not published into an error. A live search after a web-less answer used to save a page nobody could source; the re-run was restoring those.
+- **What it touched:** `src/lib/review-checks.ts` (new) is the one definition of the four checks the re-run applies to a replacement (a list from a Decoder or brand page with its source quote, a list that is not mostly junk, a web search behind the review). A live search refuses to keep a new analysis only for the last one (`LIVE_REFUSES`). `runProductReview` asks a model call that came back without a web search again, up to twice, unless 75 of the request's 180 seconds have gone; if it is still without one, nothing is stored, listed or added to the registry, and `/api/review` answers `unverified`, which the shopper sees as the plain “try again” message. A product with no primary-source list is analysed and saved as before, with no ingredient list and the gap showing. A bare pasted-ingredients scan is exempt (it is never stored). The checks that only make sense against an existing page (same product, list not shorter, decision not lost) and the three ingredient-source checks stay in the re-run script, which protects a good page from being replaced by a worse one.
+- **Effect to expect:** a live analysis that would have been saved without a web search is no longer saved. How often that happens varies: 15 of 301 pages stored before today have no web search recorded, the earlier pilot re-run (before the primary-source change) saw 6 of 9 decided pages come back without one, and the current re-run needed a second attempt for 1 of 13. Each retry is one more grounded model call.
+- **Not changed:** the baseline identifier `X1-approved-2026-10-28`, which changes only with the owner's approval; existing stored pages; the re-run script.
+- **Undo:** revert the change. Nothing is migrated.
 
 ### 2026-10-28: Refresh existing live pages newest first using the frozen baseline
 - **Decided by:** the owner: “run the live products again through the analyser and replace the current pages with new ones. Start from new to old.”
@@ -876,9 +901,10 @@ For a fresh analysis:
 
 1. Resolve the exact product on Decoder. Accept product and ingredient links from both `incidecoder.com` and `inkeedecoder.com` (the former currently redirects to the latter). Preserve the product identity, ingredient order, source URL, captured quotation and quote-truncation status.
 2. When a retailer's page title cannot be resolved, try the descriptive product identity in its URL. Marketing-heavy titles must not stop the primary-source lookup.
-3. If Decoder has no unambiguous matching list, search for the brand's product page. Accept a candidate only on a recognisable brand domain, with a product title matching the requested product, a captured ingredient quotation and a sane list. Search results and snippets discover pages; they are not ingredient evidence. Domain discovery is deliberately conservative and can miss brands whose website differs from their name.
+3. If Decoder has no unambiguous matching list, search the web for the product (Firecrawl search, URLs only; Google's Custom Search API is a fallback, and it currently refuses this project). A Decoder product page the search surfaces is accepted under the same product-name and captured-quote rules, and is tried before brand pages. Otherwise look for the brand's product page. Accept a candidate only on a recognisable brand domain, with a product title matching the requested product, a captured ingredient quotation and a sane list. Search results and snippets discover pages; they are not ingredient evidence. Domain discovery is deliberately conservative and can miss brands whose website differs from their name.
+   If none of that gives a list, a short web-grounded model call is asked only where the product's own page is (it returns a URL and nothing else, and never an ingredient list). The code follows the search tool's redirect link by hand, fetches the page itself and reads the list from it; the page must pass the same brand-domain, product-name and captured-quote rules as any other candidate. This runs on the first lookup only.
 4. Supply the retrieved list to the analysis model before it evaluates ingredient claims. The stored ingredient list and its evidence envelope come from the same source.
-5. If neither primary source can be retrieved, publish no model-generated ingredient list. Ingredient-based tags remain unverified and At a glance explains the missing checks. Existing cached analyses are not automatically rerun or repaired by this change.
+5. If neither primary source can be retrieved, publish no model-generated ingredient list. Ingredient-based tags remain unverified and At a glance explains the missing checks, and the analysis is still saved as a page that says so. Existing cached analyses are not automatically rerun or repaired by this change.
 
 Retailer pages remain useful for prices and marketing claims. They no longer supply authoritative ingredient data for fresh analyses. Product tags such as fragrance-free, paraben-free and drying-alcohol-free are computed from the captured ingredient list; vegan/cruelty-free certification, SPF tests and clinical claims still require their own evidence.
 
@@ -935,7 +961,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
-| `src/lib/analyser-reference.ts` | `584837539c81a2ec5a234a96ea2a017299d6201cddfae7f06bd2c78c6e4cb7ad` |
+| `src/lib/analyser-reference.ts` | `d52984d57f8a431cc48627cb61083cd3adbeda06e76a94f0854d0c9b5651159a` |
 | `src/lib/analyser-x/adapter.ts` | `f040cbeb559b2aadb365222d9ba40c67697cc2517cf316b4c97e7f36c2bfca3e` |
 | `src/lib/analyser-x/claimflags.ts` | `ecd084f9dfb148039f292d52a4b7aac128043f3317652dcb5f3c24a40445d397` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
@@ -958,7 +984,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `388ecc3c10ab9cfa27b7f33be6381c31c70e74e8b5551dd85f88c2a98944064c` |
 | `src/lib/analysis-types.ts` | `5521d764770c99de9a4a8648c6324f7f26c982998f4c813577cfc09c7d05728e` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `2bcf71168dbc69f99fcbd340eda63c00c8dadf0b0e41d9a3e1e7be42a41557c2` |
+| `src/lib/brand-inci.ts` | `17844f682133b6fa8daadd7f7762da6e779690d1e3d57200c965aaf129e5d629` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -992,12 +1018,13 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `5479aaafef1683e6d54e8b0152a64118ddcae431a5cbad70e2a713f3ce5bc237` |
+| `src/lib/product-review-engine.ts` | `fbcaa749e237f4707395d55ba54ac18f31baca26841919e2e4e4ea492d56e097` |
 | `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
+| `src/lib/review-checks.ts` | `34a016fed10ab1a094912a61c4c735aa587d0ce782c553dd3ae8a396f4a0e05a` |
 | `src/lib/review-engine.ts` | `d282765a84ec3cb46dbff3fa6972c89a1598ad4e7e679dfa14fefdc048c71fe4` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
-| `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
+| `src/lib/review-run.ts` | `44fc5142a9609e2386dad1b51bf96db531720a27d824a7cdbafd9f92e3cda69f` |
 | `src/lib/review-to-scorecard.ts` | `ee0c5b05a0f021700e68083b469bcd9087e8350563c905a38a36471ffc6aea99` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |

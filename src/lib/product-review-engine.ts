@@ -13,11 +13,12 @@ import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
-import { findBrandInci } from "@/lib/brand-inci";
+import { defaultBrandInciDeps, findBrandInci } from "@/lib/brand-inci";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
 import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
+import { liveRefusalIssues, type ReviewCheckIssue } from "@/lib/review-checks";
 import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
@@ -710,6 +711,8 @@ export type ProductReviewResult =
   | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
   /** A URL that did not establish which product it is (an error page, a bare store link). Never stored, never listed. */
   | { type: "unidentified" }
+  /** A fresh analysis written without a web search (review-checks.ts, LIVE_REFUSES). Never stored, never listed. */
+  | { type: "unverified"; issues: ReviewCheckIssue[] }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -1179,7 +1182,14 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
   }
 }
 
+/* A review is kept only if a web search was behind it (review-checks.ts). A model call that came back without grounding is asked again, up to this many more
+   times, as the re-runs do (they allow three attempts in all). /api/review is cut off at 180 s and a whole analysis takes 80-106 s, so no retry starts once
+   RETRY_STARTS_BEFORE_MS of the request has gone. */
+const GROUNDING_RETRIES = 2;
+const RETRY_STARTS_BEFORE_MS = 75_000;
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
+  const startedAt = Date.now();
   const q = query.trim();
   if (!q) return { type: "error" };
 
@@ -1316,21 +1326,29 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       // the text scrape; a vision pass transcribes them so they count as evidence.
       evidenceBlock += await imageEvidenceBlock(q, labelRead);
     const primaryBlock = pageInci ? inciGroundTruthBlock({ productName: pageName ?? ingredientQuery, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }) : "";
-    let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${primaryBlock}`);
+    let suffix = primaryBlock;
+    let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
     parsed = parseJSON(gen.text);
     grounding = gen.groundingMetadata;
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
     if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
-      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined);
+      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, { ...defaultBrandInciDeps, askModel: undefined }); // the model was already asked for this product
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
-        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${block}`);
+        suffix = block;
+        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
         parsed = parseJSON(gen.text);
         grounding = gen.groundingMetadata;
         if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
       }
+    }
+    // No grounding means the model wrote this without a web search. Ask again (same prompt), and take the new answer only if it is valid and grounded.
+    for (let again = 0; again < GROUNDING_RETRIES && isValidProductReview(parsed) && grounding === null && Date.now() - startedAt < RETRY_STARTS_BEFORE_MS; again++) {
+      const retry = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
+      const next = parseJSON(retry.text);
+      if (isValidProductReview(next) && retry.groundingMetadata !== null) { parsed = next; grounding = retry.groundingMetadata; }
     }
     if (isValidProductReview(parsed)) break;
   }
@@ -1467,6 +1485,23 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageInci?.pageTitles?.[0] ?? pageName ?? undefined);
   }
 
+  // A scan of a bare INCI list (no URL, no product name) has no confirmed product
+  // identity, so its review is returned to the user but kept OUT of the public
+  // directory - neither the /brands repository grid nor the verified library.
+  const productIdentified = isURL(q)
+    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
+      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
+    : !!inci || !looksLikeInciList(q);
+
+  /* The one check a live search shares with the re-runs that stops a new analysis from being kept (review-checks.ts, LIVE_REFUSES): a web search behind the review.
+     A review written without one is not stored, listed or added to the registry or the ingredient directory; the shopper is asked to try again. A product with no
+     primary-source ingredient list is NOT refused: it is analysed and saved with the gap shown, because a new product has no earlier page to protect. A bare INCI scan
+     is never stored, so it is exempt. */
+  if (productIdentified) {
+    const issues = liveRefusalIssues(review);
+    if (issues.length) return { type: "unverified", issues };
+  }
+
   // Page checks are generated from a user-supplied product URL only. They remain
   // separate from score, rubric, and the three-dot outcome.
   if (isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, review.brand, review.productName)) {
@@ -1499,14 +1534,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.scores = reconcileReviewScores(review).scores;
 
   const verdict = deriveVerdict(review);
-
-  // A scan of a bare INCI list (no URL, no product name) has no confirmed product
-  // identity, so its review is returned to the user but kept OUT of the public
-  // directory - neither the /brands repository grid nor the verified library.
-  const productIdentified = isURL(q)
-    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
-      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
-    : !!inci || !looksLikeInciList(q);
 
   // A URL that did not establish a product fails closed. A pasted ingredient list has no product
   // by design: it falls through to be returned and cached in-process below, never saved.
