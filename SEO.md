@@ -18,7 +18,7 @@ How indexing is controlled on thecleansheet.in, and the rules for keeping it tha
 | Origin, robots presets, canonical helpers | `src/lib/seo.ts` |
 | Sitemap sections + admission rule | `src/lib/sitemap-data.ts` |
 | Sitemap index (`/sitemap.xml`) | `src/app/sitemap.xml/route.ts` |
-| Section sitemaps (`/sitemaps/{pages,editorial,brands,reviews,ingredients}.xml`) | `src/app/sitemaps/[section]/route.ts` |
+| Section sitemaps (`/sitemaps/{pages,editorial,brands,reviews,ingredients,directory}.xml`) | `src/app/sitemaps/[section]/route.ts` |
 | `robots.txt` | `src/app/robots.ts` |
 | Crawlable link directories on hub pages | `src/components/seo/CrawlableIndex.tsx` |
 | Reviews that duplicate a catalogue page | `src/lib/catalogue-dedupe.ts` |
@@ -37,6 +37,7 @@ How indexing is controlled on thecleansheet.in, and the rules for keeping it tha
 | `brands` | Brand pages and catalogue product pages |
 | `reviews` | Live-reviewed products (`/reviews/[slug]`) that have no catalogue page |
 | `ingredients` | Every indexable ingredient profile: curated core plus discovered profiles that have been enriched (de-duplicated; stubs excluded) |
+| `directory` | Sourcing directory hubs, packaging family pages that list at least one supplier offering (empty families are noindex), and supplier pages |
 
 Sections revalidate hourly, so new reviews appear without a redeploy.
 

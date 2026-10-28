@@ -1,0 +1,2 @@
+id,supplierId,productId,moqPieces,moqScope,branding,stock,leadTimeMinDays,leadTimeMaxDays,samples,repeatSupplyConfirmed,priceMinInr,priceMaxInr,priceAtQuantity,priceQuotedOn,priceGstIncluded,paymentTerms,note,termsConfirmedOn
+# FAKE EXAMPLE (delete this row),example-supplier-id,example-product-id,1000,complete-assembly,plain-stock; label-ready,both,7,14,paid,,10,12,1000,2026-01-01,no,50% advance and balance before dispatch,FAKE EXAMPLE note,2026-01-01
