@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "docs:analyser": "npx tsx --tsconfig tsconfig.json scripts/build-analyser-reference.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
