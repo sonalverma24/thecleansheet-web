@@ -1,6 +1,14 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: A list that a page shows only in a pop-up is read from the page's own data
+- **Decided by:** the owner: “If a website page shows the ingredient list after opening a pop up, my engine needs to be able to scrape it.”
+- **Reason:** some brand pages (Alteryst was the verified case) draw the full ingredient list in a pop-up from data the page ships itself, while the visible markup holds only the key ingredients or a list cut short. The extractor read the page text only, so those products were held for want of a primary-source list.
+- **What it touched:** `src/lib/inci-from-page.ts`. (1) A name that a comma cut apart (“1, 2-Hexanediol”, a locant such as “3-0”) is joined, so the whole list is kept, not its second half. (2) A list cut in two by a gap (a doubled comma, a digit-and-dash fragment that cannot be re-joined) is refused rather than published as its longer half. (3) When the visible text has no list, or a shorter one, the list the page keeps in its own data (a Next.js flight chunk, `__NEXT_DATA__`, JSON-LD, a Shopify product blob) is read and wins only if it is longer. It is used only when the product's own handle from the URL appears just before the field, a field cut by an inner quote is skipped, two different lists on one page veto it, and the usual list rules apply (marketing copy is not a list). The captured quotation and source URL travel with it as for any other list.
+- **Cost:** none beyond the page fetch already made. No extra model call.
+- **Not changed:** the source policy (brand page or INKEE Decoder), the brand-domain rule, the product-name match, and stored analyses; nothing is rerun by this change.
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-28: A web-grounded model call is asked where the product's page is
 - **Decided by:** the owner: “Let's do this - Use the web search the engine already pays for.” This accepted an offer to have the grounded Gemini call return only the brand's product page URL, with the code fetching the page and reading the list itself.
 - **Reason:** a list must stay a quoted source, never model-written. The model is asked for a lead only.

@@ -12,6 +12,11 @@
    deterministically parses the INCI out of it — no model, no fabrication,
    just the comma-separated list the brand published. It is the fallback
    the review engine uses whenever INCIDecoder cannot resolve the product.
+
+   Some storefronts draw the full list in a popup from the page's own data (a
+   Next.js flight chunk, __NEXT_DATA__, a Shopify product blob) and print only
+   the key ingredients in the markup. That data is in the same response, inside
+   a <script>, so it is read too (extractEmbeddedInci), under tighter rules.
 ──────────────────────────────────────────────────────────────── */
 
 import { fetchPageMarkdown } from "@/lib/scrape";
@@ -112,6 +117,11 @@ export interface InciExtraction {
    keeps the original offsets, so the quote is always a real slice of the page text. */
 interface Part { text: string; map: number[] }
 
+/* A fragment of a locant name that a comma cut off from the rest: "1" of "1,2-Hexanediol", "3-0" or
+   "3-O" of "3-O-Ethyl Ascorbic Acid" printed as "3-0, ethyl ascorbic acid". No letters (or one letter
+   after a hyphen), so it is never an entry itself, and it is re-joined to the piece after it. */
+const LOCANT_FRAGMENT = /^[0-9]+(?:-[0-9A-Za-z])*$/;
+
 function splitParts(text: string): Part[] {
   const pieces: { t: string; start: number; comma: number }[] = [];
   let pos = 0;
@@ -126,7 +136,7 @@ function splitParts(text: string): Part[] {
     let text0 = pieces[i].t;
     let map = mapOf(pieces[i].t, pieces[i].start);
     let lastComma = pieces[i].comma;
-    while (/^[0-9]+$/.test(text0) && i + 1 < pieces.length) {
+    while (LOCANT_FRAGMENT.test(text0) && i + 1 < pieces.length) {
       const next = pieces[++i];
       text0 = `${text0},${next.t}`;
       map = [...map, lastComma, ...mapOf(next.t, next.start)];
@@ -211,6 +221,34 @@ function labelledEntryStart(text: string): number {
   return -1;
 }
 
+/* A gap: an empty piece (a doubled comma), or a piece with digits and a dash and no letters that the locant
+   rule could not re-join ("3–0" with an en dash). Plain numbers ("36", "400072") are not a gap, and neither
+   is a "+/-" separator, a bullet or a trailing comma. */
+const isGap = (p: Part | undefined): boolean =>
+  !!p && (p.text === "" || (!/[a-z]/i.test(p.text) && /[0-9]/.test(p.text) && /[-\u2010-\u2015\u2212]/.test(p.text)));
+
+/** Whether the run that starts at piece `first` is the second half of a list cut in two by a gap: the pieces
+    before the gap are three or more ingredient entries that open with Aqua or Water, the head of a list. The
+    longer half would win and be published as the whole list, without its water base and actives. A label
+    glued to the first entry ("Ingredients: Aqua") is looked through. Only a gap before the run counts: a
+    secondary list after the main one ("... Parfum, , CI 77891, CI 77492") leaves the main list as read. */
+function cutAtStart(parts: Part[], first: number): boolean {
+  if (!isGap(parts[first - 1])) return false;
+  const entry = (t: string) => looksLikeIngredient(t) && !STOP.test(t) && !MARKETING_PHRASE_RE.test(t);
+  let n = 0;
+  let opening = "";
+  for (let i = first - 2; i >= 0; i--) {
+    const t = parts[i].text;
+    const at = labelledEntryStart(t);
+    const labelled = at >= 0 && entry(t.slice(at));
+    if (!labelled && !entry(t)) break;
+    n++;
+    opening = labelled ? t.slice(at) : t;
+    if (labelled) break; // the label opens the list
+  }
+  return n >= 3 && /^(?:aqua|water|eau)\b/i.test(opening);
+}
+
 /** Parse the longest INCI-looking comma list out of flat page text, and the raw text
     span it came from. Null if no confident list is found. Deterministic, never invents
     an ingredient. This is the single decision procedure: extractInciFromText below is
@@ -224,12 +262,15 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
   let bestSpan: [number, number] | null = null;
   let cur: string[] = [];
   let curSpan: [number, number] | null = null;
+  // The piece each run starts at, so a gap right before the accepted run can be seen afterwards.
+  let pieceNo = 0, curFirst = 0, bestFirst = 0;
   const push = (token: string, span: [number, number]) => {
+    if (!cur.length) curFirst = pieceNo;
     cur.push(token);
     curSpan = curSpan ? [curSpan[0], span[1]] : span;
   };
   const flush = () => {
-    if (cur.length > best.length) { best = cur.slice(); bestSpan = curSpan; }
+    if (cur.length > best.length) { best = cur.slice(); bestSpan = curSpan; bestFirst = curFirst; }
     cur = [];
     curSpan = null;
   };
@@ -274,7 +315,9 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
     if (end > 0) push(cleanTok(p.text.slice(0, end)), spanOf(p, 0, end));
   };
 
-  for (const p of parts) {
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    pieceNo = i;
     const stopM = STOP.exec(p.text);
     if (stopM) {
       // A section header ends the current list. Keep any ingredient text before
@@ -305,6 +348,7 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
   if (!best.some((x) => ANCHOR.test(x))) return null;
   const marketingHits = best.filter((x) => MARKETING_PHRASE_RE.test(x)).length;
   if (marketingHits / best.length >= 0.5) return null;
+  if (cutAtStart(parts, bestFirst)) return null;
   const [from, to] = bestSpan as [number, number];
   // De-dupe consecutive repeats (some pages print the list twice back-to-back).
   return {
@@ -322,6 +366,60 @@ export function extractInciFromText(text: string): string[] {
 /** Extract the INCI from a page's HTML. */
 export function extractInciFromHtml(html: string): string[] {
   return extractInciFromText(stripTags(html));
+}
+
+/* ── Lists the page ships in its own data ─────────────────────── */
+
+/* Names storefronts give the full ingredient text in their page data. Only a STRING value counts: the
+   same payload carries "keyIngredients":[...] and "ingredients":[{...}] arrays for every product it links. */
+const EMBEDDED_KEY =
+  "(?:ingredients?_?list|ingredient_?text|full_?ingredients?(?:_?list)?|inci(?:_?list|_?ingredients?)?|ingredients?)";
+/* Inside a JS string literal, as a Next.js flight chunk carries it: \"key\":\"value\", with < as <. The
+   field must end at a \" that is followed by more JSON, so a value cut by an inner quote is skipped. */
+const ESCAPED_FIELD = new RegExp(String.raw`\\"${EMBEDDED_KEY}\\"\s*:\s*\\"((?:\\u[0-9a-fA-F]{4}|\\[\\/bfnrt]|[^"\\])*)\\"(?=\s*[,}\]])`, "gi");
+/* Plain JSON: __NEXT_DATA__, JSON-LD, a Shopify product blob. */
+const PLAIN_FIELD = new RegExp(String.raw`"${EMBEDDED_KEY}"\s*:\s*"((?:[^"\\]|\\.)*)"`, "gi");
+
+/** How far before a field its product's own handle must appear. A page's data names its product (slug,
+    handle) right before the fields that belong to it; the nearest sat 858 characters before on Alteryst. */
+const EMBEDDED_REACH = 6000;
+
+/** The last path segment of a product URL when it names the product ("vitamin-c-e-mineral-sunscreen"),
+    which is how a storefront's data names it too. Null for a bare domain or a short id. */
+function productHandle(url: string): string | null {
+  try {
+    const last = new URL(url).pathname.split("/").filter(Boolean).pop() ?? "";
+    const handle = decodeURIComponent(last).toLowerCase().replace(/\.html?$/, "");
+    return handle.split("-").length >= 3 ? handle : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The full ingredient list a page keeps in its own data and draws in a popup, with the text it was read
+    from. It goes through the same list rules as page text (extractInciWithQuote), and is used only when:
+      - the URL names the product, and that name appears within EMBEDDED_REACH characters before the field,
+        so a list belonging to a product the page merely links to is not taken;
+      - the page holds exactly one distinct list, so a page that ships several is never guessed at.
+    Null otherwise. Deterministic, never invents an ingredient. */
+export function extractEmbeddedInci(html: string, pageUrl: string): InciExtraction | null {
+  const handle = productHandle(pageUrl);
+  if (!handle) return null;
+  const found = new Map<string, InciExtraction>();
+  for (const script of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+    const body = script[1];
+    for (const field of [ESCAPED_FIELD, PLAIN_FIELD]) {
+      for (const m of body.matchAll(field)) {
+        const at = m.index ?? 0;
+        if (!body.slice(Math.max(0, at - EMBEDDED_REACH), at).toLowerCase().includes(handle)) continue;
+        let value: string;
+        try { value = JSON.parse(`"${m[1]}"`) as string; } catch { continue; }
+        const ex = extractInciWithQuote(stripTags(value));
+        if (ex && ex.ingredients.length >= 5) found.set(ex.ingredients.join("\n").toLowerCase(), ex);
+      }
+    }
+  }
+  return found.size === 1 ? [...found.values()][0] : null;
 }
 
 /* ── The page's own titles ────────────────────────────────────── */
@@ -376,7 +474,11 @@ export function extractMarkdownTitles(md: string): string[] {
 export async function fetchInciFromProductPage(url: string): Promise<PageINCI | null> {
   const html = await fetchRawHtml(url);
   if (html) {
-    const ex = extractInciWithQuote(stripTags(html));
+    // The visible text first; the page's own data wins only when it holds a longer list (the markup shows
+    // the key ingredients, or a list cut short, and the popup shows the whole).
+    const visible = extractInciWithQuote(stripTags(html));
+    const embedded = extractEmbeddedInci(html, url);
+    const ex = embedded && (!visible || embedded.ingredients.length > visible.ingredients.length) ? embedded : visible;
     if (ex && ex.ingredients.length >= 5) {
       const meta = extractPageMeta(html);
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: meta.titles, siteName: meta.siteName };

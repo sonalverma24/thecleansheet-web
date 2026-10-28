@@ -835,6 +835,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: A list that a page shows only in a pop-up is read from the page's own data
+- **Decided by:** the owner: “If a website page shows the ingredient list after opening a pop up, my engine needs to be able to scrape it.”
+- **Reason:** some brand pages (Alteryst was the verified case) draw the full ingredient list in a pop-up from data the page ships itself, while the visible markup holds only the key ingredients or a list cut short. The extractor read the page text only, so those products were held for want of a primary-source list.
+- **What it touched:** `src/lib/inci-from-page.ts`. (1) A name that a comma cut apart (“1, 2-Hexanediol”, a locant such as “3-0”) is joined, so the whole list is kept, not its second half. (2) A list cut in two by a gap (a doubled comma, a digit-and-dash fragment that cannot be re-joined) is refused rather than published as its longer half. (3) When the visible text has no list, or a shorter one, the list the page keeps in its own data (a Next.js flight chunk, `__NEXT_DATA__`, JSON-LD, a Shopify product blob) is read and wins only if it is longer. It is used only when the product's own handle from the URL appears just before the field, a field cut by an inner quote is skipped, two different lists on one page veto it, and the usual list rules apply (marketing copy is not a list). The captured quotation and source URL travel with it as for any other list.
+- **Cost:** none beyond the page fetch already made. No extra model call.
+- **Not changed:** the source policy (brand page or INKEE Decoder), the brand-domain rule, the product-name match, and stored analyses; nothing is rerun by this change.
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-28: A web-grounded model call is asked where the product's page is
 - **Decided by:** the owner: “Let's do this - Use the web search the engine already pays for.” This accepted an offer to have the grounded Gemini call return only the brand's product page URL, with the code fetching the page and reading the list itself.
 - **Reason:** a list must stay a quoted source, never model-written. The model is asked for a lead only.
@@ -997,7 +1005,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `5f4e93338e015d31af57e678db2a7fc0093b2270bfdaf3c568da9a2ceca092b7` |
-| `src/lib/inci-from-page.ts` | `53377068bb0fc379d4c798d102325d99a1153a3803d05adb17ca6142b52f027d` |
+| `src/lib/inci-from-page.ts` | `434b11b47ab301e5310e8ff8bb60ef046741f52dc82ae60ad3cf86f1203f6c4c` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
 | `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
