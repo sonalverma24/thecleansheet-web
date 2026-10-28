@@ -1,6 +1,12 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: Freeze the approved PLIX analyser baseline locally and on the website
+- **Decided by:** the owner: “Now, this page looks perfect. Let's freeze this analyser logic to the website and locally.”
+- **Reason:** preserve the reviewed photo, ingredient tags, primary ingredient sourcing and yellow-rating behaviour as the common baseline.
+- **What it touched:** approved baseline identifier, public version check, source fingerprints in the generated reference, local preview, release documentation and production release. See `docs/ANALYSER-APPROVED.md`.
+- **Undo:** redeploy the previous production revision or revert the release merge; no stored product analyses are migrated by this release.
+
 ### 2026-10-28: Primary ingredient sources are the brand website or INKEE Decoder
 - **Decided by:** the owner: “Always check brand website or INKEE Decoder for the ingredients data.”
 - **Reason:** ingredient-based product tags should be backed by the retrieved INCI, rather than disappearing because a model-generated list has no captured source.

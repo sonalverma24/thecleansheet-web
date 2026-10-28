@@ -1,5 +1,8 @@
 # Analyser verifier: rollout notes
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 Written 2026-10-21. Source of truth for the neuro-symbolic work so a new session does not
 need the original plan. Describes local code, not verified as deployed. Companion to
 [ANALYSER-X1.md](ANALYSER-X1.md), which describes Version X1 as it stands (it replaces the

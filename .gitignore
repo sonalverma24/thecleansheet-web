@@ -65,3 +65,6 @@ tmp/
 
 # Private map from TCS Panel reviewer references to people. Must never be committed.
 reviewer-register*.json
+
+# Private local analyser runs (results, logs and restricted-key launchers)
+.local-preview/

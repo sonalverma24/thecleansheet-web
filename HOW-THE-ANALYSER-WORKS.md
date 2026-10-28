@@ -1,5 +1,8 @@
 # How The Clean Sheet Analyser Works (Plain-English Guide)
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 This is the layman's version. If you want the exact code-level walkthrough, read `PRODUCT-ANALYSIS-LOGIC.md`. This document explains, in everyday language, what happens from the moment someone searches a product to the moment they see a verdict.
 
 ---

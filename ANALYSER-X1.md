@@ -1,5 +1,8 @@
 # Analyser Version X1: what it is and where it stands
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 Written 2026-10-27, on `main` at `2cf36e2`. This is the reference for Version X1 as it exists in this repository. It describes code and data that are
 committed here; it does not record which flags are on in production (those are set in Vercel). Companion to
 [ANALYSER-ROLLOUT.md](ANALYSER-ROLLOUT.md) (the verifier rollout plan and its rules) and [HOW-THE-ANALYSER-WORKS.md](HOW-THE-ANALYSER-WORKS.md)

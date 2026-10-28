@@ -14,10 +14,11 @@
 ──────────────────────────────────────────────────────────────── */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { ANALYSER_FLAGS } from "@/lib/analyser-flags";
 import { PILLAR_STANDING_CONFIG } from "@/lib/pillar-standing";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
-import { ANALYSER_METHOD_VERSION, ANALYSER_RELEASE } from "@/lib/analyser-x/version";
+import { ANALYSER_METHOD_VERSION, ANALYSER_RELEASE, ANALYSER_APPROVED_BASELINE } from "@/lib/analyser-x/version";
 import { COPY_VERSION, MAX_REASON, PILLS } from "@/lib/analyser-x/copy";
 import { INDEPENDENT_LABS } from "@/lib/analyser-x/ladder";
 
@@ -81,6 +82,24 @@ const ROOT_DOCS: [string, string][] = [
   ["STAMPS.md", "what each standing and stamp means, and the four-pillar standing"],
 ];
 
+/** Fingerprint the rule, acquisition, reference-data and display sources too:
+ * changing executable logic must make the reference freshness test fail. */
+export function analyserSourceManifest(root: string): { path: string; sha256: string }[] {
+  const paths = new Set<string>();
+  const walk = (dir: string, include: (path: string) => boolean) => {
+    for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(path, include);
+      else if (!/\.test\.|__snapshots__/.test(path) && include(path)) paths.add(path);
+    }
+  };
+  walk("src/lib", (path) => /\.(?:ts|json)$/.test(path) && /analyser|inci|ingredient|review|pill|analysis|claim|verdict|pregnancy|product-(?:identity|scope|image|photo)|gemini|scrape|evidence|web-shopper|unrated|drug|compliance|text-negation/.test(path));
+  walk("src/components/scorecards", (path) => /\.(?:tsx?|css)$/.test(path));
+  walk("src/data", (path) => /\.(?:ts|json)$/.test(path) && /ingredient|taxonomy/.test(path));
+  for (const path of ["src/app/analysis/[slug]/page.tsx", "src/app/api/review/route.ts", "src/app/api/analyser-version/route.ts", "next.config.ts"]) paths.add(path);
+  return [...paths].sort().map((path) => ({ path, sha256: createHash("sha256").update(read(root, path)).digest("hex") }));
+}
+
 export function buildAnalyserReference(root: string = process.cwd()): string {
   const engine = read(root, "src/lib/product-review-engine.ts");
   const rubric = constLine(engine, "RUBRIC_REV");
@@ -113,6 +132,7 @@ export function buildAnalyserReference(root: string = process.cwd()): string {
     "| What | Value | Note |",
     "|---|---|---|",
     `| Release line | ${ANALYSER_RELEASE} | |`,
+    `| Approved baseline | ${ANALYSER_APPROVED_BASELINE} | Owner-approved local and production behaviour. |`,
     `| Stored decision method | ${ANALYSER_METHOD_VERSION} | |`,
     `| Copy templates | ${COPY_VERSION} | Every reason sentence is built from a template; the maximum reason length is ${MAX_REASON} characters. |`,
     `| Rubric revision | ${rubric.value} | ${rubric.comment} |`,
@@ -206,6 +226,14 @@ export function buildAnalyserReference(root: string = process.cwd()): string {
     "## 10. Ingredient-source policy",
     "",
     read(root, "docs/ingredient-sources.md").trim(),
+    "",
+    "## 11. Approved source fingerprints",
+    "",
+    "CI compares these SHA-256 fingerprints with the source. Any change in these files requires regenerating this reference and reviewing the change against the approved baseline in docs/ANALYSER-APPROVED.md.",
+    "",
+    "| Source | SHA-256 |",
+    "|---|---|",
+    ...analyserSourceManifest(root).map((item) => `| \`${item.path}\` | \`${item.sha256}\` |`),
     "",
   );
   return out.join("\n");

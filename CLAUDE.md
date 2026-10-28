@@ -1,5 +1,7 @@
 # Working in this repository
 
+The owner-approved analyser baseline is `X1-approved-2026-10-28`. Read `docs/ANALYSER-APPROVED.md` and `ANALYSER-REFERENCE.md` before changing it. Source fingerprints in the reference make executable changes visible in CI. Preserve unrelated local work; use the current main branch as the production reference.
+
 ## The analyser reference (keep it current)
 - `ANALYSER-REFERENCE.md` is **generated** from the code. Never edit it by hand.
 - After changing anything that affects what the analyser does or says (`src/lib/analyser-x/`, `src/lib/product-review-engine.ts`, `src/lib/product-review-context.ts` (the model prompt), `src/lib/pillar-standing.ts`, `src/lib/analyser-flags.ts`), run `npm run docs:analyser` and commit the result in the same pull request. `npm test` and CI fail when it is stale.

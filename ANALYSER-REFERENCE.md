@@ -9,6 +9,7 @@
 | What | Value | Note |
 |---|---|---|
 | Release line | X1 | |
+| Approved baseline | X1-approved-2026-10-28 | Owner-approved local and production behaviour. |
 | Stored decision method | TCS-X 1.0 | |
 | Copy templates | copy-1 | Every reason sentence is built from a template; the maximum reason length is 220 characters. |
 | Rubric revision | r7 | r7: total code-summed from sections + claimEvidence capped to the finished-product evidence actually in claimMap + approval requires a retrieved INCI; r6: 4-tier stamp rename + code-verified hard-flag guardrails |
@@ -833,6 +834,12 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: Freeze the approved PLIX analyser baseline locally and on the website
+- **Decided by:** the owner: “Now, this page looks perfect. Let's freeze this analyser logic to the website and locally.”
+- **Reason:** preserve the reviewed photo, ingredient tags, primary ingredient sourcing and yellow-rating behaviour as the common baseline.
+- **What it touched:** approved baseline identifier, public version check, source fingerprints in the generated reference, local preview, release documentation and production release. See `docs/ANALYSER-APPROVED.md`.
+- **Undo:** redeploy the previous production revision or revert the release merge; no stored product analyses are migrated by this release.
+
 ### 2026-10-28: Primary ingredient sources are the brand website or INKEE Decoder
 - **Decided by:** the owner: “Always check brand website or INKEE Decoder for the ingredients data.”
 - **Reason:** ingredient-based product tags should be backed by the retrieved INCI, rather than disappearing because a model-generated list has no captured source.
@@ -872,3 +879,126 @@ Retailer pages remain useful for prices and marketing claims. They no longer sup
 This policy improves retrieval; it does not guarantee a coloured rating or establish that a published ingredient list matches every batch or reformulation. Ambiguous products, conflicting formulas and genuinely unavailable lists still require verification.
 
 The generator embeds the current model prompt in `ANALYSER-REFERENCE.md`; its freshness test catches prompt changes. This page describes source acquisition in `src/lib/inci-fetch.ts`, `src/lib/brand-inci.ts` and `src/lib/product-review-engine.ts`.
+
+## 11. Approved source fingerprints
+
+CI compares these SHA-256 fingerprints with the source. Any change in these files requires regenerating this reference and reviewing the change against the approved baseline in docs/ANALYSER-APPROVED.md.
+
+| Source | SHA-256 |
+|---|---|
+| `next.config.ts` | `b5553c94b64dcdf1358b80d3add3d84ce5381fa775e21b1454b349108d4a0694` |
+| `src/app/analysis/[slug]/page.tsx` | `3a40084321662de5a5ab91f0244673913a3a592657c6db5d9eb140319f986f3e` |
+| `src/app/api/analyser-version/route.ts` | `e06baf28af49551cf0311a05a2c6688bc13d174c2eed7f653b4f29b6a20bfa24` |
+| `src/app/api/review/route.ts` | `21af87b8f3470d9c9fac3fc7add64d4de7cac23269a417f393479b1e850c3b78` |
+| `src/components/scorecards/AnalysisProductImage.tsx` | `a7e725c25a71ed0d1413ad28a8cdec40ab992e8bd56910bd287933ad7fce415c` |
+| `src/components/scorecards/BadgeGroup.tsx` | `cd862de9f3f75787f1d3f2e712d4b919bab723c5efe0a8db5251d6266dbbea9d` |
+| `src/components/scorecards/BrandProductCard.tsx` | `285869cee38fa65fe35206a191e98836056de2d0f0cb406a6abc0aaddd27ed4e` |
+| `src/components/scorecards/ComparisonDecisionEngine.tsx` | `6139d1265902406cce1685472da73cc3e0d270aa82e41353b64d415396ac2a6d` |
+| `src/components/scorecards/ComparisonTray.tsx` | `ca8914e8e41ba1990f7f84a0d18f84752b20bc34d3d7ebbf4e2333e5ab40ec8f` |
+| `src/components/scorecards/ExpandableSection.tsx` | `dd553925b054f38f0062ee661dd02fb8053ad01d5bb5c9cef690bb23ad19880c` |
+| `src/components/scorecards/HeroActions.tsx` | `5647a7614e2007b57eb77229196141c839a586127c6e55e22b587321acaca1c7` |
+| `src/components/scorecards/NoResultsCard.tsx` | `77ee1bd923ed3c7be68e21a9e6642d0e098d0141a7a2ae3a80881079dff11602` |
+| `src/components/scorecards/OpenDetailsLink.tsx` | `99f31a3a4072aeff53ba15c160a8f3f6a5e8e58cea46934013c8e9c89b50d53c` |
+| `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
+| `src/components/scorecards/PillsPage.tsx` | `2f187faf035550622e478af5fbd6ab111ec31abea2e52f83049766f170af514e` |
+| `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
+| `src/components/scorecards/ProductHero.tsx` | `17c0ae64d4adc5cfb097e29060224d3887f22ed2315d7e945651d17978537aa9` |
+| `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
+| `src/components/scorecards/ProductScorecardView.tsx` | `ab0d898c8b1a58fecb961fb4e142ffb46d27d07398f97db8d208c7389758a0d6` |
+| `src/components/scorecards/RatingDot.tsx` | `c1661417c465b0f5a5df7034e2752f7056aa8755092f0250937f9415b12f9f3f` |
+| `src/components/scorecards/ReviewRunStatus.tsx` | `95d31a0a4d27e50d3019edfbc4642be92586bd3c547a1d1ebeea014bbd723d3e` |
+| `src/components/scorecards/ScoreRing.tsx` | `70d2f9e5c4e91493297c33f2f1991e5ea79a8992d4ade6e11d90febc319eefe5` |
+| `src/components/scorecards/ScorecardBadge.tsx` | `ac3beafbed835890200c81e3d33fe0f6acf79436793e57cf774b1478771caade` |
+| `src/components/scorecards/ScorecardTabs.tsx` | `5f642c36c562ec2c69545f91a116ecd5b620f1ffa2e3019048a5e4cb6566c72e` |
+| `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
+| `src/components/scorecards/UnratedNotice.tsx` | `e37cfac4ab9b9c55085cfabc16e72ce91004e9cf967eedcfad7ef4dbf1fc7b41` |
+| `src/components/scorecards/UnratedProductPage.tsx` | `d5ab7b5e6b748a80e5706b418340f4bc56b12c88d1011c02c8d9ade0fc295f93` |
+| `src/components/scorecards/pill-palette.ts` | `e5dc6b716e3f5d85bd8614ac90c04f1255de52c0271064a0fd69082704636b2d` |
+| `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
+| `src/components/scorecards/pills-badge.css` | `52277af6abe1e3d553b885d64b52e0608185e92635e8215934fbd2b8054309dd` |
+| `src/components/scorecards/pills-page.css` | `8731d597e3e53f6b7895cba985ce67ec04e721adc909f8adc31ddcd4add494b0` |
+| `src/components/scorecards/pills-ui.tsx` | `6b170ab424325a2983fc9e9f06f6b3ece3a248d7e36e14dff165d5edcc1b65ec` |
+| `src/components/scorecards/useReviewRunner.ts` | `d57c76f9ab6d14c5104bd0707635a4f728ceb11b5063b4f9cacbda25313f535b` |
+| `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
+| `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |
+| `src/data/ingredient-aliases.ts` | `d428faa6ba2be4f561581c0348566a158e605efb9476681d975a5c20e4f445b8` |
+| `src/data/ingredients.json` | `2829920e6071c97b37bb36eb2056d456065a8652b56f2fc2351c432484f4f474` |
+| `src/data/ingredients/claim-ontology.ts` | `c26f56943006af4a4daef5a1d2793d9fc425fbed86bbb38d35e15d977d08763f` |
+| `src/data/ingredients/concepts.ts` | `2c709afb7b734c259f84b0e663020d79df00645264d35758f4960a7e227fa9a5` |
+| `src/data/taxonomy/index.ts` | `c74f427f9b8fdb9dad017a24324fa6c7d0947f0f908ab6eeb7aff02bb296a602` |
+| `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
+| `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
+| `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
+| `src/lib/analyser-reference.ts` | `584837539c81a2ec5a234a96ea2a017299d6201cddfae7f06bd2c78c6e4cb7ad` |
+| `src/lib/analyser-x/adapter.ts` | `f040cbeb559b2aadb365222d9ba40c67697cc2517cf316b4c97e7f36c2bfca3e` |
+| `src/lib/analyser-x/claimflags.ts` | `ecd084f9dfb148039f292d52a4b7aac128043f3317652dcb5f3c24a40445d397` |
+| `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
+| `src/lib/analyser-x/copy.ts` | `8b5c1a7c4e4412daf0efdff541e9a5df13dd06c528fbb761b3fb7c2053a77370` |
+| `src/lib/analyser-x/decision.ts` | `8eb28d5246f3f1ec02e5983bb905dd034bb047704c6b31b03b774212180e0721` |
+| `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
+| `src/lib/analyser-x/index.ts` | `280089e6bd56fd909bc6b13ba60683975a129fea88a92c650a965960070aa516` |
+| `src/lib/analyser-x/invariants.ts` | `983992f6d800368d4a464b499723669d9d8d35774840b844dbf39c79b8615004` |
+| `src/lib/analyser-x/kb.ts` | `83b8b67415017755c0946f60e5ef35be719b824f140491170dd1da3a0283fe9c` |
+| `src/lib/analyser-x/ladder.ts` | `a5f7f37e99fa5b938a9edcc5ac729b2a24e1fc9dbb7f44e0404f0eae1ec491d2` |
+| `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
+| `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
+| `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
+| `src/lib/analyser-x/rules.ts` | `5b6122c3016d31b8f15d9bdd1cc26d6484acdb8116b8ddc8ceb41c419a24fb31` |
+| `src/lib/analyser-x/screen.ts` | `a12c31d9471c8ebf5dfbc9fe8cb82db228c194e420d5054503b6af6ff1e9c0e8` |
+| `src/lib/analyser-x/test-helpers.ts` | `a4e9a3a459d51da896d2d6d664e218c7c1cf11433ab846750f7d95bc4b381059` |
+| `src/lib/analyser-x/types.ts` | `a35cbb1f20d44af8b7bb33f534fbc23ddddcfa08d082eca754bb026482c9a2ba` |
+| `src/lib/analyser-x/verifier.ts` | `2aba0b3ec3b2b08f3ca4990e77c895802a63166bd2c8c84251c4ede6cd989c7c` |
+| `src/lib/analyser-x/version.ts` | `f5420b59fae65a7f27e0a4156721f8b60f2b4ef46d3c2fd4ceb478d5a09072d2` |
+| `src/lib/analysis-engine.ts` | `388ecc3c10ab9cfa27b7f33be6381c31c70e74e8b5551dd85f88c2a98944064c` |
+| `src/lib/analysis-types.ts` | `5521d764770c99de9a4a8648c6324f7f26c982998f4c813577cfc09c7d05728e` |
+| `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
+| `src/lib/brand-inci.ts` | `2bcf71168dbc69f99fcbd340eda63c00c8dadf0b0e41d9a3e1e7be42a41557c2` |
+| `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
+| `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
+| `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
+| `src/lib/claims-context.ts` | `9fe1aa10c247220a8fba83c2458f421444b8d233708cc06d4a4ef2696add6b6f` |
+| `src/lib/compliance-pillar.ts` | `c7a2c2a575d1e19548175e53bc716998a1e94135649bce8fd6e008134cc6b8a6` |
+| `src/lib/drug-signals.ts` | `e4eba39275c9b08603e036d14fcf0d659ad4a7e75c342d9263b52863c76a63a0` |
+| `src/lib/evidence-images.ts` | `3997d516c3a0f9d5d048edc929a1241d9aefb805ed9ad082449ae23896cbdbed` |
+| `src/lib/gemini.ts` | `800010027e49b589ca6e5813790bbc2e4c8919518c34ddcd8f2c4ecbb6815964` |
+| `src/lib/inci-catchall.ts` | `c83855004cb4603bb90c1ba15e195352ff073742968998d444802778fb8e7254` |
+| `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
+| `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
+| `src/lib/inci-fetch.ts` | `5f4e93338e015d31af57e678db2a7fc0093b2270bfdaf3c568da9a2ceca092b7` |
+| `src/lib/inci-from-page.ts` | `53377068bb0fc379d4c798d102325d99a1153a3803d05adb17ca6142b52f027d` |
+| `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
+| `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
+| `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
+| `src/lib/ingredient-canonical.ts` | `41ebe06c48c4c7e6c141019247acf2f45abd4060d4ea8c3fd030f9824b8404e9` |
+| `src/lib/ingredient-db.ts` | `1172509d23c12e59df5b3792e4520bb0669bc4807e45bdef5e1c117c4eb4fe7e` |
+| `src/lib/ingredient-directory.ts` | `0c13119e0ecd730600e9112409dc86acf5f4140e73ac2a5bd5e9084aba28578a` |
+| `src/lib/ingredient-intel.ts` | `e326d79922b4ff2d4e8133a4e1154c38208905a3ed68ed3b3b79b8826aa24598` |
+| `src/lib/ingredient-product-index.ts` | `9cb4e41376623352f11e9ed81cb4ba8d61ce973731b9d33e7397c7964fcccb08` |
+| `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
+| `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
+| `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
+| `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
+| `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
+| `src/lib/pills-for-review.ts` | `2fa3fade5f61d499056efbe336926b47e66d8872d0c6c4fee118b568b4473cdf` |
+| `src/lib/pills-page.ts` | `fd5618ce5e4a693681e35db17446e620d6cebf9bbbb5c1b99bcdaf53e9c320c0` |
+| `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
+| `src/lib/product-identity.ts` | `9c0bb803fbfb414059e577d0134dd56cbd98a5f2d94d21979f08d72b6337bab9` |
+| `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
+| `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
+| `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
+| `src/lib/product-review-engine.ts` | `5479aaafef1683e6d54e8b0152a64118ddcae431a5cbad70e2a713f3ce5bc237` |
+| `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
+| `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
+| `src/lib/review-engine.ts` | `d282765a84ec3cb46dbff3fa6972c89a1598ad4e7e679dfa14fefdc048c71fe4` |
+| `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
+| `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
+| `src/lib/review-to-scorecard.ts` | `ee0c5b05a0f021700e68083b469bcd9087e8350563c905a38a36471ffc6aea99` |
+| `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
+| `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |
+| `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
+| `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
+| `src/lib/scrape.ts` | `0d482e1eaa87b1a1f6b2f1652ba7380e6c30502a5727c1f7929fab334db785d5` |
+| `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
+| `src/lib/unrated-kind.ts` | `425eb9ce2e45b4c57c2765165af9b909e3d334bc6e77bf0d6108e4ff53afaa74` |
+| `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |
+| `src/lib/web-shopper-checks.ts` | `648e8b518771d73ca288d79b2c32452f9bdd942587927cd2a5540258b5fd5ec5` |

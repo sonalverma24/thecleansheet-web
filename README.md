@@ -1,3 +1,5 @@
+> **Approved analyser:** `X1-approved-2026-10-28`. Start with [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) and [the approved baseline](docs/ANALYSER-APPROVED.md). Generate current docs with `npm run docs:analyser`; run `npm test` to check they match the code. Verify the running version at `/api/analyser-version`.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

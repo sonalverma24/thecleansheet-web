@@ -1,5 +1,8 @@
 # The Clean Sheet™ Review Standard — TCS v3.1
 
+> Current approved baseline: [X1-approved-2026-10-28](docs/ANALYSER-APPROVED.md). Use [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) for the current generated logic; this document provides historical context.
+
+
 This is the single reference for how the review tool classifies queries, produces
 output, and issues verdicts. If behaviour and this document disagree, one of them
 is a bug. The enforcing code is `src/lib/verdict-engine.ts`; the pipeline is
