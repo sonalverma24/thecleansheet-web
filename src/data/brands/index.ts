@@ -1,27 +1,11 @@
-import { minimalistBrand } from "./minimalist";
-import { dotAndKeyBrand } from "./dot-and-key";
-import { kiehlsBrand } from "./kiehls";
-import { pilgrimBrand } from "./pilgrim";
-import { hyphenBrand } from "./hyphen";
-import { plumBrand } from "./plum";
-import { antinormBrand } from "./antinorm";
-import { simpleBrand } from "./simple";
-import { mamaearthBrand } from "./mamaearth";
-import { codeskinBrand } from "./codeskin";
-import { deconstructBrand } from "./deconstruct";
-import { aqualogicaBrand } from "./aqualogica";
-import { foxtaleBrand } from "./foxtale";
-import { dermacoBrand } from "./dermaco";
-import { lotusHerbalsBrand } from "./lotus-herbals";
-import { ceraveBrand } from "./cerave";
-import { doveBrand } from "./dove";
-import { himalayaBrand } from "./himalaya";
-import { mcaffeineBrand } from "./mcaffeine";
 import type { Brand, BrandSummary } from "./types";
 
 export type { Brand, BrandSummary, ProductScorecard, ScorePillar, IngredientEntry, KeyActive } from "./types";
 
-export const ALL_BRANDS: Brand[] = [minimalistBrand, dotAndKeyBrand, kiehlsBrand, pilgrimBrand, hyphenBrand, plumBrand, antinormBrand, simpleBrand, mamaearthBrand, codeskinBrand, deconstructBrand, aqualogicaBrand, foxtaleBrand, dermacoBrand, lotusHerbalsBrand, ceraveBrand, doveBrand, himalayaBrand, mcaffeineBrand];
+/* The hand-written catalogue (19 brands, 115 products) was removed on 2026-10-28: those scorecards were written by hand and never run through the
+   analyser. The pages now come only from analyses the engine has run (src/app/analysis/[slug]); /brands/<brand>/<product> URLs redirect (next.config.ts).
+   The list stays, empty, so the code that reads it keeps working; the old data is in git history (commit before this one). */
+export const ALL_BRANDS: Brand[] = [];
 
 export function getBrandBySlug(slug: string): Brand | undefined {
   return ALL_BRANDS.find((b) => b.slug === slug);
