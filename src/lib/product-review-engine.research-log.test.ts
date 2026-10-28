@@ -33,7 +33,7 @@ vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => u
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
-import { deriveVerdict, runProductReview } from "@/lib/product-review-engine";
+import { deriveVerdict, runProductReview, withinMs } from "@/lib/product-review-engine";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { inciGroundTruthBlock } from "@/lib/inci-fetch";
 
@@ -77,14 +77,27 @@ describe("runProductReview: researchLog", () => {
     expect(stored.review.researchLog).toEqual(log);
   });
 
-  it("refuses a review written without a web search, asks the model again first, and stores nothing", async () => {
+  it("asks the model again when its answer had no web search, and still gives the shopper a page (never an error) if every try had none", async () => {
     h.brandInci.mockResolvedValue(brandPage("beta-serum"));
     h.generate.mockResolvedValue({ text: asModelText("Beta Serum"), groundingMetadata: null });
     const out = await runProductReview("Beta Serum");
-    expect(out).toEqual({ type: "unverified", issues: ["web-search-missing"] });
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
     expect(h.generate).toHaveBeenCalledTimes(3); // the first call and two retries, the same as the re-runs allow
     expect(h.generate.mock.calls[1]).toEqual(h.generate.mock.calls[0]);
-    expect(h.upserts).toEqual([]);
+    expect(out.review.researchLog).toMatchObject({ grounded: false }); // the gap is recorded, so a re-run can replace it later
+    expect(h.upserts).toHaveLength(1);
+  });
+
+  it("keeps the first answer, and shows no error, when the retry throws", async () => {
+    h.brandInci.mockResolvedValue(brandPage("flaky-serum"));
+    h.generate
+      .mockResolvedValueOnce({ text: asModelText("Flaky Serum"), groundingMetadata: null })
+      .mockRejectedValueOnce(new Error("upstream 503"));
+    const out = await runProductReview("Flaky Serum");
+    expect(out.type).toBe("product-review");
+    expect(h.generate).toHaveBeenCalledTimes(2); // the retry was tried once, failed, and no further retry was made
+    expect(h.upserts).toHaveLength(1);
   });
 
   it("keeps the answer from a retry that was grounded", async () => {
@@ -105,7 +118,7 @@ describe("runProductReview: researchLog", () => {
       h.brandInci.mockResolvedValue(brandPage("slow-serum"));
       h.generate.mockImplementation(async () => { vi.setSystemTime(new Date(Date.now() + 80_000)); return { text: asModelText("Slow Serum"), groundingMetadata: null }; });
       const out = await runProductReview("Slow Serum");
-      expect(out).toEqual({ type: "unverified", issues: ["web-search-missing"] });
+      expect(out.type).toBe("product-review"); // no retry fits in the time left, and the shopper still gets the page
       expect(h.generate).toHaveBeenCalledTimes(1);
     } finally { vi.useRealTimers(); }
   });
@@ -191,5 +204,25 @@ describe("primary ingredient sources", () => {
     const result = await runProductReview("Aqua, Glycerin, Niacinamide, Panthenol, Tocopherol, Phenoxyethanol, Sodium Hyaluronate");
     expect(result.type).toBe("product-review");
     expect(h.upserts).toEqual([]);
+  });
+});
+
+describe("withinMs: the bound that stops a retry from costing the shopper an answer", () => {
+  it("returns the result when the work finishes in time, and null when it throws", async () => {
+    expect(await withinMs(Promise.resolve("done"), 1000)).toBe("done");
+    expect(await withinMs(Promise.reject(new Error("boom")), 1000)).toBeNull();
+  });
+
+  it("returns null when the work is still running at the deadline, and leaves no timer behind", async () => {
+    vi.useFakeTimers();
+    try {
+      const pending = withinMs(new Promise<string>(() => { /* never finishes */ }), 5_000);
+      await vi.advanceTimersByTimeAsync(5_001);
+      expect(await pending).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+      const quick = withinMs(Promise.resolve("ok"), 5_000);
+      expect(await quick).toBe("ok");
+      expect(vi.getTimerCount()).toBe(0); // cleared once the work won the race
+    } finally { vi.useRealTimers(); }
   });
 });

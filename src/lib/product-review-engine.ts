@@ -19,7 +19,6 @@ import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
 import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
-import { liveRefusalIssues, type ReviewCheckIssue } from "@/lib/review-checks";
 import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveConcepts, inciContainsConcept } from "@/lib/ingredient-intel";
@@ -712,8 +711,6 @@ export type ProductReviewResult =
   | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
   /** A URL that did not establish which product it is (an error page, a bare store link). Never stored, never listed. */
   | { type: "unidentified" }
-  /** A fresh analysis written without a web search (review-checks.ts, LIVE_REFUSES). Never stored, never listed. */
-  | { type: "unverified"; issues: ReviewCheckIssue[] }
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -1183,11 +1180,28 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
   }
 }
 
-/* A review is kept only if a web search was behind it (review-checks.ts). A model call that came back without grounding is asked again, up to this many more
-   times, as the re-runs do (they allow three attempts in all). /api/review is cut off at 180 s and a whole analysis takes 80-106 s, so no retry starts once
-   RETRY_STARTS_BEFORE_MS of the request has gone. */
+/* A model call that came back without grounding (no web search behind it) is asked again, up to this many more times, as the re-runs do (they allow three
+   attempts in all). The shopper never sees this and never sees a failure for it: whatever the last try returns is kept, and an answer that is still without a
+   web search is stored and shown as before, with researchLog.grounded false (the re-runs can replace it later). /api/review is cut off at 180 s and a whole
+   analysis takes 80-106 s, so no retry starts once RETRY_STARTS_BEFORE_MS of the request has gone. */
 const GROUNDING_RETRIES = 2;
 const RETRY_STARTS_BEFORE_MS = 75_000;
+/* A retry is only ever a bonus. It is abandoned, and the answer already in hand is kept, if it throws or is still running this long after the request began,
+   which leaves the rest of the 180 s for scoring and storing. A retry can therefore never turn a usable answer into an error or a timeout. */
+const RETRY_DEADLINE_MS = 140_000;
+
+/** `work`'s result, or null if it throws or has not finished within `ms`. */
+export async function withinMs<T>(work: Promise<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work.catch(() => null),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), Math.max(ms, 0)); }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 async function getReusableStored(slug: string): Promise<ProductReviewResult | null> {
   const result = await getStored(slug);
@@ -1353,7 +1367,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     }
     // No grounding means the model wrote this without a web search. Ask again (same prompt), and take the new answer only if it is valid and grounded.
     for (let again = 0; again < GROUNDING_RETRIES && isValidProductReview(parsed) && grounding === null && Date.now() - startedAt < RETRY_STARTS_BEFORE_MS; again++) {
-      const retry = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
+      const retry = await withinMs(generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`), RETRY_DEADLINE_MS - (Date.now() - startedAt));
+      if (!retry) break; // it failed or ran out of time: keep the answer already in hand
       const next = parseJSON(retry.text);
       if (isValidProductReview(next) && retry.groundingMetadata !== null) { parsed = next; grounding = retry.groundingMetadata; }
     }
@@ -1501,15 +1516,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
       (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
     : !!inci || !looksLikeInciList(q);
-
-  /* The one check a live search shares with the re-runs that stops a new analysis from being kept (review-checks.ts, LIVE_REFUSES): a web search behind the review.
-     A review written without one is not stored, listed or added to the registry or the ingredient directory; the shopper is asked to try again. A product with no
-     primary-source ingredient list is NOT refused: it is analysed and saved with the gap shown, because a new product has no earlier page to protect. A bare INCI scan
-     is never stored, so it is exempt. */
-  if (productIdentified) {
-    const issues = liveRefusalIssues(review);
-    if (issues.length) return { type: "unverified", issues };
-  }
 
   // Page checks are generated from a user-supplied product URL only. They remain
   // separate from score, rubric, and the three-dot outcome.

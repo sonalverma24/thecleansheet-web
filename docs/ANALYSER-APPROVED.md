@@ -27,5 +27,5 @@ The PLIX local preview is `/analysis-preview/plix`. It is disabled in production
 
 The baseline identifier above is unchanged. Behaviour changes made after it, each with the owner's reason in `docs/analyser-decisions.md`:
 
-- 2026-10-28: a live search that comes back without a web search behind it is asked again, and refused if it still has none (`src/lib/review-checks.ts`). A product with no primary-source ingredient list is still saved, as the line "can still be grey" under Agreed behaviour says.
+- 2026-10-28: a live search whose model answer came back without a web search behind it is asked again, up to twice (`src/lib/review-checks.ts`). It is never refused: if every try is still without one, the page is saved and shown with the gap recorded. A product with no primary-source ingredient list is likewise saved, as the line "can still be grey" under Agreed behaviour says. A shopper is never shown a "try again" message for either.
 - 2026-10-28: candidate ingredient pages are found with Firecrawl search, a Decoder product page that the search surfaces is accepted as a primary source, and a short web-grounded model call may name a page (`src/lib/brand-inci.ts`).

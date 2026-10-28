@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LIVE_REFUSES, liveRefusalIssues, reviewCheckIssues } from "@/lib/review-checks";
+import { reviewCheckIssues } from "@/lib/review-checks";
 import { researchLogFrom } from "@/lib/gemini";
 import { makeInciEvidence } from "@/lib/review-verifier";
 import { makeReview } from "@/lib/review.fixtures";
@@ -71,14 +71,10 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
     expect(reviewCheckIssues(review({ researchLog: undefined }))).toEqual(["web-search-missing"]);
   });
 
-  it("refuses a live analysis only for a missing web search; a missing or unsourced ingredient list does not stop it", () => {
-    expect([...LIVE_REFUSES]).toEqual(["web-search-missing"]);
+  it("reports a missing ingredient list as three separate issues, so a re-run can refuse it while a live search still shows the page", () => {
     const noList = review({ inciIngredients: [], ingredientReads: [], inciSourceUrl: undefined, inciEvidence: undefined });
     expect(reviewCheckIssues(noList)).toHaveLength(3);
-    expect(liveRefusalIssues(noList)).toEqual([]);
     const retailer = "https://www.nykaa.com/plix-night-cream/p/123";
-    expect(liveRefusalIssues(review({ inciSourceUrl: retailer, inciEvidence: makeInciEvidence(retailer, QUOTE, WHEN, "Plix Night Cream") }))).toEqual([]);
-    expect(liveRefusalIssues(review({ researchLog: researchLogFrom(null, WHEN) }))).toEqual(["web-search-missing"]);
-    expect(liveRefusalIssues({ ...noList, researchLog: undefined })).toEqual(["web-search-missing"]);
+    expect(reviewCheckIssues(review({ inciSourceUrl: retailer, inciEvidence: makeInciEvidence(retailer, QUOTE, WHEN, "Plix Night Cream") }))).toContain("ingredient-source-not-primary");
   });
 });

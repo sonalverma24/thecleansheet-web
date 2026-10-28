@@ -3,9 +3,9 @@
 
    One definition of the four checks. The re-run (scripts/approved-rerun-policy.ts, validateReplacement)
    applies all four to a replacement before it overwrites a page, so a good page is never swapped for a
-   worse one. The live search (runProductReview, behind /api/review) refuses to keep a new analysis only
-   for the checks in LIVE_REFUSES: a new product has no page to protect, and a product with no
-   primary-source ingredient list is still analysed and saved with the gap shown (Not enough info), as the
+   worse one. The live search (runProductReview, behind /api/review) does NOT refuse a new analysis for any
+   of them: a shopper is never shown a failure for a missing web search or a missing ingredient list. A new
+   product has no page to protect, so it is analysed and saved with the gap shown (Not enough info), as the
    approved baseline says. The re-run adds checks that only make sense against an existing page (same
    product, list not shorter, decision not lost); those are not here.
 ──────────────────────────────────────────────────────────────── */
@@ -34,11 +34,4 @@ export function reviewCheckIssues(review: ProductReview): ReviewCheckIssue[] {
   if (!sanitizeInciList(list).ok) issues.push("invalid-ingredient-list");
   if (!review.researchLog?.grounded) issues.push("web-search-missing");
   return issues;
-}
-
-/** What stops a fresh live analysis from being kept: it was written without a web search. The ingredient-source checks do not stop it. */
-export const LIVE_REFUSES: ReadonlySet<ReviewCheckIssue> = new Set<ReviewCheckIssue>(["web-search-missing"]);
-
-export function liveRefusalIssues(review: ProductReview): ReviewCheckIssue[] {
-  return reviewCheckIssues(review).filter((issue) => LIVE_REFUSES.has(issue));
 }

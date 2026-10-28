@@ -865,13 +865,13 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** the brand-domain rule, which still rejects dotandkey.com for “Dot & Key” and nykaa.com for “Nykaa Cosmetics”; product photo search, which still uses Google's refused key.
 - **Undo:** revert the change. Setting `FIRECRAWL_API_KEY` to empty also turns it off.
 
-### 2026-10-28: A live search is held to the re-runs' web-search check, and retried
-- **Decided by:** the owner: first “Yes, live searches should use the same checks.”, then, shown that the full set of checks would refuse most new searches for want of a primary-source ingredient list, “B”: keep the retry and the web-search refusal, but still save a grey page when no primary list is found.
-- **Reason:** a product searched live and the same product re-run should not be held to different standards where that is possible, without turning a product whose ingredients are not published into an error. A live search after a web-less answer used to save a page nobody could source; the re-run was restoring those.
-- **What it touched:** `src/lib/review-checks.ts` (new) is the one definition of the four checks the re-run applies to a replacement (a list from a Decoder or brand page with its source quote, a list that is not mostly junk, a web search behind the review). A live search refuses to keep a new analysis only for the last one (`LIVE_REFUSES`). `runProductReview` asks a model call that came back without a web search again, up to twice, unless 75 of the request's 180 seconds have gone; if it is still without one, nothing is stored, listed or added to the registry, and `/api/review` answers `unverified`, which the shopper sees as the plain “try again” message. A product with no primary-source list is analysed and saved as before, with no ingredient list and the gap showing. A bare pasted-ingredients scan is exempt (it is never stored). The checks that only make sense against an existing page (same product, list not shorter, decision not lost) and the three ingredient-source checks stay in the re-run script, which protects a good page from being replaced by a worse one.
-- **Effect to expect:** a live analysis that would have been saved without a web search is no longer saved. How often that happens varies: 15 of 301 pages stored before today have no web search recorded, the earlier pilot re-run (before the primary-source change) saw 6 of 9 decided pages come back without one, and the current re-run needed a second attempt for 1 of 13. Each retry is one more grounded model call.
+### 2026-10-28: A live search is retried when its answer had no web search, and is never turned into an error
+- **Decided by:** the owner. First: “Yes, live searches should use the same checks.” Then, shown that the full set of checks would refuse most new searches for want of a primary-source ingredient list, “B”: keep the retry and the web-search refusal, but still save a grey page when no primary list is found. Then, before this was released, the owner withdrew the refusal: a shopper must never be shown “try again”. The retry stays; the refusal does not.
+- **Reason:** a product searched live and the same product re-run should be held to the same standard where that can be done without a shopper meeting an error. A web-less answer is improved by asking again, which the shopper never sees; if every try is still without a web search, a page with the gap recorded is better for the shopper than an error, and the re-run can replace it later.
+- **What it touched:** `src/lib/review-checks.ts` (new) is the one definition of the four checks the re-run applies to a replacement (a list from a Decoder or brand page with its source quote, a list that is not mostly junk, a web search behind the review). `runProductReview` asks a model call that came back without a web search again, up to twice, unless 75 of the request's 180 seconds have gone. Whatever the last try returns is kept: an analysis still without a web search is stored and shown as before, with `researchLog.grounded` false. A live search refuses nothing, so `/api/review` never answers with an error for this and the engine has no `unverified` result. A product with no primary-source list is analysed and saved as before, with no ingredient list and the gap showing. The checks stay in the re-run script, which protects a good page from being replaced by a worse one and still requires a web search before it replaces one.
+- **Effect to expect:** more live answers are grounded, because a web-less first answer is asked again. How often that is needed varies: 15 of 301 pages stored before today have no web search recorded, the earlier pilot re-run (before the primary-source change) saw 6 of 9 decided pages come back without one, and the current re-run needed a second attempt for 1 of 13. Each retry is one more grounded model call, and up to 75 seconds of the request can be spent waiting for one. A page that is still web-less is saved, as it was before this change.
 - **Not changed:** the baseline identifier `X1-approved-2026-10-28`, which changes only with the owner's approval; existing stored pages; the re-run script.
-- **Undo:** revert the change. Nothing is migrated.
+- **Undo:** revert the change. Setting `GROUNDING_RETRIES` to 0 turns off the retry alone. Nothing is migrated.
 
 ### 2026-10-28: Refresh existing live pages newest first using the frozen baseline
 - **Decided by:** the owner: “run the live products again through the analyser and replace the current pages with new ones. Start from new to old.”
@@ -1034,14 +1034,14 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `709148213451b1fc430173eebc15a46802d9c81dfb48c2eae73fafdf3bcf6639` |
+| `src/lib/product-review-engine.ts` | `b6e3cf9f72194a0c122b2dd5ed1a2fe24752dad68c7f1732907f94332b6735ef` |
 | `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
-| `src/lib/review-checks.ts` | `34a016fed10ab1a094912a61c4c735aa587d0ce782c553dd3ae8a396f4a0e05a` |
+| `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
 | `src/lib/review-engine.ts` | `d282765a84ec3cb46dbff3fa6972c89a1598ad4e7e679dfa14fefdc048c71fe4` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `3f510a2e7e091df4a0e98cbd36641d5beb86f3018b1c9d1d90b5bd3110d40ac8` |
-| `src/lib/review-run.ts` | `44fc5142a9609e2386dad1b51bf96db531720a27d824a7cdbafd9f92e3cda69f` |
+| `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
 | `src/lib/review-to-scorecard.ts` | `7af517fb57516b8b8c5a294873b43e505ef01c1c9f1bfc9d0eb14f528faa6c7a` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |

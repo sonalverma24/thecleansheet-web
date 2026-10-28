@@ -56,8 +56,6 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
   }
   if (d.type === "out_of_scope") return { kind: "error", error: "scope" };
   if (d.type === "unidentified") return { kind: "error", error: "unidentified" };
-  // The engine would not keep this analysis because no web search was behind it (review-checks.ts): a plain retry.
-  if (d.type === "unverified") return { kind: "error", error: "fail" };
   return { kind: "error", error: "fail" };
 }
 
