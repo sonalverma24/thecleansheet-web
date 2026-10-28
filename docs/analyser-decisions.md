@@ -1,6 +1,12 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: Refresh existing live pages newest first using the frozen baseline
+- **Decided by:** the owner: “run the live products again through the analyser and replace the current pages with new ones. Start from new to old.”
+- **Reason:** bring the existing catalogue onto the newly approved ingredient sourcing, tags and display logic.
+- **What it touched:** a backed-up snapshot of 304 live products, processed newest to oldest by analysis date at the previously agreed 20 products per hour. A credential-isolated run is validated before an in-place, concurrency-checked row update; failures keep the current page. The analyser itself is unchanged. See `docs/catalogue-rerun.md`.
+- **Undo:** restore affected rows from the private full-row backup after checking for newer shopper/admin changes.
+
 ### 2026-10-28: Freeze the approved PLIX analyser baseline locally and on the website
 - **Decided by:** the owner: “Now, this page looks perfect. Let's freeze this analyser logic to the website and locally.”
 - **Reason:** preserve the reviewed photo, ingredient tags, primary ingredient sourcing and yellow-rating behaviour as the common baseline.
