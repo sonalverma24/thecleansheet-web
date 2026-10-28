@@ -103,18 +103,18 @@ export function parseProductPage(page: string, slug: string): INCIResult | null 
   const quoteFull = inciLine.replace(/\]\([^)]*\)/g, "]").replace(/\s+/g, " ");
   const sourceQuote = quoteFull.slice(0, QUOTE_CAP);
 
-  const brandMatch = page.match(/^#\s+\[([^\]]+)\]\(https?:\/\/(?:www\.)?incidecoder\.com\/brands\/[^)]*\)/m);
+  const brandMatch = page.match(/^#\s+\[([^\]]+)\]\(https?:\/\/(?:www\.)?(?:inci|inkee)decoder\.com\/brands\/[^)]*\)/m);
   const pageBrand = brandMatch ? brandMatch[1].replace(/\u200b/g, "").replace(/\s+/g, " ").trim() || null : null;
 
   return {
-    productName, slug, ingredients, tags, source: `https://incidecoder.com/products/${slug}`, imageUrl, sourceQuote,
+    productName, slug, ingredients, tags, source: `https://${/https?:\/\/(?:www\.)?inkeedecoder\.com/i.test(page) ? "inkeedecoder.com" : "incidecoder.com"}/products/${slug}`, imageUrl, sourceQuote,
     sourceQuoteTruncated: quoteFull.length > QUOTE_CAP || windowCut,
     pageTitle: titleMatch ? titleMatch[1].trim() || null : null,
     pageBrand,
   };
 }
 
-const PRODUCT_URL_RE = /^https?:\/\/(?:www\.)?incidecoder\.com\/products\/([a-z0-9-]+)\/?(?:[?#].*)?$/i;
+const PRODUCT_URL_RE = /^https?:\/\/(?:www\.)?(?:inci|inkee)decoder\.com\/products\/([a-z0-9-]+)\/?(?:[?#].*)?$/i;
 
 /** The product slug of an INCIDecoder product URL, or null for any other URL. */
 export function incidecoderProductSlug(url: string): string | null {
@@ -171,7 +171,7 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   if (!search) return empty;
 
   // Candidate products with their display names, from the search results.
-  const raw = [...search.matchAll(/\[([^\]]+)\]\((?:https:\/\/incidecoder\.com)?\/products\/([a-z0-9-]+)\)/gi)]
+  const raw = [...search.matchAll(/\[([^\]]+)\]\((?:https:\/\/(?:www\.)?(?:inci|inkee)decoder\.com)?\/products\/([a-z0-9-]+)\)/gi)]
     .map((m) => ({ name: m[1].replace(/\s+/g, " ").trim(), slug: m[2] }))
     .filter((c) => c.slug !== "create" && c.name && !/^more$/i.test(c.name));
   if (!raw.length) return empty;

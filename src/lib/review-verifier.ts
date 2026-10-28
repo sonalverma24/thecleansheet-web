@@ -60,7 +60,7 @@ export function captureTrustForUrl(url: string | null | undefined): CaptureTrust
   if (!url) return CaptureTrust.AI_TRANSCRIPTION;
   let host = "";
   try { host = new URL(url).hostname; } catch { return CaptureTrust.AI_TRANSCRIPTION; }
-  if (/(?:^|\.)incidecoder\.com$/i.test(host)) return CaptureTrust.REFERENCE_DB;
+  if (/(?:^|\.)(?:inci|inkee)decoder\.com$/i.test(host)) return CaptureTrust.REFERENCE_DB;
   if (RETAILER_HOST_RE.test(`${host}.`)) return CaptureTrust.RETAILER;
   return CaptureTrust.OFFICIAL_PAGE;
 }

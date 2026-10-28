@@ -22,6 +22,8 @@ committed here; it does not record which flags are on in production (those are s
 
 ## Evidence rules
 
+**Ingredient-source policy (28 October 2026):** fresh analyses must check the exact product on the brand website or INKEE Decoder (formerly INCIDecoder). Retailer inputs trigger primary-source lookup; model-generated ingredient lists are not published as INCI. Source URL and quotation are retained. See [the policy](docs/ingredient-sources.md).
+
 **A source-backed list** is defined once, in `src/lib/inci-source-backing.ts`: at least 3 ingredients, captured from a reference database or a brand page
 (capture trust 3 or more), with a non-empty captured quote that was not cut short. It means the list was captured as stated. It does not mean the formula is
 true or current for the product. Everything below reads that one definition:

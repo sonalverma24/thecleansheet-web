@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "docs:analyser": "tsx --tsconfig tsconfig.json scripts/build-analyser-reference.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
@@ -33,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^3.2.7"
   }

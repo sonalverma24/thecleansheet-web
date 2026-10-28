@@ -13,10 +13,10 @@ import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
-import { fetchInciFromProductPage } from "@/lib/inci-from-page";
+import { findBrandInci } from "@/lib/brand-inci";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
-import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
+import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
 import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
 import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -1218,8 +1218,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       capturedPageAt = new Date().toISOString();
       completePageCapture = page.length < 60000 && capturedPageText.length < 60000;
       if (pageName) inci = (await resolveINCI(pageName)).chosen;
-      // INCIDecoder missed it → read the INCI straight off the product page.
-      if (!inci) pageInci = await fetchInciFromProductPage(q);
+      // Retailer pages supply claims, but never the authoritative ingredient list.
+      // Ingredient acquisition below checks the brand site or Decoder instead.
 
       // Brand-published evidence: follow report/study/certificate links and read them.
       const links = evidenceLinksFromMarkdown(page, q);
@@ -1269,12 +1269,24 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     return retried;
   }
 
+  // Always try a primary ingredient source before asking the model to analyse.
+  // Retailer URL slugs often carry a cleaner product identity than marketing-heavy titles.
+  const ingredientQuery = isURL(q) ? productNameHintFromURL(q) || pageName || q : q;
+  if (!inci && ingredientQuery !== pageName) {
+    const resolved = await resolveINCI(ingredientQuery);
+    if (!resolved.ambiguous) inci = resolved.chosen;
+  }
+  const brandHint = ingredientQuery.split(/\s+/)[0] ?? "";
+  if (!inci) {
+    pageInci = await findBrandInci(ingredientQuery, brandHint, isURL(q) ? q : undefined);
+  }
+
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
   // the list read off the brand's product page.
   const groundTruth: INCIResult | null =
     inci ??
     (pageInci
-      ? { productName: pageName ?? q, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null }
+      ? { productName: pageName ?? q, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }
       : null);
   const inciBlock = inciGroundTruthBlock(groundTruth);
   // Anchor the review identity to the resolved product so its name never drifts from
@@ -1303,10 +1315,23 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
       // the text scrape; a vision pass transcribes them so they count as evidence.
       evidenceBlock += await imageEvidenceBlock(q, labelRead);
-    const gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, p);
+    const primaryBlock = pageInci ? inciGroundTruthBlock({ productName: pageName ?? ingredientQuery, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }) : "";
+    let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${primaryBlock}`);
     parsed = parseJSON(gen.text);
     grounding = gen.groundingMetadata;
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
+    // A retailer/name hint may omit a multiword brand. Once the reader identifies
+    // it, make one lookup with that identity and reanalyse against the captured INCI.
+    if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
+      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined);
+      if (pageInci) {
+        const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
+        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${block}`);
+        parsed = parseJSON(gen.text);
+        grounding = gen.groundingMetadata;
+        if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
+      }
+    }
     if (isValidProductReview(parsed)) break;
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
@@ -1416,37 +1441,30 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;
-  // Ground truth for the INCI, best source first: INCIDecoder, then the brand
-  // page we scraped, then whatever the model itself transcribed into its
-  // per-ingredient reads. Anything present means the analyser and scorecard grade
-  // against a real list rather than reporting "INCI not available".
+  // Publish ingredients only from Decoder or the matched brand product page.
+  // The exact captured quotation below anchors the ingredient-dependent tags.
   if (inci) {
     review.inciIngredients = inci.ingredients;
     review.inciSourceUrl = inci.source;
   } else if (pageInci) {
     review.inciIngredients = pageInci.ingredients;
     review.inciSourceUrl = pageInci.source;
-  } else if (!review.inciIngredients?.length && review.ingredientReads?.length) {
-    review.inciIngredients = review.ingredientReads.map((r) => r.name).filter(Boolean);
-  }
-  /* A model-transcribed list can arrive garbled ("Zinc Oxide and Coco-Caprylate",
-     sentence fragments). Repair joined items; if the list is still not credible,
-     drop it so the review reports the INCI as unavailable rather than grading
-     garbage. Lists from INCIDecoder / the brand page are left as scraped. */
-  if (review.inciIngredients?.length && !inci && !pageInci) {
-    const check = sanitizeInciList(review.inciIngredients);
-    if (check.issues.length) console.warn(`[review] INCI sanity (${review.brand} ${review.productName}):`, check.issues.slice(0, 5));
-    review.inciIngredients = check.ok ? check.list : [];
+  } else {
+    // A model-reported list is not primary-source ingredient data. Keep the
+    // source missing rather than displaying an invented or unattributed INCI.
+    review.inciIngredients = [];
+    review.ingredientReads = [];
+    review.inciSourceUrl = undefined;
+    review.inciEvidence = undefined;
   }
 
   /* Evidence envelope: record where the list came from and the source text it was
      read from. Both INCIDecoder and the deterministic brand-page extractor retain
-     source quotes; model-transcribed lists stay unanchored. Recording only: it does
-     not feed the verdict. */
+     source quotes. Tags and source-backed checks read this envelope. */
   if (review.inciIngredients?.length) {
     review.inciEvidence = inci
       ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName, inci.sourceQuoteTruncated === true)
-      : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageName ?? undefined);
+      : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageInci?.pageTitles?.[0] ?? pageName ?? undefined);
   }
 
   // Page checks are generated from a user-supplied product URL only. They remain
