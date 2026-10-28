@@ -5,6 +5,7 @@
    product-page format (ProductScorecardView). Pure mapping, no I/O.
 ──────────────────────────────────────────────────────────────── */
 
+import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import type { ProductReview, DerivedVerdict, ClaimAnalysis } from "@/lib/product-review-types";
 import type { ProductScorecard, Brand, ClaimsCheckItem, ScorePillar } from "@/data/brands/types";
 import { slugify } from "@/lib/verified-store";
@@ -208,6 +209,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
   if (inci.some((i) => FRAGRANCE_RE.test(i.trim()))) warn_badges.push("Fragrance present (parfum)");
 
   // The 7 review dimensions as pillars (dots + label only in the view - no numerics shown).
+  review = reconcileMissingIngredients(review);
   const s = review.scores;
   const pillars: ScorePillar[] = [
     { name: "Public Claim Support", score: s.claimEvidence, max: 20, note: `Strongest public evidence: level ${review.claimSummary?.highestEvidenceLevel ?? 1} of 7. ${review.verdict?.bestThing ?? ""}` },

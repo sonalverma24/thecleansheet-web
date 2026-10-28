@@ -7,7 +7,7 @@ import { generateResilientWithMeta } from "./gemini";
 import { fetchPageMarkdown } from "./scrape";
 import { titleIdentifiesProduct, sanitizeInciList } from "./product-identity";
 
-const compact = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
 
 /** Conservative discovery filter: unknown domain spellings stay unverified. */

@@ -6,6 +6,7 @@
    claim evidence, formula overreach). The LLM researches; code decides.
 ──────────────────────────────────────────────────────────────── */
 
+import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -1188,6 +1189,12 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
 const GROUNDING_RETRIES = 2;
 const RETRY_STARTS_BEFORE_MS = 75_000;
 
+async function getReusableStored(slug: string): Promise<ProductReviewResult | null> {
+  const result = await getStored(slug);
+  if (result?.type === "product-review" && result.review.inciIngredients?.length === 0 && !(result.review.ingredientReads?.length)) return null;
+  return result;
+}
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
   const startedAt = Date.now();
   const q = query.trim();
@@ -1252,7 +1259,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   // ── Repository: same product ⇒ same stored review ──
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
-  const stored = await getStored(slug);
+  const stored = await getReusableStored(slug);
   if (stored) {
     // A nutraceutical or a prescription drug stored before we drew the line: answer "unrated" now, with no image retry and nothing written back.
     const notACosmeticYet = stored.type === "product-review" ? unratedResultOf(stored.review) : null;
@@ -1354,7 +1361,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
 
-  const review = parsed as ProductReview;
+  let review = parsed as ProductReview;
   review.researchLog = researchLogFrom(grounding, new Date().toISOString());
 
   /* Collapse historical brand names to one canonical identity BEFORE the slug is
@@ -1401,7 +1408,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   ]);
   for (const candidate of dedupeSlugs) {
     if (candidate === slug) continue;
-    const existing = await getStored(candidate);
+    const existing = await getReusableStored(candidate);
     if (existing) return servedAsStored(existing);
   }
 
@@ -1426,7 +1433,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       const rinci = rr && rr.type === "product-review"
         ? (rr.review.inciIngredients ?? rr.review.ingredientReads?.map((r) => r.name) ?? []) : [];
       if (isSameProduct(incoming, { productName: String(row.product_name), brand: String(row.brand), inci: rinci })) {
-        const existing = await getStored(rslug);
+        const existing = await getReusableStored(rslug);
         if (existing) return servedAsStored(existing);
       }
     }
@@ -1484,6 +1491,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName, inci.sourceQuoteTruncated === true)
       : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageInci?.pageTitles?.[0] ?? pageName ?? undefined);
   }
+
+  review = reconcileMissingIngredients(review);
 
   // A scan of a bare INCI list (no URL, no product name) has no confirmed product
   // identity, so its review is returned to the user but kept OUT of the public

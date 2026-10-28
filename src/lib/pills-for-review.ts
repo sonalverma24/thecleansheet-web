@@ -1,5 +1,6 @@
 /* A stored review as the pills page needs it: the scorecard product, the brand and the page model. Pure. */
 
+import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import type { DerivedVerdict, ProductReview } from "@/lib/product-review-types";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { buildPillsPage, type PillTone, type StandingView } from "@/lib/pills-page";
@@ -14,6 +15,7 @@ export function standingViewOf(tier: DerivedVerdict["tier"]): StandingView {
 
 /** The page model for a stored review. With `standing`, the page is the same but its take card shows today's standing (ANALYSER_NEW_LAYOUT). */
 export function pillsFor(review: ProductReview, verdict: DerivedVerdict, now: string = new Date().toISOString(), standing?: StandingView) {
+  review = reconcileMissingIngredients(review);
   const mapped = reviewToScorecard(review, verdict);
   return { ...mapped, model: buildPillsPage(review, mapped.product, now, decideReview(review, now), standing) };
 }

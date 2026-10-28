@@ -23,3 +23,12 @@ describe("Decoder domain migration", () => {
     expect(result.chosen?.ingredients).toHaveLength(5);
   });
 });
+
+it('matches an unaccented exact identity without substituting the Soft Creme variant', async () => {
+  vi.mocked(fetchPageMarkdown).mockImplementation(async (url) => url.includes('/search?')
+    ? '[Estée Lauder Revitalizing Supreme+ Youth Power Creme](https://inkeedecoder.com/products/estee-lauder-creme)\n[Estée Lauder Revitalizing Supreme+ Youth Power Soft Creme](https://inkeedecoder.com/products/estee-lauder-soft-creme)'
+    : page('inkeedecoder.com').replaceAll('Plix Pomegranate Youth Renewal Night Cream','Estée Lauder Revitalizing Supreme+ Youth Power Creme'));
+  const result=await resolveINCI('estee lauder revitalizing supreme youth power creme');
+  expect(result.ambiguous).toBe(false);
+  expect(result.chosen?.slug).toBe('estee-lauder-creme');
+});

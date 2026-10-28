@@ -13,7 +13,7 @@ import { canonicalizeBrand } from "@/lib/verified-store";
 const FILLER = new Set(["the", "and", "with", "for", "by", "of", "a", "an", "new", "pa", "plus"]);
 
 const words = (s: string) =>
-  s.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
+  s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim().split(/\s+/).filter(Boolean);
 
 /** Order-insensitive identity tokens for a product name. The brand's own words
     are dropped (a name that repeats the brand must equal one that doesn't) along

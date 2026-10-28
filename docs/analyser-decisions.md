@@ -1,6 +1,12 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-28: Repair accented exact-product lookup and reconcile missing-ingredient statements
+- **Decided by:** the owner, approving this change on 2026-10-28 after reviewing the baseline diff (no quotation recorded).
+- **Reason:** an ASCII retailer name did not exactly match its accented Decoder name, while model text claimed a complete ingredient list despite no retained ingredients.
+- **What it touched:** Unicode-normalised exact product matching; exact matches cannot substitute nearby variants; brand-domain matching recognises accents; ingredient-free saved/fresh analyses show evidence-pending statements rather than full-INCI claims; searches retry explicitly empty saved analyses. The corrected lookup retrieves 57 quoted ingredients for the crème, distinct from Soft Creme.
+- **Undo:** revert the corrective release. Existing rows can be restored from their pre-refresh backups.
+
 ### 2026-10-28: A list that a page shows only in a pop-up is read from the page's own data
 - **Decided by:** the owner: “If a website page shows the ingredient list after opening a pop up, my engine needs to be able to scrape it.”
 - **Reason:** some brand pages (Alteryst was the verified case) draw the full ingredient list in a pop-up from data the page ships itself, while the visible markup holds only the key ingredients or a list cut short. The extractor read the page text only, so those products were held for want of a primary-source list.
