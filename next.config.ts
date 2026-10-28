@@ -68,6 +68,11 @@ const nextConfig: NextConfig = {
       // Retracted duplicate review (doubled brand prefix in the slug) -> the kept review of the same product.
       { source: "/reviews/kay-beauty-kay-beauty-hydra-creme-lipstick", destination: "/analysis/kay-beauty-hydra-creme-lipstick", permanent: true },
       { source: "/reviews/codeskin-ultramatte-mineral-gel-sunscreen-spf-50-pa", destination: "/analysis/codeskin-ultramatte-mineral-gel-sunscreen", permanent: true },
+      // The hand-written catalogue pages (19 brands, 115 products; src/data/brands before 2026-10-28) were removed: they were never run through the analyser.
+      // Their URLs go to the product directory. Temporary (307) for now so the target can be refined per product (for example to /analysis/<slug> once a product
+      // has an analysis); make these permanent (308) after review.
+      { source: "/brands/:brand(minimalist|dot-and-key|kiehls|pilgrim|hyphen|plum|antinorm|simple|mamaearth|codeskin|deconstruct|aqualogica|foxtale|dermaco|lotus-herbals|cerave|dove|himalaya|mcaffeine)", destination: "/brands", permanent: false },
+      { source: "/brands/:brand(minimalist|dot-and-key|kiehls|pilgrim|hyphen|plum|antinorm|simple|mamaearth|codeskin|deconstruct|aqualogica|foxtale|dermaco|lotus-herbals|cerave|dove|himalaya|mcaffeine)/:product", destination: "/brands", permanent: false },
       // The product analysis pages moved from /reviews/<slug> to /analysis/<slug>. Permanent (308) so Google
       // carries the ranking over. The specific merges above come first so they reach the kept page in one hop.
       { source: "/reviews/:slug", destination: "/analysis/:slug", permanent: true },
