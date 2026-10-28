@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { spawn, execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { newestFirst, rerunQuery, validateReplacement, type RerunRow } from "./approved-rerun-policy";
+import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, type RerunRow } from "./approved-rerun-policy";
 import type { ProductReview } from "@/lib/product-review-types";
 
 const argv = process.argv.slice(2);
@@ -113,7 +113,7 @@ if (argv.includes("--child")) {
         if (Date.now() >= state.windowStart + 3600000) { state.windowStart = Date.now(); state.windowCount = 0; }
         const { data: current, error: readError } = await db.from("product_reviews").select("*").eq("product_slug", row.product_slug).maybeSingle();
         if (readError) throw readError;
-        if (!current || current.reviewed_at !== row.reviewed_at) { record({ slug: row.product_slug, outcome: "skipped-concurrent-change", at: new Date().toISOString() }); continue; }
+        if (!current || !sameReviewTime(current.reviewed_at, row.reviewed_at)) { record({ slug: row.product_slug, outcome: "skipped-concurrent-change", at: new Date().toISOString() }); continue; }
         appendFileSync(join(out, "before-each.jsonl"), JSON.stringify(current) + "\n", { mode: 0o600 });
         state.windowCount++; save();
         const oldPill = decideReview(row.result.review!).decision.key;
@@ -156,7 +156,7 @@ if (argv.includes("--child")) {
           if (writeError) throw new Error(`write failed for ${row.product_slug}: ${writeError.message}`);
           if (!saved?.length) { rec.outcome = "skipped-concurrent-change"; break; }
           const { data: verified, error: verifyError } = await db.from("product_reviews").select("result,reviewed_at").eq("product_slug", row.product_slug).single();
-          if (verifyError || verified.reviewed_at !== replacement.reviewed_at || JSON.stringify(verified.result.review.inciIngredients) !== JSON.stringify(fresh.inciIngredients)) throw new Error(`WRITE UNCONFIRMED for ${row.product_slug}; stop and inspect backup/result`);
+          if (verifyError || !sameReviewTime(verified.reviewed_at, replacement.reviewed_at) || JSON.stringify(verified.result.review.inciIngredients) !== JSON.stringify(fresh.inciIngredients)) throw new Error(`WRITE UNCONFIRMED for ${row.product_slug}; stop and inspect backup/result`);
           rec.outcome = "refreshed"; break;
         }
         if (shouldStop()) { console.log(`Stopped before publishing ${row.product_slug}; existing page kept.`); break; }

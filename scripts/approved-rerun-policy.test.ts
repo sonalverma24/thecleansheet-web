@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { makeReview } from "@/lib/review.fixtures";
 import { makeInciEvidence } from "@/lib/review-verifier";
-import { newestFirst, rerunQuery, validateReplacement, type RerunRow } from "./approved-rerun-policy";
+import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, type RerunRow } from "./approved-rerun-policy";
 const review = makeReview({ productName: "Alpha Serum", brand: "Test", inciIngredients: ["Aqua", "Glycerin", "Niacinamide", "Panthenol"], researchLog: { grounded: true, webSearchQueries: ["test"], sourceUris: [], sourceTitles: [], recordedAt: "2026-10-28" } });
 review.inciEvidence = makeInciEvidence("https://inkeedecoder.com/products/test-alpha-serum", "Aqua, Glycerin, Niacinamide, Panthenol", "2026-10-28");
 const row = (slug: string, date: string | null): RerunRow => ({ product_slug: slug, product_name: "Alpha Serum", brand: "Test", reviewed_at: date, result: { type: "product-review", review }, rubric_rev: "r7", tier: "mostly-clean", image_url: null });
@@ -38,6 +38,13 @@ describe("approved catalogue rerun", () => {
     expect(validateReplacement(r, review, "buy-with-caution", "buy-with-caution")).toContain("ingredient-list-shorter");
     r.result.review!.inciEvidence = undefined;
     expect(validateReplacement(r, review, "buy-with-caution", "buy-with-caution")).not.toContain("ingredient-list-shorter");
+  });
+
+  it("confirms timestamps by instant, accepting Postgres timezone formatting and rejecting changed values", () => {
+    expect(sameReviewTime("2026-10-28T07:41:38.370Z", "2026-10-28T07:41:38.37+00:00")).toBe(true);
+    expect(sameReviewTime("2026-10-28T07:41:38.370Z", "2026-10-28T07:41:39.370Z")).toBe(false);
+    expect(sameReviewTime("bad", "bad")).toBe(false);
+    expect(sameReviewTime(null, null)).toBe(true);
   });
 
 });

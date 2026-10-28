@@ -54,3 +54,10 @@ export function validateReplacement(old: RerunRow, fresh: ProductReview, oldPill
   if (oldPill !== "not-enough-info" && newPill === "not-enough-info") errors.push("decision-lost");
   return errors;
 }
+
+/** Postgres returns +00:00 while JavaScript emits Z for the same instant. */
+export function sameReviewTime(a: string | null, b: string | null): boolean {
+  if (a === null || b === null) return a === b;
+  const left = Date.parse(a), right = Date.parse(b);
+  return Number.isFinite(left) && Number.isFinite(right) && left === right;
+}
