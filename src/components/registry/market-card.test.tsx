@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { ReactElement, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ProductScorecard } from "@/data/brands/types";
 import { MARKER_COLOURS, NEUTRAL_COLOURS } from "@/components/scorecards/pill-palette";
+import { track } from "@/lib/analytics";
 import MarketCard, { cardGlanceText } from "./MarketCard";
+
+vi.mock("@/lib/analytics", () => ({ track: vi.fn() }));
 
 const BASE = {
   productName: "Fluid SPF 50", slug: "fluid-spf-50", brand: "Example Co", brandSlug: "example-co", priceRange: "", concern: "", summary: "A one-line takeaway from the analysis.",
@@ -116,5 +120,62 @@ describe("each rating", () => {
     expect(dot(draw({ ...BASE, reviewTier: "can-do-better" })).name).toBe("yellow");
     expect(dot(draw({ ...BASE, reviewTier: "not-recommended" })).name).toBe("red");
     expect(dot(draw({ ...BASE, reviewTier: "not-assessed" })).name).toBe("grey");
+  });
+});
+
+/** Walks the element tree a card returns (it has no hooks, so it can be called as a function) and finds its product link. */
+function productLink(node: ReactNode): ReactElement<{ href: string; onClick?: (e: unknown) => void; onAuxClick?: (e: unknown) => void }> | null {
+  if (!node || typeof node !== "object") return null;
+  if (Array.isArray(node)) {
+    for (const n of node) {
+      const f = productLink(n);
+      if (f) return f;
+    }
+    return null;
+  }
+  const el = node as ReactElement<{ href?: string; children?: ReactNode }>;
+  if (typeof el.props?.href === "string" && el.props.href.startsWith("/")) return el as ReactElement<{ href: string }>;
+  return productLink(el.props?.children);
+}
+const clickEvent = (button = 0) => ({ button, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } });
+
+describe("the card's link under the sign-in gate", () => {
+  const card = (onOpen?: (e: never, href: string) => void) =>
+    MarketCard({ product: BASE, comparing: false, compareFull: false, onCompare: () => {}, onOpen: onOpen as never }) as ReactElement<{ children: ReactNode }>;
+
+  it("draws exactly the same card, with the real href on the link for crawlers", () => {
+    const withGate = renderToStaticMarkup(<MarketCard product={BASE} comparing={false} compareFull={false} onCompare={() => {}} onOpen={() => {}} />);
+    expect(withGate).toBe(draw(BASE));
+    expect(withGate).toContain('href="/analysis/fluid-spf-50"');
+  });
+
+  it("calls onOpen first, with the link's address, and counts the open when nothing stopped it", () => {
+    vi.mocked(track).mockClear();
+    const onOpen = vi.fn();
+    const e = clickEvent();
+    productLink(card(onOpen))!.props.onClick!(e);
+    expect(onOpen).toHaveBeenCalledWith(e, "/analysis/fluid-spf-50");
+    expect(track).toHaveBeenCalledWith("scorecard_opened", { slug: "fluid-spf-50" });
+  });
+
+  it("does not count an open that the gate stopped", () => {
+    vi.mocked(track).mockClear();
+    productLink(card((e) => (e as { preventDefault(): void }).preventDefault()))!.props.onClick!(clickEvent());
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it("is still counted, and still a plain link, with no gate at all", () => {
+    vi.mocked(track).mockClear();
+    productLink(card())!.props.onClick!(clickEvent());
+    expect(track).toHaveBeenCalledWith("scorecard_opened", { slug: "fluid-spf-50" });
+  });
+
+  it("gates a middle-click (new tab) too, but not a right-click", () => {
+    const onOpen = vi.fn();
+    const link = productLink(card(onOpen))!;
+    link.props.onAuxClick!(clickEvent(2));
+    expect(onOpen).not.toHaveBeenCalled();
+    link.props.onAuxClick!(clickEvent(1));
+    expect(onOpen).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SignInGatedLink from "@/components/auth/SignInGatedLink";
 
 export interface IndexGroup {
   label: string;
@@ -11,15 +12,21 @@ export interface IndexGroup {
    (/brands, /ingredients) render their lists client-side or paginate them in
    JS, so their server HTML links to almost nothing. This gives crawlers (and
    no-JS visitors) a complete link path to every detail page. It is a real,
-   visible section, not hidden text. */
+   visible section, not hidden text.
+
+   `gateLinks`: the page's product links ask for a sign-in when clicked (the anchors and hrefs
+   stay in the server HTML), so this list is not a way round a gated product list. Group
+   headings (brand pages) stay plain links. */
 export function CrawlableIndex({
-  id, heading, intro, groups,
+  id, heading, intro, groups, gateLinks = false,
 }: {
   id: string;
   heading: string;
   intro?: string;
   groups: IndexGroup[];
+  gateLinks?: boolean;
 }) {
+  const LinkComponent = gateLinks ? SignInGatedLink : Link;
   return (
     <section id={id} aria-labelledby={`${id}-h`} className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-[#efe9e0]">
       <h2 id={`${id}-h`} className="text-xl sm:text-2xl font-medium text-[#282828] mb-2">{heading}</h2>
@@ -33,9 +40,9 @@ export function CrawlableIndex({
             <ul className="space-y-1">
               {g.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="text-[13px] leading-snug text-[#4a4746] hover:text-[#248179] hover:underline">
+                  <LinkComponent href={l.href} className="text-[13px] leading-snug text-[#4a4746] hover:text-[#248179] hover:underline">
                     {l.text}
-                  </Link>
+                  </LinkComponent>
                 </li>
               ))}
             </ul>
