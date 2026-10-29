@@ -81,7 +81,7 @@ export function Navigation() {
               label="For consumers"
               items={CONSUMER_MENU}
               open={menu === 'consumers'}
-              active={isUnder(['/brands', '/education'])}
+              active={isUnder(['/brands', '/products', '/education'])}
               onToggle={() => setMenu(menu === 'consumers' ? null : 'consumers')}
               onClose={closeMenu}
             />
