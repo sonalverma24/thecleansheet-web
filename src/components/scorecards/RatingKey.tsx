@@ -6,7 +6,7 @@
    very small, not a section to read. Display only. The circles and tints are the same palette as the take card at the top of a product page (pill-palette.ts) and
    the words are the same RATING_KEY the take card prints, so this key and the badge it explains can never disagree.
 
-   Server component. The page that places it supplies the band or section around it.
+   Server component. Only the product analysis page places it (the owner does not want it on the home page); that page supplies the band around it.
 ──────────────────────────────────────────────────────────────── */
 
 import Link from "next/link";

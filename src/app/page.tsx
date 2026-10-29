@@ -6,7 +6,6 @@ import EducationSection from "@/components/home/EducationSection";
 import HomeFAQ from "@/components/home/HomeFAQ";
 import HomeHero from "@/components/home/HomeHero";
 import MoreFromTcs from "@/components/home/MoreFromTcs";
-import { RatingKey } from "@/components/scorecards/RatingKey";
 import Shelf from "@/components/home/Shelf";
 import ThreeWays from "@/components/home/ThreeWays";
 import { buildHomeFaqJsonLd, buildHomeFaqs } from "@/components/home/home-faqs";
@@ -42,9 +41,6 @@ export default async function HomePage() {
       <MoreFromTcs />
       <ClosingCta />
       <HomeFAQ faqs={faqs} />
-      <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 py-8 sm:py-10">
-        <RatingKey />
-      </section>
     </>
   );
 }
