@@ -1,6 +1,12 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-29: The catalogue re-run is resumed against the release that includes changes A, B and C
+- **Decided by:** the owner, on 2026-10-29: asked for the products on the website to be re-run with the new logic, and approved resuming the paused run and trying the held products again.
+- **Reason:** `scripts/rerun-approved.mts` refuses to run unless `src/` matches the approved release tag, and the release of 2026-10-29 (PR #40: changes A, B and C) changed `src/`. Without a new tag the re-run could not use the new logic. Of the 13 products processed before the pause, 9 were held for want of a primary ingredient source, which those changes address.
+- **What it touched:** a new annotated tag `analyser-x1-approved-2026-10-29` at `5fa7da9`; the runner compares against it. The baseline identifier `X1-approved-2026-10-28` and the live `/api/analyser-version` check are unchanged, and the 2026-10-28 tag is kept as the rollback reference. The run resumes in the same output directory at the agreed 20 products per hour; the 9 held records were cleared from its state so those products are tried again (the state and the output directory were copied first). A product is replaced only if the new analysis passes the validation; otherwise its page is kept.
+- **Undo:** create `STOP` in the output directory to stop after the current product; restore any row from its saved pre-run copy; delete the new tag.
+
 ### 2026-10-28: Repair accented exact-product lookup and reconcile missing-ingredient statements
 - **Decided by:** the owner, approving this change on 2026-10-28 after reviewing the baseline diff (no quotation recorded).
 - **Reason:** an ASCII retailer name did not exactly match its accented Decoder name, while model text claimed a complete ingredient list despite no retained ingredients.
