@@ -6,6 +6,7 @@
    claim evidence, formula overreach). The LLM researches; code decides.
 ──────────────────────────────────────────────────────────────── */
 
+import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -13,7 +14,7 @@ import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
-import { findBrandInci } from "@/lib/brand-inci";
+import { defaultBrandInciDeps, findBrandInci } from "@/lib/brand-inci";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
@@ -1179,7 +1180,37 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
   }
 }
 
+/* A model call that came back without grounding (no web search behind it) is asked again, up to this many more times, as the re-runs do (they allow three
+   attempts in all). The shopper never sees this and never sees a failure for it: whatever the last try returns is kept, and an answer that is still without a
+   web search is stored and shown as before, with researchLog.grounded false (the re-runs can replace it later). /api/review is cut off at 180 s and a whole
+   analysis takes 80-106 s, so no retry starts once RETRY_STARTS_BEFORE_MS of the request has gone. */
+const GROUNDING_RETRIES = 2;
+const RETRY_STARTS_BEFORE_MS = 75_000;
+/* A retry is only ever a bonus. It is abandoned, and the answer already in hand is kept, if it throws or is still running this long after the request began,
+   which leaves the rest of the 180 s for scoring and storing. A retry can therefore never turn a usable answer into an error or a timeout. */
+const RETRY_DEADLINE_MS = 140_000;
+
+/** `work`'s result, or null if it throws or has not finished within `ms`. */
+export async function withinMs<T>(work: Promise<T>, ms: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work.catch(() => null),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), Math.max(ms, 0)); }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+async function getReusableStored(slug: string): Promise<ProductReviewResult | null> {
+  const result = await getStored(slug);
+  if (result?.type === "product-review" && result.review.inciIngredients?.length === 0 && !(result.review.ingredientReads?.length)) return null;
+  return result;
+}
+
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
+  const startedAt = Date.now();
   const q = query.trim();
   if (!q) return { type: "error" };
 
@@ -1242,7 +1273,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   // ── Repository: same product ⇒ same stored review ──
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
-  const stored = await getStored(slug);
+  const stored = await getReusableStored(slug);
   if (stored) {
     // A nutraceutical or a prescription drug stored before we drew the line: answer "unrated" now, with no image retry and nothing written back.
     const notACosmeticYet = stored.type === "product-review" ? unratedResultOf(stored.review) : null;
@@ -1316,27 +1347,36 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       // the text scrape; a vision pass transcribes them so they count as evidence.
       evidenceBlock += await imageEvidenceBlock(q, labelRead);
     const primaryBlock = pageInci ? inciGroundTruthBlock({ productName: pageName ?? ingredientQuery, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }) : "";
-    let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${primaryBlock}`);
+    let suffix = primaryBlock;
+    let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
     parsed = parseJSON(gen.text);
     grounding = gen.groundingMetadata;
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
     if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
-      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined);
+      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, { ...defaultBrandInciDeps, askModel: undefined }); // the model was already asked for this product
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
-        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${block}`);
+        suffix = block;
+        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
         parsed = parseJSON(gen.text);
         grounding = gen.groundingMetadata;
         if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
       }
     }
+    // No grounding means the model wrote this without a web search. Ask again (same prompt), and take the new answer only if it is valid and grounded.
+    for (let again = 0; again < GROUNDING_RETRIES && isValidProductReview(parsed) && grounding === null && Date.now() - startedAt < RETRY_STARTS_BEFORE_MS; again++) {
+      const retry = await withinMs(generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`), RETRY_DEADLINE_MS - (Date.now() - startedAt));
+      if (!retry) break; // it failed or ran out of time: keep the answer already in hand
+      const next = parseJSON(retry.text);
+      if (isValidProductReview(next) && retry.groundingMetadata !== null) { parsed = next; grounding = retry.groundingMetadata; }
+    }
     if (isValidProductReview(parsed)) break;
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
 
-  const review = parsed as ProductReview;
+  let review = parsed as ProductReview;
   review.researchLog = researchLogFrom(grounding, new Date().toISOString());
 
   /* Collapse historical brand names to one canonical identity BEFORE the slug is
@@ -1383,7 +1423,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   ]);
   for (const candidate of dedupeSlugs) {
     if (candidate === slug) continue;
-    const existing = await getStored(candidate);
+    const existing = await getReusableStored(candidate);
     if (existing) return servedAsStored(existing);
   }
 
@@ -1408,7 +1448,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       const rinci = rr && rr.type === "product-review"
         ? (rr.review.inciIngredients ?? rr.review.ingredientReads?.map((r) => r.name) ?? []) : [];
       if (isSameProduct(incoming, { productName: String(row.product_name), brand: String(row.brand), inci: rinci })) {
-        const existing = await getStored(rslug);
+        const existing = await getReusableStored(rslug);
         if (existing) return servedAsStored(existing);
       }
     }
@@ -1467,6 +1507,16 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageInci?.pageTitles?.[0] ?? pageName ?? undefined);
   }
 
+  review = reconcileMissingIngredients(review);
+
+  // A scan of a bare INCI list (no URL, no product name) has no confirmed product
+  // identity, so its review is returned to the user but kept OUT of the public
+  // directory - neither the /brands repository grid nor the verified library.
+  const productIdentified = isURL(q)
+    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
+      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
+    : !!inci || !looksLikeInciList(q);
+
   // Page checks are generated from a user-supplied product URL only. They remain
   // separate from score, rubric, and the three-dot outcome.
   if (isURL(q) && capturedPageText && titleIdentifiesProduct(capturedPageTitle, review.brand, review.productName)) {
@@ -1499,14 +1549,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.scores = reconcileReviewScores(review).scores;
 
   const verdict = deriveVerdict(review);
-
-  // A scan of a bare INCI list (no URL, no product name) has no confirmed product
-  // identity, so its review is returned to the user but kept OUT of the public
-  // directory - neither the /brands repository grid nor the verified library.
-  const productIdentified = isURL(q)
-    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
-      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
-    : !!inci || !looksLikeInciList(q);
 
   // A URL that did not establish a product fails closed. A pasted ingredient list has no product
   // by design: it falls through to be returned and cached in-process below, never saved.

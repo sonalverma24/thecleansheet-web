@@ -15,7 +15,7 @@ const h = vi.hoisted(() => {
     apply: () => chain,
   });
   const read: { page: string | null; label: string } = { page: null, label: "" };
-  return { upserts, state, chain, generate: vi.fn(), read };
+  return { upserts, state, chain, generate: vi.fn(), read, brandInci: vi.fn() };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -24,6 +24,7 @@ vi.mock("@/lib/inci-fetch", async (orig) => ({
   ...(await orig<typeof import("@/lib/inci-fetch")>()),
   resolveINCI: async () => ({ chosen: null, distinct: [], ambiguous: false }),
 }));
+vi.mock("@/lib/brand-inci", async (orig) => ({ ...(await orig<typeof import("@/lib/brand-inci")>()), findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
 vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/scrape")>()), fetchPageMarkdown: async () => h.read.page }));
 vi.mock("@/lib/product-image", () => ({
   resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: async () => null, isLiveImage: async () => false,
@@ -39,7 +40,7 @@ import { getRepositoryStats, getUnratedSlugs, listRepositoryCatalogueProducts, l
 const AZELAIC = ["Azelaic Acid", "Benzoic Acid", "Propylene Glycol", "Cetearyl Octanoate", "Purified Water"];
 type Listing = { platform: string; price: string | null; pricePerMl: string | null; note: string | null }[];
 const RX_LISTING: Listing = [{ platform: "Flipkart", price: "Rs.3", pricePerMl: null, note: "Price appears to be an error or placeholder; product listed as 'Prescription Required'." }];
-const model = (over: Parameters<typeof makeReview>[0]) => ({ text: JSON.stringify(makeReview({ brand: "Test Brand", ...over })), groundingMetadata: null });
+const model = (over: Parameters<typeof makeReview>[0]) => ({ text: JSON.stringify(makeReview({ brand: "Test Brand", ...over })), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
 
 beforeEach(() => {
   h.upserts.length = 0;
@@ -47,6 +48,9 @@ beforeEach(() => {
   h.read.page = null;
   h.read.label = "";
   h.generate.mockReset();
+  // A brand-page list the live checks accept, so a cosmetic that is reviewed is also kept.
+  const ingredients = ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"];
+  h.brandInci.mockReset().mockResolvedValue({ ingredients, quote: ingredients.join(", "), source: "https://testbrand.com/products/test", pageTitles: ["Test"] });
 });
 
 describe("runProductReview", () => {

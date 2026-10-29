@@ -156,7 +156,7 @@ export interface INCIResolution {
 
 /** Collapse near-duplicate INCIDecoder entries of one product (e.g. "... Serum" and "... Serum 2"). */
 function normalizeName(name: string): string {
-  return name.toLowerCase().replace(/\s+\d+$/, "").replace(/[^a-z0-9]+/g, " ").trim();
+  return tokens(name.replace(/\s+\d+$/, "")).join(" ");
 }
 
 /** Resolve a free-text query to a single INCIDecoder product, or flag ambiguity.
@@ -232,7 +232,8 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   const inspect: { name: string; slug: string; overlap: number }[] = [];
   for (const slug of top.slugs.slice(0, 2)) inspect.push({ name: top.name, slug, overlap: top.overlap });
   for (const g of ranked) {
-    if (inspect.length >= 3) break;
+    // An exact product identity must never be replaced by a neighbouring variant.
+    if (exact || inspect.length >= 3) break;
     if (g === top) continue;
     if (top.overlap - g.overlap > 0.34) continue;
     inspect.push({ name: g.name, slug: g.slugs[0], overlap: g.overlap });

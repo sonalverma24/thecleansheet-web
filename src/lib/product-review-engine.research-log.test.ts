@@ -27,17 +27,22 @@ vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/s
 vi.mock("@/lib/product-image", () => ({
   resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: (...args: unknown[]) => h.findReviewImage(...args), isLiveImage: async () => false,
 }));
-vi.mock("@/lib/brand-inci", () => ({ findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
+vi.mock("@/lib/brand-inci", async (orig) => ({ ...(await orig<typeof import("@/lib/brand-inci")>()), findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
 vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
-import { deriveVerdict, runProductReview } from "@/lib/product-review-engine";
+import { deriveVerdict, runProductReview, withinMs } from "@/lib/product-review-engine";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { inciGroundTruthBlock } from "@/lib/inci-fetch";
 
 const asModelText = (name: string) => JSON.stringify(makeReview({ productName: name, brand: "Research Log Test Brand" }));
+
+/* A list the live checks accept (a brand's own product page, with its quote), and a model reply with a web search behind it. */
+const BRAND_LIST = ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"];
+const brandPage = (slug: string) => ({ ingredients: BRAND_LIST, quote: BRAND_LIST.join(", "), source: `https://researchlogtestbrand.com/products/${slug}`, pageTitles: [slug] });
+const SEARCHED = { webSearchQueries: ["a query"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] };
 
 beforeEach(() => {
   h.upserts.length = 0;
@@ -49,6 +54,7 @@ beforeEach(() => {
 
 describe("runProductReview: researchLog", () => {
   it("records the queries and sources of the attempt whose output was kept", async () => {
+    h.brandInci.mockResolvedValue(brandPage("alpha-cleanser"));
     h.generate
       .mockResolvedValueOnce({ text: "this is not json", groundingMetadata: { webSearchQueries: ["discarded"], sourceUris: ["https://x/discarded"], sourceTitles: ["x"] } })
       .mockResolvedValueOnce({
@@ -71,19 +77,59 @@ describe("runProductReview: researchLog", () => {
     expect(stored.review.researchLog).toEqual(log);
   });
 
-  it("says plainly when the call that produced the review was not grounded", async () => {
-    h.generate.mockResolvedValueOnce({ text: asModelText("Beta Serum"), groundingMetadata: null });
+  it("asks the model again when its answer had no web search, and still gives the shopper a page (never an error) if every try had none", async () => {
+    h.brandInci.mockResolvedValue(brandPage("beta-serum"));
+    h.generate.mockResolvedValue({ text: asModelText("Beta Serum"), groundingMetadata: null });
     const out = await runProductReview("Beta Serum");
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
+    expect(h.generate).toHaveBeenCalledTimes(3); // the first call and two retries, the same as the re-runs allow
+    expect(h.generate.mock.calls[1]).toEqual(h.generate.mock.calls[0]);
+    expect(out.review.researchLog).toMatchObject({ grounded: false }); // the gap is recorded, so a re-run can replace it later
+    expect(h.upserts).toHaveLength(1);
+  });
+
+  it("keeps the first answer, and shows no error, when the retry throws", async () => {
+    h.brandInci.mockResolvedValue(brandPage("flaky-serum"));
+    h.generate
+      .mockResolvedValueOnce({ text: asModelText("Flaky Serum"), groundingMetadata: null })
+      .mockRejectedValueOnce(new Error("upstream 503"));
+    const out = await runProductReview("Flaky Serum");
+    expect(out.type).toBe("product-review");
+    expect(h.generate).toHaveBeenCalledTimes(2); // the retry was tried once, failed, and no further retry was made
+    expect(h.upserts).toHaveLength(1);
+  });
+
+  it("keeps the answer from a retry that was grounded", async () => {
+    h.brandInci.mockResolvedValue(brandPage("retry-serum"));
+    h.generate
+      .mockResolvedValueOnce({ text: asModelText("Retry Serum"), groundingMetadata: null })
+      .mockResolvedValueOnce({ text: asModelText("Retry Serum"), groundingMetadata: SEARCHED });
+    const out = await runProductReview("Retry Serum");
     if (out.type !== "product-review") throw new Error("expected a review");
-    expect(out.review.researchLog).toMatchObject({ grounded: false, webSearchQueries: [], sourceUris: [], sourceTitles: [] });
+    expect(h.generate).toHaveBeenCalledTimes(2);
+    expect(out.review.researchLog).toMatchObject({ grounded: true, webSearchQueries: ["a query"] });
+    expect(h.upserts).toHaveLength(1);
+  });
+
+  it("does not start a retry once most of the request's time has gone", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      h.brandInci.mockResolvedValue(brandPage("slow-serum"));
+      h.generate.mockImplementation(async () => { vi.setSystemTime(new Date(Date.now() + 80_000)); return { text: asModelText("Slow Serum"), groundingMetadata: null }; });
+      const out = await runProductReview("Slow Serum");
+      expect(out.type).toBe("product-review"); // no retry fits in the time left, and the shopper still gets the page
+      expect(h.generate).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
   });
 
   it("is engine-authored: a researchLog in the model's own JSON is replaced", async () => {
     const forged = { ...JSON.parse(asModelText("Gamma Toner")), researchLog: { grounded: true, webSearchQueries: ["forged"], sourceUris: ["https://forged"], sourceTitles: [], recordedAt: "2001-01-01" } };
-    h.generate.mockResolvedValueOnce({ text: JSON.stringify(forged), groundingMetadata: null });
+    h.brandInci.mockResolvedValue(brandPage("gamma-toner"));
+    h.generate.mockResolvedValueOnce({ text: JSON.stringify(forged), groundingMetadata: SEARCHED });
     const out = await runProductReview("Gamma Toner");
     if (out.type !== "product-review") throw new Error("expected a review");
-    expect(out.review.researchLog).toMatchObject({ grounded: false, webSearchQueries: [] });
+    expect(out.review.researchLog).toMatchObject({ grounded: true, webSearchQueries: ["a query"], sourceUris: ["https://v/1"] });
     expect(out.review.researchLog!.recordedAt).not.toBe("2001-01-01");
   });
 
@@ -124,20 +170,59 @@ describe("primary ingredient sources", () => {
     const ingredients = ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"];
     const quote = ingredients.join(", ");
     h.brandInci.mockResolvedValue({ ingredients, quote, source: "https://researchlogtestbrand.com/products/primary-serum", pageTitles: ["Primary Serum"] });
-    h.generate.mockResolvedValue({ text: asModelText("Primary Serum"), groundingMetadata: null });
+    h.generate.mockResolvedValue({ text: asModelText("Primary Serum"), groundingMetadata: SEARCHED });
     const result = await runProductReview("Primary Serum");
     if (result.type !== "product-review") throw new Error("expected review");
     expect(h.generate.mock.calls[0][1]).toContain(quote);
     expect(result.review.inciIngredients).toEqual(ingredients);
     expect(result.review.inciEvidence).toMatchObject({ sourceUrl: "https://researchlogtestbrand.com/products/primary-serum", quote, captureTrust: 4, matchedTitle: "Primary Serum" });
   });
-  it("does not publish the model's ingredient list when both primary lookups fail", async () => {
-    h.generate.mockResolvedValue({ text: asModelText("Unattributed Serum"), groundingMetadata: null });
+  it("still saves the analysis, with no ingredient list and the gap showing, when both primary lookups fail", async () => {
+    h.generate.mockResolvedValue({ text: asModelText("Unattributed Serum"), groundingMetadata: SEARCHED });
     const result = await runProductReview("Unattributed Serum");
     if (result.type !== "product-review") throw new Error("expected review");
     expect(h.brandInci).toHaveBeenCalled();
     expect(result.review.inciIngredients).toEqual([]);
     expect(result.review.ingredientReads).toEqual([]);
     expect(result.review.inciEvidence).toBeUndefined();
+    expect(h.upserts).toHaveLength(1);
+  });
+
+  it("asks the web-grounded model where the page is on the first lookup only, not again after the brand is known", async () => {
+    h.brandInci.mockResolvedValueOnce(null).mockResolvedValueOnce(brandPage("zeta-serum"));
+    h.generate.mockResolvedValue({ text: asModelText("Zeta Serum"), groundingMetadata: SEARCHED });
+    const result = await runProductReview("Zeta Serum");
+    expect(result.type).toBe("product-review");
+    expect(h.brandInci).toHaveBeenCalledTimes(2);
+    expect(h.brandInci.mock.calls[0]).toHaveLength(3); // default dependencies, which include the model
+    expect(h.brandInci.mock.calls[1][3]).toMatchObject({ askModel: undefined });
+    expect(h.brandInci.mock.calls[1][3].search).toBeTypeOf("function");
+  });
+
+  it("does not hold a bare ingredient list scan to the checks: it is returned and never stored", async () => {
+    h.generate.mockResolvedValue({ text: asModelText("Pasted List Scan"), groundingMetadata: null });
+    const result = await runProductReview("Aqua, Glycerin, Niacinamide, Panthenol, Tocopherol, Phenoxyethanol, Sodium Hyaluronate");
+    expect(result.type).toBe("product-review");
+    expect(h.upserts).toEqual([]);
+  });
+});
+
+describe("withinMs: the bound that stops a retry from costing the shopper an answer", () => {
+  it("returns the result when the work finishes in time, and null when it throws", async () => {
+    expect(await withinMs(Promise.resolve("done"), 1000)).toBe("done");
+    expect(await withinMs(Promise.reject(new Error("boom")), 1000)).toBeNull();
+  });
+
+  it("returns null when the work is still running at the deadline, and leaves no timer behind", async () => {
+    vi.useFakeTimers();
+    try {
+      const pending = withinMs(new Promise<string>(() => { /* never finishes */ }), 5_000);
+      await vi.advanceTimersByTimeAsync(5_001);
+      expect(await pending).toBeNull();
+      expect(vi.getTimerCount()).toBe(0);
+      const quick = withinMs(Promise.resolve("ok"), 5_000);
+      expect(await quick).toBe("ok");
+      expect(vi.getTimerCount()).toBe(0); // cleared once the work won the race
+    } finally { vi.useRealTimers(); }
   });
 });
