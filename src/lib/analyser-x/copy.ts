@@ -91,6 +91,9 @@ const T: Record<string, (p: P) => string> = {
 
   "note.endocrine": (p) => `${s(p.ingredient)}: ${s(p.note)}. Legal at its permitted level.`,
   "note.screen_partial": (p) => `${s(p.n)} of ${s(p.total)} listed ingredients ${Number(p.n) === 1 ? "is" : "are"} not in our reference database (${s(p.names)}), so our screen did not check ${Number(p.n) === 1 ? "it" : "them"}.`,
+  "note.user_percentage": (p) => Number(p.count) > 1
+    ? `${s(p.count)} “% of users” claims come with no test details we could find publicly (sample size, duration, method), for example “${s(p.claim)}”.`
+    : `The “% of users” claim “${s(p.claim)}” comes with no test details we could find publicly (sample size, duration, method).`,
   "note.freshness": (p) => `Evidence last checked${on(p.checkedAt)}. We re-check older analyses.`,
   "note.restricted_unverified": (p) =>
     p.why === "source"

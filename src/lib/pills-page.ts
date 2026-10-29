@@ -26,7 +26,7 @@ import { reviewInciList } from "@/lib/review-inci";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import {
-  ANALYSER_RELEASE, AUTHORITIES, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
+  ANALYSER_RELEASE, AUTHORITIES, MIN_SCREEN_COVERAGE, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
 } from "@/lib/analyser-x";
 
@@ -446,13 +446,17 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   // 1. Ingredient safety: from the decision's own findings.
   const safetyReasons = d.reasons.filter((r) => r.ruleId.startsWith("block.") || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "note.screen_partial" || r.ruleId === "support.safety_clear");
   let safety: { word: string; marker: RowMarker };
+  // "Clear" is a statement about the ingredients the screen checked (decision X42), so an ingredient our reference file does not hold ("Water" for Aqua)
+  // does not make a clear screen Fair. It does once fewer than half the list was checked: the row would then say "Strong" about a list mostly unread.
+  const partial = settled.has("note.screen_partial");
+  const mostlyChecked = d.basis.screenCoverage >= MIN_SCREEN_COVERAGE;
   if ([...settled].some((id) => id.startsWith("block.") && id !== "block.pillars") || d.key === "look-elsewhere") safety = markerRow("red");
   else if ([...settled].some((id) => INGREDIENT_CAUTIONS.has(id))) safety = markerRow("yellow");
-  else if (settled.has("note.screen_partial")) safety = markerRow("yellow");
-  else if (settled.has("support.safety_clear")) safety = markerRow("green");
+  else if (settled.has("support.safety_clear") && (!partial || mostlyChecked)) safety = markerRow("green");
+  else if (partial) safety = markerRow("yellow");
   else safety = NOT_RATED;
   // The row's words leave out the coverage gap ("N of M listed ingredients are not in our reference database"), as the Regulatory check does:
-  // the gap still sets the rating above, caps the pill, lowers the confidence and is listed under Gaps.
+  // the gap lowers the confidence and is listed under Gaps. It sets this row's rating only when fewer than half the list was checked; it never moves the pill.
   const safetyTexts = safetyReasons.filter((r) => r.ruleId !== "note.screen_partial");
   const safetyLine = safety.marker === null ? "We could not complete the ingredient screen." : firstSentence(safetyTexts[0]?.text) || "Ingredient list screened for prohibited and flagged ingredients.";
 
@@ -492,6 +496,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
 const GAP_TEXT: Record<string, (r: { evidence?: { claim?: string } }, d: Decision) => string | null> = {
   "caution.claim_gap": (r) => (r.evidence?.claim ? `A test on the finished product for “${r.evidence.claim}”.` : "A test on the finished product for the main claim."),
   "note.screen_partial": () => "Reference data for every listed ingredient, so our screen covers them all.",
+  "note.user_percentage": (r) => (r.evidence?.claim ? `The test details (sample size, duration, method) behind “${r.evidence.claim}”.` : "The test details behind the “% of users” figures."),
   "caution.list_trust_2": () => "The ingredient list confirmed against the pack or the brand's own page.",
   "caution.catch_all": () => "A full disclosure of the unnamed entry in the ingredient list.",
   "caution.formula": () => "Evidence that the formula delivers what the claims promise.",
@@ -523,7 +528,7 @@ export function gapsOf(d: Decision, product: ProductScorecard, review: ProductRe
     const t = GAP_TEXT[r.ruleId]?.(r, d);
     if (!t) continue;
     // A claim already listed from the claim analysis is not listed again from the decision.
-    if (r.ruleId === "caution.claim_gap" && r.evidence?.claim && [...claimsAlready].some((m) => m.includes(r.evidence!.claim!.toLowerCase().slice(0, 30)))) continue;
+    if ((r.ruleId === "caution.claim_gap" || r.ruleId === "note.user_percentage") && r.evidence?.claim && [...claimsAlready].some((m) => m.includes(r.evidence!.claim!.toLowerCase().slice(0, 30)))) continue;
     out.push(t);
   }
   if (!medicine && d.key !== "not-enough-info") {

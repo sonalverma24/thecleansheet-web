@@ -10,7 +10,7 @@
    Strata run in order: medicinal, block, gap, caution, support, note.
 ──────────────────────────────────────────────────────────────── */
 
-import { ambitionOf, residualRisk, type Residual } from "./ladder";
+import { ambitionOf, isUserPercentage, residualRisk, type Residual } from "./ladder";
 import { claimFlags } from "./claimflags";
 import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
@@ -49,9 +49,10 @@ export function drugActivesIn(inci: string[], productName: string): string[] {
   }).map((d) => d.name);
 }
 
-/** A claim that needs proof on the finished product: performance or clinical wording that is not puffery. */
+/** A claim that needs proof on the finished product: performance or clinical wording that is not puffery. A "% of users" figure does not: it is a gap note
+    (note.user_percentage) and never moves the pill, whether the claim_gap caution or the claims_proportionate support is being asked. */
 export function needsProof(c: ClaimValue): boolean {
-  if (c.emotional || c.corroborated === false) return false;
+  if (c.emotional || c.corroborated === false || isUserPercentage(c.text)) return false;
   const a = ambitionOf(c.text, c.primaryType);
   return a === "performance" || a === "clinical";
 }
@@ -322,6 +323,15 @@ const notes: Rule[] = [
       const s = ctx.screen;
       if (!s || ctx.list.ingredients.length < 3 || s.unresolved.length === 0) return [];
       return [mk(self, { n: s.unresolved.length, total: s.total, recognised: s.recognised, names: s.unresolved.slice(0, 3).join(", ") }, fact(ctx))];
+    },
+  }),
+  rule({
+    // A "% of users" figure says how people felt, not what a test measured, so it never moves the pill (owner decision, 2026-10-29). When no sample size,
+    // duration or method is public for it (below level 6 of the ladder) it is shown and listed under Gaps, and that is all.
+    id: "note.user_percentage", severity: "note", origin: "model", stratum: 60,
+    evaluate: (ctx, self) => {
+      const open = ctx.claims.filter((c) => !c.value.emotional && c.value.corroborated !== false && isUserPercentage(c.value.text) && c.value.evidenceLevel < 6);
+      return open.length ? [mk(self, { claim: open[0].value.text, count: open.length }, open.map((c) => c.fact))] : [];
     },
   }),
   rule({

@@ -109,6 +109,7 @@ support.claims_proportionate: () => "The claims are modest, or the main claims a
 support.formula_sound: () => "The formula and format plausibly deliver the claims."
 note.endocrine: (p) => `${s(p.ingredient)}: ${s(p.note)}. Legal at its permitted level.`
 note.screen_partial: (p) => `${s(p.n)} of ${s(p.total)} listed ingredients ${Number(p.n) === 1 ? "is" : "are"} not in our reference database (${s(p.names)}), so our screen did not check ${Number(p.n) === 1 ? "it" : "them"}.`
+note.user_percentage: (p) => Number(p.count) > 1
 note.freshness: (p) => `Evidence last checked${on(p.checkedAt)}. We re-check older analyses.`
 note.restricted_unverified: (p) =>
 note.framework_differs: (p) => `${s(p.detail)}. We assessed it as a cosmetic.`
@@ -997,17 +998,17 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/adapter.ts` | `f040cbeb559b2aadb365222d9ba40c67697cc2517cf316b4c97e7f36c2bfca3e` |
 | `src/lib/analyser-x/claimflags.ts` | `ecd084f9dfb148039f292d52a4b7aac128043f3317652dcb5f3c24a40445d397` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `8b5c1a7c4e4412daf0efdff541e9a5df13dd06c528fbb761b3fb7c2053a77370` |
+| `src/lib/analyser-x/copy.ts` | `d569fe09f1a852b5fdbff04030822907bff7238379123fcaf51ffeefe12f111d` |
 | `src/lib/analyser-x/decision.ts` | `8eb28d5246f3f1ec02e5983bb905dd034bb047704c6b31b03b774212180e0721` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
-| `src/lib/analyser-x/index.ts` | `280089e6bd56fd909bc6b13ba60683975a129fea88a92c650a965960070aa516` |
+| `src/lib/analyser-x/index.ts` | `52ac4855ed88a19f4e9c4c1f6a4315d532bf2fc9811031b2a17af8e902308346` |
 | `src/lib/analyser-x/invariants.ts` | `983992f6d800368d4a464b499723669d9d8d35774840b844dbf39c79b8615004` |
 | `src/lib/analyser-x/kb.ts` | `83b8b67415017755c0946f60e5ef35be719b824f140491170dd1da3a0283fe9c` |
-| `src/lib/analyser-x/ladder.ts` | `a5f7f37e99fa5b938a9edcc5ac729b2a24e1fc9dbb7f44e0404f0eae1ec491d2` |
+| `src/lib/analyser-x/ladder.ts` | `b3b2d04b9952fd6ec522c50678074034e80c3d3172c42e7dab6946a3e68063c1` |
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
 | `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
-| `src/lib/analyser-x/rules.ts` | `5b6122c3016d31b8f15d9bdd1cc26d6484acdb8116b8ddc8ceb41c419a24fb31` |
+| `src/lib/analyser-x/rules.ts` | `717fe51aa649a475362afc8c320fabc7ded148716a39c804d8384b183ab39712` |
 | `src/lib/analyser-x/screen.ts` | `a12c31d9471c8ebf5dfbc9fe8cb82db228c194e420d5054503b6af6ff1e9c0e8` |
 | `src/lib/analyser-x/test-helpers.ts` | `a4e9a3a459d51da896d2d6d664e218c7c1cf11433ab846750f7d95bc4b381059` |
 | `src/lib/analyser-x/types.ts` | `a35cbb1f20d44af8b7bb33f534fbc23ddddcfa08d082eca754bb026482c9a2ba` |
@@ -1044,7 +1045,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `fd5618ce5e4a693681e35db17446e620d6cebf9bbbb5c1b99bcdaf53e9c320c0` |
+| `src/lib/pills-page.ts` | `f5ad549f822eafca9e00a96f255110a7719e27ed3b15f66768c52955a0962ebd` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `3974a4ef350c84e85d042782afc12b75e650c8775aa731aa9bdd0e579e471767` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
