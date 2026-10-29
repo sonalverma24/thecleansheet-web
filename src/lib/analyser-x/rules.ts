@@ -230,6 +230,19 @@ const cautions: Rule[] = [
     },
   }),
   rule({
+    // The other half of block.contradicted. A block needs a claim whose source quote was verified, and almost no stored claim is (23 of 5,365 on 2026-10-29),
+    // so a "Sulfate-free" or "Synthetic fragrance-free" claim sitting beside Sodium Laureth Sulfate or Fragrance (Parfum) in the product's own list was
+    // invisible to the rating. Unverified, it cannot be a block; it is a caution, and it never says the claim is false, only that it is unchecked beside that entry.
+    id: "caution.free_from_unverified", severity: "caution", origin: "code", needsReliableList: true, stratum: 40,
+    evaluate: (ctx, self) => {
+      if (!ctx.list.reliable) return [];
+      const hits = claimFlags(claimValues(ctx), ctx.list.ingredients).unchecked;
+      if (!hits.length) return [];
+      const claims = [...new Set(hits.map((h) => h.claim))];
+      return [mk(self, { claim: hits[0].claim, ingredient: hits[0].ingredient, count: claims.length, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx, ...ctx.claims.filter((x) => x.value.text === hits[0].claim).map((x) => x.fact)))];
+    },
+  }),
+  rule({
     id: "caution.boundary", severity: "caution", origin: "model", stratum: 40,
     evaluate: (ctx, self) => {
       const b = claimFlags(claimValues(ctx), ctx.list.ingredients).boundary;

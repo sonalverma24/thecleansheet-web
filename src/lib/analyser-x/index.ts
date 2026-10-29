@@ -1,7 +1,7 @@
 /* ────────────────────────────────────────────────────────────────
    Analyser Version X1 · the buying decision, as used by the product page
 
-   The decision core of the Version X1 decision core: the facts, the 34 named rules, the five pills and the reasons behind them.
+   The decision core of the Version X1 decision core: the facts, the 35 named rules, the five pills and the reasons behind them.
    It is pure: no network, no database, no model, no clock (the date is passed in). `decideReview` reads a stored
    ProductReview, so nothing new is written anywhere.
 
