@@ -75,6 +75,10 @@ const T: Record<string, (p: P) => string> = {
   "caution.claim_gap": (p) => Number(p.count) > 1
     ? `${s(p.count)} claims are not backed by a test on this product that we could find publicly, for example “${s(p.claim)}”.`
     : `One claim, “${s(p.claim)}”, is not backed by a test on this product that we could find publicly.`,
+  // Never says the claim is false: it says the claim is unchecked and what the list shows beside it.
+  "caution.free_from_unverified": (p) => Number(p.count) > 1
+    ? `${s(p.count)} “free from” claims are unchecked, and the ingredient list shows entries that may conflict, for example “${s(p.claim)}” beside ${s(p.ingredient)}.`
+    : `The claim “${s(p.claim)}” is unchecked, and the ingredient list shows ${s(p.ingredient)}. Check it against the pack before you rely on it.`,
   "caution.boundary": () => "Some wording goes further than a cosmetic can say in India. Treat it as a cosmetic benefit, not a treatment.",
   "caution.formula": () => "The formula may not deliver everything the claims promise.",
   "caution.list_trust_2": () => "The ingredient list comes from a retailer page only, so check it against the pack.",
