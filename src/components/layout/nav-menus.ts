@@ -5,7 +5,8 @@ import type { NavMenuItem } from './NavMenu';
    join buttons live inside those write-ups. */
 
 export const CONSUMER_MENU: NavMenuItem[] = [
-  { label: 'Browse products', href: '/brands#registry' },
+  { label: 'Browse products', href: '/products#registry' },
+  { label: 'Browse brands', href: '/brands' },
   { label: 'Community', href: '/#community' },
   { label: 'Learn', href: '/education' },
 ];
