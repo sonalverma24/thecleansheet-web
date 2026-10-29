@@ -1,0 +1,374 @@
+{
+  "snapshot_date": "2026-10-29",
+  "notes": "Public, source linked editorial brand intelligence snapshot. Live Supabase rows remain authoritative; product standings come only from the analyser. Reddit themes are qualitative, nonrepresentative examples from linked discussions.",
+  "brand_facts": [
+    {
+      "brand_slug": "anua",
+      "summary": "Korean skincare brand focused on botanical and active ingredient formulations.",
+      "founded_year": null,
+      "headquarters": null,
+      "country_of_origin": "South Korea",
+      "india_presence": null,
+      "global_presence": "Global official online store",
+      "source_url": "https://www.anuausbeauty.com/about/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "bare-anatomy",
+      "summary": "Indian haircare brand in Innovist's personal care portfolio.",
+      "founded_year": 2019,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Marketed in India through Innovist",
+      "global_presence": null,
+      "source_url": "https://innovist.com/pages/bare-anatomy-store",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "be-bodywise",
+      "summary": "Women's wellness and personal care brand operated by Mosaic Wellness.",
+      "founded_year": 2021,
+      "headquarters": "Thane, Maharashtra, India",
+      "country_of_origin": "India",
+      "india_presence": "Available in India",
+      "global_presence": null,
+      "source_url": "https://mosaicwellness.in/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "beauty-of-joseon",
+      "summary": "Korean skincare inspired by traditional Hanbang ingredients.",
+      "founded_year": null,
+      "headquarters": null,
+      "country_of_origin": "South Korea",
+      "india_presence": null,
+      "global_presence": "Global retail presence through the brand's online store",
+      "source_url": "https://beautyofjoseon.com/pages/about-page",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "bioderma",
+      "summary": "French dermatological skincare brand founded by NAOS.",
+      "founded_year": 1977,
+      "headquarters": null,
+      "country_of_origin": "France",
+      "india_presence": "Sold through Bioderma India",
+      "global_presence": "Bioderma is marketed internationally through the NAOS group",
+      "source_url": "https://naos.com/en-IN/who-we-are/our-story",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "cetaphil",
+      "summary": "Sensitive skin focused cleansing and moisturising brand under Galderma.",
+      "founded_year": 1947,
+      "headquarters": null,
+      "country_of_origin": "United States",
+      "india_presence": "Galderma markets Cetaphil in India",
+      "global_presence": "Available in more than 70 countries",
+      "source_url": "https://www.galderma.com/cetaphil",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "codeskin",
+      "summary": "Mumbai skincare brand developed by Oscar Pereira with Effeza Science Labs.",
+      "founded_year": 2024,
+      "headquarters": "Mumbai, Maharashtra, India",
+      "country_of_origin": "India",
+      "india_presence": "Products sold in India through its own online store",
+      "global_presence": null,
+      "source_url": "https://effezascience.com/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "cosrx",
+      "summary": "South Korean skincare brand known for targeted, ingredient focused products.",
+      "founded_year": 2013,
+      "headquarters": null,
+      "country_of_origin": "South Korea",
+      "india_presence": null,
+      "global_presence": "Korean skincare brand with overseas distribution",
+      "source_url": "https://www.cosrx.com/pages/about-us-old",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "dermatouch",
+      "summary": "India focused pharmacy skincare with cleansers, sunscreens and treatments.",
+      "founded_year": null,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Marketed through Indian online and retail channels",
+      "global_presence": null,
+      "source_url": "https://dermatouch.com/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "dot-key",
+      "summary": "Indian skincare brand focused on fruit inspired formulas and everyday routines.",
+      "founded_year": 2018,
+      "headquarters": "Kolkata, West Bengal, India",
+      "country_of_origin": "India",
+      "india_presence": "Operates an India focused online store",
+      "global_presence": null,
+      "source_url": "https://in.linkedin.com/company/dot-key-skincare",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "dove",
+      "summary": "Unilever personal care brand originating with the Dove Beauty Bar.",
+      "founded_year": 1957,
+      "headquarters": null,
+      "country_of_origin": "United States",
+      "india_presence": "Available in India",
+      "global_presence": "International brand marketed across many countries",
+      "source_url": "https://www.unilever.com/news/news-search/2023/behind-the-brand-doves-products-purpose-and-commitment-to-care/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "dr-sheths",
+      "summary": "Indian skincare brand formulated with a legacy of dermatology practice.",
+      "founded_year": 2017,
+      "headquarters": "Mumbai, Maharashtra, India",
+      "country_of_origin": "India",
+      "india_presence": "Marketed in India",
+      "global_presence": null,
+      "source_url": "https://in.linkedin.com/company/drsheths",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "eucerin",
+      "summary": "German dermatological skincare brand within Beiersdorf, with roots in early twentieth century skin science.",
+      "founded_year": null,
+      "headquarters": null,
+      "country_of_origin": "Germany",
+      "india_presence": null,
+      "global_presence": "Sold internationally",
+      "source_url": "https://www.beiersdorf.com/brands/eucerin",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "hyphen",
+      "summary": "Indian skincare brand co founded by Kriti Sanon and PEP Brands founders.",
+      "founded_year": null,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Products marketed in India through Hyphen's online store",
+      "global_presence": null,
+      "source_url": "https://letshyphen.in/pages/about-us",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "kay-beauty",
+      "summary": "Makeup brand launched by Katrina Kaif in partnership with Nykaa.",
+      "founded_year": 2019,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Distributed online and in Indian stores",
+      "global_presence": null,
+      "source_url": "https://www.nykaa.com/media/wysiwyg/2021/Investors-Relations/pdfs/stock-exchange-filling/FSNE%20Press%20Release-%20Kay%20Beauty-11may2022.pdf",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "la-roche-posay",
+      "summary": "French dermatological skincare brand known for sensitive skin and sun protection.",
+      "founded_year": 1975,
+      "headquarters": null,
+      "country_of_origin": "France",
+      "india_presence": null,
+      "global_presence": "Sold in over 60 countries",
+      "source_url": "https://www.laroche-posay.com.au/our-commitments/history.html",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "loreal-paris",
+      "summary": "L’Oréal's international consumer haircare, makeup and skincare brand.",
+      "founded_year": 1909,
+      "headquarters": null,
+      "country_of_origin": "France",
+      "india_presence": "Distributed in India",
+      "global_presence": "International consumer beauty brand",
+      "source_url": "https://www.loreal-paris-me.com/en/our-history",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "mcaffeine",
+      "summary": "Indian caffeine centred personal care brand launched in October 2016.",
+      "founded_year": 2016,
+      "headquarters": "Mumbai, Maharashtra, India",
+      "country_of_origin": "India",
+      "india_presence": "Sold across India",
+      "global_presence": null,
+      "source_url": "https://www.prnewswire.com/in/news-releases/mcaffeine-raises-2-crores-by-adding-a-caffeine-dimension-to-personal-care-607701496.html",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "moxie-beauty",
+      "summary": "Indian haircare brand focused on wavy, curly and frizz prone hair.",
+      "founded_year": 2023,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Made for and marketed in India",
+      "global_presence": null,
+      "source_url": "https://strideventures.global/portfolio/moxie-beauty",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "ponds",
+      "summary": "Long established skincare brand owned by Unilever.",
+      "founded_year": 1846,
+      "headquarters": null,
+      "country_of_origin": "United States",
+      "india_presence": "Marketed in India by Hindustan Unilever",
+      "global_presence": "Present in more than 56 countries",
+      "source_url": "https://www.hul.co.in/brands/beauty-wellbeing/ponds/",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "skininspired",
+      "summary": "Indian science focused skincare by Derma Goodness Pvt Ltd, launched in 2022.",
+      "founded_year": 2022,
+      "headquarters": "Udaipur, Rajasthan, India",
+      "country_of_origin": "India",
+      "india_presence": "Products marketed in India through its own online store",
+      "global_presence": null,
+      "source_url": "https://skininspired.in/pages/about-us",
+      "checked_at": "2026-10-29 10:50:16.98164+00"
+    },
+    {
+      "brand_slug": "the-derma-co",
+      "summary": "Indian active based skincare brand under Honasa Consumer.",
+      "founded_year": 2020,
+      "headquarters": null,
+      "country_of_origin": "India",
+      "india_presence": "Developed and sold in India",
+      "global_presence": null,
+      "source_url": "https://thedermaco.com/pages/about",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    },
+    {
+      "brand_slug": "vaseline",
+      "summary": "Unilever skincare brand originating with Robert Chesebrough's petroleum jelly.",
+      "founded_year": 1870,
+      "headquarters": null,
+      "country_of_origin": "United States",
+      "india_presence": "Available in India",
+      "global_presence": "International skincare brand",
+      "source_url": "https://www.unilever.com/brands/beauty-wellbeing/vaseline/",
+      "checked_at": "2026-10-29 10:53:45.900559+00"
+    }
+  ],
+  "manufacturer_disclosures": [
+    {
+      "brand_slug": "bare-anatomy",
+      "product_slug": "bare-anatomy-advanced-hair-growth-serum-with-redensyl-rosemary-rice-water",
+      "manufacturer_name": "Naturis Cosmetics Pvt. Ltd. (manufacturer B)",
+      "facility_location": "1 EPIP, SIDCO Industrial Complex, Bari Brahmana, Jammu 181133, India",
+      "disclosure_type": "brand",
+      "source_url": "https://innovist.com/products/advanced-hair-growth-serum",
+      "checked_at": "2026-10-29 10:54:10.581758+00"
+    },
+    {
+      "brand_slug": "bare-anatomy",
+      "product_slug": "bare-anatomy-junior-gentle-cleansing-shampoo",
+      "manufacturer_name": "Onesto Labs Private Limited",
+      "facility_location": "Plot No. 309, Sector 06, IMT Manesar, Gurugram, Haryana 122052, India",
+      "disclosure_type": "brand",
+      "source_url": "https://innovist.com/products/junior-gentle-cleansing-kids-shampoo",
+      "checked_at": "2026-10-29 10:54:10.581758+00"
+    },
+    {
+      "brand_slug": "bare-anatomy",
+      "product_slug": "bare-anatomy-advanced-hair-growth-serum-with-redensyl-rosemary-rice-water",
+      "manufacturer_name": "Onesto Labs Private Limited (manufacturer A)",
+      "facility_location": "Plot No. 309, Sector 06, IMT Manesar, Gurugram, Haryana 122052, India",
+      "disclosure_type": "brand",
+      "source_url": "https://innovist.com/products/advanced-hair-growth-serum",
+      "checked_at": "2026-10-29 10:54:10.581758+00"
+    },
+    {
+      "brand_slug": "codeskin",
+      "product_slug": null,
+      "manufacturer_name": "Effeza Science Private Limited",
+      "facility_location": "Mumbai, Maharashtra, India",
+      "disclosure_type": "brand",
+      "source_url": "https://effezascience.com/",
+      "checked_at": "2026-10-29 10:50:33.018809+00"
+    },
+    {
+      "brand_slug": "skininspired",
+      "product_slug": "skininspired-skininspired-hydration-shots-2-hyaluronic-acid-serum-for-face",
+      "manufacturer_name": "Bio Avenues",
+      "facility_location": "D-29, Industrial Focal Point, Dera Bassi, Punjab 140507, India",
+      "disclosure_type": "brand",
+      "source_url": "https://skininspired.in/products/hydration-shots-hyaluronic-acid-serum-50-ml",
+      "checked_at": "2026-10-29 10:50:33.018809+00"
+    }
+  ],
+  "reddit_sentiment": [
+    {
+      "brand_slug": "cetaphil",
+      "standing": "mixed",
+      "discussion_count": 3,
+      "period_start": "2026-08-03",
+      "period_end": "2026-10-23",
+      "checked_at": "2026-10-29 10:51:12.432348+00",
+      "praise_themes": [
+        "Some users described the Gentle Skin Cleanser as a reliable basic cleanser.",
+        "DailyAdvance lotion was included positively in a shared routine."
+      ],
+      "complaint_themes": [
+        "Some users found the cleanser left a lotion-like feel or did not clean sufficiently.",
+        "One long-term user reported dissatisfaction with reformulated cleanser texture and after-feel."
+      ],
+      "source_urls": [
+        "https://www.reddit.com/r/IndianSkincareAddicts/comments/1vemykt/july_empties/",
+        "https://www.reddit.com/r/IndianSkincareAddicts/comments/1wxjzcd/after_lots_of_hit_and_try_reached_to_my_best_one/",
+        "https://www.reddit.com/r/IndianBeautyTalks/comments/1xdfz88/long_term_review_of_nonfoaming_cleansers_cetaphil/"
+      ],
+      "method_notes": "Qualitative review of three public Reddit discussion threads, not a random or representative sample. Comment authors and product experiences are not independently verified. One thread may contain multiple opinions."
+    },
+    {
+      "brand_slug": "moxie-beauty",
+      "standing": "mixed",
+      "discussion_count": 3,
+      "period_start": "2026-02-03",
+      "period_end": "2026-10-09",
+      "checked_at": "2026-10-29 10:51:12.432348+00",
+      "praise_themes": [
+        "Some users reported better wave or curl definition with the conditioner and leave-in products.",
+        "Several users described the formulas as working well for their hair texture."
+      ],
+      "complaint_themes": [
+        "Other users reported increased frizz or a heavy feel with styling products.",
+        "Frequent advertising and product pricing prompted scepticism in some threads."
+      ],
+      "source_urls": [
+        "https://www.reddit.com/r/IndianBeautyTalks/comments/1x1naii/moxie_isnt_that_good/",
+        "https://www.reddit.com/r/curlsofindia_/comments/1quiyem/moxie_hair_products_review_extremely_disappointed/",
+        "https://www.reddit.com/r/indianbeautyhauls/comments/1wciw2l/moxie_beauty_doesnt_work/"
+      ],
+      "method_notes": "Qualitative review of three public Reddit discussion threads, not a random or representative sample. Comment authors and product experiences are not independently verified. One thread may contain multiple opinions."
+    },
+    {
+      "brand_slug": "ponds",
+      "standing": "mixed",
+      "discussion_count": 3,
+      "period_start": "2026-05-22",
+      "period_end": "2026-09-08",
+      "checked_at": "2026-10-29 10:51:12.432348+00",
+      "praise_themes": [
+        "Some users found Pond's moisturisers lightweight, affordable and comfortable.",
+        "Other users reported good results for their combination or oily skin."
+      ],
+      "complaint_themes": [
+        "Some users reported breakouts with moisturisers.",
+        "Users also described heavy fragrance, sheen or sweating after application."
+      ],
+      "source_urls": [
+        "https://www.reddit.com/r/IndianSkincareAddicts/comments/1tkhszi/joy_ultra_light_gel_moisturizer_review/",
+        "https://www.reddit.com/r/IndianBeautyTalks/comments/1vh21o3/can_someone_please_give_me_genuine_review_of/",
+        "https://www.reddit.com/r/indianbeautyyappers/comments/1wak9rq/ponds_super_light_gel_doesnt_work_for_me_is_there/"
+      ],
+      "method_notes": "Qualitative review of three public Reddit discussion threads, not a random or representative sample. Comment authors and product experiences are not independently verified. One thread may contain multiple opinions."
+    }
+  ]
+}
