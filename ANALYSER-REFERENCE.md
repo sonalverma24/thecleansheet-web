@@ -835,6 +835,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-29: A brand page the first lookup was shown is judged again once the brand is known; a field printed as a data dump is read as text
+- **Decided by:** the owner, on 2026-10-29, after a shopper's search for Juicy Chemistry's under-eye cream was saved with no ingredients although the brand's own page lists them. The owner added the Firecrawl key to the production environment and asked for the code change.
+- **Reason:** three separate causes, reproduced one by one. (1) Production had no `FIRECRAWL_API_KEY`, and Google search there is refused, so page discovery returned nothing (fixed by the owner in the environment, not in code). (2) A search typed as a name guesses the brand from its first word, so the brand's own page failed the brand check ("Juicy" against juicychemistry.com): the model proposed exactly the right page and the check threw it away, and the second lookup, once the brand was known, had the model switched off. (3) The page prints its ingredient field as a hidden data dump (`{"type"=>"root", ...}`); the extractor dropped the first entry, glued to the prose before the field, and the last, merged with the footnote line after it, so 12 of 14 came back.
+- **What it touched:** `src/lib/brand-inci.ts` adds `recordCandidates` and `withKnownCandidates`. `src/lib/product-review-engine.ts` remembers every page the first lookup was shown (search results and the model's proposals) and offers them to the second lookup, which judges them again under the brand the model identified. `src/lib/inci-from-page.ts` adds `flattenRichTextDumps`: a rich-text dump is replaced by the text it holds, and each paragraph and the field as a whole are set off by commas, the boundary the list reader already splits on.
+- **Cost:** none. No extra search call and no extra model call; the second lookup re-reads pages already seen.
+- **Not changed:** the brand-domain rule (a page must still sit on the brand's own domain), the product-title match, the captured quotation, the list sanity check, the source policy (brand page or INKEE Decoder), and stored analyses. The Juicy Chemistry page stays as saved until it is refreshed.
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-28: Repair accented exact-product lookup and reconcile missing-ingredient statements
 - **Decided by:** the owner, approving this change on 2026-10-28 after reviewing the baseline diff (no quotation recorded).
 - **Reason:** an ASCII retailer name did not exactly match its accented Decoder name, while model text claimed a complete ingredient list despite no retained ingredients.
@@ -1000,7 +1008,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `388ecc3c10ab9cfa27b7f33be6381c31c70e74e8b5551dd85f88c2a98944064c` |
 | `src/lib/analysis-types.ts` | `5521d764770c99de9a4a8648c6324f7f26c982998f4c813577cfc09c7d05728e` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `e1054516b502e3e45b79f257660f31482ccef4a2e2c086239f7e27198448f37d` |
+| `src/lib/brand-inci.ts` | `ddefac2a3e75d2a27375e77d136ceeb52f07bad3688aa5267e1a032382e926cc` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1013,7 +1021,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `434b11b47ab301e5310e8ff8bb60ef046741f52dc82ae60ad3cf86f1203f6c4c` |
+| `src/lib/inci-from-page.ts` | `d495296032ba2124118e356ff0b061e7746f4502199e3af9cf394554c2cd1311` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
 | `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
@@ -1034,7 +1042,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `b6e3cf9f72194a0c122b2dd5ed1a2fe24752dad68c7f1732907f94332b6735ef` |
+| `src/lib/product-review-engine.ts` | `1ac77f3e8ed72752a44c13be869e264a2a5ee124eef4c331cd1c3e4470fa8b81` |
 | `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |

@@ -63,7 +63,7 @@ export async function searchBrandPages(query: string): Promise<string[]> {
   return [...(page ?? "").matchAll(/\]\((https:\/\/[^\s)]+)\)/g)].map((m) => m[1]);
 }
 
-interface Dependencies {
+export interface Dependencies {
   search: (query: string) => Promise<string[]>;
   read: (url: string) => Promise<PageINCI | null>;
   /** A Decoder product page that a search surfaced. Optional so a caller can supply only search and read. */
@@ -133,6 +133,26 @@ export async function askModelForProductPage(query: string): Promise<string[]> {
 
 /** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, then the grounded model. */
 export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage };
+
+/** Wrap a lookup's dependencies so every URL it was shown (search results and the model's proposals) is remembered in `seen`.
+ *  A search typed as a name can only guess the brand from the first word the shopper wrote, and a brand page such as
+ *  juicychemistry.com fails the brand check for "Juicy". Once the brand is known the same URLs can be judged again with
+ *  `withKnownCandidates`, at no extra search or model cost. */
+export function recordCandidates(deps: Dependencies): { deps: Dependencies; seen: Set<string> } {
+  const seen = new Set<string>();
+  const note = (urls: string[]) => { for (const u of urls) seen.add(u); return urls; };
+  return {
+    seen,
+    deps: { ...deps, search: async (q) => note(await deps.search(q)), askModel: deps.askModel ? async (q) => note(await deps.askModel!(q)) : undefined },
+  };
+}
+
+/** `deps` that also offers the URLs an earlier lookup was shown, ahead of whatever its own search returns. Every candidate
+ *  still has to pass the same brand-domain, product-title, captured-quote and list checks. */
+export function withKnownCandidates(deps: Dependencies, known: Iterable<string>): Dependencies {
+  const urls = [...known];
+  return { ...deps, search: async (q) => [...urls, ...(await deps.search(q).catch(() => [] as string[]))] };
+}
 
 export async function findBrandInci(query: string, brand: string, suppliedUrl?: string, deps: Dependencies = defaultBrandInciDeps): Promise<PageINCI | null> {
   const tried = new Set<string>();

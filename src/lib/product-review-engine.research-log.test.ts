@@ -34,6 +34,7 @@ vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import(
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
 import { deriveVerdict, runProductReview, withinMs } from "@/lib/product-review-engine";
+import { defaultBrandInciDeps } from "@/lib/brand-inci";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { inciGroundTruthBlock } from "@/lib/inci-fetch";
 
@@ -194,9 +195,26 @@ describe("primary ingredient sources", () => {
     const result = await runProductReview("Zeta Serum");
     expect(result.type).toBe("product-review");
     expect(h.brandInci).toHaveBeenCalledTimes(2);
-    expect(h.brandInci.mock.calls[0]).toHaveLength(3); // default dependencies, which include the model
+    expect(h.brandInci.mock.calls[0][3].askModel).toBeTypeOf("function"); // the first lookup keeps the model fallback
     expect(h.brandInci.mock.calls[1][3]).toMatchObject({ askModel: undefined });
     expect(h.brandInci.mock.calls[1][3].search).toBeTypeOf("function");
+  });
+
+  it("offers the second lookup every page the first one was shown, so a brand page the first-word guess refused is judged again", async () => {
+    const shown = "https://shownbrand.com/products/zeta-serum";
+    const original = { search: defaultBrandInciDeps.search, askModel: defaultBrandInciDeps.askModel };
+    defaultBrandInciDeps.search = async () => [];
+    defaultBrandInciDeps.askModel = async () => [shown];
+    try {
+      h.brandInci
+        .mockImplementationOnce(async (_query: string, _brand: string, _url: string | undefined, deps: { askModel?: (q: string) => Promise<string[]> }) => { await deps.askModel?.("zeta serum"); return null; })
+        .mockResolvedValueOnce(brandPage("zeta-serum"));
+      h.generate.mockResolvedValue({ text: asModelText("Zeta Serum"), groundingMetadata: SEARCHED });
+      const result = await runProductReview("Zeta Serum");
+      expect(result.type).toBe("product-review");
+      expect(h.brandInci).toHaveBeenCalledTimes(2);
+      expect(await h.brandInci.mock.calls[1][3].search("zeta serum")).toEqual([shown]);
+    } finally { Object.assign(defaultBrandInciDeps, original); }
   });
 
   it("does not hold a bare ingredient list scan to the checks: it is returned and never stored", async () => {

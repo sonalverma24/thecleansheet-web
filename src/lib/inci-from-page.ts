@@ -52,9 +52,59 @@ async function fetchRawHtml(url: string): Promise<string | null> {
   }
 }
 
+/* Some storefronts (Shopify rich-text fields) print a field into the page as a data dump rather than as markup, often in a
+   hidden element: {"type"=>"root", "children"=>[{"type"=>"paragraph", "children"=>[{"type"=>"text", "value"=>"Aqua, ..."}]}]}
+   (Ruby style) or the same with colons (JSON). Left as it is, the dump's punctuation is glued to the first and last entries
+   of the list inside it, those fail as ingredient names and are dropped, and the list comes back short. Each dump is replaced
+   by the text it holds. Every paragraph, and the field as a whole, is set off by commas, the one boundary the list reader splits on:
+   prose before the field can then no longer swallow its first entry, and a footnote line after it ("*Ingredient from Organic
+   Farming") can no longer swallow its last. */
+const RICH_TEXT_ROOT = /\{\s*"type"\s*(?:=>|:)\s*"root"/g;
+const RICH_TEXT_BLOCK = /"type"\s*(?:=>|:)\s*"(?:paragraph|heading|list-item)"/;
+const RICH_TEXT_VALUE = /"value"\s*(?:=>|:)\s*"((?:[^"\\]|\\.)*)"/g;
+
+/** Index just past the brace that closes the object starting at `start`, or -1 if it never closes. Braces inside quoted strings do not count. */
+function endOfObject(text: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) { if (c === "\\") i++; else if (c === '"') inString = false; continue; }
+    if (c === '"') inString = true;
+    else if (c === "{") depth++;
+    else if (c === "}" && --depth === 0) return i + 1;
+  }
+  return -1;
+}
+
+function textOfRichText(dump: string): string {
+  const unescape = (v: string) => v
+    .replace(/\\u([0-9a-f]{4})/gi, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/\\([\\"/])/g, "$1")
+    .replace(/\\[nrt]/g, " ");
+  return dump.split(RICH_TEXT_BLOCK).slice(1)
+    .map((block) => [...block.matchAll(RICH_TEXT_VALUE)].map((m) => unescape(m[1])).join(""))
+    .filter((line) => line.trim())
+    .join(" , ");
+}
+
+export function flattenRichTextDumps(html: string): string {
+  let out = "";
+  let from = 0;
+  RICH_TEXT_ROOT.lastIndex = 0;
+  for (let m = RICH_TEXT_ROOT.exec(html); m; m = RICH_TEXT_ROOT.exec(html)) {
+    const end = endOfObject(html, m.index);
+    if (end < 0) break; // cut off: leave the rest as it is
+    out += `${html.slice(from, m.index)} , ${textOfRichText(html.slice(m.index, end))} , `;
+    from = end;
+    RICH_TEXT_ROOT.lastIndex = end;
+  }
+  return out + html.slice(from);
+}
+
 /** HTML → flat text, keeping ingredient punctuation (/, -, parentheses, commas). */
-function stripTags(html: string): string {
-  return html
+function stripTags(rawHtml: string): string {
+  return flattenRichTextDumps(rawHtml)
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
