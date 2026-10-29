@@ -54,14 +54,17 @@ alter table public.brand_manufacturer_records enable row level security;
 alter table public.brand_reddit_sentiment enable row level security;
 
 -- Only published editorial entries are accessible publicly.
+drop policy if exists "Anyone can read published brand facts" on public.brand_intelligence;
 create policy "Anyone can read published brand facts"
 on public.brand_intelligence for select to anon, authenticated
 using (is_published = true);
 
+drop policy if exists "Anyone can read published manufacturer disclosures" on public.brand_manufacturer_records;
 create policy "Anyone can read published manufacturer disclosures"
 on public.brand_manufacturer_records for select to anon, authenticated
 using (is_published = true);
 
+drop policy if exists "Anyone can read published sentiment summaries" on public.brand_reddit_sentiment;
 create policy "Anyone can read published sentiment summaries"
 on public.brand_reddit_sentiment for select to anon, authenticated
 using (is_published = true);
