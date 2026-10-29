@@ -49,3 +49,15 @@ export const ratingName = (marker: MarkerName | null): "green" | "yellow" | "red
 
 /** The words beside a marker on a row of the detail (never the colour alone). */
 export const MARKER_WORD: Record<MarkerName, string> = { green: "Strong", yellow: "Fair", red: "Concern" };
+
+/** The key to the four ratings, in the owner's words (design shared 2026-10-29). The take card prints the name and meaning of its own colour; the Rating Key
+    card prints all four. Grey is the absence of a rating, never a verdict, and the key's footnote says so. */
+export interface RatingKeyEntry { key: "green" | "yellow" | "red" | "grey"; marker: MarkerName | null; name: string; meaning: string }
+export const RATING_KEY: readonly RatingKeyEntry[] = [
+  { key: "green", marker: "green", name: "Green", meaning: "Meets our standards with no major concerns." },
+  { key: "yellow", marker: "yellow", name: "Yellow", meaning: "Some concerns found. Review findings before purchase." },
+  { key: "red", marker: "red", name: "Red", meaning: "Major concerns identified. Not recommended." },
+  { key: "grey", marker: null, name: "Grey", meaning: "Not rated. We haven’t assigned a rating yet." },
+];
+export const ratingKeyOf = (marker: MarkerName | null): RatingKeyEntry => RATING_KEY.find((k) => k.key === ratingName(marker)) as RatingKeyEntry;
+export const RATING_KEY_FOOTNOTE = "Grey means we haven’t assigned a rating. It does not mean the product is unsafe.";

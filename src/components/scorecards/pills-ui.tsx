@@ -7,23 +7,26 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
-import { MARKER_COLOURS, NEUTRAL_COLOURS, type MarkerName } from "./pill-palette";
+import { MARKER_COLOURS, NEUTRAL_COLOURS, ratingKeyOf, type MarkerName } from "./pill-palette";
 import { RatingDot } from "./RatingDot";
 import "./pills-badge.css";
 import "./pills-page.css";
 
-/** The take: one rating circle (green, yellow, red, or grey when we could not rate it) and its name. No verdict word and no confidence meter: the colour
-    is the whole of it. A screen reader says only the colour. */
+/** The take: one rating circle (green, yellow, red, or grey when we could not rate it), its colour's name and what that colour means, in the owner's words
+    (RATING_KEY). No pill name, no old standing and no confidence meter: the colour is the whole of the decision. A screen reader hears the colour once, from
+    the circle. */
 export function PillTake({ marker, className }: { marker: MarkerName | null; className?: string }) {
   const p = marker ? MARKER_COLOURS[marker] : NEUTRAL_COLOURS;
   const vars = { "--cs-ink": p.ink, "--cs-soft": p.soft, "--cs-line": p.line, "--cs-eyebrow": p.eyebrow, "--cs-shadow": p.shadow } as CSSProperties;
+  const rating = ratingKeyOf(marker);
   return (
     <aside aria-label="The Clean Sheet rating" className={`cs-verdict-wrap${className ? ` ${className}` : ""}`}>
       <div className="cs-verdict cs-shine" style={vars} data-marker={marker ?? "none"}>
         <RatingDot marker={marker} size={34} className="cs-verdict__dot" />
         <span className="cs-verdict__body">
           <span className="cs-verdict__eyebrow">The Clean Sheet rating</span>
-          <span className="cs-verdict__key">Green, yellow or red. Grey means not rated.</span>
+          <span aria-hidden className="cs-verdict__name">{rating.name}</span>
+          <span className="cs-verdict__key">{rating.meaning}</span>
         </span>
       </div>
     </aside>
