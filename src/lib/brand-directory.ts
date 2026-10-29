@@ -151,13 +151,13 @@ export async function getBrandDirectory(): Promise<BrandDirectoryEntry[]> {
     const key = brandSlug(String(row.name ?? ""));
     if (key) fallbackBySlug.set(key, row);
   }
-  const intelligenceBySlug = new Map(intelligence.map((row) => [brandSlug(String(row.brand_slug ?? "")), row]));
+  const intelligenceBySlug = new Map<string, Row>(intelligence.map((row): [string, Row] => [brandSlug(String(row.brand_slug ?? "")), row]));
 
   for (const entry of bySlug.values()) {
     const fallback = fallbackBySlug.get(entry.slug);
     const facts = intelligenceBySlug.get(entry.slug);
     entry.description = optionalText(facts?.summary) ?? optionalText(fallback?.description) ?? optionalText(fallback?.tagline);
-    entry.founded = optionalText(facts?.founded_year) ?? optionalText(fallback?.founded);
+    entry.founded = facts?.founded_year != null ? String(facts.founded_year) : optionalText(fallback?.founded);
     entry.headquarters = optionalText(fallback?.headquarters) ?? optionalText(fallback?.headquarters);
     entry.website = safeUrl(fallback?.website_url);
     entry.countryOfOrigin = optionalText(facts?.country_of_origin);
