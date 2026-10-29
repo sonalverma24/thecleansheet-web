@@ -153,6 +153,7 @@ export default async function BrandsPage() {
         heading="All analysed brands and products"
         intro="Every product The Clean Sheet has analysed, listed by brand."
         groups={indexGroups}
+        gateLinks
       />
     </div>
   );
