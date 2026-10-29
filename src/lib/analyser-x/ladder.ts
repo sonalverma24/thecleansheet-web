@@ -95,7 +95,12 @@ export type Residual = "low" | "medium" | "high" | "very-high";
 /* Clinical ambition is a claim of OUTCOME proven by a study. "Dermatologist tested" or "clinically tested on 40
    people" states that a test happened, which a finished-product test (level 4) supports; it does not claim a
    proven result, so it is not clinical-tier. */
-const CLINICAL_RE = /clinically (?:proven|shown|demonstrated|proved)|clinical (?:study|trial|results?)|proven (?:to|results?)|\b\d+\s*%\s*(?:less|more|reduction|reduced|improvement|increase|of (?:users|participants|people))/i;
+const CLINICAL_RE = /clinically (?:proven|shown|demonstrated|proved)|clinical (?:study|trial|results?)|proven (?:to|results?)|\b\d+\s*%\s*(?:less|more|reduction|reduced|improvement|increase|of participants)/i;
+/** "95% of users felt ...": how people said they felt, a survey figure and not a measured result. It is not held to the clinical bar and never moves the
+    pill (owner decision, 2026-10-29); the missing test details are listed as a gap instead (note.user_percentage). "Participants" stay clinical wording, as
+    does a figure that also says "clinically proven" or "N% reduction". */
+const USER_PERCENT_RE = /\b\d{1,3}(?:\.\d+)?\s*%\s*of\s+(?:the\s+)?(?:users|consumers|customers|people)\b/i;
+export const isUserPercentage = (text: string): boolean => USER_PERCENT_RE.test(text) && !CLINICAL_RE.test(text);
 const PERFORMANCE_RE = /\b(fades?|reduces?|repairs?|treats?|clears?|controls?|prevents?|minimi[sz]es?|lightens?|tightens?|strengthens?)\b|dark spots?|acne|pigmentation|wrinkles?|hair fall|dandruff|pores?/i;
 const COSMETIC_RE = /\b(glow|radian\w*|smooth\w*|soft\w*|hydrat\w*|brighten\w*|plump\w*|firm\w*|shine|shiny|supple)\b/i;
 

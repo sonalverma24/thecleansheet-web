@@ -442,16 +442,49 @@ describe("The detail block leaves out the coverage gap but keeps it in the logic
     expect(gap.gaps.join(" ")).toMatch(/Reference data for every listed ingredient/);
   });
 
-  it("an ingredient list that is only partly covered is still rated below a fully checked one", () => {
-    const full = page(SAMPLE_EXAMPLE_MINERAL_SUNSCREEN).model.details!.find((d) => d.title === "Ingredient safety")!;
-    const part = gap.details!.find((d) => d.title === "Ingredient safety")!;
-    expect(full.rating.marker).toBe("green");
-    expect(part.rating.marker).toBe("yellow");
+  it("a clear screen stays green when most of the list was checked: an ingredient we hold no row for does not make it Fair", () => {
+    // 4 of the 7 ingredients are held (57%), nothing checked is flagged.
+    const safety = gap.details!.find((d) => d.title === "Ingredient safety")!;
+    expect(gap.decision.reasons.map((r) => r.ruleId)).toContain("note.screen_partial");
+    expect(safety.rating).toEqual({ word: "Strong", marker: "green" });
+  });
+
+  it("but not when fewer than half the list was checked: the row stays Fair, as the confidence stays Low", () => {
+    // 4 of the 9 ingredients are held (44%).
+    const mostlyUnread = page(rv({ productName: "Fluid SPF 50", category: "Sunscreen", inciIngredients: [...BASE, "Zorbaflux Glycoside", "Quillian Extract", "Parfum", "Brenthol Ester", "Vantrix Gum"] })).model;
+    const safety = mostlyUnread.details!.find((d) => d.title === "Ingredient safety")!;
+    expect(safety.rating).toEqual({ word: "Fair", marker: "yellow" });
+    expect(mostlyUnread.take.confidence.level).toBe("low");
+  });
+
+  it("the coverage sentence stays out of the row either way: it is in the confidence and under Gaps", () => {
+    const safety = gap.details!.find((d) => d.title === "Ingredient safety")!;
+    expect([safety.oneLiner, ...safety.body].join(" ")).not.toMatch(/reference (data|database)|not in our/i);
+    expect(gap.gaps.join(" ")).toMatch(/Reference data for every listed ingredient/);
   });
 
   it("a real finding is still shown: a prohibited ingredient leads the row", () => {
     const bad = page(SAMPLE_EXAMPLE_PROHIBITED).model.details!.find((d) => d.title === "Ingredient safety")!;
     expect(bad.rating.marker).toBe("red");
     expect(bad.oneLiner).toMatch(/Formaldehyde is prohibited/);
+  });
+});
+
+describe("a % of users figure is a gap note, not a reason to buy with caution (owner decision, 2026-10-29)", () => {
+  const hero = claimOf({ text: "Brightens skin", types: ["appearance"], primaryType: "appearance", evidenceLevel: 6 });
+  const survey = claimOf({ text: "95% of users felt the product gently cleansed their skin.", types: ["clinical", "time-bound"], primaryType: "clinical", evidenceLevel: 4 });
+  const base = (claims: ReturnType<typeof claimOf>[]) => page(rv({ productName: "Gentle Cleanser", category: "Face Cleanser", inciIngredients: BASE, claimMap: claims })).model;
+
+  it("leaves the pill where it was without the figure", () => {
+    expect(base([hero, survey]).pill).toEqual(base([hero]).pill);
+  });
+
+  it("lists the missing test details under Gaps, naming the claim", () => {
+    expect(base([hero, survey]).gaps).toContain("The test details (sample size, duration, method) behind “95% of users felt the product gently cleansed their skin.”.");
+  });
+
+  it("lists nothing when the test details are public", () => {
+    const detailed = claimOf({ ...survey, evidenceLevel: 6 });
+    expect(base([hero, detailed]).gaps.join(" ")).not.toMatch(/95% of users/);
   });
 });

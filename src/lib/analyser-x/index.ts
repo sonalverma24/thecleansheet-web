@@ -14,7 +14,7 @@ export { decideReview } from "./adapter";
 export { benchmarkPanel, type BenchmarkPanel } from "./panel";
 export { AUTHORITIES, AUTHORITY_LABEL, AUTHORITY_SHORT, shortList } from "./regulatory";
 export { PILLS, sourceName } from "./copy";
-export { STALE_DAYS } from "./kb";
+export { STALE_DAYS, MIN_SCREEN_COVERAGE } from "./kb";
 export type { Authority, Decision, DecisionKey, DecisionReason } from "./types";
 
 export { ANALYSER_RELEASE, ANALYSER_METHOD_VERSION } from "./version";
