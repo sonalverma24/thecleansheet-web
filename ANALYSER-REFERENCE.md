@@ -835,6 +835,13 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-29: The rating on a product page names its colour, and the page carries a key to the four ratings
+- **Decided by:** the owner, on 2026-10-29, by sharing a design called "The Clean Sheet Rating" (four colour tiles with a one-line meaning each) and asking for it to replace the ratings badge and to be added as a section. They then said the first attempt, on the old standing-based page, was the wrong page and asked for it on the latest X1 output. No reason beyond the design was given.
+- **Reason:** none recorded in the owner's words. The design reads: Green "Meets our standards with no major concerns.", Yellow "Some concerns found. Review findings before purchase.", Red "Major concerns identified. Not recommended.", Grey "Not rated. We haven't assigned a rating yet." Footnote: "Grey means we haven't assigned a rating. It does not mean the product is unsafe." Link: "How our ratings work" (the owner later replaced the words with "Want to read about our standard?").
+- **What it touched (display only):** the take card at the top of the X1 product page (`PillTake` in `src/components/scorecards/pills-ui.tsx`, `pills-badge.css`) now prints its colour's name and that colour's meaning beside the circle. Before, it printed the circle and the line "Green, yellow or red. Grey means not rated." and no name. A new key card, `src/components/scorecards/RatingKey.tsx`, the owner's design set very small (small print, not a section to read), sits at the very end of every product analysis page (just above the closing note), and nowhere else (the owner said it is not wanted on the home page); its link reads "Want to read about our standard?" and goes to `/standard`. The owner asked for the small size, the end placement and that link text after first seeing a large card in the middle of the page, and later said it is not required on the home page. The words live once, in `RATING_KEY` in `src/components/scorecards/pill-palette.ts`, so the badge and the key cannot disagree. `RatingDot` gained a `decorative` option so a circle beside its own name is not read twice.
+- **Not changed:** which colour a product gets. The decision core, the pill for each product, the pill-to-colour mapping, the circle colours (the X1 palette, not the teal in the shared mock), the page's title, description and structured data, and every stored analysis. The five pill names, the old standing names and any confidence figure are still not drawn on the page. The old standing-based product page, its badge and the analyser's standing names are untouched. The owner's own Red line contains the words "Not recommended".
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-29: A brand page the first lookup was shown is judged again once the brand is known; a field printed as a data dump is read as text
 - **Decided by:** the owner, on 2026-10-29, after a shopper's search for Juicy Chemistry's under-eye cream was saved with no ingredients although the brand's own page lists them. The owner added the Firecrawl key to the production environment and asked for the code change.
 - **Reason:** three separate causes, reproduced one by one. (1) Production had no `FIRECRAWL_API_KEY`, and Google search there is refused, so page discovery returned nothing (fixed by the owner in the environment, not in code). (2) A search typed as a name guesses the brand from its first word, so the brand's own page failed the brand check ("Juicy" against juicychemistry.com): the model proposed exactly the right page and the check threw it away, and the second lookup, once the brand was known, had the model switched off. (3) The page prints its ingredient field as a hidden data dump (`{"type"=>"root", ...}`); the extractor dropped the first entry, glued to the prose before the field, and the last, merged with the footnote line after it, so 12 of 14 came back.
@@ -956,12 +963,13 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/NoResultsCard.tsx` | `77ee1bd923ed3c7be68e21a9e6642d0e098d0141a7a2ae3a80881079dff11602` |
 | `src/components/scorecards/OpenDetailsLink.tsx` | `99f31a3a4072aeff53ba15c160a8f3f6a5e8e58cea46934013c8e9c89b50d53c` |
 | `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
-| `src/components/scorecards/PillsPage.tsx` | `2f187faf035550622e478af5fbd6ab111ec31abea2e52f83049766f170af514e` |
+| `src/components/scorecards/PillsPage.tsx` | `e3fc7e7aec579e9991f531cdd484cc324b2d7423042d93d3232abd89a455ce26` |
 | `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
 | `src/components/scorecards/ProductHero.tsx` | `17c0ae64d4adc5cfb097e29060224d3887f22ed2315d7e945651d17978537aa9` |
 | `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
 | `src/components/scorecards/ProductScorecardView.tsx` | `ab0d898c8b1a58fecb961fb4e142ffb46d27d07398f97db8d208c7389758a0d6` |
-| `src/components/scorecards/RatingDot.tsx` | `c1661417c465b0f5a5df7034e2752f7056aa8755092f0250937f9415b12f9f3f` |
+| `src/components/scorecards/RatingDot.tsx` | `38db0a7ece065f964f9c9919171b5b3ae794e6c58dea91999136191301cd02d1` |
+| `src/components/scorecards/RatingKey.tsx` | `7b4066f9a080e9d74b2f6c1ca260c2848749bc9054fd4218f505a786c0832014` |
 | `src/components/scorecards/ReviewRunStatus.tsx` | `95d31a0a4d27e50d3019edfbc4642be92586bd3c547a1d1ebeea014bbd723d3e` |
 | `src/components/scorecards/ScoreRing.tsx` | `70d2f9e5c4e91493297c33f2f1991e5ea79a8992d4ade6e11d90febc319eefe5` |
 | `src/components/scorecards/ScorecardBadge.tsx` | `ac3beafbed835890200c81e3d33fe0f6acf79436793e57cf774b1478771caade` |
@@ -969,11 +977,11 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
 | `src/components/scorecards/UnratedNotice.tsx` | `e37cfac4ab9b9c55085cfabc16e72ce91004e9cf967eedcfad7ef4dbf1fc7b41` |
 | `src/components/scorecards/UnratedProductPage.tsx` | `d5ab7b5e6b748a80e5706b418340f4bc56b12c88d1011c02c8d9ade0fc295f93` |
-| `src/components/scorecards/pill-palette.ts` | `e5dc6b716e3f5d85bd8614ac90c04f1255de52c0271064a0fd69082704636b2d` |
+| `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
-| `src/components/scorecards/pills-badge.css` | `52277af6abe1e3d553b885d64b52e0608185e92635e8215934fbd2b8054309dd` |
+| `src/components/scorecards/pills-badge.css` | `a9d9db5c86be719ca43270e6a7ff741ae9f2b36e4b53e5f0c59a234a2ccdc592` |
 | `src/components/scorecards/pills-page.css` | `8731d597e3e53f6b7895cba985ce67ec04e721adc909f8adc31ddcd4add494b0` |
-| `src/components/scorecards/pills-ui.tsx` | `6b170ab424325a2983fc9e9f06f6b3ece3a248d7e36e14dff165d5edcc1b65ec` |
+| `src/components/scorecards/pills-ui.tsx` | `c2d9b7b062e2c571f1fb286fe6f0a3b87760b36cafb4ec8dc7b0aeb7d47beecc` |
 | `src/components/scorecards/useReviewRunner.ts` | `d57c76f9ab6d14c5104bd0707635a4f728ceb11b5063b4f9cacbda25313f535b` |
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
 | `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |

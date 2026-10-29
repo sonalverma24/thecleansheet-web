@@ -20,6 +20,7 @@ import type { Authority } from "@/lib/analyser-x";
 import { isNotHeldNote, type PillsPageModel } from "@/lib/pills-page";
 import { PillsHero } from "./PillsHero";
 import { Band, Chev } from "./pills-ui";
+import { RatingKey } from "./RatingKey";
 import { MARKER_COLOURS, type MarkerName } from "./pill-palette";
 
 const FLAG_DOT: Record<"ok" | "warn" | "info", string> = { ok: MARKER_COLOURS.green.ring, warn: MARKER_COLOURS.red.ring, info: MARKER_COLOURS.yellow.ring };
@@ -314,7 +315,12 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
         </Band>
       )}
 
+      {/* The key to the rating the take card shows (the owner's design, set very small): what each of the four colours means */}
       <Band className="pt-7 sm:pt-9">
+        <RatingKey />
+      </Band>
+
+      <Band className="pt-3 sm:pt-4">
         <footer className="flex flex-col gap-1.5 border-t border-[#e8e1d6] pt-[18px] text-[13px] leading-[1.6] text-[#55504d]">
           <p>This is an independent analysis of publicly available information. It is not medical advice.</p>
           <p>
