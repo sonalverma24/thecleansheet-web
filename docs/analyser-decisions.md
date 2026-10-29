@@ -1,6 +1,14 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-29: A brand page the first lookup was shown is judged again once the brand is known; a field printed as a data dump is read as text
+- **Decided by:** the owner, on 2026-10-29, after a shopper's search for Juicy Chemistry's under-eye cream was saved with no ingredients although the brand's own page lists them. The owner added the Firecrawl key to the production environment and asked for the code change.
+- **Reason:** three separate causes, reproduced one by one. (1) Production had no `FIRECRAWL_API_KEY`, and Google search there is refused, so page discovery returned nothing (fixed by the owner in the environment, not in code). (2) A search typed as a name guesses the brand from its first word, so the brand's own page failed the brand check ("Juicy" against juicychemistry.com): the model proposed exactly the right page and the check threw it away, and the second lookup, once the brand was known, had the model switched off. (3) The page prints its ingredient field as a hidden data dump (`{"type"=>"root", ...}`); the extractor dropped the first entry, glued to the prose before the field, and the last, merged with the footnote line after it, so 12 of 14 came back.
+- **What it touched:** `src/lib/brand-inci.ts` adds `recordCandidates` and `withKnownCandidates`. `src/lib/product-review-engine.ts` remembers every page the first lookup was shown (search results and the model's proposals) and offers them to the second lookup, which judges them again under the brand the model identified. `src/lib/inci-from-page.ts` adds `flattenRichTextDumps`: a rich-text dump is replaced by the text it holds, and each paragraph and the field as a whole are set off by commas, the boundary the list reader already splits on.
+- **Cost:** none. No extra search call and no extra model call; the second lookup re-reads pages already seen.
+- **Not changed:** the brand-domain rule (a page must still sit on the brand's own domain), the product-title match, the captured quotation, the list sanity check, the source policy (brand page or INKEE Decoder), and stored analyses. The Juicy Chemistry page stays as saved until it is refreshed.
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-28: Repair accented exact-product lookup and reconcile missing-ingredient statements
 - **Decided by:** the owner, approving this change on 2026-10-28 after reviewing the baseline diff (no quotation recorded).
 - **Reason:** an ASCII retailer name did not exactly match its accented Decoder name, while model text claimed a complete ingredient list despite no retained ingredients.

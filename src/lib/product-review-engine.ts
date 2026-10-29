@@ -14,7 +14,7 @@ import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
-import { defaultBrandInciDeps, findBrandInci } from "@/lib/brand-inci";
+import { defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
@@ -1308,8 +1308,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (!resolved.ambiguous) inci = resolved.chosen;
   }
   const brandHint = ingredientQuery.split(/\s+/)[0] ?? "";
+  // A name search can only guess the brand from its first word, which can reject the brand's own page ("Juicy" vs juicychemistry.com).
+  // Remember what this lookup was shown so the second lookup, once the brand is known, can judge those pages again.
+  const firstLookup = recordCandidates(defaultBrandInciDeps);
   if (!inci) {
-    pageInci = await findBrandInci(ingredientQuery, brandHint, isURL(q) ? q : undefined);
+    pageInci = await findBrandInci(ingredientQuery, brandHint, isURL(q) ? q : undefined, firstLookup.deps);
   }
 
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
@@ -1355,7 +1358,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
     if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
-      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, { ...defaultBrandInciDeps, askModel: undefined }); // the model was already asked for this product
+      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined }, firstLookup.seen)); // the model was already asked for this product
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
         suffix = block;

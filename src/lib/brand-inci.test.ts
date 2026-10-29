@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PAGE_FINDER_SYSTEM_PROMPT, askModelForProductPage, findBrandInci, isBrandIngredientUrl, searchBrandPages } from "./brand-inci";
+import { PAGE_FINDER_SYSTEM_PROMPT, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchIncidecoderProduct } from "./inci-fetch";
 import { fetchPageMarkdown } from "./scrape";
@@ -198,5 +198,67 @@ describe("askModelForProductPage", () => {
       await vi.advanceTimersByTimeAsync(30001);
       expect(await pending).toEqual([]);
     } finally { vi.useRealTimers(); }
+  });
+});
+
+/* 2026-10-29: a shopper typed "Juicy chemistry under eye cream". A name search guesses the brand from the first word ("Juicy"),
+   and juicychemistry.com fails the brand check for "Juicy". The model found the right page, the engine threw it away, and the
+   second lookup (brand now known as "Juicy Chemistry") had the model switched off and, in production, no working search. */
+describe("a page the first lookup was shown is judged again once the brand is known", () => {
+  const juicyUrl = "https://juicychemistry.com/products/damask-rose-coffee-organic-eye-cream";
+  const juicyPage = {
+    source: juicyUrl,
+    ingredients: ["Theobroma Cacao Seed Butter (Cocoa Butter)*", "Haelianthus Annuus Seed Oil (Sunflower Oil)*", "Cera Alba (Bees Wax)*", "Tocopherol (Vitamin E Oil)*", "Rosa Damascena Flower Oil (Rose Oil)*"],
+    quote: "Theobroma Cacao Seed Butter (Cocoa Butter)*, Haelianthus Annuus Seed Oil (Sunflower Oil)*, Cera Alba (Bees Wax)*, Tocopherol (Vitamin E Oil)*, Rosa Damascena Flower Oil (Rose Oil)*",
+    pageTitles: ["Under Eye Cream for Dark Circles & Puffiness | Caffeine", "Organic Under Eye Repair Cream Fortified with Damask Rose + Coffee"],
+    siteName: null,
+  };
+  const typed = "Juicy chemistry under eye cream";
+  const identified = "Juicy Chemistry Organic Under Eye Repair Cream Fortified with Damask Rose + Coffee";
+
+  it("the first word is not the brand, so the first lookup refuses the brand's own page (the bug)", async () => {
+    const read = vi.fn(async () => juicyPage);
+    expect(isBrandIngredientUrl(juicyUrl, "Juicy")).toBe(false);
+    expect(await findBrandInci(typed, "Juicy", undefined, { search: async () => [], read, askModel: async () => [juicyUrl] })).toBeNull();
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it("accepts it in the second lookup, from the first lookup's model proposal alone: no search and no second model call", async () => {
+    const first = recordCandidates({ search: async () => [], read: vi.fn(async () => juicyPage), askModel: async () => [juicyUrl] });
+    expect(await findBrandInci(typed, "Juicy", undefined, first.deps)).toBeNull();
+    expect([...first.seen]).toEqual([juicyUrl]);
+    const read = vi.fn(async () => juicyPage);
+    const second = withKnownCandidates({ search: async () => [], read, askModel: undefined }, first.seen);
+    expect(second.askModel).toBeUndefined(); // no second model call is made
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, second)).toEqual(juicyPage);
+    expect(read).toHaveBeenCalledWith(juicyUrl);
+  });
+
+  it("also remembers the pages a search returned, and still runs the second lookup's own search", async () => {
+    const first = recordCandidates({ search: async () => [juicyUrl, "https://www.amazon.in/dp/B01MYRU03Y"], read: vi.fn(async () => null) });
+    await findBrandInci(typed, "Juicy", undefined, first.deps);
+    expect([...first.seen]).toEqual([juicyUrl, "https://www.amazon.in/dp/B01MYRU03Y"]);
+    const search = vi.fn(async () => ["https://juicychemistry.com/products/another-product"]);
+    const offered = await withKnownCandidates({ search, read: vi.fn() }, first.seen).search(identified);
+    expect(offered).toEqual([juicyUrl, "https://www.amazon.in/dp/B01MYRU03Y", "https://juicychemistry.com/products/another-product"]);
+    expect(search).toHaveBeenCalledWith(identified);
+  });
+
+  it("does not loosen any check: a remembered page that is another brand's, another product, or has no quote is still refused", async () => {
+    const known = [juicyUrl, "https://www.amazon.in/dp/B01MYRU03Y", "https://www.dermatocare.com/product/juicy-chemistry-damask-rose-coffee-under-eye-cream/"];
+    const deps = (page: typeof juicyPage | null) => withKnownCandidates({ search: async () => [], read: async () => page }, known);
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, deps({ ...juicyPage, pageTitles: ["Juicy Chemistry Rose Water Toner"] }))).toBeNull(); // another product
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, deps({ ...juicyPage, quote: "" }))).toBeNull(); // nothing quoted
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, deps(null))).toBeNull(); // unreadable
+    const read = vi.fn(async () => juicyPage);
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, withKnownCandidates({ search: async () => [], read }, known.slice(1)))).toBeNull(); // retailer pages are not brand pages
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it("survives a failing search or model: it records nothing and the lookup is simply empty", async () => {
+    const first = recordCandidates({ search: async () => { throw new Error("search down"); }, read: vi.fn(), askModel: async () => { throw new Error("model down"); } });
+    expect(await findBrandInci(typed, "Juicy", undefined, first.deps)).toBeNull();
+    expect(first.seen.size).toBe(0);
+    expect(await withKnownCandidates({ search: async () => { throw new Error("down"); }, read: vi.fn() }, [juicyUrl]).search("x")).toEqual([juicyUrl]);
   });
 });
