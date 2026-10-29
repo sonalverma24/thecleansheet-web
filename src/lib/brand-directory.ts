@@ -68,8 +68,22 @@ function stringList(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
 }
 
+/** Brand aliases must resolve before grouping products or looking up company facts. */
+export function canonicalDirectoryName(name: string): string {
+  const original = canonicalizeBrand(name).trim();
+  const normalized = original.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2018\u2019]/g, "'").toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ").trim();
+  if (normalized === "l oreal paris" || normalized === "loreal paris") return "L'Oréal Paris";
+  if (normalized === "pond s" || normalized === "ponds") return "Pond's";
+  if (normalized === "dr sheth s" || normalized === "dr sheths") return "Dr. Sheth's";
+  return original;
+}
+
 export function brandSlug(name: string): string {
-  return canonicalizeBrand(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return canonicalDirectoryName(name).normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[\u2018\u2019']/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 /** Match the live product page marker first. Never treat an unrated pill as a positive result. */
@@ -127,7 +141,7 @@ export async function getBrandDirectory(): Promise<BrandDirectoryEntry[]> {
   ]);
   const bySlug = new Map<string, BrandDirectoryEntry>();
   for (const product of products) {
-    const name = canonicalizeBrand(product.brand || "").trim();
+    const name = canonicalDirectoryName(product.brand || "");
     const slug = brandSlug(name);
     if (!slug || !name) continue;
     let entry = bySlug.get(slug);
@@ -156,8 +170,8 @@ export async function getBrandDirectory(): Promise<BrandDirectoryEntry[]> {
   for (const entry of bySlug.values()) {
     const fallback = fallbackBySlug.get(entry.slug);
     const facts = intelligenceBySlug.get(entry.slug);
-    entry.description = optionalText(facts?.summary) ?? optionalText(fallback?.description) ?? optionalText(fallback?.tagline);
-    entry.founded = facts?.founded_year != null ? String(facts.founded_year) : optionalText(fallback?.founded);
+    entry.description = optionalText(facts?.summary);
+    entry.founded = facts?.founded_year != null ? String(facts.founded_year) : null;
     entry.headquarters = optionalText(fallback?.headquarters) ?? optionalText(fallback?.headquarters);
     entry.website = safeUrl(fallback?.website_url);
     entry.countryOfOrigin = optionalText(facts?.country_of_origin);
