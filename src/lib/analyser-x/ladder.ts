@@ -101,7 +101,9 @@ const CLINICAL_RE = /clinically (?:proven|shown|demonstrated|proved)|clinical (?
     does a figure that also says "clinically proven" or "N% reduction". */
 const USER_PERCENT_RE = /\b\d{1,3}(?:\.\d+)?\s*%\s*of\s+(?:the\s+)?(?:users|consumers|customers|people)\b/i;
 export const isUserPercentage = (text: string): boolean => USER_PERCENT_RE.test(text) && !CLINICAL_RE.test(text);
-const PERFORMANCE_RE = /\b(fades?|reduces?|repairs?|treats?|clears?|controls?|prevents?|minimi[sz]es?|lightens?|tightens?|strengthens?)\b|dark spots?|acne|pigmentation|wrinkles?|hair fall|dandruff|pores?/i;
+/** The verbs of a treatment, and "protects ... against / from" (heat, UV, pollution, damage): a promise of a defence the product has to have shown, so it needs a
+    test on the finished product as much as "repairs" does (owner decision, 2026-10-29). "Protects" on its own, with no "against" or "from", is not matched. */
+const PERFORMANCE_RE = /\b(fades?|reduces?|repairs?|treats?|clears?|controls?|prevents?|minimi[sz]es?|lightens?|tightens?|strengthens?)\b|\b(?:protects?|shields?|defends?|guards?)\b[^.;]{0,40}\b(?:against|from)\b|\bprotection (?:against|from)\b|dark spots?|acne|pigmentation|wrinkles?|hair fall|dandruff|pores?/i;
 const COSMETIC_RE = /\b(glow|radian\w*|smooth\w*|soft\w*|hydrat\w*|brighten\w*|plump\w*|firm\w*|shine|shiny|supple)\b/i;
 
 /** How much proof the wording needs. The strongest tier that matches wins. */

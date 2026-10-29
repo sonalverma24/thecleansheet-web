@@ -40,16 +40,28 @@ export const isFairnessClaim = (t: string): boolean => FAIRNESS_RE.test(t);
 
 export interface ClaimFlags {
   contradicted: Contradiction[];
+  /** A "free-from" claim nobody has checked against its source (corroborated unknown) that the product's own list appears to contradict. It can only
+      raise a caution: a block needs a verified claim. Narrow on purpose: the claim must be typed free-from (the loose wording test also fires on "free
+      radicals" and "without water"), and a list entry that itself says "free" ("Paraben-Free Goat Milk") is not read as the thing it excludes. */
+  unchecked: Contradiction[];
   fairness: string[];
   boundary: string[];
 }
 
+const SAYS_FREE_RE = /\bfree\b/i;
+
+/** A statement whose whole point is an exclusion: it starts "free from / free of / without / no / zero" (or "made without"), or it ends "-free". A longer sentence
+    that merely mentions an ingredient ("Only zinc oxide and no hidden chemical filters in a silicon-based gel") is not read: the word test cannot tell which side
+    of the exclusion the ingredient is on, and a caution that is wrong on a page a shopper reads costs more than one it misses. */
+export const isExclusionStatement = (t: string): boolean => t.length <= 90 && /^\W*(?:(?:made|formulated|crafted)\s+)?(?:free (?:from|of)|without|no|zero)\b|[- ]free\W*$/i.test(t);
+
 /** Hard flags over the claims, given the list. A block needs a verified claim (corroborated === true); drug-style
     wording only needs the claim not to be known-fabricated, because it can only raise a caution. */
 export function claimFlags(claims: ClaimValue[], inci: string[]): ClaimFlags {
-  const out: ClaimFlags = { contradicted: [], fairness: [], boundary: [] };
+  const out: ClaimFlags = { contradicted: [], unchecked: [], fairness: [], boundary: [] };
   for (const c of claims) {
     if (c.corroborated === false) continue;
+    if (c.corroborated == null && c.primaryType === "free-from" && isExclusionStatement(c.text)) out.unchecked.push(...contradictions(c.text, inci).filter((x) => !SAYS_FREE_RE.test(x.ingredient)));
     if (c.corroborated === true) {
       out.contradicted.push(...contradictions(c.text, inci));
       if (isFairnessClaim(c.text)) { out.fairness.push(c.text); continue; }

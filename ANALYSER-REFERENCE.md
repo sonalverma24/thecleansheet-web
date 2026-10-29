@@ -99,6 +99,7 @@ caution.soft_adverse: (p) => `${s(p.label)}: ${s(p.detail)}`
 caution.audience: (p) => `${s(p.ingredient)} is ${s(p.note)}. This matters most for ${s(p.audience)} use.`
 caution.catch_all: (p) => `The list includes an unnamed entry (${s(p.entry)}), so part of the formula is not disclosed.`
 caution.claim_gap: (p) => Number(p.count) > 1
+caution.free_from_unverified: (p) => Number(p.count) > 1
 caution.boundary: () => "Some wording goes further than a cosmetic can say in India. Treat it as a cosmetic benefit, not a treatment."
 caution.formula: () => "The formula may not deliver everything the claims promise."
 caution.spf_low: (p) => `SPF ${s(p.spf)} is below the SPF 30 that The Clean Sheet treats as the minimum for daily outdoor use in India.`
@@ -845,6 +846,31 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Left in place, now unused:** `ComparisonDecisionEngine.tsx` and `ComparisonTray.tsx` in `src/components/scorecards/` (the old overlay's "concern type", "formulation quality" and "use caution" read-outs are no longer shown anywhere). They sit in a folder the analyser reference fingerprints, so deleting them is a separate step.
 - **Undo:** revert the change. Nothing is migrated.
 
+### 2026-10-29: "Protects against ..." claims need a test, and an unchecked "free from" claim beside the entry it excludes is a caution
+- **Decided by:** the owner, on 2026-10-29. They asked about Aveda Botanical Repair Shampoo, "How it this green? What is the logic?", were shown that the page's own text called its "synthetic fragrance-free" claim misleading and showed a crossed "Fragrance free" chip beside a Green rating, and answered "Yes, fix it" to a proposal to close the two gaps that let that happen.
+- **Reason:** two gaps, each reproduced on the stored analysis. (1) The wording list that decides which claims need proof had "repairs" and "prevents" but not "protects ... against / from", so "Protects hair against heat damage up to 450F & from UV" (level 1, one retailer) was treated as routine and never raised the claim-gap caution. (2) A "free from" claim contradicts the list only through `block.contradicted`, which needs a claim whose source quote was verified; 23 of 5,365 stored claims are, so "Synthetic fragrance-free" beside "Fragrance (Parfum)" was invisible to the rating.
+- **What it touched:** `src/lib/analyser-x/ladder.ts`: `PERFORMANCE_RE` also matches "protects / shields / defends / guards ... against / from" and "protection against / from"; "protects" on its own does not. `src/lib/analyser-x/claimflags.ts` and `rules.ts`: new rule `caution.free_from_unverified` (35 named rules, was 34). It fires only when the list is reliable and a claim typed free-from, never checked (corroborated unknown), is an exclusion statement (starts "free from / without / no / zero" or ends "-free", at most 90 characters) and the list holds an entry it excludes, ignoring any list entry that itself says "free". It is a caution, never a block, and it says the claim is unchecked, never that it is false. A verified claim is still a block and is not also counted. `copy.ts` has its sentence, and `pills-page.ts` lists "Proof that ... holds" under Gaps.
+- **Measured** on all 317 stored analyses, before and after (nothing rerun, no model call): Green 21 to 19, Yellow 123 to 125, Red 2 and Grey 171 unchanged. Two products moved, both Green to Yellow: Aveda Botanical Repair Shampoo (both rules apply) and Yuderma Eclipse Solaire SPF 50 ("Protects from UVA/UVB/Blue Light", level 1). The new caution also appears on six products that were already Yellow, each a real conflict in the list: Anua "No Fragrance." with Fragrance; Beardo "Free from Parabens, Silicones, Mineral Oil, and Sulphates" with Sodium Laureth Sulfate; Davines "Paraben-free" with Methylparaben; Kenra "Sulfate-free" with Sodium Laureth Sulfate; Milk shake "Sulfate-free." with Ammonium Lauryl Sulfate; Venusia "Hypoallergenic and paraben-free" with Propyl Paraben. A first, looser version also fired on CodeSkin's "Only Zinc oxide and no hidden chemical filters in a silicon-based gel" (a sentence that mentions the ingredient, not an exclusion); the exclusion-statement test was added for that.
+- **Not changed:** the owner's earlier decision of the same day that a "% of users" figure never moves the pill (the entry below; "95% of women say ..." is the same kind of figure, so it was deliberately not made clinical wording), the clinical wording, every threshold, the confidence figure, the screen-coverage rule, the pill precedence, and every stored analysis. The colour is worked out each time the page is built, so no row is rewritten; a page shows its new colour when it is next built.
+- **Known limit:** whether "Fragrance (Parfum)" is synthetic is not something the list says, so a "synthetic fragrance-free" claim gets a caution and not a block. The rule is deliberately narrow: of 628 unchecked free-from claims on the 278 stored products that have a list, 533 read as exclusion statements and 18 conflict with their list (seven products); claims phrased as longer sentences are not read.
+- **Undo:** revert the change. Nothing is migrated.
+
+### 2026-10-29: A "% of users" figure is a survey result: it is listed as a gap and never moves the colour
+- **Decided by:** the owner, on 2026-10-29. The decision is written in the code (`isUserPercentage`, `note.user_percentage`) and in pull request 44; no quotation was kept, so none is given here.
+- **Reason:** a figure such as "95% of users felt ..." says how people said they felt, not what a test measured, so it should not be held to the clinical bar that a measured result is.
+- **What it touched:** `src/lib/analyser-x/ladder.ts`: `isUserPercentage` recognises "N% of users", "of consumers", "of customers" or "of people", unless the same text also says clinically proven, a clinical study, an "N% reduction" or "of participants". `src/lib/analyser-x/rules.ts`: `needsProof` ignores such a figure, so it neither raises `caution.claim_gap` nor counts against `support.claims_proportionate`. A new note, `note.user_percentage`, appears when no sample size, duration or method is public for it (an evidence level below 6), and `pills-page.ts` lists it under Gaps as "The test details (sample size, duration, method) behind ...". A note never moves the colour.
+- **Measured** (pull request 44, read-only, on the 317 stored analyses then): four analyses carry the new note (Cetaphil, Moroccanoil Purple Hair Oil, Eucerin Hyaluron Filler Night Cream, MCaffeine Coffee Body Lotion); one pill moved, Cetaphil Gentle Skin Cleanser from Buy with caution to Good choice; no confidence level changed.
+- **Not changed:** "% of participants", a measured change ("30% reduction") and any figure that also says "clinically proven" or "clinical study" still count as before. A survey figure worded with other nouns ("95% of women say ...") is not recognised as a "% of users" figure, so it gets no Gaps line; it also needs no proof, so it moves nothing.
+- **Undo:** revert the merge of pull request 44 (it also holds the next entry), or remove `isUserPercentage` from `needsProof`. Nothing is migrated.
+
+### 2026-10-29: A clear ingredient screen stays Strong when at least half the list was checked
+- **Decided by:** the owner, on 2026-10-29. The decision is written in the code (`pills-page.ts`, the "Ingredient safety" row) and in pull request 44; no quotation was kept, so none is given here.
+- **Reason:** an ingredient our reference file does not hold ("Water" for Aqua; the signed-off alias is still behind `ANALYSER_INGREDIENT_ALIASES`, which stays off) says nothing about the product, and coverage is a fact about our reference file, not about the product (decision X42). It should not turn a clear screen to Fair.
+- **What it touched:** `src/lib/pills-page.ts`: the "Ingredient safety" row stays Strong when `support.safety_clear` holds and at least half the list was checked (`MIN_SCREEN_COVERAGE`, 0.5). Below half it stays Fair, matching the Low confidence. The coverage sentence stays out of the row (an existing test bars reference-data wording there) and is shown in Gaps and in the confidence line.
+- **Measured** (pull request 44): Cetaphil Gentle Skin Cleanser's Ingredient safety row went from Fair to Strong. The row never moves the pill and no confidence level changed.
+- **Not changed:** the pill, the confidence rule, the alias flag, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
+- **Undo:** revert the merge of pull request 44. Nothing is migrated.
+
 ### 2026-10-29: The rating on a product page names its colour, and the page carries a key to the four ratings
 - **Decided by:** the owner, on 2026-10-29, by sharing a design called "The Clean Sheet Rating" (four colour tiles with a one-line meaning each) and asking for it to replace the ratings badge and to be added as a section. They then said the first attempt, on the old standing-based page, was the wrong page and asked for it on the latest X1 output. No reason beyond the design was given.
 - **Reason:** none recorded in the owner's words. The design reads: Green "Meets our standards with no major concerns.", Yellow "Some concerns found. Review findings before purchase.", Red "Major concerns identified. Not recommended.", Grey "Not rated. We haven't assigned a rating yet." Footnote: "Grey means we haven't assigned a rating. It does not mean the product is unsafe." Link: "How our ratings work" (the owner later replaced the words with "Want to read about our standard?").
@@ -1005,19 +1031,19 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
 | `src/lib/analyser-reference.ts` | `d52984d57f8a431cc48627cb61083cd3adbeda06e76a94f0854d0c9b5651159a` |
 | `src/lib/analyser-x/adapter.ts` | `f040cbeb559b2aadb365222d9ba40c67697cc2517cf316b4c97e7f36c2bfca3e` |
-| `src/lib/analyser-x/claimflags.ts` | `ecd084f9dfb148039f292d52a4b7aac128043f3317652dcb5f3c24a40445d397` |
+| `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `d569fe09f1a852b5fdbff04030822907bff7238379123fcaf51ffeefe12f111d` |
+| `src/lib/analyser-x/copy.ts` | `1c0810b4ffd2096a26ae0bfbf07c5fd4f5afc1518967b75e84efa3fd9c2fccab` |
 | `src/lib/analyser-x/decision.ts` | `8eb28d5246f3f1ec02e5983bb905dd034bb047704c6b31b03b774212180e0721` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
-| `src/lib/analyser-x/index.ts` | `52ac4855ed88a19f4e9c4c1f6a4315d532bf2fc9811031b2a17af8e902308346` |
+| `src/lib/analyser-x/index.ts` | `d311358c06d958f0a45a5e69afdf36b1102a3c9e3a2d89f93fe61d9169824fd0` |
 | `src/lib/analyser-x/invariants.ts` | `983992f6d800368d4a464b499723669d9d8d35774840b844dbf39c79b8615004` |
 | `src/lib/analyser-x/kb.ts` | `83b8b67415017755c0946f60e5ef35be719b824f140491170dd1da3a0283fe9c` |
-| `src/lib/analyser-x/ladder.ts` | `b3b2d04b9952fd6ec522c50678074034e80c3d3172c42e7dab6946a3e68063c1` |
+| `src/lib/analyser-x/ladder.ts` | `592fda191f0c6781fc8558d27cc047ee103f755a2f0467e706ec5479eaaab0a1` |
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
 | `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
-| `src/lib/analyser-x/rules.ts` | `717fe51aa649a475362afc8c320fabc7ded148716a39c804d8384b183ab39712` |
+| `src/lib/analyser-x/rules.ts` | `62b39c6a1aa4a6eb50dcc368034c33362d513ea3f8789f5bca3653a2cfe7120b` |
 | `src/lib/analyser-x/screen.ts` | `a12c31d9471c8ebf5dfbc9fe8cb82db228c194e420d5054503b6af6ff1e9c0e8` |
 | `src/lib/analyser-x/test-helpers.ts` | `a4e9a3a459d51da896d2d6d664e218c7c1cf11433ab846750f7d95bc4b381059` |
 | `src/lib/analyser-x/types.ts` | `a35cbb1f20d44af8b7bb33f534fbc23ddddcfa08d082eca754bb026482c9a2ba` |
@@ -1054,7 +1080,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `f5ad549f822eafca9e00a96f255110a7719e27ed3b15f66768c52955a0962ebd` |
+| `src/lib/pills-page.ts` | `8c0833742f8ce6d1332fd7b92d4b5b99e1c3455397517920de3642e0b793e9f2` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `3974a4ef350c84e85d042782afc12b75e650c8775aa731aa9bdd0e579e471767` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
