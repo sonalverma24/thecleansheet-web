@@ -18,6 +18,44 @@ export async function fetchPageMarkdown(url: string, limit = 60000): Promise<str
   }
 }
 
+/** One step a rendering fetch performs in the page before it reads it. */
+export type RenderAction =
+  | { type: "wait"; milliseconds: number }
+  | { type: "executeJavascript"; script: string };
+
+export interface RenderedPage {
+  markdown: string;
+  /** The page's own <title>, when the renderer reports one. */
+  title: string | null;
+}
+
+/** Read a page the way a browser shows it: the page is loaded, optional steps are performed in it (a tab clicked open), and the text is
+    taken. For pages whose content a plain fetch or the Jina reader never sees because it sits behind a tab or loads with JavaScript.
+    Firecrawl, so a key is needed; with none, or on any failure or timeout, this is null and the analysis carries on without it. */
+export async function fetchRenderedPage(url: string, actions: RenderAction[] = [], timeoutMs = 60000): Promise<RenderedPage | null> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return null;
+  // A bot-protected page fails now and then and works on the next try: one retry, so a passing hiccup does not cost the page.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+        body: JSON.stringify({ url, formats: ["markdown"], waitFor: 4000, timeout: timeoutMs, ...(actions.length ? { actions } : {}) }),
+        signal: AbortSignal.timeout(timeoutMs + 15000),
+      });
+      const body = res.ok ? await res.json() as { success?: boolean; data?: { markdown?: string; metadata?: { title?: string } } } : null;
+      const markdown = body?.success ? body.data?.markdown : undefined;
+      if (markdown) return { markdown, title: body?.data?.metadata?.title ?? null };
+      console.warn(`fetchRenderedPage: attempt ${attempt} for ${new URL(url).hostname} gave no page (HTTP ${res.status})`);
+    } catch (e) {
+      console.warn(`fetchRenderedPage: attempt ${attempt} for ${new URL(url).hostname} failed (${(e as Error).name})`);
+    }
+    if (attempt === 1) await new Promise((r) => setTimeout(r, 1500));
+  }
+  return null;
+}
+
 /** Page title from a Jina markdown scrape ("Title: ..." first line). */
 export function titleFromMarkdown(md: string): string | null {
   const m = md.match(/^Title:\s*(.+)$/m);

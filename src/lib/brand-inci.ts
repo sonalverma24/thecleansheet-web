@@ -1,11 +1,12 @@
-/** Deterministic fallback for retailer/name inputs. Search discovers pages;
- * only a matching product page on a recognisable brand domain, or an INKEE/INCI Decoder
- * product page, supplies INCI. */
-import { fetchInciFromProductPage, type PageINCI } from "./inci-from-page";
+/** Deterministic fallback for retailer/name inputs. Search discovers pages; a matching product page on a recognisable brand domain, an INKEE/INCI Decoder
+ * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
+ * checks is read, and the most complete list wins, with the other lists recorded so the choice is visible. Other retailers (Amazon, Flipkart...) never supply it. */
+import { fetchInciFromProductPage, type InciAlternative, type PageINCI } from "./inci-from-page";
 import { fetchIncidecoderProduct, incidecoderProductSlug } from "./inci-fetch";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchPageMarkdown } from "./scrape";
-import { titleIdentifiesProduct, sanitizeInciList } from "./product-identity";
+import { inciSimilarity, pageTitleNamesProduct, sanitizeInciList } from "./product-identity";
+import { isNykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
 
 const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
@@ -70,6 +71,9 @@ export interface Dependencies {
   readDecoder?: (url: string) => Promise<PageINCI | null>;
   /** Candidate page URLs from a web-grounded model, asked only when nothing found so far gave a list. */
   askModel?: (query: string) => Promise<string[]>;
+  /** Nykaa product pages for the query, and a reader for one (the page is rendered and its Ingredients tab opened). Optional: without them Nykaa is not consulted. */
+  searchNykaa?: (query: string) => Promise<string[]>;
+  readNykaa?: (url: string) => Promise<PageINCI | null>;
 }
 
 /** Read a Decoder product page with the parser the engine already uses. A quote that was cut short is refused:
@@ -78,7 +82,7 @@ async function readDecoderPage(url: string): Promise<PageINCI | null> {
   const page = await fetchIncidecoderProduct(url);
   if (page.status !== "ok" || page.result.sourceQuoteTruncated || !page.result.sourceQuote?.trim()) return null;
   const r = page.result;
-  return { ingredients: r.ingredients, source: r.source, quote: r.sourceQuote, pageTitles: [r.productName, ...(r.pageTitle ? [r.pageTitle] : [])], siteName: "INKEE Decoder" };
+  return { ingredients: r.ingredients, source: r.source, quote: r.sourceQuote, pageTitles: [r.productName, ...(r.pageTitle ? [r.pageTitle] : [])], siteName: "INKEE Decoder", trust: 3, origin: "decoder" };
 }
 
 /** The only thing the model is asked for is where a page is. The list is never taken from the model: the code fetches the page and reads
@@ -131,8 +135,8 @@ export async function askModelForProductPage(query: string): Promise<string[]> {
   finally { if (timer) clearTimeout(timer); }
 }
 
-/** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, then the grounded model. */
-export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage };
+/** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, Nykaa pages, then the grounded model. */
+export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage };
 
 /** Wrap a lookup's dependencies so every URL it was shown (search results and the model's proposals) is remembered in `seen`.
  *  A search typed as a name can only guess the brand from the first word the shopper wrote, and a brand page such as
@@ -143,7 +147,12 @@ export function recordCandidates(deps: Dependencies): { deps: Dependencies; seen
   const note = (urls: string[]) => { for (const u of urls) seen.add(u); return urls; };
   return {
     seen,
-    deps: { ...deps, search: async (q) => note(await deps.search(q)), askModel: deps.askModel ? async (q) => note(await deps.askModel!(q)) : undefined },
+    deps: {
+      ...deps,
+      search: async (q) => note(await deps.search(q)),
+      askModel: deps.askModel ? async (q) => note(await deps.askModel!(q)) : undefined,
+      searchNykaa: deps.searchNykaa ? async (q) => note(await deps.searchNykaa!(q)) : undefined,
+    },
   };
 }
 
@@ -154,36 +163,67 @@ export function withKnownCandidates(deps: Dependencies, known: Iterable<string>)
   return { ...deps, search: async (q) => [...urls, ...(await deps.search(q).catch(() => [] as string[]))] };
 }
 
-export async function findBrandInci(query: string, brand: string, suppliedUrl?: string, deps: Dependencies = defaultBrandInciDeps): Promise<PageINCI | null> {
+interface Read { page: PageINCI; supplied: boolean }
+
+/** The list as components: a premix printed "A (And) B" is two ingredients, as INKEE Decoder lists it. Counting and comparing components keeps a source that joins a
+    premix from looking shorter, or different, than one that splits it. */
+const components = (page: PageINCI): string[] =>
+  sanitizeInciList(page.ingredients).list.flatMap((item) => item.split(/\s*\(\s*and\s*\)\s*/i)).map((c) => c.trim()).filter(Boolean);
+const listCount = (page: PageINCI): number => new Set(components(page).map((c) => c.toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, ""))).size;
+/** Two lists this alike are the same formula written two ways; only a list below this is recorded as a different one. */
+const SAME_FORMULA = 0.85;
+
+/** Find the product's ingredient list. Decoder pages, the brand's own pages and Nykaa product pages (the pasted one, and what search finds) are read together;
+    each must name the product, carry a captured quote and be an ingredient list. The most complete list wins; a tie goes to the better-captured source (a brand's
+    page over Decoder or Nykaa), then to the page the shopper pasted. Sources whose list differs are recorded on the winner as `alternatives`.
+    `known` holds a list already found elsewhere (the Decoder page the engine resolved by name), which competes on the same terms. */
+export async function findBrandInci(query: string, brand: string, suppliedUrl?: string, deps: Dependencies = defaultBrandInciDeps, known: PageINCI[] = []): Promise<PageINCI | null> {
   const tried = new Set<string>();
   const readDecoder = deps.readDecoder ?? readDecoderPage;
-  // Decoder product pages are primary sources and go first (as the engine does when it resolves a name); then the brand's own pages.
-  const accept = async (candidates: string[]): Promise<PageINCI | null> => {
+  const usable = (page: PageINCI | null): page is PageINCI =>
+    !!page?.quote?.trim() && !!page.pageTitles?.some((title) => pageTitleNamesProduct(title, brand, query)) && sanitizeInciList(page.ingredients).ok;
+
+  const readAll = async (candidates: string[]): Promise<Read[]> => {
     const fresh = [...new Set(candidates)].filter((u) => !tried.has(u));
-    for (const url of fresh.filter((u) => incidecoderProductSlug(u)).slice(0, 2)) {
-      tried.add(url);
-      const page = await readDecoder(url);
-      if (!page?.quote?.trim() || !page.pageTitles?.some((title) => titleIdentifiesProduct(title, brand, query))) continue;
-      if (!sanitizeInciList(page.ingredients).ok) continue;
-      return page;
-    }
-    for (const url of fresh.filter((u) => isBrandIngredientUrl(u, brand)).slice(0, 3)) {
-      tried.add(url);
-      const page = await deps.read(url);
-      if (!page?.quote?.trim() || !page.pageTitles?.some((title) => titleIdentifiesProduct(title, brand, query))) continue;
-      if (!sanitizeInciList(page.ingredients).ok) continue;
-      return page;
-    }
-    return null;
+    const decoderUrls = fresh.filter((u) => incidecoderProductSlug(u)).slice(0, 2);
+    const brandUrls = fresh.filter((u) => isBrandIngredientUrl(u, brand)).slice(0, 3);
+    const nykaaUrls = deps.readNykaa ? fresh.filter(isNykaaProductUrl).slice(0, 2) : [];
+    for (const u of [...decoderUrls, ...brandUrls, ...nykaaUrls]) tried.add(u);
+    const reads = await Promise.all([
+      ...decoderUrls.map(async (url) => ({ url, page: await readDecoder(url).catch(() => null), origin: "decoder" as const })),
+      ...brandUrls.map(async (url) => ({ url, page: await deps.read(url).catch(() => null), origin: "brand-page" as const })),
+      ...nykaaUrls.map(async (url) => ({ url, page: await deps.readNykaa!(url).catch(() => null), origin: "nykaa" as const })),
+    ]);
+    return reads.flatMap((r) => (usable(r.page)
+      ? [{ page: { ...r.page, origin: r.page.origin ?? r.origin, trust: r.page.trust ?? (r.origin === "brand-page" ? 4 as const : 3 as const) }, supplied: r.url === suppliedUrl }]
+      : []));
   };
 
+  const choose = (reads: Read[]): PageINCI | null => {
+    if (!reads.length) return null;
+    const best = [...reads].sort((a, b) => listCount(b.page) - listCount(a.page) || (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied))[0];
+    const alternatives: InciAlternative[] = reads
+      .filter((r) => r !== best && inciSimilarity(components(r.page), components(best.page)) < SAME_FORMULA)
+      .map((r) => ({ source: r.page.source, origin: r.page.origin ?? "decoder", count: listCount(r.page) }));
+    return alternatives.length ? { ...best.page, alternatives } : best.page;
+  };
+
+  const knownReads: Read[] = known.filter((k) => !!k.quote?.trim() && sanitizeInciList(k.ingredients).ok).map((page) => ({ page, supplied: false }));
+  for (const k of known) tried.add(k.source);
+
   let discovered: string[] = [];
-  try { discovered = await deps.search(query); } catch { /* No source is safer than a failed analysis. */ }
-  const found = await accept([...(suppliedUrl ? [suppliedUrl] : []), ...discovered]);
+  try {
+    const [general, nykaa] = await Promise.all([
+      deps.search(query).catch(() => [] as string[]),
+      deps.searchNykaa ? deps.searchNykaa(query).catch(() => [] as string[]) : Promise.resolve([] as string[]),
+    ]);
+    discovered = [...general, ...nykaa];
+  } catch { /* No source is safer than a failed analysis. */ }
+  const found = choose([...knownReads, ...(await readAll([...(suppliedUrl ? [suppliedUrl] : []), ...discovered]))]);
   if (found || !deps.askModel) return found;
 
   // Nothing found so far gave a list: ask the web-grounded model where the page is, then read that page ourselves.
   let asked: string[] = [];
   try { asked = await deps.askModel(query); } catch { /* The model is a last resort, never a reason to fail. */ }
-  return accept(asked);
+  return choose(await readAll(asked));
 }

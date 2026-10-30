@@ -18,7 +18,7 @@ const h = vi.hoisted(() => {
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn(), fetchPage: vi.fn(), brandInci: vi.fn() };
+  return { upserts, chain, generate: vi.fn(), fetchPage: vi.fn(), brandInci: vi.fn<(...args: unknown[]) => Promise<unknown>>(async () => null) };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));

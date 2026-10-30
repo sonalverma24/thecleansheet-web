@@ -90,6 +90,21 @@ export function titleIdentifiesProduct(title: string | null | undefined, brand: 
   return want.filter((w) => have.has(w)).length / want.length >= 0.75;
 }
 
+/** Does a page found by search (an INKEE Decoder page, the brand's own page, a Nykaa page) name the product the shopper asked about?
+    It does when the original rule holds (75% of the shopper's name words are in the title), or when the page's whole name sits inside the shopper's longer
+    retailer name: "Glow+ Hydra Gel Moisturizer" inside "Glow+ Hydra Gel Moisturizer With Papaya & Vitamin C For 24 Hour Intense Hydration". Then EVERY
+    distinctive word of the title must be in the shopper's name and there must be at least three of them, so a short generic title cannot match many products,
+    and a title with a word the shopper's name lacks ("Cleanser", "Oil Free", "Jello", another brand) is never the same product.
+    Only for judging candidate ingredient pages: `titleIdentifiesProduct` stays as it was, because it also guards which listings may corroborate a claim. */
+export function pageTitleNamesProduct(title: string | null | undefined, brand: string, productName: string): boolean {
+  if (titleIdentifiesProduct(title, brand, productName)) return true;
+  if (!title) return false;
+  const stem = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
+  const have = [...nameTokens(title, brand)].map(stem);
+  const want = new Set([...nameTokens(productName, brand)].map(stem));
+  return have.length >= 3 && have.every((w) => want.has(w));
+}
+
 /* ── INCI sanity ─────────────────────────────────────────────── */
 
 export interface InciCheck {

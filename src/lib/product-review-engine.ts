@@ -16,6 +16,7 @@ import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
+import type { InciAlternative } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct, IDENTITY_PLACEHOLDER } from "@/lib/product-identity";
@@ -1198,6 +1199,8 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
    attempts in all). The shopper never sees this and never sees a failure for it: whatever the last try returns is kept, and an answer that is still without a
    web search is stored and shown as before, with researchLog.grounded false (the re-runs can replace it later). /api/review is cut off at 180 s and a whole
    analysis takes 80-106 s, so no retry starts once RETRY_STARTS_BEFORE_MS of the request has gone. */
+/** The longest the ingredient-source lookup (Decoder, brand page, Nykaa) may take. */
+const PEER_LOOKUP_MS = 50_000;
 const GROUNDING_RETRIES = 2;
 const RETRY_STARTS_BEFORE_MS = 75_000;
 /* A retry is only ever a bonus. It is abandoned, and the answer already in hand is kept, if it throws or is still running this long after the request began,
@@ -1221,6 +1224,11 @@ async function getReusableStored(slug: string): Promise<ProductReviewResult | nu
   const result = await getStored(slug);
   if (result?.type === "product-review" && result.review.inciIngredients?.length === 0 && !(result.review.ingredientReads?.length)) return null;
   return result;
+}
+
+/** A Decoder page resolved by name, as a candidate list that competes with the brand's page and Nykaa's. A quote cut short cannot anchor a list, so it does not compete. */
+function decoderAsPage(inci: INCIResult): import("@/lib/inci-from-page").PageINCI {
+  return { ingredients: inci.ingredients, source: inci.source, quote: inci.sourceQuoteTruncated ? undefined : inci.sourceQuote, pageTitles: [inci.pageTitle ?? inci.productName], siteName: "INKEE Decoder", trust: 3, origin: "decoder" };
 }
 
 export async function runProductReview(query: string): Promise<ProductReviewResult> {
@@ -1331,17 +1339,18 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // A name search can only guess the brand from its first word, which can reject the brand's own page ("Juicy" vs juicychemistry.com).
   // Remember what this lookup was shown so the second lookup, once the brand is known, can judge those pages again.
   const firstLookup = recordCandidates(defaultBrandInciDeps);
-  if (!inci) {
-    pageInci = await findBrandInci(ingredientQuery, brandHint, isURL(q) ? q : undefined, firstLookup.deps);
-  }
+  // INKEE Decoder, the brand's own page and the Nykaa product page are searched together as equals; the most complete list wins and the lists that lost are recorded
+  // (owner decision, 2026-10-30). The Decoder page resolved by name competes as one of them.
+  let inciAlternatives: InciAlternative[] | undefined;
+  // A Nykaa page is rendered in a browser, which takes 15 to 40 s: the whole lookup is bounded so it can never eat the analysis's time (a lookup that overruns finds nothing, as one that fails does).
+  pageInci = await withinMs(findBrandInci(ingredientQuery, brandHint, isURL(q) ? q : undefined, firstLookup.deps, inci ? [decoderAsPage(inci)] : []), PEER_LOOKUP_MS);
+  if (pageInci && inci && pageInci.source === inci.source) { inciAlternatives = pageInci.alternatives; pageInci = null; } // the Decoder list won: `inci` stays the answer
 
   // Ground the model in whichever real INCI we retrieved: INCIDecoder first, else
   // the list read off the brand's product page.
-  const groundTruth: INCIResult | null =
-    inci ??
-    (pageInci
-      ? { productName: pageName ?? q, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }
-      : null);
+  const groundTruth: INCIResult | null = pageInci
+    ? { productName: inci?.productName ?? pageName ?? q, slug: inci?.slug ?? "", ingredients: pageInci.ingredients, tags: inci?.tags ?? [], source: pageInci.source, imageUrl: inci?.imageUrl ?? null, sourceQuote: pageInci.quote }
+    : inci;
   const inciBlock = inciGroundTruthBlock(groundTruth);
   // Anchor the review identity to the resolved product so its name never drifts from
   // the ingredient list we actually used.
@@ -1378,7 +1387,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
     if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
-      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined }, firstLookup.seen)); // the model was already asked for this product
+      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined }, firstLookup.seen)); // the model was already asked for this product
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
         suffix = block;
@@ -1458,7 +1467,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const incoming = {
     productName: review.productName,
     brand: review.brand,
-    inci: inci?.ingredients ?? pageInci?.ingredients ?? review.inciIngredients ?? review.ingredientReads?.map((r) => r.name) ?? [],
+    inci: pageInci?.ingredients ?? inci?.ingredients ?? review.inciIngredients ?? review.ingredientReads?.map((r) => r.name) ?? [],
   };
   try {
     const { data: sameBrand } = await createAdminClient()
@@ -1506,12 +1515,12 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   review.productSlug = canonicalSlug;
   // Publish ingredients only from Decoder or the matched brand product page.
   // The exact captured quotation below anchors the ingredient-dependent tags.
-  if (inci) {
-    review.inciIngredients = inci.ingredients;
-    review.inciSourceUrl = inci.source;
-  } else if (pageInci) {
+  if (pageInci) {
     review.inciIngredients = pageInci.ingredients;
     review.inciSourceUrl = pageInci.source;
+  } else if (inci) {
+    review.inciIngredients = inci.ingredients;
+    review.inciSourceUrl = inci.source;
   } else {
     // A model-reported list is not primary-source ingredient data. Keep the
     // source missing rather than displaying an invented or unattributed INCI.
@@ -1525,9 +1534,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      read from. Both INCIDecoder and the deterministic brand-page extractor retain
      source quotes. Tags and source-backed checks read this envelope. */
   if (review.inciIngredients?.length) {
-    review.inciEvidence = inci
-      ? makeInciEvidence(inci.source, inci.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci.productName, inci.sourceQuoteTruncated === true)
-      : makeInciEvidence(pageInci?.source, pageInci?.quote, review.reviewedAt ?? new Date().toISOString(), pageInci?.pageTitles?.[0] ?? pageName ?? undefined);
+    review.inciEvidence = pageInci
+      ? makeInciEvidence(pageInci.source, pageInci.quote, review.reviewedAt ?? new Date().toISOString(), pageInci.pageTitles?.[0] ?? pageName ?? undefined, false, { trust: pageInci.trust, origin: pageInci.origin, alternatives: pageInci.alternatives })
+      : makeInciEvidence(inci?.source, inci?.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci?.productName, inci?.sourceQuoteTruncated === true, { origin: "decoder", alternatives: inciAlternatives });
   }
 
   review = reconcileMissingIngredients(review);
