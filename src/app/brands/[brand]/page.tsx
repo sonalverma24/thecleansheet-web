@@ -98,7 +98,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
           <div className="flex flex-wrap items-end justify-between gap-3 mb-6">
             <div>
               <p className="uppercase tracking-[0.14em] text-[11px] text-[#248179] mb-2">What we have checked</p>
-              <h2 id="products-heading" className="font-display font-light text-[34px]">Products reviewed</h2>
+              <h2 id="products-heading" className="font-display font-light text-[34px]">Products analysed</h2>
             </div>
             <Link href="/products" className="text-[14px] text-[#248179] hover:underline">Browse all products</Link>
           </div>

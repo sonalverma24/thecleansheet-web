@@ -229,7 +229,7 @@ export default function AboutPage() {
               <a href="mailto:hello@thecleansheet.in" className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-[15px] transition-opacity hover:opacity-90" style={{ background: CREAM, color: INK }}>
                 hello@thecleansheet.in <span aria-hidden>→</span>
               </a>
-              <Link href="/brands" className="text-[15px] transition-opacity hover:opacity-80" style={{ color: CREAM }}>
+              <Link href="/products" className="text-[15px] transition-opacity hover:opacity-80" style={{ color: CREAM }}>
                 Check a product <span aria-hidden>›</span>
               </Link>
             </div>

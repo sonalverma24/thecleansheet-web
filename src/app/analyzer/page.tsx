@@ -9,5 +9,5 @@ export default async function AnalyzerRedirect({
   searchParams: Promise<{ product?: string }>;
 }) {
   const { product } = await searchParams;
-  redirect(product ? `/brands?${REVIEW_RUN_PARAM}=${encodeURIComponent(product)}` : "/brands");
+  redirect(product ? `/products?${REVIEW_RUN_PARAM}=${encodeURIComponent(product)}` : "/products");
 }

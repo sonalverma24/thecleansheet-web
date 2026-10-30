@@ -26,7 +26,7 @@ function Message({ title, children }: { title: string; children: React.ReactNode
         <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">Compare</p>
         <h1 className="mt-2 font-display font-light text-[clamp(30px,4vw,44px)] leading-[1.08] tracking-[-0.02em] text-[#282828] text-balance">{title}</h1>
         <div className="mt-4 flex flex-col gap-3 text-[15px] md:text-[16px] leading-[1.55] text-[#4a4a4a]">{children}</div>
-        <Link href="/brands#registry" className="mt-8 inline-flex h-11 items-center rounded-lg bg-[#248179] px-5 text-[14px] font-bold text-white transition-colors hover:bg-[#1d6b64]">
+        <Link href="/products#registry" className="mt-8 inline-flex h-11 items-center rounded-lg bg-[#248179] px-5 text-[14px] font-bold text-white transition-colors hover:bg-[#1d6b64]">
           Back to product analyses
         </Link>
       </div>

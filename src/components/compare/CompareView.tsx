@@ -300,7 +300,7 @@ export default function CompareView({ items, comparison }: { items: CompareFacts
     <div className="bg-white min-h-screen">
       <div className="max-w-[1100px] mx-auto px-5 sm:px-8 lg:px-12 pt-4 sm:pt-6 lg:pt-8 pb-16 md:pb-24">
         <nav aria-label="Breadcrumb" className="text-[12px] text-[#6f6a66]">
-          <Link href="/brands" className="underline-offset-[3px] hover:underline">Product analyses</Link>
+          <Link href="/products" className="underline-offset-[3px] hover:underline">Product analyses</Link>
           <span aria-hidden className="mx-1.5">/</span>
           <span>Compare</span>
         </nav>
@@ -322,7 +322,7 @@ export default function CompareView({ items, comparison }: { items: CompareFacts
           analyses above, not a certification and not medical advice. An ingredient flag describes an ingredient, not how your skin will react.
         </p>
         <div className="mt-6 flex flex-wrap gap-4 text-[14px] font-bold">
-          <Link href="/brands" className="text-[#248179] underline-offset-[3px] hover:underline">Compare something else</Link>
+          <Link href="/products" className="text-[#248179] underline-offset-[3px] hover:underline">Compare something else</Link>
           <Link href="/methodology" className="text-[#248179] underline-offset-[3px] hover:underline">How we analyse</Link>
         </div>
       </div>

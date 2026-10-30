@@ -22,7 +22,7 @@ export const buildHomeFaqs = (stats: SiteStats) => [
   },
   {
     q: "Which beauty products are analysed by The Clean Sheet in India?",
-    a: "You can browse every analysed product at thecleansheet.in/brands. Each has a public page showing its Clean Sheet rating, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/brands.",
+    a: "You can browse every analysed product at thecleansheet.in/products. Each has a public page showing its Clean Sheet rating, every marketing claim graded against evidence, the real ingredient list, and price parity across platforms. Brands can also apply for certification at thecleansheet.in/for-brands.",
   },
   {
     q: "Is niacinamide safe for Indian skin?",

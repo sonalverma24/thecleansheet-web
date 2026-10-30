@@ -11,7 +11,7 @@ export default function ClosingCta() {
           <span className="text-[14px] md:text-[15px] text-[#b0a8a4]">Start with the product you’ve been thinking about buying.</span>
         </div>
         <Link
-          href="/brands"
+          href="/products"
           className="bg-white hover:bg-[#e3f1ef] text-[#282828] rounded-lg h-[50px] md:h-auto inline-flex items-center justify-center px-[22px] md:py-3.5 text-[15px] md:text-[14px] font-bold transition-colors"
         >
           Check a product

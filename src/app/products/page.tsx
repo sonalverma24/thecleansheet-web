@@ -11,7 +11,7 @@ import { CrawlableIndex, type IndexGroup } from "@/components/seo/CrawlableIndex
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Browse Products · India's Independent Product Reviews",
+  title: "Browse Products · India's Independent Product Analyses",
   description:
     "Independent, science-backed analyses of India's beauty products. Marketing claims graded against real evidence, full ingredient analysis, regulatory checks, zero brand bias.",
   keywords: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 const pageJsonLd = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  name: "The Clean Sheet Product Review Directory",
+  name: "The Clean Sheet Product Analysis Directory",
   description: "Independent product analyses covering ingredients, claims and publicly available evidence.",
   url: "https://thecleansheet.in/products",
   publisher: { "@type": "Organization", name: "The Clean Sheet", url: "https://thecleansheet.in" },
@@ -148,12 +148,14 @@ export default async function ProductsPage() {
 
       <BrandsMarketplace products={allProducts} />
 
-      <CrawlableIndex
-        id="all-reviews"
-        heading="All analysed products, grouped by brand"
-        intro="Every product The Clean Sheet has analysed, listed by brand."
-        groups={indexGroups}
-      />
+      {indexGroups.length > 0 && (
+        <CrawlableIndex
+          id="all-reviews"
+          heading="All analysed products, grouped by brand"
+          intro="Every product The Clean Sheet has analysed, listed by brand."
+          groups={indexGroups}
+        />
+      )}
     </div>
   );
 }

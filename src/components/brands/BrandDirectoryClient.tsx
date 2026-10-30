@@ -71,6 +71,23 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
     return sortBrands(filtered, sort);
   }, [brands, search, standing, sort]);
 
+  // No product has been analysed yet: say so, instead of a search box and "No brands match".
+  if (!brands.length) {
+    return (
+      <section className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12 pb-24">
+        <div className="rounded-2xl border border-[#e5dfd6] bg-[#f7faf9] px-6 py-12 sm:py-16 text-center">
+          <h2 className="font-display font-light text-[26px] sm:text-[32px] leading-[1.15] text-[#282828]">Brands appear here as we analyse their products</h2>
+          <p className="mt-3 mx-auto max-w-[520px] text-[15px] leading-[1.6] text-[#555]">
+            There is no analysed product to list a brand for right now. Analyse a product and its brand is listed here, with every other product of that brand we have analysed.
+          </p>
+          <Link href="/products" className="mt-7 inline-flex h-12 items-center rounded-lg bg-[#248179] px-6 text-[14px] font-bold text-white transition-colors hover:bg-[#1d6b64]">
+            Analyse a product
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12 pb-24">
       <div className="rounded-2xl border border-[#e5dfd6] bg-[#f7faf9] p-4 sm:p-5 mb-7">

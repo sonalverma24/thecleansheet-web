@@ -6,7 +6,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Browse Beauty Brands · The Clean Sheet",
-  description: "Explore independent product reviews by beauty brand. See the distribution of product standings and published brand facts, manufacturing disclosures and community sentiment.",
+  description: "Explore independent product analyses by beauty brand. See the distribution of product standings and published brand facts, manufacturing disclosures and community sentiment.",
   alternates: { canonical: "https://thecleansheet.in/brands" },
   openGraph: {
     title: "Browse Beauty Brands | The Clean Sheet",
@@ -45,14 +45,14 @@ export default async function BrandsPage() {
           find the company and manufacturers where disclosed, and see what community evidence is available.
         </p>
         <div className="mt-7 flex flex-wrap gap-5 text-[14px] text-[#4a4a4a]">
-          <span><strong className="text-[#282828]">{brands.length}</strong> covered brands</span>
+          {brands.length > 0 && <span><strong className="text-[#282828]">{brands.length}</strong> covered {brands.length === 1 ? "brand" : "brands"}</span>}
           <span>Portfolio standing reflects the most common colour among rated products.</span>
         </div>
       </section>
       <BrandDirectoryClient brands={cards} />
       <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12 pb-14">
         <p className="border-t border-[#e5dfd6] pt-5 text-[12px] leading-relaxed text-[#837d78]">
-          Portfolio standing summarises reviewed products only. It does not certify every product a brand makes.
+          Portfolio standing summarises analysed products only. It does not certify every product a brand makes.
           Brands with fewer than three rated products are marked Limited coverage. Missing manufacturer or
           community information is reported as unavailable, not treated as a negative verdict.
         </p>

@@ -16,7 +16,7 @@ import { NoResultsCard } from "@/components/scorecards/NoResultsCard";
 import FilterPanel from "./FilterPanel";
 import MarketCard, { productId } from "./MarketCard";
 
-/* The /brands marketplace: search, filters on the left (a sheet on phones), a grid of
+/* The /products marketplace: search, filters on the left (a sheet on phones), a grid of
    home-style product cards, "Show more". Everything is chosen and counted in the
    browser from the products the page passes in (see registry-filters.ts), and the
    choices are kept in the URL so a filtered view can be shared.
@@ -33,7 +33,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [comparingIds, setComparingIds] = useState<string[]>([]);
-  // The message shown when a product cannot join the comparison. `group` is the /brands product type of the products already picked, for the filter button.
+  // The message shown when a product cannot join the comparison. `group` is the /products product type of the products already picked, for the filter button.
   const [compareNotice, setCompareNotice] = useState<{ kind: "unfiled" | "full" | "type"; message: string; group: string | null } | null>(null);
 
   // A shared link's search, sort and filters, applied once after hydration.
@@ -125,7 +125,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
     if (block) {
       const first = products.find((p) => productId(p) === comparingIds[0]);
       const group = block.kind === "type" && first ? productGroup(first) : null;
-      // The filter is the wider /brands type ("Hair care"); the comparison can be narrower ("Conditioners"). Say so, so the button is not a surprise.
+      // The filter is the wider /products type ("Hair care"); the comparison can be narrower ("Conditioners"). Say so, so the button is not a surprise.
       const wider = group && compareType && group !== compareType ? ` The ${group} filter also lists other types; only ${compareType} stay clickable.` : "";
       setCompareNotice({ ...block, message: block.message + wider, group });
       track("compare_blocked", { kind: block.kind });
@@ -150,6 +150,20 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   );
 
   const sortOptions = (Object.keys(SORT_LABELS) as SortKey[]).filter((k) => k !== "best_match" || deferredQuery.trim());
+
+  // Nothing analysed yet: filters, search and "No products match" would all be empty, so say what is happening. The box above analyses a product now.
+  if (products.length === 0) {
+    return (
+      <section id="registry" className="scroll-mt-24 max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pb-16 md:pb-24">
+        <div className="rounded-[14px] border border-[#e5dfd6] bg-white px-5 py-12 text-center">
+          <h3 className="font-display font-light text-[26px] leading-[1.1] text-[#282828]">Products appear here as we analyse them</h3>
+          <p className="mx-auto mt-3 max-w-[480px] text-[14px] leading-[1.55] text-[#4a4a4a]">
+            No product is listed right now. Paste a product name or link in the box above and we will analyse it and open the result.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="registry" className="scroll-mt-24 max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pb-16 md:pb-24">

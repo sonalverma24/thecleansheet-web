@@ -837,6 +837,13 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-30: Browse products is /products and Browse brands is /brands; every "analyse a product" link goes to /products
+- **Decided by:** the owner: a Brand Intelligence Directory ("Browse brands") separate from the product list ("Browse products"), built in pull request 45. No quotation was kept, so none is given here.
+- **Reason:** `/brands` is now the brand directory (a card per brand, then a profile per brand), so a link whose words are "Analyse a product", "Check a product" or "Back to all products" would land on a page that has no product list and no analyser box. The product list, its search, filters, Compare and the "Analyse any product, free" box are at `/products`.
+- **What it touched (links and wording only):** the compare page and `CompareView` ("Back to product analyses", "Product analyses", "Compare something else") now go to `/products` (`/products#registry`); every "analyse a product" call to action in `blog-posts.ts` (20), the blog index, the learn guides, About, the ingredient pages, the home closing call to action, `/verify`, the `/analyser` and `/analyzer` fallbacks, and the home FAQ now go to `/products`. The product page's breadcrumb data (`src/app/analysis/[slug]/page.tsx`) names `/products`, not `/brands`, as "Product Analyses". "Reviews" became "analyses" in the /brands and /products titles and text. `/brands` and `/products` each show a plain empty state when no product has been analysed (the `/brands` opening line no longer prints "0 covered brands"; a brand profile with no products is a 404, as before).
+- **Not changed:** which colour or pill any product gets, the decision core, stored analyses, `/analysis/<slug>` URLs, the links inside the product page components in `src/components/scorecards/` ("Back to all products", the breadcrumb, "Compare", and the unrated page's links still go to `/brands`; they are not part of this change). Nothing is written to the database.
+- **Undo:** revert the change; no migration.
+
 ### 2026-10-29: Products are compared only with products of the same type, and a comparison page gives a pick
 - **Decided by:** the owner, on 2026-10-29, in chat: "comparison should only be possible within the same category - like a sunscreen should be able to be compared with only a sunscreen and so on", then "use the available info on each product page and create product comparison and offer a suggestion - which to pick?" and, once they had seen it on localhost, "let's make it live".
 - **Reason:** in the owner's words above. The old overlay compared on pillars and warning badges that the /brands list does not carry for a stored analysis, so most products read "Not enough data", and it allowed a sunscreen to be set beside a shampoo.
@@ -985,8 +992,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 
 | Source | SHA-256 |
 |---|---|
-| `next.config.ts` | `b5553c94b64dcdf1358b80d3add3d84ce5381fa775e21b1454b349108d4a0694` |
-| `src/app/analysis/[slug]/page.tsx` | `3a40084321662de5a5ab91f0244673913a3a592657c6db5d9eb140319f986f3e` |
+| `next.config.ts` | `f1b36965c1c6a905daeb95ba48f790d30dd1d24969a56a86b1cddc060daa3d7a` |
+| `src/app/analysis/[slug]/page.tsx` | `bd7043283022923cf2e80a9f8cad2e0fe7c7467f7f5e31f7d86b18b2073b2dc2` |
 | `src/app/api/analyser-version/route.ts` | `e06baf28af49551cf0311a05a2c6688bc13d174c2eed7f653b4f29b6a20bfa24` |
 | `src/app/api/review/route.ts` | `21af87b8f3470d9c9fac3fc7add64d4de7cac23269a417f393479b1e850c3b78` |
 | `src/components/scorecards/AnalysisProductImage.tsx` | `a7e725c25a71ed0d1413ad28a8cdec40ab992e8bd56910bd287933ad7fce415c` |

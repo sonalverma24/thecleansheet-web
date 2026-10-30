@@ -443,7 +443,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                 Want to check if your product contains {ing.INCI_Name}?
               </p>
               <Link
-                href="/brands"
+                href="/products"
                 className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors w-full"
               >
                 Analyse a Product <ArrowRight size={14} />
