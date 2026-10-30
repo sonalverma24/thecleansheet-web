@@ -49,8 +49,12 @@ as checked with no flag, so such an entry must not be added (this is why the fra
 
 **Claim gap** (`caution.claim_gap`, `src/lib/analyser-x/rules.ts`). The claim with the widest residual risk leads (very high, then high, then medium; ties go
 to the first listed). The wording is "One claim, “X”, is not backed ..." or "N claims are not backed ..., for example “X”"; it never says "main claim". The
-threshold is unchanged: any claim that needs proof and has a gap yields Buy with caution. Whether one weak claim should override a good standing is an open
-policy decision; moving it changes ratings and needs a preview across all stored products.
+threshold is unchanged: any claim that needs proof and has a gap is a caution, and a caution yields Buy with caution, **except when all five sections of the
+product page are green** (owner decision, 2026-10-30, PR #51). Then the claim gap no longer holds the product down: it stays as a note and under Gaps, the
+product is a Good choice, and "All five areas of our checks are Strong" (`support.sections_green`) stands in for the claims support (`agreeWithSections` in
+`src/lib/analyser-x/decision.ts`; the section colours are defined once in `src/lib/analyser-x/sections.ts`, which the page and the decision both read). Every
+other caution is a flag and still yields Buy with caution. This answers the question this paragraph used to leave open (whether one weak claim should override
+a good standing). The current rules are in [ANALYSER-REFERENCE.md](ANALYSER-REFERENCE.md) and the owner's reason is in `docs/analyser-decisions.md`.
 
 **Today's checklist** (`src/lib/analysis-engine.ts`) carries no scores, only the checks and the hard red flags. "Pregnancy-safe assessment" is now
 "Pregnancy ingredient check": a retinoid is still flagged, and otherwise the row is not drawn, so it can no longer say "Clear" beside the pregnancy
