@@ -9,7 +9,7 @@ import MoreFromTcs from "@/components/home/MoreFromTcs";
 import Shelf from "@/components/home/Shelf";
 import ThreeWays from "@/components/home/ThreeWays";
 import { buildHomeFaqJsonLd, buildHomeFaqs } from "@/components/home/home-faqs";
-import { buildShelf, popularChecks, shelfCategories } from "@/lib/home-shelf";
+import { buildShelf, popularChecks } from "@/lib/home-shelf";
 import { listRepositoryCatalogueProducts } from "@/lib/product-review-engine";
 import { getSiteStats } from "@/lib/site-stats";
 
@@ -33,7 +33,8 @@ export default async function HomePage() {
       />
       <HomeHero popular={popularChecks(cards)} />
       <ThreeWays />
-      <Shelf cards={cards} categories={shelfCategories(cards)} />
+      {/* Up to five products (the owner's picks, else the newest), so there are no type chips to filter them by. */}
+      <Shelf cards={cards} categories={[]} />
       <ClaimSample />
       <CommunityIllustrative />
       <EducationSection />

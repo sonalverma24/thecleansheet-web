@@ -1,6 +1,7 @@
 import type { ProductScorecard } from "@/data/brands/types";
 import { resolveTier } from "@/components/scorecards/pillar-ui";
 import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
+import { HOME_PICK_SLUGS, HOME_SHELF_MAX } from "@/data/home-picks";
 
 /* ────────────────────────────────────────────────────────────────
    HOME SHELF · the product cards on the home page.
@@ -11,10 +12,11 @@ import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
    separate, not-yet-live programme, so the shelf never reads
    `certificationStatus` and never invents a verdict.
 
-   A fixed list of seven products leads the shelf (matched by brand and
-   name against the live repository). If fewer than MIN_CARDS of them have
-   been reviewed yet, the newest real skincare reviews top the shelf up so
-   it is never empty or lopsided.
+   The shelf shows up to HOME_SHELF_MAX products: the ones the owner chose
+   (src/data/home-picks.ts) when any of them have a stored analysis, otherwise
+   the newest analyses, so each new analysis appears on its own. The seeded
+   list below no longer decides who is shown: it only supplies the clean pack
+   shot for a product that has one and the hero's "Popular checks" labels.
 ──────────────────────────────────────────────────────────────── */
 
 export type ShelfCategory = "Cleansers" | "Toners" | "Exfoliants" | "Serums" | "Moisturisers" | "Spot care";
@@ -50,9 +52,6 @@ export const SHELF_SEEDS: readonly ShelfSeed[] = [
   { key: "anua-heartleaf-foam", brand: "anua", mustContain: ["heartleaf", "foam"], category: "Cleansers", image: "/images/home/products/anua-heartleaf-foam.webp", reviewQuery: "Anua Heartleaf Quercetinol Pore Deep Cleansing Foam" },
   { key: "cosrx-master-patch", brand: "cosrx", mustContain: ["master patch"], category: "Spot care", image: "/images/home/products/cosrx-master-patch.webp", reviewQuery: "COSRX Master Patch Original Fit", popular: "Pimple patches" },
 ];
-
-/** Fewer real matches than this and the shelf is topped up with the newest skincare reviews. */
-export const MIN_CARDS = 4;
 
 export interface ShelfCard {
   /** Which seeded product this is, or null for a top-up review. */
@@ -123,28 +122,17 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
   };
 }
 
-/** `tiles` are stored reviews, newest first (listRepositoryCatalogueProducts). */
-export function buildShelf(tiles: ProductScorecard[], min: number = MIN_CARDS): ShelfCard[] {
-  const used = new Set<string>();
-  const cards: ShelfCard[] = [];
+const seedKeyFor = (tile: Pick<ProductScorecard, "brand" | "productName">): string | null => SHELF_SEEDS.find((seed) => matchSeed(seed, tile))?.key ?? null;
 
-  for (const seed of SHELF_SEEDS) {
-    const tile = tiles.find((t) => !used.has(t.slug) && matchSeed(seed, t));
-    if (!tile) continue;
-    used.add(tile.slug);
-    cards.push(toCard(tile, seed.key, seed.category, seed.image));
-  }
-
-  if (cards.length >= min) return cards;
-
-  const rest = tiles.filter((t) => !used.has(t.slug));
-  const skincare = rest.filter((t) => categoryFor(t) !== null);
-  const pool = skincare.length >= min - cards.length ? skincare : [...skincare, ...rest.filter((t) => categoryFor(t) === null)];
-  for (const tile of pool) {
-    if (cards.length >= min) break;
-    cards.push(toCard(tile, null, categoryFor(tile) ?? OTHER, tile.image || null));
-  }
-  return cards;
+/** `tiles` are stored analyses, newest first (listRepositoryCatalogueProducts). The shelf is the owner's picks, in the order given, when any of them exist,
+    otherwise the newest analyses; never more than `max` and never a product twice. A picked slug with no analysis is skipped. */
+export function buildShelf(tiles: ProductScorecard[], opts: { picks?: readonly string[]; max?: number } = {}): ShelfCard[] {
+  const max = opts.max ?? HOME_SHELF_MAX;
+  const picks = opts.picks ?? HOME_PICK_SLUGS;
+  const bySlug = new Map(tiles.map((t) => [t.slug, t]));
+  const picked = [...new Set(picks)].flatMap((slug) => { const t = bySlug.get(slug); return t ? [t] : []; });
+  const chosen = (picked.length ? picked : tiles).slice(0, max);
+  return chosen.map((tile) => toCard(tile, seedKeyFor(tile), categoryFor(tile) ?? OTHER, seedImageFor(tile) ?? (tile.image || null)));
 }
 
 /** Filter chips: only groups that actually have a card, in display order. */

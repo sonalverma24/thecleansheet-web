@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ProductScorecard } from "@/data/brands/types";
+import { HOME_PICK_SLUGS } from "@/data/home-picks";
 import { buildShelf, categoryFor, matchSeed, popularChecks, SHELF_SEEDS, shelfCategories, shelfNote } from "./home-shelf";
 
 function tile(over: Partial<ProductScorecard> & { slug: string; brand: string; productName: string }): ProductScorecard {
@@ -33,17 +34,36 @@ describe("matchSeed", () => {
   });
 });
 
+const FACE = (n: number) => tile({ slug: `face-${n}`, brand: "Brand", productName: `Face Wash ${n}`, category: "Face Wash", reviewTier: "mostly-clean" });
+const HAIR = tile({ slug: "hair-1", brand: "Bare Anatomy", productName: "Ultra Smoothing Hair Serum", category: "Hair Serum", reviewTier: "can-do-better" });
+
 describe("buildShelf", () => {
-  it("returns the seeded products in design order with the clean local pack shot", () => {
-    const cards = buildShelf([COSRX_BHA, TONER, ANUA_FOAM, ANUA_OIL], 4);
-    expect(cards.map((c) => c.slug)).toEqual([ANUA_OIL.slug, TONER.slug, COSRX_BHA.slug, ANUA_FOAM.slug]);
-    expect(cards[0].image).toBe("/images/home/products/anua-heartleaf-oil.webp");
-    expect(cards[0].href).toBe("/analysis/anua-heartleaf-pore-control-cleansing-oil");
-    expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Toners", "Exfoliants", "Cleansers"]);
+  it("shows the newest analyses, in the order given, when no products are picked", () => {
+    const cards = buildShelf([FACE(1), HAIR, FACE(2)], { picks: [] });
+    expect(cards.map((c) => c.slug)).toEqual(["face-1", "hair-1", "face-2"]);
+    expect(cards[0].href).toBe("/analysis/face-1");
+    expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Other", "Cleansers"]);
+  });
+
+  it("never shows more than five, and the default is five", () => {
+    const many = Array.from({ length: 9 }, (_, i) => FACE(i + 1));
+    expect(buildShelf(many, { picks: [] })).toHaveLength(5);
+    expect(buildShelf(many, { picks: [], max: 3 })).toHaveLength(3);
+  });
+
+  it("shows the owner's picks, in the order chosen, in place of the newest", () => {
+    const tiles = [FACE(1), FACE(2), FACE(3), FACE(4)];
+    expect(buildShelf(tiles, { picks: ["face-3", "face-1"] }).map((c) => c.slug)).toEqual(["face-3", "face-1"]);
+  });
+
+  it("skips a picked slug that has no analysis yet, shows a product once, and falls back to the newest when no pick exists", () => {
+    const tiles = [FACE(1), FACE(2)];
+    expect(buildShelf(tiles, { picks: ["not-analysed-yet", "face-2", "face-2"] }).map((c) => c.slug)).toEqual(["face-2"]);
+    expect(buildShelf(tiles, { picks: ["not-analysed-yet"] }).map((c) => c.slug)).toEqual(["face-1", "face-2"]);
   });
 
   it("shows the real rating for each product, as a circle: green, yellow, red", () => {
-    const cards = buildShelf([ANUA_OIL, ANUA_FOAM, COSRX_BHA, TONER], 4);
+    const cards = buildShelf([ANUA_OIL, ANUA_FOAM, COSRX_BHA], { picks: [] });
     const marker = (slug: string) => cards.find((c) => c.slug === slug)!.marker;
     expect(marker(ANUA_OIL.slug)).toBe("green");
     expect(marker(ANUA_FOAM.slug)).toBe("yellow");
@@ -53,31 +73,25 @@ describe("buildShelf", () => {
 
   it("never shows a certified status, even when the stored tile says certified", () => {
     const certified = { ...ANUA_OIL, certificationStatus: "tcs-certified" as const };
-    const cards = buildShelf([certified, ANUA_FOAM, COSRX_BHA, TONER], 4);
-    for (const c of cards) {
-      expect(JSON.stringify(c).toLowerCase()).not.toContain("certif");
-    }
+    for (const c of buildShelf([certified, ANUA_FOAM], { picks: [] })) expect(JSON.stringify(c).toLowerCase()).not.toContain("certif");
   });
 
-  it("tops up with the newest skincare reviews when too few seeded products are reviewed", () => {
-    const hair = tile({ slug: "hair-1", brand: "Bare Anatomy", productName: "Ultra Smoothing Hair Serum", category: "Hair Serum" });
-    const face = (n: number) => tile({ slug: `face-${n}`, brand: "Brand", productName: `Face Wash ${n}`, category: "Face Wash" });
-    const cards = buildShelf([hair, face(1), face(2), face(3), ANUA_OIL], 4);
-    // The seeded product leads; the hair serum is skipped because enough skincare reviews exist.
-    expect(cards.map((c) => c.slug)).toEqual([ANUA_OIL.slug, "face-1", "face-2", "face-3"]);
-    expect(cards[1].category).toBe("Cleansers");
+  it("uses the clean pack shot kept for a known product and the stored photo for any other", () => {
+    const cards = buildShelf([ANUA_OIL, FACE(1)], { picks: [] });
+    expect(cards[0].image).toBe("/images/home/products/anua-heartleaf-oil.webp");
+    expect(cards[0].seedKey).toBe("anua-heartleaf-oil");
     expect(cards[1].image).toBe("https://img.example/p.jpg");
+    expect(cards[1].seedKey).toBeNull();
   });
 
-  it("does not top up once enough seeded products exist, and never repeats a product", () => {
-    const extra = tile({ slug: "extra", brand: "Other", productName: "Another Serum", category: "Serum" });
-    const cards = buildShelf([extra, ANUA_OIL, ANUA_FOAM, COSRX_BHA, TONER], 4);
-    expect(cards.map((c) => c.slug)).not.toContain("extra");
-    expect(new Set(cards.map((c) => c.slug)).size).toBe(cards.length);
+  it("returns an empty shelf when there are no analyses", () => {
+    expect(buildShelf([], { picks: [] })).toEqual([]);
+    expect(buildShelf([], { picks: ["anything"] })).toEqual([]);
   });
 
-  it("returns an empty shelf when the repository is empty", () => {
-    expect(buildShelf([], 4)).toEqual([]);
+  it("starts with no products picked, so every new analysis appears on its own", () => {
+    expect(HOME_PICK_SLUGS).toEqual([]);
+    expect(buildShelf([FACE(1)]).map((c) => c.slug)).toEqual(["face-1"]);
   });
 });
 
@@ -90,15 +104,15 @@ describe("categoryFor and shelfCategories", () => {
   });
 
   it("only lists chips that have a card, in display order", () => {
-    const cards = buildShelf([COSRX_BHA, TONER, ANUA_OIL, ANUA_FOAM], 4);
+    const cards = buildShelf([COSRX_BHA, TONER, ANUA_OIL, ANUA_FOAM], { picks: [] });
     expect(shelfCategories(cards)).toEqual(["Cleansers", "Toners", "Exfoliants"]);
   });
 });
 
 describe("popularChecks", () => {
-  it("links only to reviews that exist, with the short label", () => {
+  it("links only to analyses that exist, with the short label", () => {
     const patch = tile({ slug: "cosrx-master-patch-original-fit", brand: "COSRX", productName: "Master Patch Original Fit" });
-    const cards = buildShelf([COSRX_BHA, patch, ANUA_OIL, TONER], 4);
+    const cards = buildShelf([COSRX_BHA, patch, ANUA_OIL, TONER], { picks: [] });
     expect(popularChecks(cards)).toEqual([
       { label: "Cleansing oil", href: `/analysis/${ANUA_OIL.slug}` },
       { label: "BHA liquid", href: `/analysis/${COSRX_BHA.slug}` },
@@ -106,8 +120,8 @@ describe("popularChecks", () => {
     ]);
   });
 
-  it("is empty when none of the labelled products have been reviewed", () => {
-    expect(popularChecks(buildShelf([TONER], 4))).toEqual([]);
+  it("is empty when none of the labelled products have been analysed", () => {
+    expect(popularChecks(buildShelf([TONER], { picks: [] }))).toEqual([]);
   });
 });
 
@@ -133,20 +147,20 @@ describe("the pills page: a shelf card of a stored review shows its circle", () 
   const CAUTION = { ...ANUA_OIL, pill: { key: "buy-with-caution", marker: "yellow" as const } };
 
   it("shows the page's circle and no words, and keeps everything else the card had", () => {
-    const [card] = buildShelf([CAUTION], 1);
-    const [before] = buildShelf([ANUA_OIL], 1);
+    const [card] = buildShelf([CAUTION], { picks: [] });
+    const [before] = buildShelf([ANUA_OIL], { picks: [] });
     expect(card.marker).toBe("yellow");
     expect(JSON.stringify(card)).not.toMatch(/Buy with caution|Good choice|Look elsewhere|Not enough info|Medicinal product/);
     expect({ ...card, marker: null }).toEqual({ ...before, marker: null });
   });
 
   it("a tile with no pill shows the circle of today's standing", () => {
-    const [card] = buildShelf([ANUA_OIL], 1);
+    const [card] = buildShelf([ANUA_OIL], { picks: [] });
     expect(card.marker).toBe("green");
   });
 
   it("a grey pill (not enough info, a medicine) is a grey circle", () => {
-    const [card] = buildShelf([{ ...ANUA_OIL, pill: { key: "not-enough-info", marker: null } }], 1);
+    const [card] = buildShelf([{ ...ANUA_OIL, pill: { key: "not-enough-info", marker: null } }], { picks: [] });
     expect(card.marker).toBeNull();
   });
 });
