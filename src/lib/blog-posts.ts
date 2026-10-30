@@ -1,7 +1,8 @@
 // Inline rich text: a plain string, or a sequence of strings and links.
 // Links whose href starts with "/" render as internal Next.js links; others
-// render as external anchors (new tab, rel="noopener").
-export type InlineNode = string | { text: string; href: string };
+// render as external anchors (new tab, rel="noopener"). `{ bold }` renders
+// emphasised text, e.g. the lead-in label of a bullet.
+export type InlineNode = string | { text: string; href: string } | { bold: string };
 export type RichText = string | InlineNode[];
 
 export type BlogPost = {
@@ -13,6 +14,8 @@ export type BlogPost = {
   subtitle: string;
   excerpt: string;
   author: string;
+  /** Optional job title, shown next to the author's name on the post page. */
+  authorRole?: string;
   image: string;
   imageEffect?: "blur-caution";
   content: BlogBlock[];
@@ -28,13 +31,88 @@ export type BlogBlock =
   | { type: "before-after"; before: string; after: string }
   | { type: "callout"; text: string }
   | { type: "bullets"; items: RichText[] }
-  | { type: "table"; headers: string[]; rows: string[][] }
+  /** `stackOnMobile`: on phones, show each row as a card (first column = title) instead of a sideways-scrolling table. */
+  | { type: "table"; headers: string[]; rows: string[][]; stackOnMobile?: boolean }
   | { type: "sources"; items: { text: string; href?: string }[] }
   | { type: "divider" }
   | { type: "image"; src: string; alt: string; caption?: string }
   | { type: "cta"; text: string; href: string; label: string };
 
 export const BLOG_POSTS: BlogPost[] = [
+  {
+    slug: "egfs-in-skincare-worth-the-investment",
+    category: "Science",
+    readTime: "7 min read",
+    date: "October 30, 2026",
+    title: "EGFs in Skincare: Worth the Investment?",
+    subtitle: "What growth factors actually do for your skin, and when the price tag makes sense.",
+    metaDescription: "What epidermal growth factors (EGFs) do for skin, how they compare with retinoids and peptides, what the evidence says, and when the price tag is worth it.",
+    excerpt: "EGFs, or epidermal growth factors, are the premium-priced protein in a growing number of anti-ageing serums. Here is what they do in skin, how they compare with retinoids and peptides, where the evidence is strongest (recovery after procedures) and where it is thin (intact skin), and when the price tag makes sense.",
+    author: "Rhea Sugwekar",
+    authorRole: "Cosmetic Regulatory Research Specialist",
+    image: "/images/blog/egf-skincare-worth-the-investment/hero.webp",
+    content: [
+      { type: "paragraph", text: "Ah, ageing, that all-too-universal process that brings wisdom…and wrinkles. While the former may be a culmination of one’s individual life experiences, the latter is as certain as the sun rising in the east." },
+      { type: "paragraph", text: "With anti-ageing science on the rise, the industry is teeming with new technologies that ensure a graceful entry into the later years of one’s life. One of these technologies are EGFs: Epidermal Growth Factors." },
+
+      { type: "heading", level: 2, text: "What are epidermal growth factors?" },
+      { type: "paragraph", text: "EGFs are essentially naturally occurring proteins in the skin that bring about a host of good-for-skin activities, like regulation of the cellular lifecycle, wound-healing and overall tissue health. They stimulate the growth of fibroblast cells that are crucial for the ultimate anti-ageing juggernaut: collagen & elastin." },
+      { type: "paragraph", text: "“The amount of EGF we’re naturally born with decreases with age, which partly explains the thinning and loosening of the skin, because normal levels of EGF keep the skin thick, with plenty of collagen,” says Dr Ronald Moy, a board-certified dermatologist." },
+
+      { type: "heading", level: 2, text: "How do epidermal growth factors figure in skincare?" },
+      { type: "paragraph", text: "EGFs respond and bind to EGF receptors found on the outermost surface of skin cells, which then trigger a biochemical domino effect that signals the cells to proliferate. This cellular proliferation is what boosts cell renewal, barrier integrity, and tissue repair. While EGFs can be synthetically engineered in a lab and often are, they can also be originally found in our bodies from the get-go." },
+
+      { type: "heading", level: 3, text: "The benefits" },
+      { type: "paragraph", text: "EGFs have the much-coveted ability to regenerate your skin on a cellular level. There are many similarities between natural ageing and the wound-healing processes, both requiring the biostimulation of keratinocytes and fibroblasts brought about by EGFs." },
+      { type: "paragraph", text: "From an application perspective, the most commonly accessible method of using EGFs in cosmetics is through creams and serums. But for the highest degree of efficacy, experts recommend routine intradermal injections and transdermal patches that most effectively reduce hyperpigmentation, unwanted folds, fine lines and premature wrinkles." },
+      { type: "paragraph", text: "Often appearing on labels as ‘Oligopeptide-1’, at concentrations of 1%, EGFs have proven to support the skin’s natural biological process of healing deep-rooted sun damage, support barrier repair and build stronger skin resilience. When coupled with other actives such as Vitamin C or Retinoids, they can deliver a one-two punch that can form a truly holistic approach to anti-ageing or preventative/regenerative skincare." },
+      { type: "paragraph", text: "When combining with retinoids, however, one must ensure the retinoid is used at night while EGFs are used in the morning, followed by sunscreen." },
+      { type: "bullets", items: [
+        [{ bold: "Faster skin renewal:" }, " EGF stimulates keratinocytes and fibroblasts, which can speed up cell turnover and help skin recover from damage."],
+        [{ bold: "Wound and post-procedure healing:" }, " This is where the evidence is strongest. EGF has been studied for healing chronic wounds, burns, and skin after lasers, peels, and microneedling, which is why many clinics recommend EGF serums afterwards."],
+        [{ bold: "Collagen support:" }, " By activating fibroblasts, EGF may encourage collagen and elastin production, which can modestly improve firmness and fine lines over time."],
+        [{ bold: "Smoother texture and tone:" }, " Better turnover can help with roughness, dullness, and the look of mild scarring or uneven tone."],
+        [{ bold: "Barrier repair and hydration:" }, " Faster repair of the outer skin layer can help sensitive or irritated skin hold moisture better."],
+      ] },
+      { type: "paragraph", text: "On a simpler note, what does this mean? Only that EGFs contribute a lion’s share in helping you keep that youthful glow, along with your skin functioning healthily." },
+
+      { type: "heading", level: 2, text: "EGFs vs. retinoids vs. peptides" },
+      { type: "paragraph", text: "It really comes down to what concern one is using them for. As mentioned earlier, EGFs pair well with retinoids when used at the correct timing, and peptides tend to boost the functionality of both." },
+      { type: "table", stackOnMobile: true, headers: ["Factor", "Retinoids", "Peptides", "EGF"], rows: [
+        ["What they are", "Vitamin A derivatives (retinol, retinal, adapalene, tretinoin)", "Short amino acid chains (e.g. copper peptides, Matrixyl/palmitoyl peptides, argireline)", "A full 53-amino-acid growth factor protein (~6 kDa)"],
+        ["How they work", "Bind retinoid receptors in skin cells, speeding turnover and boosting collagen while reducing breakdown", "Act as signals (collagen-stimulating), enzyme inhibitors, or neurotransmitter-modulating agents, depending on the peptide", "Bind EGF receptors to stimulate cell proliferation and repair"],
+        ["Evidence on intact skin", "Strong. Decades of randomised trials for photoaging, fine lines, and acne. Tretinoin has the most data", "Moderate to mixed. Some peptides have decent small trials, but quality and size vary widely", "Weak. Mostly in vitro, animal, and small pilot studies"],
+        ["Penetration", "Good. Small, fat-soluble molecules", "Variable. Smaller peptides and lipid-attached ones (palmitoyl) fare better", "Poor on intact skin, better on compromised skin"],
+        ["Best uses", "Wrinkles, texture, uneven tone, acne", "Firmness, hydration, supporting a barrier or retinoid routine", "Post-procedure and wound recovery"],
+        ["Irritation risk", "Highest: dryness, peeling, redness, sun sensitivity, and an adjustment period", "Low. Generally well tolerated", "Low to moderate. Mild redness is possible"],
+        ["Pregnancy", "Avoid oral and generally topical retinoids", "Generally considered fine, but check specific products", "Not well studied. Many clinicians advise caution"],
+        ["Cost for what you get", "Often cheap (adapalene is OTC, tretinoin is prescription)", "Wide range", "Usually premium-priced, with limited proof"],
+      ] },
+      { type: "paragraph", text: "Essentially:" },
+      { type: "bullets", items: [
+        "If you want one proven anti-ageing ingredient, a retinoid is the best-supported choice. Start low and slow (a few nights a week), and use sunscreen daily.",
+        "Peptides are a reasonable add-on, especially if retinoids irritate you. They won’t match a retinoid’s results, but they mix well with almost anything.",
+        "EGF makes the most sense for recovery after lasers, peels, or microneedling, or for compromised skin, rather than as a primary anti-ageing step.",
+      ] },
+
+      { type: "heading", level: 2, text: "Common concerns" },
+      { type: "heading", level: 3, text: "Do EGFs cause cancer?" },
+      { type: "paragraph", text: "The biggest ongoing debate is whether EGFs are carcinogenic, to which the answer is a much-commonly cited phrase in toxicology: the dose makes the poison. EGFs at cosmetic concentrations are perfectly safe for the skin, as confirmed by a well-established 2023 study in the International Wound Journal. Cosmetic products do not contain EGFs at concentrations high enough to become a noticeable concern." },
+
+      { type: "heading", level: 3, text: "Do EGFs penetrate the skin?" },
+      { type: "paragraph", text: "Yes and no. While we now have considerable data to prove their activity in the skin, EGFs fall under the ever-expanding category of regenerative skincare and are touted for their benefits by dermatologists and skin specialists worldwide." },
+      { type: "paragraph", text: "According to Dr Marisa Garshick, a board-certified dermatologist, “Growth factors in skincare can help to support collagen production to help firm the skin, as well as tighten its appearance.” One can also consult aestheticians for the safest steps on one’s skin rejuvenation journey." },
+      { type: "paragraph", text: "The only caveat here is that human trials on EGFs are still underway, and a lot of the data we have comes mostly from in vitro and animal trials. For example, a 2015 study tested rhEGF in lipid nanoparticle dressings on intact skin and on skin with the stratum corneum removed. The particles stayed essentially at the surface for at least 48 hours, and rhEGF released onto intact skin could not reach the deeper viable layers. On barrier-compromised skin, sustained release from the nanoparticles was observed." },
+      { type: "paragraph", text: "In contrast, one of the more viable human studies is a 2026 pilot study that tested an EGF cream against a control cream and a PRF cream. EGF concentration in the stratum corneum rose over the four weeks and reached equilibrium with the product concentration by week four. That shows EGF builds up in the outer layer, not that it reaches deeper cells. It’s a small pilot with a short follow-up; however, it’s perfectly safe to try." },
+
+      { type: "heading", level: 3, text: "EGFs or stem cells?" },
+      { type: "paragraph", text: "It’s correct that stem cells for EGFs can be derived from plants, such as seaweed or other marine resources or snail mucin. When it comes to plant EGFs in lotions or moisturisers, there’s yet a degree of doubt in the dermat community. “As far as I know, there isn’t any sort of good explanation for adding plant stem cells in creams,” says Michelle Wong, founder of Lab Muffin Science." },
+      { type: "paragraph", text: "Because plant cells have a cellular structure entirely different from human cells, there’s some doubt about whether human bodies can replicate them. Facialists and cosmetologists recommend using one’s own stem cells to trigger EGFs as the best way forward by opting for the injectable route." },
+
+      { type: "heading", level: 2, text: "Final thoughts" },
+      { type: "paragraph", text: "Any product with EGFs will be hefty on the wallet. One can consider them to be a long-term investment while simplifying the other products in their skincare routine, given the efficacy and high number of benefits that EGFs provide. For injectables, it’s smarter to consult dermatologists or aestheticians for the best way forward." },
+    ],
+  },
   {
     slug: "siloxanes-cosmetics-india",
     category: "Science",
