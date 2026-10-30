@@ -33,10 +33,10 @@ export async function GET() {
 
   lines.push("## Core tools");
   lines.push(
-    `- [Ingredient Analyser](${BASE}/review): Paste a product name, URL or INCI list to get a full ingredient safety breakdown.`,
+    `- [Ingredient Analyser](${BASE}/products): Paste a product name, URL or INCI list to get a full ingredient safety breakdown.`,
   );
   lines.push(
-    `- [Product Analyser](${BASE}/brands): Get one clear Clean Sheet rating for any product, with every claim checked against evidence.`,
+    `- [Product Analyser](${BASE}/products): Get one clear Clean Sheet rating for any product, with every claim checked against evidence.`,
   );
   lines.push(
     `- [Ingredient Directory](${BASE}/ingredients): Search ${fmt(stats.ingredients)} cosmetic ingredients for safety, allergen flags and regulatory limits.`,

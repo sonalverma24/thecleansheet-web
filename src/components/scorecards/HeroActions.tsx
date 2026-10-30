@@ -63,7 +63,7 @@ export function HeroActions({ productId }: Props) {
           {user ? (reviewCount > 0 && /* user's own review check handled server-side */ false ? "Edit your feedback" : "Add feedback") : "Add feedback"}
         </button>
         <Link
-          href="/brands"
+          href="/products"
           className="flex items-center justify-center gap-1.5 border border-[#efe9e0] bg-white hover:border-[#248179]/30 text-[#282828] text-xs py-2.5 px-4 rounded-xl transition-colors"
           style={{ fontFamily: "Helvetica, 'Helvetica Neue', Arial, sans-serif" }}
         >

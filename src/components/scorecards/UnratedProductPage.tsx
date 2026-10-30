@@ -51,7 +51,7 @@ export function UnratedProductPage({ slug, kind, productName, brand, category, i
       <Band className="pt-8 sm:pt-10">
         <UnratedNotice mode="page" kind={kind} productName={productName} brand={brand} productSlug={slug} />
         <p className="mt-6 text-center text-sm text-[#55504d]">
-          <Link href="/brands" className="underline underline-offset-2 hover:text-[#282828]">Browse the products we have analysed</Link>
+          <Link href="/products" className="underline underline-offset-2 hover:text-[#282828]">Browse the products we have analysed</Link>
         </p>
       </Band>
     </main>
