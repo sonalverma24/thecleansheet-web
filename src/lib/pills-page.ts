@@ -26,7 +26,7 @@ import { reviewInciList } from "@/lib/review-inci";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import {
-  ANALYSER_RELEASE, AUTHORITIES, MIN_SCREEN_COVERAGE, STALE_DAYS, benchmarkPanel, decideReview, shortList, sourceName,
+  ANALYSER_RELEASE, AUTHORITIES, GREEN_FROM, INGREDIENT_CAUTIONS, RED_UNDER, STALE_DAYS, benchmarkPanel, decideReview, reviewSections, safetyMarker, shortList, sourceName, testLevelOfClaims,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
 } from "@/lib/analyser-x";
 
@@ -398,14 +398,8 @@ export function regulatoryLine(d: Decision, panel: BenchmarkPanel | null, medici
 
 /* ── block 8: the five detail rows ───────────────────────────── */
 
-/** A row's marker from its percentage. Green is a clearly strong result (75 and over), red a concern (under 45), yellow everything between. These two
-    cut-offs are the only place the three colours are drawn on a percentage. */
-export const GREEN_FROM = 75;
-export const RED_UNDER = 45;
-const ratingOf = (pct: number): { word: string; marker: RowMarker } => {
-  const marker: MarkerName = pct >= GREEN_FROM ? "green" : pct >= RED_UNDER ? "yellow" : "red";
-  return { word: MARKER_WORD[marker], marker };
-};
+/** A row's marker from its percentage (the cut-offs and the rule are in analyser-x/sections.ts, which the decision reads too). */
+export { GREEN_FROM, RED_UNDER };
 const markerRow = (marker: MarkerName): { word: string; marker: RowMarker } => ({ word: MARKER_WORD[marker], marker });
 const NOT_RATED: { word: string; marker: RowMarker } = { word: "Not rated", marker: null };
 
@@ -419,42 +413,23 @@ const LADDER_PLAIN: Record<number, string> = {
   6: "A clinical study with sample size, duration and method is available.",
   7: "A published or registered study you can look up.",
 };
-/** The marker for test transparency, by the strongest public evidence for what the product promises: a named lab report or better is green (levels 5 to 7),
-    a brand's own say-so or a disclosed percentage or general research is yellow (levels 2 to 4), and no proof at all is red (level 1). */
-const MARKER_OF_LEVEL: Record<number, MarkerName> = { 7: "green", 6: "green", 5: "green", 4: "yellow", 3: "yellow", 2: "yellow", 1: "red" };
-const PERFORMANCE_TYPES = new Set(["concern", "appearance", "time-bound", "clinical", "functional"]);
-
 /** The strongest public evidence among the claims that promise a result; failing that, among all claims. */
 export function testLevelOf(review: ProductReview): number {
-  const claims = review.claimMap ?? [];
-  const promising = claims.filter((c) => PERFORMANCE_TYPES.has(c.primaryType));
-  const pool = promising.length ? promising : claims;
-  return pool.length ? Math.max(...pool.map((c) => c.evidenceLevel)) : 1;
+  return testLevelOfClaims(review.claimMap ?? []);
 }
 
 /** The generic note an ingredient gets when we hold no row for it, from inci-enrich.ts. Today's page still shows it; the pills page does not. */
 const NOT_HELD_NOTE = /\bnot in our (analysed |reference )?(database|data)\b/i;
 export const isNotHeldNote = (note?: string): boolean => Boolean(note && NOT_HELD_NOTE.test(note));
 
-const INGREDIENT_CAUTIONS = new Set(["caution.soft_adverse", "caution.audience", "caution.catch_all", "caution.benchmark_gap"]);
-
 function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, product: ProductScorecard, medicine: boolean = d.key === "medicinal-product"): DetailRow[] | null {
   if (medicine || (d.key === "not-enough-info" && d.gapKind === "acquisition")) return null;
-  const s = review.scores;
   const pillar = (re: RegExp) => product.pillars.find((p) => re.test(p.name))?.note ?? "";
 
-  // 1. Ingredient safety: from the decision's own findings.
+  // 1. Ingredient safety: from the decision's own findings (analyser-x/sections.ts holds the rule, and the decision reads it too).
   const safetyReasons = d.reasons.filter((r) => r.ruleId.startsWith("block.") || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "note.screen_partial" || r.ruleId === "support.safety_clear");
-  let safety: { word: string; marker: RowMarker };
-  // "Clear" is a statement about the ingredients the screen checked (decision X42), so an ingredient our reference file does not hold ("Water" for Aqua)
-  // does not make a clear screen Fair. It does once fewer than half the list was checked: the row would then say "Strong" about a list mostly unread.
-  const partial = settled.has("note.screen_partial");
-  const mostlyChecked = d.basis.screenCoverage >= MIN_SCREEN_COVERAGE;
-  if ([...settled].some((id) => id.startsWith("block.") && id !== "block.pillars") || d.key === "look-elsewhere") safety = markerRow("red");
-  else if ([...settled].some((id) => INGREDIENT_CAUTIONS.has(id))) safety = markerRow("yellow");
-  else if (settled.has("support.safety_clear") && (!partial || mostlyChecked)) safety = markerRow("green");
-  else if (partial) safety = markerRow("yellow");
-  else safety = NOT_RATED;
+  const safetyColour = safetyMarker({ key: d.key, settled, screenCoverage: d.basis.screenCoverage });
+  const safety = safetyColour === null ? NOT_RATED : markerRow(safetyColour);
   // The row's words leave out the coverage gap ("N of M listed ingredients are not in our reference database"), as the Regulatory check does:
   // the gap lowers the confidence and is listed under Gaps. It sets this row's rating only when fewer than half the list was checked; it never moves the pill.
   const safetyTexts = safetyReasons.filter((r) => r.ruleId !== "note.screen_partial");
@@ -469,25 +444,27 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   const checks = [f?.heroIngredientsMatchClaim, f?.formatSuitableForClaim, f?.activesLikelyMeaningful, f?.baseFormulaAppropriate].filter((x) => x === true).length;
   const formulaLine = lead(f?.note) || (f?.claimOverreach ? "The claims promise more than the formula can deliver." : checks === 4 ? "The formula suits what it claims to do." : `${checks} of 4 formula checks pass.`);
 
-  // 3. Claims evidence.
-  const claimsPct = Math.round(((s?.claimEvidence ?? 0) / 20) * 100);
+  // Formula logic, Claims evidence, Test transparency and Consumer clarity take their colours from the same function the decision reads
+  // (analyser-x/sections.ts), so a row on the page and the check the decision makes about it cannot disagree.
+  const sec = reviewSections(review);
+  const colour = (m: typeof sec.formula) => markerRow((m ?? "red") as MarkerName);
+
+  // 3. Claims evidence: its colour is sec.claims.
 
   // 4. Test transparency.
   const level = testLevelOf(review);
-  const testMarker = MARKER_OF_LEVEL[Math.min(7, Math.max(1, level))];
   const evidenceNotes = [...(review.claimMap ?? [])].filter((c) => c.evidenceNote).sort((a, b) => b.evidenceLevel - a.evidenceLevel).slice(0, 3).map((c) => `${c.text}: ${c.evidenceNote}`);
 
   // 5. Consumer clarity.
   const it = review.ingredientTransparency;
   const gaps = [it && it.usageWarningsClear === false ? "usage warnings" : "", it && it.phDisclosedWhereRelevant === false ? "pH" : "", it && it.activePercentagesDisclosed === false ? "active strengths" : ""].filter(Boolean);
-  const clarityPct = Math.round(((s?.claimClarity ?? 0) / 15) * 100);
 
   return [
     { n: "01", title: "Ingredient safety", oneLiner: safetyLine, rating: safety, body: [...flagged.map((i) => `${i.name}: ${i.note}`), ...safetyTexts.slice(1).map((r) => r.text)].filter(Boolean) },
-    { n: "02", title: "Formula logic", oneLiner: formulaLine, rating: ratingOf(Math.round(((s?.formulaLogic ?? 0) / 15) * 100)), body: [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
-    { n: "03", title: "Claims evidence", oneLiner: claimLine(product), rating: ratingOf(claimsPct), body: [pillar(/claim support|claim/i)].filter(Boolean) },
-    { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: markerRow(testMarker), body: evidenceNotes },
-    { n: "05", title: "Consumer clarity", oneLiner: gaps.length ? `Clear overall, with ${plural(gaps.length, "gap", "gaps")} in guidance: ${joinAnd(gaps)}.` : "Clear claims, ingredients and instructions.", rating: ratingOf(clarityPct), body: [pillar(/clarity/i), ...(it?.issues ?? [])].filter(Boolean) },
+    { n: "02", title: "Formula logic", oneLiner: formulaLine, rating: colour(sec.formula), body: [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
+    { n: "03", title: "Claims evidence", oneLiner: claimLine(product), rating: colour(sec.claims), body: [pillar(/claim support|claim/i)].filter(Boolean) },
+    { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: colour(sec.tests), body: evidenceNotes },
+    { n: "05", title: "Consumer clarity", oneLiner: gaps.length ? `Clear overall, with ${plural(gaps.length, "gap", "gaps")} in guidance: ${joinAnd(gaps)}.` : "Clear claims, ingredients and instructions.", rating: colour(sec.clarity), body: [pillar(/clarity/i), ...(it?.issues ?? [])].filter(Boolean) },
   ];
 }
 

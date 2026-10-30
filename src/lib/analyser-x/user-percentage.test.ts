@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { decideReview } from "./adapter";
 import { MAX_REASON, lint } from "./copy";
 import { ambitionOf, isUserPercentage } from "./ladder";
-import { NOW, claimOf, rv } from "./test-helpers";
+import { NOW, claimOf, notAllGreen, rv } from "./test-helpers";
+import type { ProductReview } from "@/lib/product-review-types";
 
 /* A "% of users" figure says how people felt, not what a test measured. It never moves the pill (owner decision, 2026-10-29); when no test details are
    public for it, it is listed as a gap (note.user_percentage). Wording that claims a proven result still counts. */
@@ -13,8 +14,8 @@ const surveyDetailed = claimOf({ ...survey, evidenceLevel: 6 });
 const proven = claimOf({ text: "Clinically proven: 95% of users saw smoother skin", types: ["clinical"], primaryType: "clinical", evidenceLevel: 4 });
 const unproven = claimOf({ text: "Prevents future damage", types: ["functional"], primaryType: "functional", evidenceLevel: 2 });
 
-const run = (claims: ReturnType<typeof claimOf>[]) => {
-  const r = decideReview(rv({ claimMap: claims }), NOW);
+const run = (claims: ReturnType<typeof claimOf>[], extra: Partial<ProductReview> = {}) => {
+  const r = decideReview(rv({ claimMap: claims, ...extra }), NOW);
   const ids = r.decision.reasons.map((x) => x.ruleId);
   return { r, ids, key: r.decision.key, note: r.decision.reasons.find((x) => x.ruleId === "note.user_percentage") };
 };
@@ -49,14 +50,14 @@ describe("a % of users figure never moves the pill", () => {
   });
 
   it("it is not counted among the claims that need proof, so another claim's gap is still named and counted alone", () => {
-    const { r } = run([hero, unproven, survey]);
+    const { r } = run([hero, unproven, survey], notAllGreen());
     const f = r.findings.find((x) => x.ruleId === "caution.claim_gap");
     expect(f?.params).toMatchObject({ claim: "Prevents future damage", count: 1 });
     expect(r.decision.key).toBe("buy-with-caution");
   });
 
   it("a figure that also says clinically proven is still held to the clinical bar", () => {
-    const { ids, key } = run([hero, proven]);
+    const { ids, key } = run([hero, proven], notAllGreen());
     expect(ids).toContain("caution.claim_gap");
     expect(key).toBe("buy-with-caution");
   });

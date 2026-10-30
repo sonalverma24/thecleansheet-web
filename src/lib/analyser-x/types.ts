@@ -254,6 +254,9 @@ export interface RuleContext {
   benchmark: BenchmarkValue | null;
   /** Medicine-register entries read from official pages. Absence from a register is never evidence. */
   register: { fact: string; value: RegisterEntryValue; trust: Trust; url?: string; capturedAt?: string }[];
+  /** The colours of the four product-page sections that come from the stored analysis (see sections.ts). Absent when a context is built without them; the
+      decision then makes no use of the sections. */
+  sections?: { formula: "green" | "yellow" | "red" | null; claims: "green" | "yellow" | "red" | null; tests: "green" | "yellow" | "red" | null; clarity: "green" | "yellow" | "red" | null };
 }
 
 export interface Rule {

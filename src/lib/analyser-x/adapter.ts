@@ -22,6 +22,7 @@ import { listLooksSane } from "./verifier";
 import { computeBenchmark } from "./regulatory";
 import { productScopeOf } from "@/lib/product-scope";
 import { decide, type DecideOutput } from "./decision";
+import { reviewSections } from "./sections";
 import type { AcquisitionValue, ClaimValue, ListSource, ListValue, RuleContext, Trust } from "./types";
 
 function sourceOf(url: string | undefined, trust: Trust, hasList: boolean): ListSource {
@@ -108,6 +109,7 @@ export type ReviewDecision = DecideOutput & { ctx: RuleContext };
 
 /** Decide on a stored v3.0 analysis. No network, no model. */
 export function decideReview(review: ProductReview, now: string = new Date().toISOString(), over: AdapterOverrides = {}): ReviewDecision {
-  const ctx = buildContext(factsFromReview(review, now, over), now);
+  // The page's own section colours go in with the facts: the decision reads the same four the page draws (see sections.ts).
+  const ctx: RuleContext = { ...buildContext(factsFromReview(review, now, over), now), sections: reviewSections(review) };
   return { ...decide(ctx), ctx };
 }

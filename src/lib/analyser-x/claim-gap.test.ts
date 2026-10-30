@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { decideReview } from "./adapter";
 import { lint } from "./copy";
 import { residualOf } from "./rules";
-import { NOW, claimOf, rv } from "./test-helpers";
+import { NOW, claimOf, notAllGreen, rv } from "./test-helpers";
 
 /* The claim-gap caution names the claim with the widest gap, whatever order the claims were listed in, and
    says "One claim" or "N claims": it was "The main claim", though nothing ever picked the main one. */
@@ -59,10 +59,15 @@ describe("caution.claim_gap wording", () => {
 });
 
 describe("the threshold is unchanged", () => {
-  it("one weak claim still lowers the pill to Buy with caution, even beside a well-evidenced hero claim", () => {
-    const { r, finding } = gap([hero, high]);
-    expect(finding).toBeDefined();
+  it("one weak claim still lowers the pill to Buy with caution, even beside a well-evidenced hero claim, unless all five sections are green", () => {
+    // With the sections not all green (the claims-evidence section is yellow here), the claim gap holds the pill down.
+    const r = decideReview(rv({ claimMap: [hero, high], ...notAllGreen() }), NOW);
+    expect(r.findings.find((f) => f.ruleId === "caution.claim_gap")).toBeDefined();
     expect(r.decision.key).toBe("buy-with-caution");
+    // With all five green (the default scores) the gap is still found and listed, and no longer lowers the pill (owner decision, 2026-10-30).
+    const { r: green, finding } = gap([hero, high]);
+    expect(finding).toBeDefined();
+    expect(green.decision.key).toBe("good-choice");
   });
 
   it("a product whose claims all have matching proof has no claim gap", () => {

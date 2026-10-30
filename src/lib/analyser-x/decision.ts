@@ -8,12 +8,19 @@
    reliable (a prohibited ingredient, a contradicted claim) is converted into a gap when
    the list is not reliable: an apparent problem in an unverified list is something to
    verify, never something to publish.
+
+   Then the sections are consulted (owner decision, 2026-10-30): when all five sections of
+   the product page are green and the only cautions are ones those sections already measure
+   (a claim without a test on this product; a formula that may not deliver), the product is
+   a Good choice, and those cautions stay on the page as notes and under Gaps. Every other
+   caution is a flag and still holds a product at Buy with caution.
 ──────────────────────────────────────────────────────────────── */
 
 import { evaluate } from "./rules";
 import { MIN_SCREEN_COVERAGE } from "./kb";
 import { AUTHORITIES } from "./regulatory";
 import { PILLS, render } from "./copy";
+import { safetyMarker } from "./sections";
 import type { BenchmarkValue, Decision, DecisionKey, DecisionReason, Finding, RuleContext } from "./types";
 import { ANALYSER_METHOD_VERSION } from "./version";
 
@@ -32,6 +39,29 @@ export function settle(findings: Finding[], ctx: RuleContext): Finding[] {
   if (blocked) out.push({ ruleId: "gap.list_blocked", severity: "gap", origin: "code", needsReliableList: false, params: {}, derivedFrom: [], gapKind: "disclosure" });
   if (possibleMedicinal) out.push({ ruleId: "gap.possible_medicinal", severity: "gap", origin: "code", needsReliableList: false, params: {}, derivedFrom: [], gapKind: "disclosure" });
   return out;
+}
+
+/** Cautions the five sections already measure: a claim without a test on this product (Claims evidence and Test transparency) and a formula that may
+    not deliver what the claims promise (Formula logic). Every other caution is a flag the sections do not measure. */
+const SECTION_COVERED = new Set(["caution.claim_gap", "caution.formula"]);
+
+/** When all five sections are green, a caution the sections already measure does not hold the product at Buy with caution. The caution becomes a note (the
+    page still lists it under Gaps), and "all five sections are Strong" stands in for "the claims are proportionate" as the third support. Nothing else
+    changes: a flag (any other caution), a block, a gap or a medicine decides exactly as before, and a context built without sections is untouched. Pure. */
+export function agreeWithSections(settled: Finding[], ctx: RuleContext): Finding[] {
+  const sections = ctx.sections;
+  if (!sections) return settled;
+  const cautions = settled.filter((f) => f.severity === "caution");
+  if (!cautions.length || !cautions.every((c) => SECTION_COVERED.has(c.ruleId))) return settled;
+  if (settled.some((f) => f.severity === "medicinal" || f.severity === "gap" || (f.severity === "block" && f.origin === "code"))) return settled;
+  const have = new Set(settled.filter((f) => f.severity === "support").map((f) => f.ruleId));
+  if (!have.has("support.list_verified") || !have.has("support.safety_clear")) return settled;
+  const safety = safetyMarker({ key: "buy-with-caution", settled: new Set(settled.map((f) => f.ruleId)), screenCoverage: ctx.screen?.coverage ?? 0 });
+  if (![safety, sections.formula, sections.claims, sections.tests, sections.clarity].every((m) => m === "green")) return settled;
+  return [
+    ...settled.map((f) => (f.severity === "caution" ? { ...f, severity: "note" as const } : f)),
+    { ruleId: "support.sections_green", severity: "support", origin: "code", needsReliableList: true, params: {}, derivedFrom: [] },
+  ];
 }
 
 function summarise(b: BenchmarkValue): NonNullable<Decision["basis"]["benchmark"]> {
@@ -55,7 +85,7 @@ function shownGaps(gaps: Finding[]): Finding[] {
 }
 
 /** The order supports are shown in: the list first, then the screen, then the claims, then the formula. */
-const SUPPORT_ORDER = ["support.list_verified", "support.safety_clear", "support.claims_proportionate", "support.formula_sound"];
+const SUPPORT_ORDER = ["support.list_verified", "support.safety_clear", "support.claims_proportionate", "support.sections_green", "support.formula_sound"];
 
 function reasonOf(f: Finding, extra: Record<string, unknown> = {}): DecisionReason {
   const p = f.params;
@@ -90,7 +120,7 @@ export interface DecideOutput { decision: Decision; findings: Finding[]; settled
 
 export function decide(ctx: RuleContext): DecideOutput {
   const findings = evaluate(ctx);
-  const settled = settle(findings, ctx);
+  const settled = agreeWithSections(settle(findings, ctx), ctx);
   const medicinal = sev(settled, "medicinal");
   const blocks = sev(settled, "block").filter((b) => b.origin === "code");
   const gaps = sev(settled, "gap");
@@ -105,11 +135,11 @@ export function decide(ctx: RuleContext): DecideOutput {
   else if (gaps.length) { key = "not-enough-info"; driving = shownGaps(gaps); }
   else if (cautions.length) { key = "buy-with-caution"; driving = cautions; }
   else {
-    // Good choice needs positive support: a verified list, a clean screen and proportionate claims. A formula that is
-    // known to be sound adds a fourth; an unknown formula does not stop it.
+    // Good choice needs positive support: a verified list, a clean screen and proportionate claims (or, standing in for the claims, all five
+    // sections green: see agreeWithSections). A formula that is known to be sound adds a fourth; an unknown formula does not stop it.
     const have = new Set(supports.map((s) => s.ruleId));
     const core = ["support.list_verified", "support.safety_clear", "support.claims_proportionate"];
-    if (core.every((id) => have.has(id))) { key = "good-choice"; driving = [...supports].sort((a, b) => SUPPORT_ORDER.indexOf(a.ruleId) - SUPPORT_ORDER.indexOf(b.ruleId)); }
+    if (core.every((id) => have.has(id) || (id === "support.claims_proportionate" && have.has("support.sections_green")))) { key = "good-choice"; driving = [...supports].sort((a, b) => SUPPORT_ORDER.indexOf(a.ruleId) - SUPPORT_ORDER.indexOf(b.ruleId)); }
     else {
       key = "not-enough-info";
       driving = [{ ruleId: "gap.support_insufficient", severity: "gap", origin: "code", needsReliableList: false, params: {}, derivedFrom: [], gapKind: "disclosure" }];
