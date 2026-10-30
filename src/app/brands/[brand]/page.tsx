@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowUpRight, Building2, MessageSquareText } from "lucide-react";
+import BrandLogo from "@/components/brands/BrandLogo";
 import { getBrandDirectory, standingForProduct, type StandingColor, type PortfolioStanding } from "@/lib/brand-directory";
 
 export const revalidate = 300;
@@ -53,7 +54,10 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
         <header className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:gap-14 items-start pb-12 border-b border-[#e5dfd6]">
           <div>
             <p className="uppercase text-[11px] tracking-[0.18em] text-[#248179] mb-3">Independent brand profile</p>
-            <h1 className="font-display font-light text-[clamp(42px,5vw,70px)] leading-[1.05]">{brand.name}</h1>
+            <div className="flex items-center gap-4 sm:gap-5">
+              <BrandLogo name={brand.name} logoUrl={brand.logoUrl} size={88} />
+              <h1 className="min-w-0 font-display font-light text-[clamp(42px,5vw,70px)] leading-[1.05]">{brand.name}</h1>
+            </div>
             <p className="mt-5 max-w-[660px] text-[16px] leading-[1.7] text-[#4a4a4a]">
               {brand.description ?? "This brand is included because we have analysed at least one of its products. Company background is being verified."}
             </p>

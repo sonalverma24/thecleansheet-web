@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { PortfolioStanding, StandingColor, StandingCounts } from "@/lib/brand-directory";
+import BrandLogo from "./BrandLogo";
 
 export interface BrandCardData {
   slug: string;
   name: string;
   description: string | null;
   founded: string | null;
+  logoUrl: string | null;
   countryOfOrigin: string | null;
   indiaPresence: string | null;
   globalPresence: string | null;
@@ -25,6 +27,18 @@ const NAMES: Record<PortfolioStanding, string> = {
   green: "Mostly Green", yellow: "Mostly Yellow", red: "Mostly Red",
   mixed: "Mixed", limited: "Limited coverage", unrated: "Not rated",
 };
+
+export type BrandSort = "products" | "name";
+
+/** Products analysed for a brand, whether or not each has a rating yet. */
+export const productCountOf = (b: Pick<BrandCardData, "counts">): number => b.counts.green + b.counts.yellow + b.counts.red + b.counts.unrated;
+
+/** "products": most products analysed first, then most rated, then A to Z. "name": A to Z. Sorts a copy. */
+export function sortBrands<T extends Pick<BrandCardData, "counts" | "ratedCount" | "name">>(brands: readonly T[], sort: BrandSort): T[] {
+  return [...brands].sort((a, b) => sort === "products"
+    ? productCountOf(b) - productCountOf(a) || b.ratedCount - a.ratedCount || a.name.localeCompare(b.name)
+    : a.name.localeCompare(b.name));
+}
 
 function Distribution({ counts }: { counts: StandingCounts }) {
   const total = counts.green + counts.yellow + counts.red + counts.unrated;
@@ -46,7 +60,7 @@ function Distribution({ counts }: { counts: StandingCounts }) {
 export default function BrandDirectoryClient({ brands }: { brands: BrandCardData[] }) {
   const [search, setSearch] = useState("");
   const [standing, setStanding] = useState("all");
-  const [sort, setSort] = useState("name");
+  const [sort, setSort] = useState<BrandSort>("products");
 
   const shown = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -54,7 +68,7 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
       const searchMatch = !query || [brand.name, brand.description, brand.countryOfOrigin].some((part) => part?.toLowerCase().includes(query));
       return searchMatch && (standing === "all" || brand.standing === standing);
     });
-    return filtered.sort((a, b) => sort === "coverage" ? b.ratedCount - a.ratedCount || a.name.localeCompare(b.name) : a.name.localeCompare(b.name));
+    return sortBrands(filtered, sort);
   }, [brands, search, standing, sort]);
 
   return (
@@ -81,10 +95,10 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
           </label>
           <label className="block">
             <span className="sr-only">Sort brands</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value)}
+            <select value={sort} onChange={(e) => setSort(e.target.value as BrandSort)}
               className="w-full h-12 rounded-xl border border-[#ddd9d4] bg-white px-3 text-[14px] text-[#282828]">
+              <option value="products">Most products first</option>
               <option value="name">Alphabetical</option>
-              <option value="coverage">Most products covered</option>
             </select>
           </label>
         </div>
@@ -98,9 +112,12 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
           {shown.map((brand) => (
             <Link key={brand.slug} href={"/brands/" + brand.slug}
               className="group flex h-full flex-col gap-4 rounded-2xl border border-[#e5dfd6] bg-white p-5 hover:border-[#248179] hover:shadow-lg hover:shadow-[#248179]/5 transition-all">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-display font-light text-[25px] leading-tight text-[#282828] group-hover:text-[#248179]">{brand.name}</h3>
-                <span className="text-[11px] text-[#4a4a4a] rounded-full border border-[#e5dfd6] px-2.5 py-1 shrink-0">{NAMES[brand.standing]}</span>
+              <div className="flex items-start gap-3">
+                <BrandLogo name={brand.name} logoUrl={brand.logoUrl} size={52} />
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display font-light text-[25px] leading-tight text-[#282828] group-hover:text-[#248179] break-words">{brand.name}</h3>
+                  <span className="mt-2 inline-block text-[11px] text-[#4a4a4a] rounded-full border border-[#e5dfd6] px-2.5 py-1">{NAMES[brand.standing]}</span>
+                </div>
               </div>
               <p className="text-[14px] leading-[1.5] text-[#555] line-clamp-2 min-h-[42px]">
                 {brand.description ?? "An independent assessment of this brand's products is in progress."}
@@ -112,7 +129,7 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
               <div className="mt-auto pt-2">
                 <Distribution counts={brand.counts} />
                 <div className="mt-4 pt-3 border-t border-[#eee9e4] flex items-center justify-between text-[13px]">
-                  <span className="text-[#4a4a4a]">{brand.ratedCount} products rated</span>
+                  <span className="text-[#4a4a4a]">{productCountOf(brand)} {productCountOf(brand) === 1 ? "product" : "products"} · {brand.ratedCount} rated</span>
                   <span className="font-medium text-[#248179]">Explore brand →</span>
                 </div>
               </div>

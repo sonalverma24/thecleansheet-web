@@ -23,6 +23,7 @@ export default async function BrandsPage() {
     name: brand.name,
     description: brand.description,
     founded: brand.founded,
+    logoUrl: brand.logoUrl,
     countryOfOrigin: brand.countryOfOrigin,
     indiaPresence: brand.indiaPresence,
     globalPresence: brand.globalPresence,

@@ -34,6 +34,8 @@ export interface BrandDirectoryEntry {
   founded: string | null;
   headquarters: string | null;
   website: string | null;
+  /** The brand's logo: a site file ("/images/x.png") or an https address, from brands.logo_url. Null when none is on file; the page then shows initials. */
+  logoUrl: string | null;
   countryOfOrigin: string | null;
   indiaPresence: string | null;
   globalPresence: string | null;
@@ -62,6 +64,15 @@ function safeUrl(value: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+/** A logo address worth showing: a file this site serves, or an https address. Anything else (http, a script, a data address) is dropped. */
+export function safeLogoUrl(value: unknown): string | null {
+  const text = optionalText(value);
+  if (!text) return null;
+  if (text.startsWith("/") && !text.startsWith("//")) return text;
+  const url = safeUrl(text);
+  return url && url.startsWith("https:") ? url : null;
 }
 
 function stringList(value: unknown): string[] {
@@ -147,7 +158,7 @@ export async function getBrandDirectory(): Promise<BrandDirectoryEntry[]> {
     let entry = bySlug.get(slug);
     if (!entry) {
       entry = {
-        slug, name, description: null, founded: null, headquarters: null, website: null,
+        slug, name, description: null, founded: null, headquarters: null, website: null, logoUrl: null,
         countryOfOrigin: null, indiaPresence: null, globalPresence: null, sourceUrl: null,
         products: [], counts: { green: 0, yellow: 0, red: 0, unrated: 0 },
         ratedCount: 0, standing: "unrated", leadingColor: null, manufacturers: [], sentiment: null,
@@ -174,6 +185,7 @@ export async function getBrandDirectory(): Promise<BrandDirectoryEntry[]> {
     entry.founded = facts?.founded_year != null ? String(facts.founded_year) : null;
     entry.headquarters = optionalText(fallback?.headquarters) ?? optionalText(fallback?.headquarters);
     entry.website = safeUrl(fallback?.website_url);
+    entry.logoUrl = safeLogoUrl(fallback?.logo_url);
     entry.countryOfOrigin = optionalText(facts?.country_of_origin);
     entry.indiaPresence = optionalText(facts?.india_presence);
     entry.globalPresence = optionalText(facts?.global_presence);
