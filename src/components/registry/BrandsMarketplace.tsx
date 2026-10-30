@@ -8,11 +8,12 @@ import {
   filterAndSort, searchWithState, stateFromParams,
   type FilterKey, type RegistryFilters, type SortKey,
 } from "@/lib/registry-filters";
-import { ComparisonTray } from "@/components/scorecards/ComparisonTray";
-import { ComparisonDecisionEngine } from "@/components/scorecards/ComparisonDecisionEngine";
+import { CompareTray } from "@/components/compare/CompareTray";
+import { compareBlockReason, compareTypeOf } from "@/lib/compare-group";
+import { seedImageFor } from "@/lib/home-shelf";
 import { NoResultsCard } from "@/components/scorecards/NoResultsCard";
 import FilterPanel from "./FilterPanel";
-import MarketCard, { MAX_COMPARE, productId } from "./MarketCard";
+import MarketCard, { productId } from "./MarketCard";
 
 /* The /brands marketplace: search, filters on the left (a sheet on phones), a grid of
    home-style product cards, "Show more". Everything is chosen and counted in the
@@ -31,7 +32,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [comparingIds, setComparingIds] = useState<string[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+  const [compareNotice, setCompareNotice] = useState<string | null>(null);
 
   // A shared link's search, sort and filters, applied once after hydration.
   useEffect(() => {
@@ -106,9 +107,22 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   }, [sheetOpen]);
 
   // ── Compare ───────────────────────────────────────────────────────────────
-  const toggleCompare = useCallback((id: string) => {
-    setComparingIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : prev.length >= MAX_COMPARE ? prev : [...prev, id]));
-  }, []);
+  // Products are compared only with products of the same type: the first one picked sets the type, and a product of another type is refused with the
+  // reason shown in the tray (compare-group.ts holds the rule, and /compare checks it again).
+  const typeById = useMemo(() => new Map(products.map((p) => [productId(p), compareTypeOf(p)])), [products]);
+  const pickedTypes = comparingIds.map((id) => typeById.get(id) ?? null);
+  const compareType = pickedTypes[0] ?? null;
+  const blockReasonFor = (id: string) => compareBlockReason({ picked: pickedTypes, alreadyIn: comparingIds.includes(id), candidateType: typeById.get(id) ?? null });
+  const toggleCompare = (id: string) => {
+    if (comparingIds.includes(id)) {
+      setComparingIds(comparingIds.filter((i) => i !== id));
+      setCompareNotice(null);
+      return;
+    }
+    const reason = blockReasonFor(id);
+    setCompareNotice(reason);
+    if (!reason) setComparingIds([...comparingIds, id]);
+  };
   const comparingProducts = useMemo(
     () => comparingIds.map((id) => products.find((p) => productId(p) === id)).filter((p): p is ProductScorecard => !!p),
     [comparingIds, products],
@@ -217,7 +231,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
                     key={productId(p)}
                     product={p}
                     comparing={comparingIds.includes(productId(p))}
-                    compareFull={comparingIds.length >= MAX_COMPARE}
+                    compareBlock={blockReasonFor(productId(p))}
                     onCompare={toggleCompare}
                   />
                 ))}
@@ -285,16 +299,14 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
       )}
 
       {/* Compare */}
-      <ComparisonTray
-        products={comparingProducts}
+      <CompareTray
+        items={comparingProducts.map((p) => ({ id: productId(p), slug: p.slug, name: p.productName, image: seedImageFor(p) ?? p.image ?? null }))}
+        type={compareType}
+        notice={compareNotice}
         onRemove={toggleCompare}
-        onClearAll={() => setComparingIds([])}
-        onCompare={() => setShowComparison(true)}
+        onClearAll={() => { setComparingIds([]); setCompareNotice(null); }}
       />
       {comparingIds.length > 0 && <div className="h-20" />}
-      {showComparison && comparingProducts.length >= 2 && (
-        <ComparisonDecisionEngine products={comparingProducts} onClose={() => setShowComparison(false)} />
-      )}
     </section>
   );
 }
