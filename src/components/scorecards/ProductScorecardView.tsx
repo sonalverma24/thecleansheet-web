@@ -914,7 +914,7 @@ function buildMobileTabs({
     );
   }
   method.push(
-    <Link key="back" href={brandPageExists ? `/brands/${brandSlug}` : "/brands"} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
+    <Link key="back" href={brandPageExists ? `/brands/${brandSlug}` : "/products"} className="inline-flex items-center gap-2 text-sm text-[#b0a8a4]">
       <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all products"}
     </Link>,
   );
@@ -943,7 +943,7 @@ export function ProductScorecardView({
   brand: Brand;
   brandSlug: string;
   /** False for repository-reviewed products whose brand has no /brands/[brand]
-      page: the back link then goes to /brands instead of a 404. */
+      page: the back link then goes to /products instead of a 404. */
   brandPageExists?: boolean;
   relatedProducts?: ProductScorecard[];
   /** Category-driven qualitative screen (live reviews only; undefined for
@@ -1452,7 +1452,7 @@ export function ProductScorecardView({
 
         {/* Back link */}
         <Link
-          href={brandPageExists ? `/brands/${brandSlug}` : "/brands"}
+          href={brandPageExists ? `/brands/${brandSlug}` : "/products"}
           className="inline-flex items-center gap-2 text-sm text-[#b0a8a4] hover:text-[#282828] transition-colors"
         >
           <ArrowLeft size={14} /> {brandPageExists ? `Back to ${brand.name}` : "Back to all products"}

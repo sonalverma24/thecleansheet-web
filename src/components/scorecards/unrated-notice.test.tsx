@@ -76,6 +76,6 @@ describe("the page of a product we do not rate", () => {
   });
 
   it("links back to the products we have analysed", () => {
-    expect(html).toContain('href="/brands"');
+    expect(html).toContain('href="/products"');
   });
 });

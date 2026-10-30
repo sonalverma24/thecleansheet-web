@@ -837,6 +837,13 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-10-30: Browse products is /products and Browse brands is /brands; every "analyse a product" link goes to /products
+- **Decided by:** the owner: a Brand Intelligence Directory ("Browse brands") separate from the product list ("Browse products"), built in pull request 45. No quotation was kept, so none is given here.
+- **Reason:** `/brands` is now the brand directory (a card per brand, then a profile per brand), so a link whose words are "Analyse a product", "Check a product" or "Back to all products" would land on a page that has no product list and no analyser box. The product list, its search, filters, Compare and the "Analyse any product, free" box are at `/products`.
+- **What it touched (links and wording only):** the compare page and `CompareView` ("Back to product analyses", "Product analyses", "Compare something else") now go to `/products` (`/products#registry`); every "analyse a product" call to action in `blog-posts.ts` (20), the blog index, the learn guides, About, the ingredient pages, the home closing call to action, `/verify`, the `/analyser` and `/analyzer` fallbacks, and the home FAQ now go to `/products`. The product page's breadcrumb data (`src/app/analysis/[slug]/page.tsx`) names `/products`, not `/brands`, as "Product Analyses". "Reviews" became "analyses" in the /brands and /products titles and text. On the product page, "Back to all products" (shown when the brand has no brand page), the hero's Compare button and the unrated page's "Browse the products we have analysed" now go to `/products`; `/products` is in the sitemap and `llms.txt`. `/brands` and `/products` each show a plain empty state when no product has been analysed (the `/brands` opening line no longer prints "0 covered brands"; a brand profile with no products is a 404, as before).
+- **Not changed:** which colour or pill any product gets, the decision core, stored analyses, `/analysis/<slug>` URLs, the product page's breadcrumb "Brands" link, which still goes to `/brands` (it means the brand directory); the brand profile pages are not yet in the sitemap. Nothing is written to the database.
+- **Undo:** revert the change; no migration.
+
 ### 2026-10-30: Every stored analysis was removed, and each new analysis now reaches every page that shows analyses
 - **Decided by:** the owner, on 2026-10-30, in chat: "I need all the products on the website deleted ... I will do fresh reviews from the analyser tool only. But I need the supabase data of the earlier analysis to be saved, so I can rerun them later." Asked what that covered, they answered: "All analysed products, all products present in the DB to be deleted." The Brand Intelligence tables were to be left alone. Then: "whatever new products are added: create a flow. Add to matching ingredients; add to brands page & their products; add to filters on the left; add to the total number of analysed products displayed on top; add to home page up to 5 products, once enough products are there I will choose which products to display on home page."
 - **Reason:** in the owner's words above: the site is to be rebuilt from fresh runs of the analyser.
@@ -993,8 +1000,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 
 | Source | SHA-256 |
 |---|---|
-| `next.config.ts` | `b5553c94b64dcdf1358b80d3add3d84ce5381fa775e21b1454b349108d4a0694` |
-| `src/app/analysis/[slug]/page.tsx` | `3a40084321662de5a5ab91f0244673913a3a592657c6db5d9eb140319f986f3e` |
+| `next.config.ts` | `f1b36965c1c6a905daeb95ba48f790d30dd1d24969a56a86b1cddc060daa3d7a` |
+| `src/app/analysis/[slug]/page.tsx` | `bd7043283022923cf2e80a9f8cad2e0fe7c7467f7f5e31f7d86b18b2073b2dc2` |
 | `src/app/api/analyser-version/route.ts` | `e06baf28af49551cf0311a05a2c6688bc13d174c2eed7f653b4f29b6a20bfa24` |
 | `src/app/api/review/route.ts` | `21af87b8f3470d9c9fac3fc7add64d4de7cac23269a417f393479b1e850c3b78` |
 | `src/components/scorecards/AnalysisProductImage.tsx` | `a7e725c25a71ed0d1413ad28a8cdec40ab992e8bd56910bd287933ad7fce415c` |
@@ -1003,7 +1010,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ComparisonDecisionEngine.tsx` | `6139d1265902406cce1685472da73cc3e0d270aa82e41353b64d415396ac2a6d` |
 | `src/components/scorecards/ComparisonTray.tsx` | `ca8914e8e41ba1990f7f84a0d18f84752b20bc34d3d7ebbf4e2333e5ab40ec8f` |
 | `src/components/scorecards/ExpandableSection.tsx` | `dd553925b054f38f0062ee661dd02fb8053ad01d5bb5c9cef690bb23ad19880c` |
-| `src/components/scorecards/HeroActions.tsx` | `5647a7614e2007b57eb77229196141c839a586127c6e55e22b587321acaca1c7` |
+| `src/components/scorecards/HeroActions.tsx` | `a43e86f016df7511e283bb06c3cb83575064208bf66fa65f97154c81ba09b376` |
 | `src/components/scorecards/NoResultsCard.tsx` | `77ee1bd923ed3c7be68e21a9e6642d0e098d0141a7a2ae3a80881079dff11602` |
 | `src/components/scorecards/OpenDetailsLink.tsx` | `99f31a3a4072aeff53ba15c160a8f3f6a5e8e58cea46934013c8e9c89b50d53c` |
 | `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
@@ -1011,7 +1018,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
 | `src/components/scorecards/ProductHero.tsx` | `17c0ae64d4adc5cfb097e29060224d3887f22ed2315d7e945651d17978537aa9` |
 | `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
-| `src/components/scorecards/ProductScorecardView.tsx` | `ab0d898c8b1a58fecb961fb4e142ffb46d27d07398f97db8d208c7389758a0d6` |
+| `src/components/scorecards/ProductScorecardView.tsx` | `85b184f41592d641c705234900e99c7355ac83d5c2f8a54aa69c8988f40eadc9` |
 | `src/components/scorecards/RatingDot.tsx` | `38db0a7ece065f964f9c9919171b5b3ae794e6c58dea91999136191301cd02d1` |
 | `src/components/scorecards/RatingKey.tsx` | `7b4066f9a080e9d74b2f6c1ca260c2848749bc9054fd4218f505a786c0832014` |
 | `src/components/scorecards/ReviewRunStatus.tsx` | `95d31a0a4d27e50d3019edfbc4642be92586bd3c547a1d1ebeea014bbd723d3e` |
@@ -1020,7 +1027,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ScorecardTabs.tsx` | `5f642c36c562ec2c69545f91a116ecd5b620f1ffa2e3019048a5e4cb6566c72e` |
 | `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
 | `src/components/scorecards/UnratedNotice.tsx` | `e37cfac4ab9b9c55085cfabc16e72ce91004e9cf967eedcfad7ef4dbf1fc7b41` |
-| `src/components/scorecards/UnratedProductPage.tsx` | `d5ab7b5e6b748a80e5706b418340f4bc56b12c88d1011c02c8d9ade0fc295f93` |
+| `src/components/scorecards/UnratedProductPage.tsx` | `2fb73b2b15ba35be2cdd5129c8d242bf7712fd0962029a724e5f5656265a5a73` |
 | `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
 | `src/components/scorecards/pills-badge.css` | `a9d9db5c86be719ca43270e6a7ff741ae9f2b36e4b53e5f0c59a234a2ccdc592` |

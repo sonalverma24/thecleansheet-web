@@ -11,7 +11,7 @@ const LINKS = {
     { href: "/standard/register", label: "Standards Register"  },
   ],
   Verify: [
-    { href: "/brands",   label: "Check a Product"           },
+    { href: "/products", label: "Check a Product"           },
     { href: "/verify",   label: "Certified Registry (soon)" },
   ],
   Education: [

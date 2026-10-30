@@ -12,7 +12,7 @@ const WAYS = [
     n: "01", eyebrow: "ANALYSER", title: "Check any product",
     short: "Every claim next to what was tested.",
     desc: "Search a product or paste a link. See every claim on the pack next to what was actually tested.",
-    cta: "Try the analyser", href: "/brands", external: false,
+    cta: "Try the analyser", href: "/products", external: false,
     img: "/images/home/products/cosrx-bha-liquid.webp", fit: "contain" as const,
   },
   {

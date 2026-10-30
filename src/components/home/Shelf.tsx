@@ -95,7 +95,7 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Link
-          href="/brands"
+          href="/products"
           className="inline-flex items-center justify-center gap-2 w-full md:w-auto h-12 md:h-auto rounded-lg border border-[#282828] px-[18px] md:py-[11px] text-[14px] font-bold text-[#282828] hover:bg-[#e3f1ef] transition-colors"
         >
           Browse all products
