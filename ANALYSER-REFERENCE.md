@@ -863,6 +863,15 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Known limits:** it is a heuristic. A paste of fewer than four space-separated words, or of names that neither the database nor the word lists know, can still read as a product; the placeholder check on the model's own title is the second line. A typed query that is nothing but ingredient names ("Zinc Oxide, Titanium Dioxide") reads as a list and is not saved. An unsaved analysis is still held in the server's memory for five minutes under the name the model gave it (separate follow-up).
 - **Undo:** revert the change. Nothing is migrated.
 
+### 2026-10-30: An animal-origin cross needs an origin with no other route; commonly comedogenic ingredients are named under "Who should be careful"
+- **Decided by:** the owner, on 2026-10-30, in chat, about the Aestura Atobarrier 365 Cream: "Aestura's review says - animal derived ingredients, can we please verify claims like this first? A simple google search got me that this is not animal derived. Also, Comedogenicity risk should be mentioned under who should be careful, right? Fix this and fix the logic behind it".
+- **Reason:** in the owner's words above. The page drew "Animal-origin ingredient: Cholesterol" with a cross because the reference row for Cholesterol reads "Animal (lanolin) / Biotechnological": the ingredient can come from either, and nothing we hold says which route this product's supplier uses. A web check found no statement of the source from the brand, no vegan certification, and retailers that disagree (one lists the cream as vegan, another as not), so neither a tick nor a cross can be shown. Separately, the same page said "Acne-prone skin (non-comedogenic)" for a formula that contains Oleic Acid and Ethylhexyl Palmitate, both on the repository's own comedogenic list (commonly rated 3 or more); that rule lived only in the old engine and never reached this page.
+- **What it touched (display only):** `src/lib/review-to-scorecard.ts`, `buildVeganScreen` (now exported): an ingredient is listed as animal-origin only when its reference origin names an animal source and no plant, synthetic, microbial, fermentation, biotech or yeast route; otherwise its origin is unresolved, which the At a glance strip does not draw. The word "milk" no longer counts inside "milk thistle". `src/lib/pills-page.ts`, `comedogenicIngredientsOf` and `buildPillsPage`: for a leave-on face product whose whole ingredient list is source-backed, the ingredients on the comedogenic list lead "Who should be careful" ("Acne-prone or breakout-prone skin: contains X and Y, commonly rated comedogenic."), the model's own acne or "non-comedogenic" lines are dropped so the page never says both, and the FAQ answer follows.
+- **Measured** (read-only): in the 839-row reference file, 10 rows were flagged animal-origin at High confidence; 3 still are (Hydrolyzed Silk, Shellac, Propolis Extract), 6 are now unresolved (Cholesterol, Retinyl Palmitate, Acetyl Glucosamine, Carnosine, Acetyl Carnitine, Oleyl Alcohol) and 1 is no longer flagged at all (Milk Thistle Extract, which was caught only by the word "milk" in a plant's name). Run offline on the stored Aestura analysis, the cross is gone and the comedogenic line leads the cautions.
+- **Known limits:** the comedogenic list is short (17 names) and its scale is a laboratory rating, not a result on skin, so no match is never shown as "non-comedogenic". The vegan **tick** is still given to an ingredient whose reference says "Vegan: Yes" while also naming an animal route (Oleic Acid, Hydrogenated Lecithin); a snail product shows "unresolved" rather than a cross because Snail Secretion Filtrate is Medium confidence. Neither was changed; both want the owner's call.
+- **Not changed:** the colour or pill any product gets, the decision core, stored analyses, the prompts, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
+- **Undo:** revert the change; nothing is migrated and no stored analysis is touched: both are worked out when a page is drawn.
+
 ### 2026-10-30: When all five sections of a product page are green, the product is a Good choice, except for flags
 - **Decided by:** the owner, on 2026-10-30, in chat, about the Cetaphil Moisturising Cream whose five sections were all Strong while the colour was yellow: "if all sections are green - the end result should be green except for flags in my opinion." Then, asked to confirm the exact rule: "Yes, build it and make it live. No need to test it on the old products. From now on, any new analysis that happens should use this logic, either from backend or front end."
 - **Reason:** in the owner's words above. The page showed Claims evidence as Strong ("8 of 10 claims are publicly supported") while a separate claim-by-claim check inside the decision held the colour at yellow, so the sections and the colour disagreed on one product.
@@ -1134,7 +1143,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `5e7ea567dd819c07ffbef154510d71525819c7058a0204dc11e67765bfe7e48e` |
+| `src/lib/pills-page.ts` | `16ccd0c0a68194a2fca1871cee865bec33767c5ebad1d5daf78c8bc75a003cad` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `2e871b1b8e07e6ebbe5dc4b2c8b24d1a6cde8db61b7f2eef610937d05cd8b5e0` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
@@ -1148,7 +1157,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `3f510a2e7e091df4a0e98cbd36641d5beb86f3018b1c9d1d90b5bd3110d40ac8` |
 | `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
-| `src/lib/review-to-scorecard.ts` | `7af517fb57516b8b8c5a294873b43e505ef01c1c9f1bfc9d0eb14f528faa6c7a` |
+| `src/lib/review-to-scorecard.ts` | `25b1ceae7be905f6a7a92d58288c13462c971c5be403b725c6e96ec2d58b9929` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |

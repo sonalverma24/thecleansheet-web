@@ -93,7 +93,15 @@ function retinoidFlag(ingredient: string): PregnancyIngredientFlag | null {
   return { ingredient, restriction: "A retinoid; generally advised against during pregnancy.", source: vitaminA.source, confidence: confidence as "high" | "medium" };
 }
 
-function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {
+/** Origin text that names an animal source. "Milk thistle" is a plant, so "milk" does not count when it is followed by "thistle". */
+const ANIMAL_ORIGIN_RE = /animal[- ]derived|animal origin|dairy|milk(?! thistle)|whey|beeswax|lanolin|carmine|shellac|silk|collagen|keratin|snail|fish|crustacean/;
+/** A route by which the same ingredient is also made without an animal: its origin depends on the supplier. */
+const OTHER_ROUTE_RE = /\b(?:plant|botanical|vegetable|synthetic|microbial|ferment(?:ation)?|biotech\w*|yeast|mineral|inorganic)\b/;
+
+/** An ingredient is shown as animal-origin only when its reference origin names an animal source and no other route ("Animal (silkworm)", "Animal-derived (insect secretion)").
+    Where the reference says it can be animal OR plant/synthetic/biotech ("Animal (lanolin) / Biotechnological" for Cholesterol), which route this product's supplier uses
+    is not stated, so the origin is unresolved: neither a tick nor a cross. */
+export function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {
   if (!reliableList) return { status: "unknown", animalIngredients: [], unknownIngredients: ingredients, sources: [] };
   const animalIngredients: string[] = [];
   const unknownIngredients: string[] = [];
@@ -106,8 +114,8 @@ function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganSc
     }
     sources.push({ ingredient: name, source: row.Source_Reference });
     const origin = row.Ingredient_Origin.toLowerCase();
-    if (/animal[- ]derived|animal origin|dairy|milk|whey|beeswax|lanolin|carmine|shellac|silk|collagen|keratin|snail|fish|crustacean/.test(origin)) {
-      animalIngredients.push(name);
+    if (ANIMAL_ORIGIN_RE.test(origin)) {
+      (OTHER_ROUTE_RE.test(origin) ? unknownIngredients : animalIngredients).push(name);
       continue;
     }
     const nonAnimal = /\b(?:plant|botanical|vegetable|synthetic|microbial|ferment(?:ation)?|mineral|inorganic)\b/.test(origin);

@@ -26,6 +26,7 @@ import { reviewInciList } from "@/lib/review-inci";
 import { ingredientConcerns, type IngredientConcern } from "@/lib/ingredient-concerns";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
+import { COMEDOGENIC, inciHas } from "@/data/analysis/ingredient-risk";
 import {
   ANALYSER_RELEASE, AUTHORITIES, GREEN_FROM, INGREDIENT_CAUTIONS, RED_UNDER, STALE_DAYS, benchmarkPanel, decideReview, reviewSections, safetyMarker, shortList, sourceName, testLevelOfClaims,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
@@ -542,6 +543,24 @@ function fitCautionsOf(review: ProductReview): string[] {
     .slice(0, 4);
 }
 
+/* ── comedogenicity (code-owned) ─────────────────────────────── */
+
+/** Products left on the skin, on the face. A rinse-off, a toner, a baby product or a hair, body, hand, foot, lip or nail product is not what the acne-prone caution is about. */
+const COMEDOGENIC_PRODUCT_TYPES = new Set<ProductScorecard["productType"]>(["leave-on", "treatment", "sunscreen", "eye-area"]);
+const NOT_FACE_CATEGORY_RE = /\b(?:hair|scalp|body|hand|foot|feet|lip|nail)\b/i;
+/** Model-written lines that already speak about acne or clogging: replaced by the code-owned line when it applies, so the page never says both. */
+const ACNE_FIT_RE = /acne[- ]prone|non[- ]?comedogenic|comedogen|clog|breakout|pore[- ]?block/i;
+
+/** The ingredients on the source-backed list that the repo's own comedogenic list names (`COMEDOGENIC`: commonly rated 3 or more on the standard scale), as written on the label.
+    Empty unless the whole list is source-backed and the product is a leave-on face product. The list is short, so an empty answer is never read as "non-comedogenic". */
+export function comedogenicIngredientsOf(product: ProductScorecard, category: string | undefined, inci: string[]): string[] {
+  const full = FULL_INCI_STATUSES.has(product.inciCompleteness?.status ?? "") && inci.length > 0;
+  if (!full || !COMEDOGENIC_PRODUCT_TYPES.has(product.productType) || NOT_FACE_CATEGORY_RE.test(category ?? "")) return [];
+  return inci.filter((name) => inciHas(name, COMEDOGENIC).length > 0);
+}
+
+const comedogenicCaution = (names: string[]): string => `Acne-prone or breakout-prone skin: contains ${joinAnd(names.slice(0, 3))}, commonly rated comedogenic.`;
+
 function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
   const c = review.consumerSuitability;
   const pick = (t: string | undefined) => (t && t.trim().length > 3 ? t.trim() : null);
@@ -594,6 +613,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const inci = reviewInciList(review);
   const preg = product.pregnancyScreen;
   const checks = verifiedChecks(product, inci, preg);
+  const comedogenic = comedogenicIngredientsOf(product, review.category, inci);
   const panel = benchmarkPanel(d);
   const concerns = ingredientConcerns(product.ingredients, d.reasons);
   const base: Omit<PillsPageModel, "faq"> = {
@@ -606,8 +626,9 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),
     highlights: capGlance(checks),
     fit: {
-      suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
-      careful: fitCautionsOf(review),
+      // A formula with commonly comedogenic ingredients is not "Acne-prone skin (non-comedogenic)": the model's acne suitability lines go, and the code-owned caution leads "Who should be careful".
+      suits: [...(review.consumerSuitability?.bestFor ?? [])].filter((s) => Boolean(s) && !(comedogenic.length && ACNE_FIT_RE.test(s))),
+      careful: comedogenic.length ? [comedogenicCaution(comedogenic), ...fitCautionsOf(review).filter((c) => !ACNE_FIT_RE.test(c))].slice(0, 4) : fitCautionsOf(review),
       india: product.indiaContext,
       price: priceLineOf(review),
     },
