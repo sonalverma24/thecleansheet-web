@@ -25,6 +25,18 @@ describe("fetchRenderedPage", () => {
     expect(f).toHaveBeenCalledTimes(2);
   });
 
+  it("does not retry a page that was still not rendered when the time ran out", async () => {
+    vi.stubEnv("FIRECRAWL_API_KEY", "fc-test");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.useFakeTimers();
+    const f = vi.fn(async () => { await new Promise((r) => setTimeout(r, 20000)); return { ok: false, status: 408, json: async () => ({}) }; });
+    vi.stubGlobal("fetch", f);
+    const pending = fetchRenderedPage("https://www.nykaa.com/x/p/1", [], 25000);
+    await vi.advanceTimersByTimeAsync(21000);
+    expect(await pending).toBeNull();
+    expect(f).toHaveBeenCalledTimes(1);
+  });
+
   it("gives up after two failures, and is null without a key, never throwing", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     vi.stubEnv("FIRECRAWL_API_KEY", "fc-test");

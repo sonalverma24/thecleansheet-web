@@ -31,6 +31,9 @@ export const NYKAA_TAB_ACTIONS: RenderAction[] = [
   { type: "wait", milliseconds: 2500 }, clickLeaf("Product Details"), { type: "wait", milliseconds: 1800 }, clickLeaf("Ingredients"), { type: "wait", milliseconds: 1800 },
 ];
 
+/** How long the renderer may take for a Nykaa page. It normally needs 13 to 15 s; the lookup caps the whole read at 30 s. */
+export const NYKAA_RENDER_MS = 25_000;
+
 const TAB_HEADING = /^###\s*(?:Description|Ingredients|How To Use)\s*$/i;
 const PANEL_END = /^(?:##\s|Read More)/i;
 const LABEL = /full\s+ingredients?\s+list\s*:?\s*/i;
@@ -73,7 +76,7 @@ function pageTitles(markdown: string, title: string | null): string[] {
 export async function readNykaaPage(url: string): Promise<PageINCI | null> {
   if (!isNykaaProductUrl(url)) return null;
   const source = nykaaProductUrl(url);
-  const page = await fetchRenderedPage(source, NYKAA_TAB_ACTIONS);
+  const page = await fetchRenderedPage(source, NYKAA_TAB_ACTIONS, NYKAA_RENDER_MS);
   if (!page) return null;
   const found = extractNykaaInci(page.markdown);
   if (!found) return null;

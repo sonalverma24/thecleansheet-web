@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NYKAA_TAB_ACTIONS, extractNykaaInci, isNykaaProductUrl, nykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
+import { NYKAA_RENDER_MS, NYKAA_TAB_ACTIONS, extractNykaaInci, isNykaaProductUrl, nykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
 import { fetchRenderedPage } from "./scrape";
 
 vi.mock("./scrape", async (orig) => ({ ...(await orig<typeof import("./scrape")>()), fetchRenderedPage: vi.fn() }));
@@ -67,7 +67,7 @@ describe("reading a Nykaa product page", () => {
   it("renders it with the tab opened and returns the list, the exact quote, the clean address and the page's names, as a trust-3 Nykaa source", async () => {
     vi.mocked(fetchRenderedPage).mockResolvedValue({ markdown: lotusPage, title: "Buy Lotus Herbals WhiteGlow Skin Whitening & Brightening Gel Cream|With Niacinamide|All Skin Types Online" });
     const page = await readNykaaPage(url);
-    expect(fetchRenderedPage).toHaveBeenCalledWith("https://www.nykaa.com/lotus-herbals-whiteglow/p/10787966", NYKAA_TAB_ACTIONS);
+    expect(fetchRenderedPage).toHaveBeenCalledWith("https://www.nykaa.com/lotus-herbals-whiteglow/p/10787966", NYKAA_TAB_ACTIONS, NYKAA_RENDER_MS);
     expect(page).toMatchObject({ source: "https://www.nykaa.com/lotus-herbals-whiteglow/p/10787966", quote: LOTUS_LIST, siteName: "Nykaa", trust: 3, origin: "nykaa" });
     expect(page?.ingredients).toHaveLength(30);
     expect(page?.pageTitles?.[0]).toMatch(/^Lotus Herbals WhiteGlow Skin Whitening & Brightening Gel Cream/);

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PAGE_FINDER_SYSTEM_PROMPT, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
+import { PAGE_FINDER_SYSTEM_PROMPT, READ_CAP_MS, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchIncidecoderProduct } from "./inci-fetch";
 import { fetchPageMarkdown } from "./scrape";
@@ -365,6 +365,37 @@ describe("Nykaa, INKEE Decoder and the brand site searched together", () => {
     const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readDecoder: async () => dec, readNykaa: async () => ny }));
     expect(r).toMatchObject({ origin: "nykaa" }); // the same 10 components, so the tie goes to the page the shopper pasted
     expect(r?.alternatives).toBeUndefined();
+  });
+
+  it("lists that are the same formula are decided by capture and the pasted page, not by length: a parser's stray pieces do not win (Aqualogica)", async () => {
+    const common = names(20, "C"); // the real lists share 22 of about 25 components (0.86 alike)
+    const clean = [...common, "Beheneth-25 Methacrylate Crosspolymer"];
+    const glitchy = [...common, "Beheneth-25 Methacrylate", "Crosspolymer"];
+    const dec = { ...decoderOlder, ingredients: glitchy, quote: glitchy.join(", ") };
+    const ny = { ...nykaaCurrent, ingredients: clean, quote: clean.join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readDecoder: async () => dec, readNykaa: async () => ny }));
+    expect(r).toMatchObject({ origin: "nykaa" });
+    expect(r?.alternatives).toBeUndefined();
+    // With no pasted page to break the tie, trust is equal and the longer of the two is used.
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", undefined, deps({ readDecoder: async () => dec, readNykaa: async () => ny, search: async () => [lotusDecoderUrl], searchNykaa: async () => [nykaaUrl] }))).toMatchObject({ origin: "decoder" });
+    // A brand page that is the same formula beats both, even when shorter.
+    const brandUrl = "https://lotus.in/products/whiteglow-skin-brightening-gel-creme-spf-25";
+    const brand = { source: brandUrl, ingredients: clean, quote: clean.join(", "), pageTitles: [lotusQuery] };
+    expect(await findBrandInci(lotusQuery, "Lotus", nykaaUrl, deps({ search: async () => [lotusDecoderUrl, brandUrl], read: async () => brand, readDecoder: async () => dec, readNykaa: async () => ny }))).toMatchObject({ origin: "brand-page", trust: 4 });
+  });
+
+  it("a Nykaa read that takes too long is dropped: the Decoder list that was already read is still used, and the lookup does not wait on it", async () => {
+    vi.useFakeTimers();
+    try {
+      const never = vi.fn(() => new Promise<null>(() => {}));
+      const pending = findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: never }));
+      await vi.advanceTimersByTimeAsync(READ_CAP_MS.nykaa - 1000);
+      let settled = false; void pending.then(() => { settled = true; });
+      await Promise.resolve();
+      expect(settled).toBe(false); // still inside the cap
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(await pending).toMatchObject({ source: lotusDecoderUrl, origin: "decoder" });
+    } finally { vi.useRealTimers(); }
   });
 
   it("asks Firecrawl for Nykaa pages as well, and the pages a first lookup was shown include them", async () => {

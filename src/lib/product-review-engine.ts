@@ -1199,8 +1199,8 @@ export async function listRepositoryCatalogueProducts(limit = 60): Promise<impor
    attempts in all). The shopper never sees this and never sees a failure for it: whatever the last try returns is kept, and an answer that is still without a
    web search is stored and shown as before, with researchLog.grounded false (the re-runs can replace it later). /api/review is cut off at 180 s and a whole
    analysis takes 80-106 s, so no retry starts once RETRY_STARTS_BEFORE_MS of the request has gone. */
-/** The longest the ingredient-source lookup (Decoder, brand page, Nykaa) may take. */
-const PEER_LOOKUP_MS = 50_000;
+/** The longest the whole ingredient-source lookup (Decoder, brand page, Nykaa) may take; each read inside it is capped on its own (`READ_CAP_MS`). */
+const PEER_LOOKUP_MS = 40_000;
 const GROUNDING_RETRIES = 2;
 const RETRY_STARTS_BEFORE_MS = 75_000;
 /* A retry is only ever a bonus. It is abandoned, and the answer already in hand is kept, if it throws or is still running this long after the request began,
@@ -1387,7 +1387,8 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
     if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
-      pageInci = await findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined }, firstLookup.seen)); // the model was already asked for this product
+      // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
+      pageInci = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen)), PEER_LOOKUP_MS); // the model was already asked for this product
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
         suffix = block;

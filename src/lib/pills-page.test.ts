@@ -607,6 +607,11 @@ describe("when sources disagree on the ingredient list, the page says so (owner 
     expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. INKEE Decoder (29 ingredients) lists a different ingredient list; this analysis used the most complete one. We re-check analyses older than six months.");
   });
 
+  it("says 'Another Nykaa page' when the other list is on a second Nykaa page, instead of repeating the name", () => {
+    const m = page(fromNykaa([{ source: "https://www.nykaa.com/test-product-pack/p/456", origin: "nykaa", count: 18 }])).model;
+    expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. Another Nykaa page (18 ingredients) lists a different ingredient list; this analysis used the most complete one. We re-check analyses older than six months.");
+  });
+
   it("says nothing extra when the sources agreed, and keeps the Nykaa list source-backed (ticks are drawn)", () => {
     const m = page(fromNykaa()).model;
     expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. We re-check analyses older than six months.");
