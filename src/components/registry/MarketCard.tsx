@@ -17,8 +17,6 @@ import { track } from "@/lib/analytics";
    The whole card opens the analysis (the title link is stretched over it); the compare
    button sits above that link so it does not navigate. */
 
-export const MAX_COMPARE = 4;
-
 export function productId(p: Pick<ProductScorecard, "brandSlug" | "slug">): string {
   return `${p.brandSlug}/${p.slug}`;
 }
@@ -66,12 +64,13 @@ function GlanceRow({ items }: { items: NonNullable<ProductScorecard["glance"]> }
 export default function MarketCard({
   product,
   comparing,
-  compareFull,
+  compareBlock,
   onCompare,
 }: {
   product: ProductScorecard;
   comparing: boolean;
-  compareFull: boolean;
+  /** Why this product cannot join the comparison now (another type is being compared, the list is full, or its type is not filed), or null. */
+  compareBlock: string | null;
   onCompare: (id: string) => void;
 }) {
   // The rating is one circle: green, yellow, red, or grey (not rated). A card of a stored review (the pills page) shows the circle its page shows; a catalogue
@@ -84,7 +83,7 @@ export default function MarketCard({
   const price = getDisplayPrice(product).replace(/Rs\.?\s*/gi, "₹");
   const hasPrice = price !== "Price unavailable";
   const id = productId(product);
-  const blocked = !comparing && compareFull;
+  const blocked = !comparing && !!compareBlock;
 
   return (
     <article className="group relative flex flex-col bg-white border border-[#e5dfd6] rounded-[14px] overflow-hidden transition-[box-shadow,transform] duration-[240ms] md:hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(40,40,40,0.08),0_18px_40px_rgba(40,40,40,0.10)]">
@@ -132,8 +131,9 @@ export default function MarketCard({
           <button
             type="button"
             aria-pressed={comparing}
-            disabled={blocked}
-            title={blocked ? `You can compare up to ${MAX_COMPARE} products` : comparing ? "Remove from comparison" : "Add to comparison"}
+            // Not `disabled`: a refused click still has to reach the page, which says why in the tray.
+            aria-disabled={blocked || undefined}
+            title={blocked ? (compareBlock ?? undefined) : comparing ? "Remove from comparison" : "Add to comparison"}
             onClick={() => onCompare(id)}
             className={`relative z-10 flex-none inline-flex items-center gap-1 h-8 rounded-lg border px-2.5 text-[12px] font-bold whitespace-nowrap transition-colors ${
               comparing
@@ -146,6 +146,7 @@ export default function MarketCard({
             <span aria-hidden className="md:hidden text-[16px] leading-none">{comparing ? "✓" : "+"}</span>
             <span className="hidden md:inline">{comparing ? "✓ Added" : "+ Compare"}</span>
             <span className="sr-only md:hidden">{comparing ? "Remove from comparison" : "Add to comparison"}</span>
+            {blocked && <span className="sr-only">. {compareBlock}</span>}
           </button>
         </div>
       </div>

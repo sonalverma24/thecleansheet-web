@@ -14,7 +14,7 @@ const GLANCE: NonNullable<ProductScorecard["glance"]> = [
   { label: "Fragrance free", state: "no" }, { label: "Alcohol free", state: "unknown" },
 ];
 const PILLED: ProductScorecard = { ...BASE, pill: { key: "buy-with-caution", marker: "yellow" }, glance: GLANCE };
-const draw = (p: ProductScorecard) => renderToStaticMarkup(<MarketCard product={p} comparing={false} compareFull={false} onCompare={() => {}} />);
+const draw = (p: ProductScorecard) => renderToStaticMarkup(<MarketCard product={p} comparing={false} compareBlock={null} onCompare={() => {}} />);
 /** The classes of the summary paragraph (the product name above it is clamped too, so look at this one only). */
 const summaryClasses = (html: string) => html.match(/<p class="(hidden md:block[^"]*)"/)![1];
 /** The rating circle of a card: its colour name, its background, and nothing else (no text, no label). */

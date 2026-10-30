@@ -493,8 +493,9 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
 
 /* ── block 9: gaps ───────────────────────────────────────────── */
 
-const GAP_TEXT: Record<string, (r: { evidence?: { claim?: string } }, d: Decision) => string | null> = {
+const GAP_TEXT: Record<string, (r: { evidence?: { claim?: string; ingredient?: string } }, d: Decision) => string | null> = {
   "caution.claim_gap": (r) => (r.evidence?.claim ? `A test on the finished product for “${r.evidence.claim}”.` : "A test on the finished product for the main claim."),
+  "caution.free_from_unverified": (r) => (r.evidence?.claim ? `Proof that “${r.evidence.claim}” holds${r.evidence.ingredient ? `, given the list shows ${r.evidence.ingredient}` : ""}.` : "Proof that the “free from” claims hold, given the ingredient list."),
   "note.screen_partial": () => "Reference data for every listed ingredient, so our screen covers them all.",
   "note.user_percentage": (r) => (r.evidence?.claim ? `The test details (sample size, duration, method) behind “${r.evidence.claim}”.` : "The test details behind the “% of users” figures."),
   "caution.list_trust_2": () => "The ingredient list confirmed against the pack or the brand's own page.",
