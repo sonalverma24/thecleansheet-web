@@ -165,6 +165,14 @@ export function withKnownCandidates(deps: Dependencies, known: Iterable<string>)
 
 interface Read { page: PageINCI; supplied: boolean }
 
+/** The longest each kind of read may take. A Nykaa page is rendered in a browser (15 to 40 s, and now and then more), so it is capped: a read that overruns counts as
+    no list from that source, and the others' lists are used, instead of the whole lookup waiting on it. */
+export const READ_CAP_MS = { decoder: 15_000, "brand-page": 20_000, nykaa: 30_000 } as const;
+const within = <T>(work: Promise<T>, ms: number): Promise<T | null> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  return Promise.race([work.catch(() => null), new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), ms); })]).finally(() => clearTimeout(timer));
+};
+
 /** The list as components: a premix printed "A (And) B" is two ingredients, as INKEE Decoder lists it. Counting and comparing components keeps a source that joins a
     premix from looking shorter, or different, than one that splits it. */
 const components = (page: PageINCI): string[] =>
@@ -175,7 +183,8 @@ const SAME_FORMULA = 0.85;
 
 /** Find the product's ingredient list. Decoder pages, the brand's own pages and Nykaa product pages (the pasted one, and what search finds) are read together;
     each must name the product, carry a captured quote and be an ingredient list. The most complete list wins; a tie goes to the better-captured source (a brand's
-    page over Decoder or Nykaa), then to the page the shopper pasted. Sources whose list differs are recorded on the winner as `alternatives`.
+    page over Decoder or Nykaa), then to the page the shopper pasted; lists that are the same formula are decided by capture and the pasted page, not by length.
+    Sources whose list is a different formula are recorded on the winner as `alternatives`.
     `known` holds a list already found elsewhere (the Decoder page the engine resolved by name), which competes on the same terms. */
 export async function findBrandInci(query: string, brand: string, suppliedUrl?: string, deps: Dependencies = defaultBrandInciDeps, known: PageINCI[] = []): Promise<PageINCI | null> {
   const tried = new Set<string>();
@@ -190,9 +199,9 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     const nykaaUrls = deps.readNykaa ? fresh.filter(isNykaaProductUrl).slice(0, 2) : [];
     for (const u of [...decoderUrls, ...brandUrls, ...nykaaUrls]) tried.add(u);
     const reads = await Promise.all([
-      ...decoderUrls.map(async (url) => ({ url, page: await readDecoder(url).catch(() => null), origin: "decoder" as const })),
-      ...brandUrls.map(async (url) => ({ url, page: await deps.read(url).catch(() => null), origin: "brand-page" as const })),
-      ...nykaaUrls.map(async (url) => ({ url, page: await deps.readNykaa!(url).catch(() => null), origin: "nykaa" as const })),
+      ...decoderUrls.map(async (url) => ({ url, page: await within(readDecoder(url), READ_CAP_MS.decoder), origin: "decoder" as const })),
+      ...brandUrls.map(async (url) => ({ url, page: await within(deps.read(url), READ_CAP_MS["brand-page"]), origin: "brand-page" as const })),
+      ...nykaaUrls.map(async (url) => ({ url, page: await within(deps.readNykaa!(url), READ_CAP_MS.nykaa), origin: "nykaa" as const })),
     ]);
     return reads.flatMap((r) => (usable(r.page)
       ? [{ page: { ...r.page, origin: r.page.origin ?? r.origin, trust: r.page.trust ?? (r.origin === "brand-page" ? 4 as const : 3 as const) }, supplied: r.url === suppliedUrl }]
@@ -201,9 +210,15 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
 
   const choose = (reads: Read[]): PageINCI | null => {
     if (!reads.length) return null;
-    const best = [...reads].sort((a, b) => listCount(b.page) - listCount(a.page) || (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied))[0];
+    // The most complete list wins; a tie goes to the better-captured source, then to the page the shopper pasted...
+    const top = [...reads].sort((a, b) => listCount(b.page) - listCount(a.page) || (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied))[0];
+    // ...but lists that are the same formula written two ways are one candidate, and length does not choose between them: a source that splits a premix, or a parser that cuts a name
+    // into pieces, would win on count alone. Capture decides, then the pasted page (INKEE Decoder's 24 entries for Aqualogica include "*xylitylglucoside" and a stray "Crosspolymer";
+    // Nykaa's 19 are the same formula, clean).
+    const same = reads.filter((r) => r === top || inciSimilarity(components(r.page), components(top.page)) >= SAME_FORMULA);
+    const best = [...same].sort((a, b) => (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied) || listCount(b.page) - listCount(a.page))[0];
     const alternatives: InciAlternative[] = reads
-      .filter((r) => r !== best && inciSimilarity(components(r.page), components(best.page)) < SAME_FORMULA)
+      .filter((r) => !same.includes(r))
       .map((r) => ({ source: r.page.source, origin: r.page.origin ?? "decoder", count: listCount(r.page) }));
     return alternatives.length ? { ...best.page, alternatives } : best.page;
   };
