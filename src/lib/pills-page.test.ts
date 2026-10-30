@@ -488,3 +488,47 @@ describe("a % of users figure is a gap note, not a reason to buy with caution (o
     expect(base([hero, detailed]).gaps.join(" ")).not.toMatch(/95% of users/);
   });
 });
+
+describe("comedogenicity is named under 'Who should be careful' (owner decision, 2026-10-30)", () => {
+  const suitability = { bestFor: ["Dry or very dry skin", "Acne-prone skin (non-comedogenic)"], avoidIf: ["You prefer a very lightweight gel", "You react to Niacinamide (rare)"] };
+  /** Only the two lists the page reads; the model's other suitability fields are not under test. */
+  const fit = (s: { bestFor: string[]; avoidIf: string[] }) => s as ProductReview["consumerSuitability"];
+  const cream = (inci: string[], over: Partial<ProductReview> = {}, ev?: Parameters<typeof rv>[1]) =>
+    page(rv({ productName: "Barrier Cream", category: "Moisturizer", inciIngredients: inci, consumerSuitability: fit(suitability), ...over }, ev)).model;
+
+  it("leads the cautions with the comedogenic ingredients on the label, and drops the model's contradicting 'non-comedogenic' line", () => {
+    const m = cream([...BASE, "Oleic Acid", "Squalane", "Ethylhexyl Palmitate"]);
+    expect(m.fit.careful[0]).toBe("Acne-prone or breakout-prone skin: contains Oleic Acid and Ethylhexyl Palmitate, commonly rated comedogenic.");
+    expect(m.fit.careful.slice(1)).toEqual(suitability.avoidIf);
+    expect(m.fit.suits).toEqual(["Dry or very dry skin"]);
+    // The FAQ answer is built from the same list.
+    expect(m.faq.find((f) => f.q === "Who should be careful with it?")?.a).toMatch(/^People to take care with: Acne-prone or breakout-prone skin: contains Oleic Acid and Ethylhexyl Palmitate/);
+  });
+
+  it("replaces a model-written acne line instead of saying it twice, and keeps at most four cautions", () => {
+    const m = cream([...BASE, "Isopropyl Myristate"], { consumerSuitability: fit({ bestFor: [], avoidIf: ["Very acne-prone skin may clog", "A", "B", "C", "D"] }) });
+    expect(m.fit.careful).toHaveLength(4);
+    expect(m.fit.careful[0]).toMatch(/^Acne-prone or breakout-prone skin: contains Isopropyl Myristate/);
+    expect(m.fit.careful.join(" ")).not.toMatch(/may clog/);
+  });
+
+  it("says nothing, either way, when no listed ingredient is on the comedogenic list (the list is short, so silence is not 'non-comedogenic')", () => {
+    const m = cream([...BASE, "Squalane"]);
+    expect(m.fit.careful).toEqual(suitability.avoidIf);
+    expect(m.fit.suits).toEqual(suitability.bestFor);
+  });
+
+  it("says nothing when the ingredient list is not source-backed", () => {
+    const m = cream([...BASE, "Oleic Acid"], {}, evidence.model());
+    expect(m.fit.careful).toEqual(suitability.avoidIf);
+  });
+
+  it("says nothing for a rinse-off or a hair product, where it is not the point", () => {
+    expect(cream([...BASE, "Oleic Acid"], { category: "Face Cleanser" }).fit.careful).toEqual(suitability.avoidIf);
+    expect(cream([...BASE, "Oleic Acid"], { category: "Hair Mask" }).fit.careful).toEqual(suitability.avoidIf);
+  });
+
+  it("does not take 'linoleic acid' for 'oleic acid'", () => {
+    expect(cream([...BASE, "Linoleic Acid"]).fit.careful).toEqual(suitability.avoidIf);
+  });
+});
