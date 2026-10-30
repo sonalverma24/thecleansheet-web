@@ -844,6 +844,14 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** which colour or pill any product gets, the decision core, stored analyses, `/analysis/<slug>` URLs, the links inside the product page components in `src/components/scorecards/` ("Back to all products", the breadcrumb, "Compare", and the unrated page's links still go to `/brands`; they are not part of this change). Nothing is written to the database.
 - **Undo:** revert the change; no migration.
 
+### 2026-10-30: Every stored analysis was removed, and each new analysis now reaches every page that shows analyses
+- **Decided by:** the owner, on 2026-10-30, in chat: "I need all the products on the website deleted ... I will do fresh reviews from the analyser tool only. But I need the supabase data of the earlier analysis to be saved, so I can rerun them later." Asked what that covered, they answered: "All analysed products, all products present in the DB to be deleted." The Brand Intelligence tables were to be left alone. Then: "whatever new products are added: create a flow. Add to matching ingredients; add to brands page & their products; add to filters on the left; add to the total number of analysed products displayed on top; add to home page up to 5 products, once enough products are there I will choose which products to display on home page."
+- **Reason:** in the owner's words above: the site is to be rebuilt from fresh runs of the analyser.
+- **What was removed (production, project the-clean-sheet, 2026-10-30):** all 322 rows of `public.product_reviews` (226 brands), by `DELETE ... WHERE reviewed_at <= '2026-10-30T08:13:56Z'`, after two identical, verified exports of the whole table (322 rows, SHA-256 `0ce7b03f0cf721c3...`) were saved on the owner's Mac, outside the repository. The table, its columns and its security rules stay. Nothing else was deleted: the Brand Intelligence tables (`brand_intelligence`, `brand_manufacturer_records`, `brand_reddit_sentiment`), `brands` and `ingredients` are as they were. Every `/analysis/<slug>` page now says not found, the product list, the compare page and the counter are empty, and the sitemap shrinks when it next refreshes.
+- **What the flow does (display and caching only):** when an analysis is saved, `src/lib/site-refresh.ts` refreshes the home page, `/products`, `/brands`, every brand page, every ingredient page, the product's own page and the reviews sitemap at once, instead of only `/brands` (the page cache is five minutes). Ingredient pages now list the analysed products that contain the ingredient, read from the stored analyses (`src/lib/ingredient-product-index.ts`, kept for two minutes and shared by the pages), with a rating circle and a link to the product's page; before, they read the removed hand-written catalogue and so listed nothing. The home page shows up to five products: the slugs in `src/data/home-picks.ts` when the owner has chosen any, otherwise the newest analyses. The list starts empty, so each new analysis appears on its own until the owner picks. The product list's filters, the "products analysed" figure and the brand directory already read the stored analyses, so a new analysis joins them without a change; `src/lib/new-analysis-flow.test.ts` proves it with one new product.
+- **Not changed:** how any analysis is made or rated, the decision core, the prompts, the rules, and the Brand Intelligence data.
+- **Undo:** the data can be put back from the saved exports (`scripts/export-product-reviews.mts` makes them; main has no restore script, it exists only on the old `feat/analyser-verifier` branch, and rebuilding through the analyser spends model credits). The code change can be reverted; nothing is migrated.
+
 ### 2026-10-29: Products are compared only with products of the same type, and a comparison page gives a pick
 - **Decided by:** the owner, on 2026-10-29, in chat: "comparison should only be possible within the same category - like a sunscreen should be able to be compared with only a sunscreen and so on", then "use the available info on each product page and create product comparison and offer a suggestion - which to pick?" and, once they had seen it on localhost, "let's make it live".
 - **Reason:** in the owner's words above. The old overlay compared on pillars and warning badges that the /brands list does not carry for a stored analysis, so most products read "Not enough data", and it allowed a sunscreen to be set beside a shampoo.
@@ -1080,7 +1088,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/ingredient-db.ts` | `1172509d23c12e59df5b3792e4520bb0669bc4807e45bdef5e1c117c4eb4fe7e` |
 | `src/lib/ingredient-directory.ts` | `0c13119e0ecd730600e9112409dc86acf5f4140e73ac2a5bd5e9084aba28578a` |
 | `src/lib/ingredient-intel.ts` | `e326d79922b4ff2d4e8133a4e1154c38208905a3ed68ed3b3b79b8826aa24598` |
-| `src/lib/ingredient-product-index.ts` | `9cb4e41376623352f11e9ed81cb4ba8d61ce973731b9d33e7397c7964fcccb08` |
+| `src/lib/ingredient-product-index.ts` | `7edef7cea639ac4b9463092dd351b97dce5247ad5e0240be99834a12edfd0613` |
 | `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
 | `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
@@ -1093,7 +1101,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `1ac77f3e8ed72752a44c13be869e264a2a5ee124eef4c331cd1c3e4470fa8b81` |
+| `src/lib/product-review-engine.ts` | `8820f33f5c848e327ebcca629d6db8f80286dfaf0b53697859b88d4986fa2027` |
 | `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |

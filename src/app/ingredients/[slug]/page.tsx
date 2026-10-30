@@ -8,7 +8,7 @@ import {
 import { getDirectoryIngredientBySlug, isPlaceholderIngredient } from "@/lib/ingredient-directory";
 import { NOINDEX, clipDescription } from "@/lib/seo";
 import { getProductsWithIngredient } from "@/lib/ingredient-product-index";
-import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { RatingDot } from "@/components/scorecards/RatingDot";
 
 // Core ingredients prebuild; ingredients discovered from scans render on-demand.
 export const revalidate = 300;
@@ -95,7 +95,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
     .slice(0, 6);
 
   // Reviewed products whose INCI list contains this ingredient.
-  const productsWithIngredient = getProductsWithIngredient(slug);
+  const productsWithIngredient = await getProductsWithIngredient(slug);
 
   const faqs = [
     {
@@ -463,11 +463,10 @@ export default async function IngredientDetailPage({ params }: { params: Promise
             </p>
             <div className="grid sm:grid-cols-2 gap-3">
               {productsWithIngredient.map((p) => {
-                const tier = TIER_STYLES[p.tier];
                 return (
                   <Link
-                    key={`${p.brandSlug}-${p.productSlug}`}
-                    href={`/brands/${p.brandSlug}/${p.productSlug}`}
+                    key={p.productSlug}
+                    href={`/analysis/${p.productSlug}`}
                     className="border border-ink-100 hover:border-teal-200 rounded-xl p-4 flex items-center justify-between group transition-all hover:shadow-md"
                   >
                     <div className="min-w-0">
@@ -476,12 +475,7 @@ export default async function IngredientDetailPage({ params }: { params: Promise
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-ink-400">{p.brandName}</span>
-                        <span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full border"
-                          style={{ background: tier.bg, color: tier.fg, borderColor: tier.border }}
-                        >
-                          {tier.label}
-                        </span>
+                        <RatingDot marker={p.marker} size={11} />
                       </div>
                     </div>
                     <ArrowRight size={14} className="text-ink-300 group-hover:text-teal-500 transition-colors flex-shrink-0 ml-2" />

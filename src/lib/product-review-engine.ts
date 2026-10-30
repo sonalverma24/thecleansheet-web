@@ -29,7 +29,7 @@ import { ANALYSER_FLAGS, isFlagOn } from "@/lib/analyser-flags";
 import { pillarStanding } from "@/lib/pillar-standing";
 import { addDiscoveredNames } from "@/lib/ingredient-directory";
 import { findTaxonomyMatch, getTaxonomyItem, PRODUCT_TYPES, CONCERNS } from "@/data/taxonomy";
-import { revalidatePath } from "next/cache";
+import { refreshAfterNewAnalysis } from "@/lib/site-refresh";
 import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, ClaimAnalysis, ProductImageSource, PillarOutcome } from "@/lib/product-review-types";
 
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
@@ -1580,10 +1580,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // repeat paste this session is instant, but it never reaches the directory DB.
   if (productIdentified) {
     await store(canonicalSlug, result);
-    // /brands is ISR-cached for 5 minutes (see revalidate export on that page);
-    // invalidate it now so a fresh analysis shows up in the grid, filters, and
-    // stats strip on the very next visit instead of waiting out the window.
-    try { revalidatePath("/brands"); } catch { /* best-effort, never blocks the response */ }
+    // The pages that show analyses are ISR-cached for 5 minutes; refresh them now so a fresh analysis shows up
+    // on the home page, the product list, its filters and counter, the brand and ingredient pages, and the sitemap
+    // on the very next visit instead of after the window (see site-refresh.ts). Best-effort, never blocks.
+    refreshAfterNewAnalysis(canonicalSlug);
   } else {
     REVIEW_CACHE.set(canonicalSlug, { result, at: Date.now() });
   }
