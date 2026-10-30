@@ -163,6 +163,7 @@ export function buildAnalyserReference(root: string = process.cwd()): string {
     "~~~~",
     "",
     `Good choice needs all of these supports: ${coreSupports.map((c) => `\`${c}\``).join(", ")}. Without them the decision is Not enough info (\`gap.support_insufficient\`).`,
+    "The third, `support.claims_proportionate`, can be replaced by `support.sections_green` (owner decision, 2026-10-30): all five sections of the product page are green (Ingredient safety, Formula logic, Claims evidence, Test transparency, Consumer clarity; `src/lib/analyser-x/sections.ts`), and the only cautions are ones those sections already measure, a claim without a test on this product (`caution.claim_gap`) or a formula that may not deliver (`caution.formula`). Those two then ride along as notes and are listed under Gaps. Any other caution is a flag and still decides Buy with caution.",
     "",
     "## 5. Reasons",
     "",

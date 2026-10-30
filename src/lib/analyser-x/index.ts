@@ -11,6 +11,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 export { decideReview } from "./adapter";
+export { GREEN_FROM, RED_UNDER, INGREDIENT_CAUTIONS, markerOfPct, reviewSections, safetyMarker, testLevelOfClaims, testMarker, type SectionMarker } from "./sections";
 export { benchmarkPanel, type BenchmarkPanel } from "./panel";
 export { AUTHORITIES, AUTHORITY_LABEL, AUTHORITY_SHORT, shortList } from "./regulatory";
 export { PILLS, sourceName } from "./copy";

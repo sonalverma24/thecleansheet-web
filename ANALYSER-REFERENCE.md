@@ -59,9 +59,16 @@ Analyser Version X1 · the decision
    reliable (a prohibited ingredient, a contradicted claim) is converted into a gap when
    the list is not reliable: an apparent problem in an unverified list is something to
    verify, never something to publish.
+
+   Then the sections are consulted (owner decision, 2026-10-30): when all five sections of
+   the product page are green and the only cautions are ones those sections already measure
+   (a claim without a test on this product; a formula that may not deliver), the product is
+   a Good choice, and those cautions stay on the page as notes and under Gaps. Every other
+   caution is a flag and still holds a product at Buy with caution.
 ~~~~
 
 Good choice needs all of these supports: `support.list_verified`, `support.safety_clear`, `support.claims_proportionate`. Without them the decision is Not enough info (`gap.support_insufficient`).
+The third, `support.claims_proportionate`, can be replaced by `support.sections_green` (owner decision, 2026-10-30): all five sections of the product page are green (Ingredient safety, Formula logic, Claims evidence, Test transparency, Consumer clarity; `src/lib/analyser-x/sections.ts`), and the only cautions are ones those sections already measure, a claim without a test on this product (`caution.claim_gap`) or a formula that may not deliver (`caution.formula`). Those two then ride along as notes and are listed under Gaps. Any other caution is a flag and still decides Buy with caution.
 
 ## 5. Reasons
 
@@ -107,6 +114,7 @@ caution.benchmark_gap: (p) =>
 support.list_verified: (p) => `The ingredient list was read ${from(p) || "from a source we can verify"} and matches the product name.`
 support.safety_clear: (p) => Number(p.recognised) >= Number(p.total) ? `No prohibited or flagged ingredient in our screen (all ${s(p.total)} listed ingredients checked).` : `No prohibited or flagged ingredient among the ${s(p.recognised)} of ${s(p.total)} listed ingredients our screen checked.`
 support.claims_proportionate: () => "The claims are modest, or the main claims are backed by a test on this product."
+support.sections_green: () => "All five areas of our checks are Strong: ingredient safety, formula logic, claims evidence, test transparency and consumer clarity."
 support.formula_sound: () => "The formula and format plausibly deliver the claims."
 note.endocrine: (p) => `${s(p.ingredient)}: ${s(p.note)}. Legal at its permitted level.`
 note.screen_partial: (p) => `${s(p.n)} of ${s(p.total)} listed ingredients ${Number(p.n) === 1 ? "is" : "are"} not in our reference database (${s(p.names)}), so our screen did not check ${Number(p.n) === 1 ? "it" : "them"}.`
@@ -825,6 +833,7 @@ Version X1 decision layer, `src/lib/analyser-x/`:
 - `regulatory.ts`: Analyser Version X1 · the regulatory benchmark
 - `rules.ts`: Analyser Version X1 · the rule registry
 - `screen.ts`: Analyser Version X1 · the safety and compliance screen, as facts
+- `sections.ts`: Analyser Version X1 · the five sections of a product page, and what colour each is
 - `test-helpers.ts`: Shared builders for the vX tests. Everything here is constructed; no real product is described.
 - `types.ts`: Analyser Version X1 · shared types
 - `verifier.ts`: Analyser Version X1 · the verifier: the only door from neural to symbolic
@@ -836,6 +845,15 @@ Written by a person, newest first. It records what was decided about the analyse
 
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
+
+### 2026-10-30: When all five sections of a product page are green, the product is a Good choice, except for flags
+- **Decided by:** the owner, on 2026-10-30, in chat, about the Cetaphil Moisturising Cream whose five sections were all Strong while the colour was yellow: "if all sections are green - the end result should be green except for flags in my opinion." Then, asked to confirm the exact rule: "Yes, build it and make it live. No need to test it on the old products. From now on, any new analysis that happens should use this logic, either from backend or front end."
+- **Reason:** in the owner's words above. The page showed Claims evidence as Strong ("8 of 10 claims are publicly supported") while a separate claim-by-claim check inside the decision held the colour at yellow, so the sections and the colour disagreed on one product.
+- **What it touched:** `src/lib/analyser-x/decision.ts` (`agreeWithSections`). When no medicine, block or gap applies, the list is verified, the ingredient screen is clear, all five sections are green, and the only cautions are `caution.claim_gap` or `caution.formula`, the product is a Good choice. Those two cautions stay on the page as notes and under Gaps; "All five areas of our checks are Strong" (`support.sections_green`) stands in for `support.claims_proportionate` as the third support. Every other caution is a flag and still decides Buy with caution: a concerning or audience-specific ingredient, an undisclosed entry, another regulator's limit, SPF below 30, wording beyond what a cosmetic can say in India, an unchecked "free from" claim, a weak list source. Blocks, gaps and medicines decide as before. The five section colours are now worked out in one place, `src/lib/analyser-x/sections.ts`, which the product page and the decision both read, so they cannot disagree; `decideReview` is the only function that produces a colour, so the product page, the lists, the compare page, the brand pages, the home page and every new analysis get the same answer. Invariant I8 checks that a decision resting on the sections really has them.
+- **Measured** (read-only, before the change, on the 322 analyses then stored plus the new Cetaphil): 8 had all five sections green. Four were already Good choice; four were Buy with caution on a claim gap alone, apart from one that also had a wording flag. With the rule, three change from yellow to green: Cetaphil Moisturising Cream, Cetaphil Baby Soothing Moisturising Cream and Murad Vita-C Glycolic Serum. The Solved Skin Rapid Clear Facewash stays yellow (wording beyond a cosmetic claim). Nothing else changed. The owner chose not to run a further before-and-after on the old products.
+- **Known trade-off:** the sections are more forgiving than the claim-by-claim check (Test transparency is Strong if any one performance claim has a clinical study), so a product with several unproven claims can now be green. The unproven claims remain visible under Gaps.
+- **Not changed:** the five sections' own thresholds (green from 75, red under 45), the rules for blocks, gaps and medicines, the confidence rule, the stored standings, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
+- **Undo:** revert the merge commit of this change. Nothing is migrated and no stored analysis is touched: colours are worked out when a page is drawn.
 
 ### 2026-10-30: Browse products is /products and Browse brands is /brands; every "analyse a product" link goes to /products
 - **Decided by:** the owner: a Brand Intelligence Directory ("Browse brands") separate from the product list ("Browse products"), built in pull request 45. No quotation was kept, so none is given here.
@@ -1044,15 +1062,15 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
-| `src/lib/analyser-reference.ts` | `d52984d57f8a431cc48627cb61083cd3adbeda06e76a94f0854d0c9b5651159a` |
-| `src/lib/analyser-x/adapter.ts` | `f040cbeb559b2aadb365222d9ba40c67697cc2517cf316b4c97e7f36c2bfca3e` |
+| `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
+| `src/lib/analyser-x/adapter.ts` | `fd1b33bc76c2c6f9c4768063283f8ff6fcf4850093d6e4ee6efceeea19654979` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `1c0810b4ffd2096a26ae0bfbf07c5fd4f5afc1518967b75e84efa3fd9c2fccab` |
-| `src/lib/analyser-x/decision.ts` | `8eb28d5246f3f1ec02e5983bb905dd034bb047704c6b31b03b774212180e0721` |
+| `src/lib/analyser-x/copy.ts` | `51ccc0254ffb5d9d9ee7f817af2a47ee53a3f05ff3e54c9e70f75fe387f677f7` |
+| `src/lib/analyser-x/decision.ts` | `561621738b2d9e0c08b16c045a8b5c8769552cac4e9c3bdac8997a1d659e5a58` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
-| `src/lib/analyser-x/index.ts` | `d311358c06d958f0a45a5e69afdf36b1102a3c9e3a2d89f93fe61d9169824fd0` |
-| `src/lib/analyser-x/invariants.ts` | `983992f6d800368d4a464b499723669d9d8d35774840b844dbf39c79b8615004` |
+| `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
+| `src/lib/analyser-x/invariants.ts` | `0a5734c7383f629d214b1a505ae5cba6dff7bddab88e52f5fd7e21dd8259194a` |
 | `src/lib/analyser-x/kb.ts` | `83b8b67415017755c0946f60e5ef35be719b824f140491170dd1da3a0283fe9c` |
 | `src/lib/analyser-x/ladder.ts` | `592fda191f0c6781fc8558d27cc047ee103f755a2f0467e706ec5479eaaab0a1` |
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
@@ -1060,8 +1078,9 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
 | `src/lib/analyser-x/rules.ts` | `62b39c6a1aa4a6eb50dcc368034c33362d513ea3f8789f5bca3653a2cfe7120b` |
 | `src/lib/analyser-x/screen.ts` | `a12c31d9471c8ebf5dfbc9fe8cb82db228c194e420d5054503b6af6ff1e9c0e8` |
-| `src/lib/analyser-x/test-helpers.ts` | `a4e9a3a459d51da896d2d6d664e218c7c1cf11433ab846750f7d95bc4b381059` |
-| `src/lib/analyser-x/types.ts` | `a35cbb1f20d44af8b7bb33f534fbc23ddddcfa08d082eca754bb026482c9a2ba` |
+| `src/lib/analyser-x/sections.ts` | `ed0bf952f885a0657a8f37880fadc1b50268e7d6b1884dc5576565ee21b99f32` |
+| `src/lib/analyser-x/test-helpers.ts` | `17da8d36981283a224627f933602aa341d14e77510b9440f6134067bd40f011a` |
+| `src/lib/analyser-x/types.ts` | `de767597d184f37701a894d942cb2f411f8277c7b1e22fbb0ed6c57e5be88ce8` |
 | `src/lib/analyser-x/verifier.ts` | `2aba0b3ec3b2b08f3ca4990e77c895802a63166bd2c8c84251c4ede6cd989c7c` |
 | `src/lib/analyser-x/version.ts` | `f5420b59fae65a7f27e0a4156721f8b60f2b4ef46d3c2fd4ceb478d5a09072d2` |
 | `src/lib/analysis-engine.ts` | `388ecc3c10ab9cfa27b7f33be6381c31c70e74e8b5551dd85f88c2a98944064c` |
@@ -1095,7 +1114,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `8c0833742f8ce6d1332fd7b92d4b5b99e1c3455397517920de3642e0b793e9f2` |
+| `src/lib/pills-page.ts` | `779d886bd8ce8f11c8bdc95f51166be33db18a5f729e64d14a815f9808a22d9d` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `3974a4ef350c84e85d042782afc12b75e650c8775aa731aa9bdd0e579e471767` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |

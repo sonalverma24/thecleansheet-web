@@ -20,3 +20,7 @@ export function rv(over: Partial<ProductReview> = {}, ev: ReturnType<typeof evid
 }
 
 export const BASE = ["Aqua", "Glycerin", "Niacinamide", "Phenoxyethanol"];
+
+/** Scores that leave the Claims evidence section yellow (10 of 20), so the five sections are not all green and a caution the sections measure (a claim
+    without a test on this product) still holds a product at Buy with caution. With the default scores all five sections are green. */
+export const notAllGreen = (): Partial<ProductReview> => ({ scores: { ...rv().scores, claimEvidence: 10 } });

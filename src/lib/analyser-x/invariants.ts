@@ -32,6 +32,13 @@ export function checkInvariants(decision: Decision, settled: Finding[], ctx: Rul
     if (decision.reasons.filter((r) => r.kind === "support").length < 2) v.push("I4 good-choice needs at least two support reasons");
   }
 
+  // Good choice resting on "all five sections are Strong" must really have them: the claim to be true when the decision is made.
+  if (decision.reasons.some((r) => r.ruleId === "support.sections_green")) {
+    const sec = ctx.sections;
+    if (decision.key !== "good-choice") v.push("I8 support.sections_green on a decision that is not good-choice");
+    if (!sec || ![sec.formula, sec.claims, sec.tests, sec.clarity].every((m) => m === "green")) v.push("I8 support.sections_green without four green sections from the analysis");
+  }
+
   if (decision.reasons.length === 0) v.push("I5 a decision needs at least one reason");
   const ids = new Set(settled.map((f) => f.ruleId));
   for (const r of decision.reasons) {

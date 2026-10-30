@@ -91,6 +91,7 @@ const T: Record<string, (p: P) => string> = {
   "support.list_verified": (p) => `The ingredient list was read ${from(p) || "from a source we can verify"} and matches the product name.`,
   "support.safety_clear": (p) => Number(p.recognised) >= Number(p.total) ? `No prohibited or flagged ingredient in our screen (all ${s(p.total)} listed ingredients checked).` : `No prohibited or flagged ingredient among the ${s(p.recognised)} of ${s(p.total)} listed ingredients our screen checked.`,
   "support.claims_proportionate": () => "The claims are modest, or the main claims are backed by a test on this product.",
+  "support.sections_green": () => "All five areas of our checks are Strong: ingredient safety, formula logic, claims evidence, test transparency and consumer clarity.",
   "support.formula_sound": () => "The formula and format plausibly deliver the claims.",
 
   "note.endocrine": (p) => `${s(p.ingredient)}: ${s(p.note)}. Legal at its permitted level.`,
