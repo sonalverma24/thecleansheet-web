@@ -1,0 +1,2 @@
+id,supplierId,offeringId,evidence,source,outcome,checkedOn,scope,limitations,reviewer,validUntil
+# FAKE EXAMPLE (delete this row),example-supplier-id,,certificate,supplier-provided,confirmed,2026-01-01,FAKE EXAMPLE scope: what exactly the check covered,What this check does not show,Example Reviewer,2027-01-01
