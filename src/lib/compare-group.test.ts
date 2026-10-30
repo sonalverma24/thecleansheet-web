@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMPARE_MAX, compareBlockReason, compareSubjectOfReview, compareTypeOf } from "./compare-group";
+import { COMPARE_MAX, compareBlock, compareBlockReason, compareSubjectOfReview, compareTypeOf } from "./compare-group";
 
 /** A stored analysis, as the /compare page files it: free-text category plus the product's name. */
 const typeOf = (productName: string, category: string) => compareTypeOf(compareSubjectOfReview({ productName, category }));
@@ -86,5 +86,21 @@ describe("who may join a comparison", () => {
     const full = Array.from({ length: COMPARE_MAX }, () => "Sunscreens");
     expect(compareBlockReason({ picked: full, alreadyIn: false, candidateType: "Sunscreens" })).toMatch(/up to 4/);
     expect(compareBlockReason({ picked: [], alreadyIn: false, candidateType: null })).toMatch(/cannot be compared/);
+  });
+});
+
+describe("what stopped a product joining", () => {
+  it("says which rule it was, so only a different type offers the filter button", () => {
+    expect(compareBlock({ picked: ["Sunscreens"], alreadyIn: false, candidateType: "Shampoos" })?.kind).toBe("type");
+    expect(compareBlock({ picked: Array(COMPARE_MAX).fill("Sunscreens"), alreadyIn: false, candidateType: "Sunscreens" })?.kind).toBe("full");
+    expect(compareBlock({ picked: [], alreadyIn: false, candidateType: null })?.kind).toBe("unfiled");
+    expect(compareBlock({ picked: ["Sunscreens"], alreadyIn: false, candidateType: "Sunscreens" })).toBeNull();
+  });
+
+  it("tells the shopper to choose another from the same category, in words", () => {
+    const m = compareBlock({ picked: ["Sunscreens"], alreadyIn: false, candidateType: "Shampoos" })!.message;
+    expect(m).toMatch(/only Sunscreens can be added/);
+    expect(m).toMatch(/another one from the same category/);
+    expect(compareBlockReason({ picked: ["Sunscreens"], alreadyIn: false, candidateType: "Shampoos" })).toBe(m);
   });
 });

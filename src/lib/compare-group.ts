@@ -77,13 +77,23 @@ export function compareSubjectOfReview(review: { productName: string; category?:
   return { productName: review.productName, productType: "leave-on", category, subCategory };
 }
 
-/** Why `candidate` cannot join the comparison that has `picked` in it, or null when it can. The words are shown to the shopper as they are. */
-export function compareBlockReason(args: { picked: (string | null)[]; alreadyIn: boolean; candidateType: string | null }): string | null {
+export type CompareBlock = { kind: "unfiled" | "full" | "type"; message: string };
+
+/** Why a product cannot join the comparison that has `picked` in it, or null when it can. `kind` says which rule stopped it (only "type" can be fixed by
+    filtering to the same product type); `message` is shown to the shopper as it is. */
+export function compareBlock(args: { picked: (string | null)[]; alreadyIn: boolean; candidateType: string | null }): CompareBlock | null {
   const { picked, alreadyIn, candidateType } = args;
   if (alreadyIn) return null;
-  if (candidateType === null) return "We have not filed this product's type yet, so it cannot be compared.";
-  if (picked.length >= COMPARE_MAX) return `You can compare up to ${COMPARE_MAX} products.`;
+  if (candidateType === null) return { kind: "unfiled", message: "We have not filed this product's type yet, so it cannot be compared." };
+  if (picked.length >= COMPARE_MAX) return { kind: "full", message: `You can compare up to ${COMPARE_MAX} products. Remove one to add another.` };
   const current = picked[0];
-  if (current && current !== candidateType) return `You are comparing ${current}. Only ${current} can be added. Clear the list to compare something else.`;
+  if (current && current !== candidateType) {
+    return { kind: "type", message: `You are comparing ${current}, so only ${current} can be added. Choose another one from the same category, or clear the list to compare something else.` };
+  }
   return null;
+}
+
+/** The message alone, for a card's tooltip. */
+export function compareBlockReason(args: Parameters<typeof compareBlock>[0]): string | null {
+  return compareBlock(args)?.message ?? null;
 }

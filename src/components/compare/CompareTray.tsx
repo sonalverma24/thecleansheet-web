@@ -6,15 +6,14 @@ import { GitCompare, X } from "lucide-react";
 import { COMPARE_MAX } from "@/lib/compare-group";
 import { track } from "@/lib/analytics";
 
-/* The bar at the foot of /brands while products are picked for a comparison. It names the type being compared (the first product picked sets it), says what
-   to do next, and shows the reason in words when a product of another type is refused. "Compare" is a link to /compare, so the comparison has its own address. */
+/* The bar at the foot of /brands while products are picked for a comparison. It names the type being compared (the first product picked sets it) and says
+   what to do next. "Compare" is a link to /compare, so the comparison has its own address. */
 
 export interface TrayItem { id: string; slug: string; name: string; image: string | null }
 
-export function CompareTray({ items, type, notice, onRemove, onClearAll }: {
+export function CompareTray({ items, type, onRemove, onClearAll }: {
   items: TrayItem[];
   type: string | null;
-  notice: string | null;
   onRemove: (id: string) => void;
   onClearAll: () => void;
 }) {
@@ -47,8 +46,8 @@ export function CompareTray({ items, type, notice, onRemove, onClearAll }: {
             <p className="truncate text-[13px] font-bold text-[#282828]">
               {type ? `Comparing ${type}` : "Comparing"} <span className="font-normal text-[#6f6a66]">· {items.length}/{COMPARE_MAX}</span>
             </p>
-            <p role="status" aria-live="polite" className={`text-[12px] leading-[1.35] ${notice ? "font-bold text-[#b83f37]" : "text-[#4a4a4a]"} line-clamp-2 sm:line-clamp-none`}>
-              {notice ?? (ready ? `Only ${type ?? "products of the same type"} can be added.` : `Add another ${type ?? "product of the same type"} to compare.`)}
+            <p className="text-[12px] leading-[1.35] text-[#4a4a4a] line-clamp-2 sm:line-clamp-none">
+              {ready ? `Only ${type ?? "products of the same type"} can be added.` : `Add another ${type ?? "product of the same type"} to compare.`}
             </p>
           </div>
         </div>

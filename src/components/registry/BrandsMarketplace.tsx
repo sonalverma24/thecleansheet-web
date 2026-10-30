@@ -5,11 +5,12 @@ import type { ProductScorecard } from "@/data/brands/types";
 import { track } from "@/lib/analytics";
 import {
   EMPTY_FILTERS, FILTER_KEYS, FILTER_LABELS, SORT_LABELS, activeFilterCount, computeFacets, defaultSort,
-  filterAndSort, searchWithState, stateFromParams,
+  filterAndSort, productGroup, searchWithState, stateFromParams,
   type FilterKey, type RegistryFilters, type SortKey,
 } from "@/lib/registry-filters";
 import { CompareTray } from "@/components/compare/CompareTray";
-import { compareBlockReason, compareTypeOf } from "@/lib/compare-group";
+import { CompareNotice } from "@/components/compare/CompareNotice";
+import { compareBlock, compareTypeOf } from "@/lib/compare-group";
 import { seedImageFor } from "@/lib/home-shelf";
 import { NoResultsCard } from "@/components/scorecards/NoResultsCard";
 import FilterPanel from "./FilterPanel";
@@ -32,7 +33,8 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [comparingIds, setComparingIds] = useState<string[]>([]);
-  const [compareNotice, setCompareNotice] = useState<string | null>(null);
+  // The message shown when a product cannot join the comparison. `group` is the /brands product type of the products already picked, for the filter button.
+  const [compareNotice, setCompareNotice] = useState<{ kind: "unfiled" | "full" | "type"; message: string; group: string | null } | null>(null);
 
   // A shared link's search, sort and filters, applied once after hydration.
   useEffect(() => {
@@ -107,21 +109,40 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   }, [sheetOpen]);
 
   // ── Compare ───────────────────────────────────────────────────────────────
-  // Products are compared only with products of the same type: the first one picked sets the type, and a product of another type is refused with the
-  // reason shown in the tray (compare-group.ts holds the rule, and /compare checks it again).
+  // Products are compared only with products of the same type: the first one picked sets the type. A product of another type is greyed on its card, and
+  // pressing it opens a message that can be closed (compare-group.ts holds the rule, and /compare checks it again).
   const typeById = useMemo(() => new Map(products.map((p) => [productId(p), compareTypeOf(p)])), [products]);
   const pickedTypes = comparingIds.map((id) => typeById.get(id) ?? null);
   const compareType = pickedTypes[0] ?? null;
-  const blockReasonFor = (id: string) => compareBlockReason({ picked: pickedTypes, alreadyIn: comparingIds.includes(id), candidateType: typeById.get(id) ?? null });
+  const blockFor = (id: string) => compareBlock({ picked: pickedTypes, alreadyIn: comparingIds.includes(id), candidateType: typeById.get(id) ?? null });
   const toggleCompare = (id: string) => {
     if (comparingIds.includes(id)) {
       setComparingIds(comparingIds.filter((i) => i !== id));
       setCompareNotice(null);
       return;
     }
-    const reason = blockReasonFor(id);
-    setCompareNotice(reason);
-    if (!reason) setComparingIds([...comparingIds, id]);
+    const block = blockFor(id);
+    if (block) {
+      const first = products.find((p) => productId(p) === comparingIds[0]);
+      const group = block.kind === "type" && first ? productGroup(first) : null;
+      // The filter is the wider /brands type ("Hair care"); the comparison can be narrower ("Conditioners"). Say so, so the button is not a surprise.
+      const wider = group && compareType && group !== compareType ? ` The ${group} filter also lists other types; only ${compareType} stay clickable.` : "";
+      setCompareNotice({ ...block, message: block.message + wider, group });
+      track("compare_blocked", { kind: block.kind });
+      return;
+    }
+    setCompareNotice(null);
+    setComparingIds([...comparingIds, id]);
+  };
+  // "Show only Sunscreens": the Product type filter set to the type being compared, and the list brought back into view.
+  const showOnlyGroup = (group: string) => {
+    const next = { ...filters, category: [group] };
+    setFilters(next);
+    setVisible(PAGE_SIZE);
+    writeUrl({ query, sort, filters: next });
+    track("filter_changed", { group: "category", value: group, on: true, via: "compare_notice" });
+    setCompareNotice(null);
+    document.getElementById("registry")?.scrollIntoView({ behavior: "smooth" });
   };
   const comparingProducts = useMemo(
     () => comparingIds.map((id) => products.find((p) => productId(p) === id)).filter((p): p is ProductScorecard => !!p),
@@ -231,7 +252,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
                     key={productId(p)}
                     product={p}
                     comparing={comparingIds.includes(productId(p))}
-                    compareBlock={blockReasonFor(productId(p))}
+                    compareBlock={blockFor(productId(p))?.message ?? null}
                     onCompare={toggleCompare}
                   />
                 ))}
@@ -299,10 +320,18 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
       )}
 
       {/* Compare */}
+      {compareNotice && (
+        <CompareNotice
+          title={compareNotice.kind === "type" ? "Compare like with like" : compareNotice.kind === "full" ? "Your list is full" : "This one cannot be compared yet"}
+          message={compareNotice.message}
+          actionLabel={compareNotice.group && !(filters.category.length === 1 && filters.category[0] === compareNotice.group) ? `Show only ${compareNotice.group}` : undefined}
+          onAction={compareNotice.group ? () => showOnlyGroup(compareNotice.group!) : undefined}
+          onClose={() => setCompareNotice(null)}
+        />
+      )}
       <CompareTray
         items={comparingProducts.map((p) => ({ id: productId(p), slug: p.slug, name: p.productName, image: seedImageFor(p) ?? p.image ?? null }))}
         type={compareType}
-        notice={compareNotice}
         onRemove={toggleCompare}
         onClearAll={() => { setComparingIds([]); setCompareNotice(null); }}
       />
