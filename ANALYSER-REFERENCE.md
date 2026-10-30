@@ -872,6 +872,16 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** the colour or pill any product gets (the decision core never reads the vegan screen), stored analyses, the prompts, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
 - **Undo:** revert the change; nothing is migrated and no stored analysis is touched: the screen is worked out when a page is drawn.
 
+### 2026-10-30: Nykaa is searched for ingredients alongside INKEE Decoder and the brand's own site, and the most complete list wins
+- **Decided by:** the owner, on 2026-10-30, in chat, about the Lotus Herbals WhiteGlow Gel Creme and the Aqualogica Glow+ Hydra Gel Moisturizer, whose full ingredient lists are on Nykaa. Asked whether Nykaa should be a normal source for every analysis: "Make Nykaa's Ingredients tab a normal source for every analysis". Asked how to settle sources that disagree: "Prefer the most complete list". The owner's correction of the first plan: "The nykaa ingredient search should be along with inkee and brand website." On Aqualogica: "I need a solution that can be scaled, not for this one particular case."
+- **Reason:** in the owner's words above. Lotus showed an older formula from INKEE Decoder (no Niacinamide, Cyclopentasiloxane or Isopropyl Myristate; Almond Oil and Alpha-Arbutin instead) while the Nykaa page the shopper pasted listed the current one, because the engine never consulted the pasted retailer page for ingredients. Aqualogica showed no ingredient list at all although INKEE Decoder and the brand's own page both had it: the page-title check wanted 75% of the shopper's name words in the page title, and Nykaa's marketing-length name ("... For 24 Hour Intense Hydration") fails that for the shorter titles those pages use.
+- **What it touched:** `src/lib/brand-inci.ts` (`findBrandInci`): INKEE Decoder pages, the brand's own pages and Nykaa product pages (the pasted one and what a Firecrawl search for "<product> nykaa" finds) are read together, each under the same checks (code-extracted, page names the product, quote captured, an ingredient list). The most complete list wins, counted as components so a premix printed "A (And) B" is two; a tie goes to the better-captured source (brand page 4, Decoder and Nykaa 3), then to the page the shopper pasted. A list that differs (under 85% alike) is recorded on the winner as `alternatives` and the FAQ answer "How recent is this analysis?" says so. `src/lib/nykaa-inci.ts` (new): renders the page, opens its Ingredients tab and reads the panel as a whole list, keeping Nykaa's own typos as printed; it refuses the product description that shows when the tab did not open. `src/lib/scrape.ts` (`fetchRenderedPage`, new): Firecrawl rendering with one retry. `src/lib/product-identity.ts` (`pageTitleNamesProduct`, new): a candidate page also names the product when its whole name sits inside the shopper's longer name (every distinctive word of the title is in the name, at least three of them, so a different type or variant such as "Cleanser", "Oil Free" or "Jello" never matches); `titleIdentifiesProduct` is unchanged because it also guards which listings may corroborate a claim. `src/lib/product-review-engine.ts`: the lookup now always runs, even when INKEE Decoder resolved by name, with that Decoder list as one candidate, bounded at 50 s; the winner's trust, origin and alternatives go into `inciEvidence`. `makeInciEvidence` takes a recorded trust (a Nykaa list is trust 3, as Decoder is; it was 2 as a retailer address, which would have switched every tick and the regulatory screen off). `sourceName` names INKEE Decoder and Nykaa instead of showing the host.
+- **Measured** (real network, no model call, no database): Lotus: Decoder by name 29 ingredients; Nykaa 30 entries (one extra only because Nykaa prints "Tocopheryl, Acetate" with a comma); Nykaa wins, Decoder recorded as the alternative. Aqualogica: no list before; Decoder page found (24 ingredients); Nykaa read (19 entries, the same formula with premixes joined), so no alternative is recorded.
+- **Known limits:** a longer list is not always the current one, which is why the lists that lost are always recorded; in the Lotus case the pick rests on Nykaa being longer by one entry that is a comma typo, so it should be read as "the pasted page's list", not as a proof of completeness. Nykaa's typos ("Butyl Methcaydibenzoy| Methane", "Isononyl. Isononanoate", "Tocopheryl, Acetate,triethanolamine") are kept as printed and will show as not in our reference database until the owner signs off aliases. Rendering a Nykaa page takes 15 to 40 s and costs Firecrawl credits (one search more per analysis, up to two page renders). Other retailers (Amazon, Flipkart, Purplle...) still never supply a list.
+- **Not done, and why:** the owner also approved reading the brand's own page with a JavaScript-rendering fetch on every analysis, to catch tests such as COSRX's study. The spike showed it would not have fixed COSRX: its results block (+74.46% skin barrier strength, +87.30% skin density, 20 adults) appears only to a real browser session in India, and Firecrawl did not get it even with an Indian location, cookie, variant parameter and stealth proxy. It was not built; a decision on that is open.
+- **Not changed:** the colour or pill rules, the prompts, stored analyses (nothing is re-run by this change), the approved baseline id `X1-approved-2026-10-28`.
+- **Undo:** revert the change. Analyses made after it carry the new `origin` and `alternatives` fields in `inciEvidence`, which older code ignores.
+
 ### 2026-10-30: An animal-origin cross needs an origin with no other route; commonly comedogenic ingredients are named under "Who should be careful"
 - **Decided by:** the owner, on 2026-10-30, in chat, about the Aestura Atobarrier 365 Cream: "Aestura's review says - animal derived ingredients, can we please verify claims like this first? A simple google search got me that this is not animal derived. Also, Comedogenicity risk should be mentioned under who should be careful, right? Fix this and fix the logic behind it".
 - **Reason:** in the owner's words above. The page drew "Animal-origin ingredient: Cholesterol" with a cross because the reference row for Cholesterol reads "Animal (lanolin) / Biotechnological": the ingredient can come from either, and nothing we hold says which route this product's supplier uses. A web check found no statement of the source from the brand, no vegan certification, and retailers that disagree (one lists the cream as vegan, another as not), so neither a tick nor a cross can be shown. Separately, the same page said "Acne-prone skin (non-comedogenic)" for a formula that contains Oleic Acid and Ethylhexyl Palmitate, both on the repository's own comedogenic list (commonly rated 3 or more); that rule lived only in the old engine and never reached this page.
@@ -1101,7 +1111,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/adapter.ts` | `fd1b33bc76c2c6f9c4768063283f8ff6fcf4850093d6e4ee6efceeea19654979` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `51ccc0254ffb5d9d9ee7f817af2a47ee53a3f05ff3e54c9e70f75fe387f677f7` |
+| `src/lib/analyser-x/copy.ts` | `f1a40b600e3cf114a92a247ea39aa217364c4966de7b90f69181715a29412fef` |
 | `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
@@ -1122,7 +1132,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `ddefac2a3e75d2a27375e77d136ceeb52f07bad3688aa5267e1a032382e926cc` |
+| `src/lib/brand-inci.ts` | `d2a3b1deae52fb9bdf52e9a8d479076255d0c0152bb2095bf445185a9fa5e00c` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1135,7 +1145,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `d495296032ba2124118e356ff0b061e7746f4502199e3af9cf394554c2cd1311` |
+| `src/lib/inci-from-page.ts` | `0f23ad1fdc8424e26ab8ba0f5cf60c6c80a423f9f3b1f07eeabd9c1ec573ddfa` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1148,18 +1158,19 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/ingredient-product-index.ts` | `7edef7cea639ac4b9463092dd351b97dce5247ad5e0240be99834a12edfd0613` |
 | `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
 | `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
+| `src/lib/nykaa-inci.ts` | `7b485da9a2608e3254bda454e3dc257ebeed67f53043ce323daf77f4f62f0476` |
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `782274199999ddb6cc7bd774baa4be4c8b0e2ae1cb157b22e5e14742abd39a55` |
+| `src/lib/pills-page.ts` | `388f85e9f6b831273bedd3994ef8780712ae09e30aa6ada1239545ee47c70f6d` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
-| `src/lib/product-identity.ts` | `2e871b1b8e07e6ebbe5dc4b2c8b24d1a6cde8db61b7f2eef610937d05cd8b5e0` |
+| `src/lib/product-identity.ts` | `6b84f2ffc748cd468149bbcc1ba5b6212091b3e6a01a7935b8c3fc54fab3df25` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `b26248b79b2e5b1c7ebafd938210f95403dcb68c192cae66838dc087e986171b` |
-| `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
+| `src/lib/product-review-engine.ts` | `8f74c8af03322b0e518596bb8f6561954c72bdc7ac067b9b681b1835e0493086` |
+| `src/lib/product-review-types.ts` | `17d23c0d3a3d127b1a3f149bdcbe12f38001070ad3ee56dfc5a5a05f4ac58e9c` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
 | `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |
@@ -1168,10 +1179,10 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
 | `src/lib/review-to-scorecard.ts` | `3aa92662e5c8aa9193f99505e0c3d9acbd0ab29408b7a26ffe4dcc947b96c973` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
-| `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |
+| `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
-| `src/lib/scrape.ts` | `0d482e1eaa87b1a1f6b2f1652ba7380e6c30502a5727c1f7929fab334db785d5` |
+| `src/lib/scrape.ts` | `96d71270af975151a14dcf59cd0bcbe8b91cb7da4db2f4b105e86ccfff416bd8` |
 | `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
 | `src/lib/unrated-kind.ts` | `425eb9ce2e45b4c57c2765165af9b909e3d334bc6e77bf0d6108e4ff53afaa74` |
 | `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |

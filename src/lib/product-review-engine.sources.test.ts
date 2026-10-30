@@ -1,0 +1,90 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { makeReview } from "@/lib/review.fixtures";
+
+/* runProductReview with the ingredient sources searched together (owner decision, 2026-10-30): the Decoder page resolved by name competes with the brand's page
+   and Nykaa's, the most complete list is the one published, and what was chosen is recorded in the evidence. Every outside dependency is replaced. */
+const h = vi.hoisted(() => {
+  const upserts: Record<string, unknown>[] = [];
+  const chain: unknown = new Proxy(function () {}, {
+    get: (_t, prop) => {
+      if (prop === "then") return (resolve: (v: unknown) => void) => resolve({ data: null, error: null });
+      if (prop === "upsert") return (row: Record<string, unknown>) => { upserts.push(row); return chain; };
+      return () => chain;
+    },
+    apply: () => chain,
+  });
+  return { upserts, chain, generate: vi.fn(), fetchPage: vi.fn(), brandInci: vi.fn<(...args: unknown[]) => Promise<unknown>>(async () => null), resolve: vi.fn() };
+});
+
+vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
+vi.mock("@/lib/gemini", async (orig) => ({ ...(await orig<typeof import("@/lib/gemini")>()), generateResilientWithMeta: h.generate }));
+vi.mock("@/lib/inci-fetch", async (orig) => ({ ...(await orig<typeof import("@/lib/inci-fetch")>()), resolveINCI: (...a: unknown[]) => h.resolve(...a) }));
+vi.mock("@/lib/inci-from-page", async (orig) => ({ ...(await orig<typeof import("@/lib/inci-from-page")>()), fetchInciFromProductPage: async () => null }));
+vi.mock("@/lib/brand-inci", async (orig) => ({ ...(await orig<typeof import("@/lib/brand-inci")>()), findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
+vi.mock("@/lib/scrape", async (orig) => ({ ...(await orig<typeof import("@/lib/scrape")>()), fetchPageMarkdown: (...a: unknown[]) => h.fetchPage(...a) }));
+vi.mock("@/lib/product-image", async (orig) => ({ ...(await orig<typeof import("@/lib/product-image")>()), findProductReviewImage: async () => null, isLiveImage: async () => false }));
+vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
+vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
+vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
+vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
+
+import { invalidateReviewCache, runProductReview } from "@/lib/product-review-engine";
+
+const DECODER = "https://inkeedecoder.com/products/lotus-gel-creme";
+const NYKAA = "https://www.nykaa.com/lotus-gel-creme/p/10787966";
+const older = ["Aqua", "Almond Oil", "Glycerin", "Stearic Acid", "Methyl Paraben", "Fragrance"];
+const current = ["Aqua (Om Water)", "Niacinamide", "Glycerin", "Propylene Glycol", "Methyl Paraben Sodium", "Fragrance", "Titanium Dioxide"];
+const decoderResult = { productName: "Lotus Gel Creme", slug: "lotus-gel-creme", ingredients: older, tags: [], source: DECODER, imageUrl: null, sourceQuote: older.join(", "), pageTitle: "Lotus Gel Creme" };
+const modelSays = () => ({ text: JSON.stringify(makeReview({ productName: "Lotus Gel Creme", brand: "Lotus" })), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
+const stored = () => (h.upserts.find((row) => "result" in row) as { result: { review: { inciIngredients: string[]; inciSourceUrl: string; inciEvidence: Record<string, unknown> } } } | undefined)?.result.review;
+
+beforeEach(() => {
+  invalidateReviewCache("lotus-gel-creme"); // the engine keeps finished reviews in memory by slug; one test's answer must not be served to the next
+  h.upserts.length = 0;
+  h.generate.mockReset();
+  h.fetchPage.mockReset();
+  h.brandInci.mockReset();
+  h.resolve.mockReset();
+  vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("no network in this test"); }));
+  h.fetchPage.mockResolvedValue(`Title: Lotus Gel Creme\n\n${"This is the product page. ".repeat(20)}`);
+  h.generate.mockResolvedValue(modelSays());
+  h.resolve.mockResolvedValue({ chosen: decoderResult, distinct: [], ambiguous: false });
+});
+
+describe("runProductReview: sources searched together", () => {
+  it("looks for the other sources even though Decoder resolved by name, offering the Decoder list as one candidate", async () => {
+    h.brandInci.mockResolvedValue(null);
+    await runProductReview(NYKAA);
+    const [, , supplied, , known] = h.brandInci.mock.calls[0] as [string, string, string, unknown, { source: string; origin: string; trust: number; quote: string }[]];
+    expect(supplied).toBe(NYKAA);
+    expect(known).toHaveLength(1);
+    expect(known[0]).toMatchObject({ source: DECODER, origin: "decoder", trust: 3, quote: older.join(", ") });
+  });
+
+  it("publishes the Nykaa list when it is the most complete, with its quote, trust 3, origin, and the Decoder list recorded as the alternative", async () => {
+    h.brandInci.mockResolvedValue({ ingredients: current, quote: current.join(", "), source: NYKAA, pageTitles: ["Lotus Gel Creme"], siteName: "Nykaa", trust: 3, origin: "nykaa", alternatives: [{ source: DECODER, origin: "decoder", count: 6 }] });
+    const out = await runProductReview(NYKAA);
+    expect(out.type).toBe("product-review");
+    const review = stored()!;
+    expect(review.inciIngredients).toEqual(current);
+    expect(review.inciSourceUrl).toBe(NYKAA);
+    expect(review.inciEvidence).toMatchObject({ sourceUrl: NYKAA, captureTrust: 3, quote: current.join(", "), origin: "nykaa", alternatives: [{ source: DECODER, origin: "decoder", count: 6 }] });
+  });
+
+  it("keeps the Decoder list, as before, when it won or nothing else gave a list, recording any alternative", async () => {
+    h.brandInci.mockResolvedValue({ ingredients: older, quote: older.join(", "), source: DECODER, pageTitles: ["Lotus Gel Creme"], trust: 3, origin: "decoder", alternatives: [{ source: NYKAA, origin: "nykaa", count: 3 }] });
+    await runProductReview(NYKAA);
+    expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER, inciEvidence: { captureTrust: 3, origin: "decoder", alternatives: [{ source: NYKAA, origin: "nykaa", count: 3 }] } });
+    h.upserts.length = 0;
+    h.brandInci.mockResolvedValue(null);
+    await runProductReview(NYKAA);
+    expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER, inciEvidence: { captureTrust: 3, origin: "decoder" } });
+  });
+
+  it("falls back to the Decoder list when the lookup throws or overruns, rather than failing the analysis", async () => {
+    h.brandInci.mockRejectedValue(new Error("Firecrawl down"));
+    const out = await runProductReview(NYKAA);
+    expect(out.type).toBe("product-review");
+    expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER });
+  });
+});

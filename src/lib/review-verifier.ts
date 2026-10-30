@@ -72,14 +72,19 @@ export function makeInciEvidence(
   retrievedAt: string,
   matchedTitle?: string,
   quoteTruncated = false,
+  /** What the engine recorded about where the list was read, when it knows more than the address says. A Nykaa product page is a retailer address, but it is read
+      by code from the page itself with the quote captured, and is recorded at trust 3 (owner decision, 2026-10-30). Without it the trust comes from the address. */
+  read?: { trust?: CaptureTrustValue; origin?: InciEvidence["origin"]; alternatives?: InciEvidence["alternatives"] },
 ): InciEvidence {
   return {
     sourceUrl: sourceUrl ?? "",
-    captureTrust: captureTrustForUrl(sourceUrl),
+    captureTrust: read?.trust ?? captureTrustForUrl(sourceUrl),
     quote: (quote ?? "").trim(),
     retrievedAt,
     ...(matchedTitle ? { matchedTitle } : {}),
     ...(quoteTruncated ? { quoteTruncated: true } : {}),
+    ...(read?.origin ? { origin: read.origin } : {}),
+    ...(read?.alternatives?.length ? { alternatives: read.alternatives } : {}),
   };
 }
 
