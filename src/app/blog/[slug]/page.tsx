@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -60,6 +61,7 @@ function renderRich(text: RichText) {
   if (typeof text === "string") return text;
   return text.map((node, k) => {
     if (typeof node === "string") return <span key={k}>{node}</span>;
+    if ("bold" in node) return <strong key={k} className="font-medium text-ink-950">{node.bold}</strong>;
     const linkClass =
       "text-teal-700 underline decoration-teal-300 underline-offset-2 hover:text-teal-800 hover:decoration-teal-500 transition-colors";
     if (node.href.startsWith("/")) {
@@ -144,7 +146,28 @@ function renderBlock(block: BlogBlock, i: number) {
 
     case "table":
       return (
-        <div key={i} className="my-8 -mx-4 sm:mx-0 overflow-x-auto">
+        <Fragment key={i}>
+        {/* Phones: one card per row, each column labelled, so nothing sits behind a sideways scroll. */}
+        {block.stackOnMobile && (
+          <div className="sm:hidden my-8 space-y-4">
+            {block.rows.map((row, r) => (
+              <div key={r} className="rounded-2xl border border-teal-100 overflow-hidden">
+                <div className="bg-teal-50 px-4 py-3 font-medium text-ink-950">{row[0]}</div>
+                <dl className="divide-y divide-teal-100">
+                  {row.slice(1).map((cell, c) => (
+                    <div key={c} className="px-4 py-3">
+                      <dt className="text-xs font-medium uppercase tracking-wider text-teal-700 mb-1">
+                        {block.headers[c + 1]}
+                      </dt>
+                      <dd className="text-ink-700 text-base leading-relaxed">{cell}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className={`my-8 -mx-4 sm:mx-0 overflow-x-auto${block.stackOnMobile ? " hidden sm:block" : ""}`}>
           <table className="w-full border-collapse text-sm sm:text-base min-w-[32rem]">
             <thead>
               <tr>
@@ -174,6 +197,7 @@ function renderBlock(block: BlogBlock, i: number) {
             </tbody>
           </table>
         </div>
+        </Fragment>
       );
 
     case "sources":
@@ -377,7 +401,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               <div className="w-7 h-7 rounded-full bg-teal-600 flex items-center justify-center">
                 <BookOpen size={13} className="text-white" />
               </div>
-              <span className="font-medium text-ink-700">{post.author}</span>
+              <div className="flex flex-col leading-snug">
+                <span className="font-medium text-ink-700">{post.author}</span>
+                {post.authorRole && <span className="text-xs text-ink-500">{post.authorRole}</span>}
+              </div>
             </div>
             <span>{post.date}</span>
             <span>{post.readTime}</span>
