@@ -2109,15 +2109,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Rinse-off: max 0.1% EU; Leave-on: permitted",
     "Baby_Restriction": "Avoid in baby rinse-off",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Hair conditioners, serums, sunscreens",
     "Key_Safety_Notes": "D5 bioaccumulates in aquatic environment; EU restricted in rinse-off cosmetics; endocrine disruption concern (aquatic); brands should reformulate rinse-off products if above EU limit; leave-on permitted; check if submission is rinse-off",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. The SCCS final opinion on D5 (SCCS/1549/15) found it safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one.",
     "Source_Reference": "EU Annex III; SCCS opinion SCCS/1241/10 amended; EU Regulation 2018/675",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-10-30"
   },
   {
     "INCI_Name": "Cyclohexasiloxane",
@@ -2149,15 +2149,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Rinse-off: max 0.1% EU",
     "Baby_Restriction": "Avoid in baby rinse-off",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Conditioners, rinse-off hair products",
     "Key_Safety_Notes": "Similar to D5, environmental bioaccumulation concern; restricted in rinse-off in EU",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. D6 has no SCCS opinion of its own; the SCCS final opinion on D5 (SCCS/1549/15), its closest relative, found D5 safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5 or D6. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one.",
     "Source_Reference": "EU Annex III",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-10-30"
   },
   {
     "INCI_Name": "Dimethiconol",
