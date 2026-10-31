@@ -18,6 +18,8 @@ import { Check, Lightbulb, X } from "lucide-react";
 import type { Brand, ProductScorecard } from "@/data/brands/types";
 import type { Authority } from "@/lib/analyser-x";
 import { isNotHeldNote, type PillsPageModel } from "@/lib/pills-page";
+import { ingredientHref, type IngredientConcern } from "@/lib/ingredient-concerns";
+import { OpenDetailsLink } from "./OpenDetailsLink";
 import { PillsHero } from "./PillsHero";
 import { Band, Chev } from "./pills-ui";
 import { RatingKey } from "./RatingKey";
@@ -26,6 +28,9 @@ import { MARKER_COLOURS, type MarkerName } from "./pill-palette";
 const FLAG_DOT: Record<"ok" | "warn" | "info", string> = { ok: MARKER_COLOURS.green.ring, warn: MARKER_COLOURS.red.ring, info: MARKER_COLOURS.yellow.ring };
 /** The dot of an ingredient we hold no row for and have no flag on: neutral, never the green of "no concern". */
 const UNRATED_DOT = "#d9d4cc";
+/** The colour of a finding that names an ingredient, as a dot: the same red and yellow the section's rating uses. */
+const CONCERN_DOT: Record<IngredientConcern["tone"], string> = { red: MARKER_COLOURS.red.ring, yellow: MARKER_COLOURS.yellow.ring };
+const DOT_RANK = (colour: string): number => (colour === FLAG_DOT.warn ? 2 : colour === FLAG_DOT.info ? 1 : 0);
 /** How each claim decision shows: one of the three markers (the data-marker values of pills-page.css). */
 const CLAIM_MARKER: Record<string, MarkerName> = { "Publicly supported": "green", "Needs proof": "yellow", "Not publicly supported": "red" };
 const SEGMENT: Record<string, "y" | "n" | "u"> = { "Publicly supported": "y", "Needs proof": "n", "Not publicly supported": "u" };
@@ -167,28 +172,57 @@ function RegulatoryBody({ product, model }: { product: ProductScorecard; model: 
   );
 }
 
-function IngredientsBody({ product, keyActives }: { product: ProductScorecard; keyActives: string[] }) {
+/** An ingredient's name, as a link to its own page when the safety screen resolved it to one, else as plain text. */
+function IngredientName({ name }: { name: string }) {
+  const href = ingredientHref(name);
+  return href
+    ? <Link href={href} className="text-sm text-[#282828] break-words underline decoration-[#d9d4cc] underline-offset-[3px] hover:decoration-[#248179] hover:text-[#1d6761]">{name}</Link>
+    : <span className="text-sm text-[#282828] break-words">{name}</span>;
+}
+
+function IngredientsBody({ product, keyActives, concerns }: { product: ProductScorecard; keyActives: string[]; concerns: IngredientConcern[] }) {
   if (!product.ingredients.length) return <p className="text-sm leading-[1.5] text-[#282828]">We have no ingredient list for this product yet.</p>;
-  // The ones to look at first: the key actives, then any ingredient with a flag on it. Then the whole list, in label order.
-  const flagged = product.ingredients.filter((i) => i.flag !== "ok");
+  const named = new Map(concerns.map((c) => [c.index, c]));
+  // The ones to look at first: what the Ingredient safety line names (red or yellow, as that line has it), the key actives, then any other ingredient with a
+  // flag on it. Each jumps to its row. Then the whole list, in label order.
+  const flagged = product.ingredients.map((i, index) => ({ i, index })).filter(({ i, index }) => i.flag !== "ok" && !named.has(index));
   return (
     <>
       <ul className="flex flex-wrap gap-1.5" aria-label="Key and flagged ingredients">
-        {keyActives.map((n) => <li key={`key-${n}`} className="pp-pill">{n}</li>)}
-        {flagged.map((i) => <li key={`flag-${i.name}`} className="pp-pill" data-tone={i.flag === "warn" ? "red" : "amber"}>{i.name}</li>)}
+        {concerns.map((c) => (
+          <li key={`named-${c.index}`}>
+            <a href={`#ing-${c.index}`} className="pp-pill" title={c.tags.join(" · ")} data-tone={c.tone === "red" ? "red" : "amber"}>{c.name}</a>
+          </li>
+        ))}
+        {keyActives.map((n) => {
+          const href = ingredientHref(n);
+          return <li key={`key-${n}`} className={href ? undefined : "pp-pill"}>{href ? <Link href={href} className="pp-pill">{n}</Link> : n}</li>;
+        })}
+        {flagged.map(({ i, index }) => (
+          <li key={`flag-${index}`}>
+            <a href={`#ing-${index}`} className="pp-pill" data-tone={i.flag === "warn" ? "red" : "amber"}>{i.name}</a>
+          </li>
+        ))}
       </ul>
       <ul data-list="ingredients" className="border-t border-[#f1ece3] pt-1">
-        {product.ingredients.map((i) => {
+        {product.ingredients.map((i, index) => {
           // An ingredient we hold no row for shows just its name: no generic note, and a neutral dot instead of the green one.
           const unrated = i.flag === "ok" && isNotHeldNote(i.note);
           const note = isNotHeldNote(i.note) ? "" : i.note;
+          // A row the Ingredient safety findings name takes their colour, unless the database already flags it harder: the dot is never softer than either.
+          const own = unrated ? UNRATED_DOT : FLAG_DOT[i.flag];
+          const concern = named.get(index);
+          const dot = concern && DOT_RANK(CONCERN_DOT[concern.tone]) > DOT_RANK(own) ? CONCERN_DOT[concern.tone] : own;
           return (
-            <li key={i.name} className="flex items-start gap-2.5 py-2 border-b border-[#f1ece3] last:border-b-0">
-              <span aria-hidden className="mt-[7px] w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: unrated ? UNRATED_DOT : FLAG_DOT[i.flag] }} />
+            <li key={index} id={`ing-${index}`} className="scroll-mt-28 flex items-start gap-2.5 py-2 border-b border-[#f1ece3] last:border-b-0">
+              <span aria-hidden className="mt-[7px] w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dot }} />
               <span className="min-w-0">
-                <span className="text-sm text-[#282828]">{i.name}</span>
+                <IngredientName name={i.name} />
+                {concern ? <span className="block mt-1"><span className="pp-rate" data-wrap data-marker={concern.tone}>{concern.tags.join(" · ") || "Flagged in Ingredient safety"}</span></span> : null}
                 {note ? <span className="block text-[13px] leading-[1.45] text-[#55504d]">{note}</span> : null}
-                <span className="sr-only">{i.flag === "warn" ? " (caution)" : i.flag === "info" ? " (worth noting)" : unrated ? " (not rated)" : " (no concern)"}</span>
+                <span className="sr-only">
+                  {concern ? ` (${concern.tone === "red" ? "concern" : "worth noting"} in Ingredient safety${concern.tags.length ? `: ${concern.tags.join(", ")}` : ""})` : i.flag === "warn" ? " (caution)" : i.flag === "info" ? " (worth noting)" : unrated ? " (not rated)" : " (no concern)"}
+                </span>
               </span>
             </li>
           );
@@ -218,7 +252,7 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
           <RegulatoryBody product={product} model={model} />
         </CheckCard>
         <CheckCard id="ingredients" title="Ingredients" oneLiner={`${product.ingredients.length} ingredients, in label order.`}>
-          <IngredientsBody product={product} keyActives={model.keyActives} />
+          <IngredientsBody product={product} keyActives={model.keyActives} concerns={model.ingredientConcerns} />
         </CheckCard>
       </Band>
 
@@ -239,8 +273,26 @@ export function PillsPage({ product, brand, model }: { product: ProductScorecard
                     <Chev size={30} />
                   </span>
                   <span className="text-sm sm:text-[14.5px] leading-[1.5] text-[#3f3b39] pr-1 sm:pr-[42px]">{d.oneLiner}</span>
+                  {d.named?.length ? (
+                    <ul aria-label="Ingredients named in this line" className="flex flex-wrap gap-1.5 pt-0.5 pr-1 sm:pr-[42px]">
+                      {d.named.slice(0, 6).map((c) => <li key={c.index} className="pp-pill" title={c.tags.join(" · ")} data-tone={c.tone === "red" ? "red" : "amber"}>{c.name}</li>)}
+                      {d.named.length > 6 ? <li className="pp-pill" data-tone="plain">+{d.named.length - 6} more</li> : null}
+                    </ul>
+                  ) : null}
                 </summary>
                 <div className="mx-4 sm:mx-[18px] pt-2.5 pb-3.5 border-t border-dashed border-[#e8e1d6] flex flex-col gap-2 text-sm sm:text-[14.5px] leading-[1.5] text-[#282828]">
+                  {d.named?.length ? (
+                    <p className="text-[13px] leading-[1.5] text-[#55504d]">
+                      Find {d.named.length === 1 ? "it" : "them"} in the ingredient list:{" "}
+                      {d.named.map((c, k) => (
+                        <span key={c.index}>
+                          {k > 0 ? ", " : null}
+                          <OpenDetailsLink targetId="ingredients" rowId={`ing-${c.index}`} className="font-medium text-[#1d6761] underline underline-offset-[3px]">{c.name}</OpenDetailsLink>
+                          {c.tags.length ? ` (${c.tags.join(" · ")})` : null}
+                        </span>
+                      ))}
+                    </p>
+                  ) : null}
                   {d.body.length ? d.body.map((b) => <p key={b}>{b}</p>) : <p>No more detail beyond the line above.</p>}
                 </div>
               </details>
