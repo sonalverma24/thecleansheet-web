@@ -100,15 +100,15 @@ export async function GET() {
   );
   lines.push("");
 
-  lines.push("## What the verdicts mean");
+  lines.push("## What the ratings mean");
   lines.push(
-    "- Good Standing: passes on ingredient safety, regulatory compliance and claim substantiation — our highest standing. Broadly sound, sometimes with minor gaps (e.g. a claim that is plausible but not publicly proven).",
+    "- Green: passes on ingredient safety, regulatory compliance and claim substantiation. Broadly sound, sometimes with minor gaps (e.g. a claim that is plausible but not publicly proven).",
   );
   lines.push(
-    "- Room to Improve: real concerns — unproven claims, transparency gaps, or formulation issues a buyer should weigh.",
+    "- Yellow: some concerns found — unproven claims, transparency gaps, or formulation issues a buyer should weigh.",
   );
   lines.push(
-    "- Not Recommended: fails on safety, compliance or claim honesty. Avoid or treat with caution.",
+    "- Red: major concerns — fails on safety, compliance or claim honesty. Avoid or treat with caution.",
   );
   lines.push("");
   lines.push(
