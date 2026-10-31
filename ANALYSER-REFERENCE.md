@@ -834,6 +834,7 @@ Version X1 decision layer, `src/lib/analyser-x/`:
 - `rules.ts`: Analyser Version X1 · the rule registry
 - `screen.ts`: Analyser Version X1 · the safety and compliance screen, as facts
 - `sections.ts`: Analyser Version X1 · the five sections of a product page, and what colour each is
+- `tags.ts`: Analyser Version X1 · the label a finding puts beside each ingredient it names
 - `test-helpers.ts`: Shared builders for the vX tests. Everything here is constructed; no real product is described.
 - `types.ts`: Analyser Version X1 · shared types
 - `verifier.ts`: Analyser Version X1 · the verifier: the only door from neural to symbolic
@@ -1030,9 +1031,9 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ExpandableSection.tsx` | `dd553925b054f38f0062ee661dd02fb8053ad01d5bb5c9cef690bb23ad19880c` |
 | `src/components/scorecards/HeroActions.tsx` | `a43e86f016df7511e283bb06c3cb83575064208bf66fa65f97154c81ba09b376` |
 | `src/components/scorecards/NoResultsCard.tsx` | `77ee1bd923ed3c7be68e21a9e6642d0e098d0141a7a2ae3a80881079dff11602` |
-| `src/components/scorecards/OpenDetailsLink.tsx` | `99f31a3a4072aeff53ba15c160a8f3f6a5e8e58cea46934013c8e9c89b50d53c` |
+| `src/components/scorecards/OpenDetailsLink.tsx` | `f9dac41601b9eaba78453a49899d66581e2cc0ef8b823cafd75773aca0925b74` |
 | `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
-| `src/components/scorecards/PillsPage.tsx` | `e3fc7e7aec579e9991f531cdd484cc324b2d7423042d93d3232abd89a455ce26` |
+| `src/components/scorecards/PillsPage.tsx` | `05c16a0f857d0ce8a4b08699d56f92d0833d9a8f6a554231f0451e24969aefad` |
 | `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
 | `src/components/scorecards/ProductHero.tsx` | `17c0ae64d4adc5cfb097e29060224d3887f22ed2315d7e945651d17978537aa9` |
 | `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
@@ -1049,7 +1050,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
 | `src/components/scorecards/pills-badge.css` | `a9d9db5c86be719ca43270e6a7ff741ae9f2b36e4b53e5f0c59a234a2ccdc592` |
-| `src/components/scorecards/pills-page.css` | `8731d597e3e53f6b7895cba985ce67ec04e721adc909f8adc31ddcd4add494b0` |
+| `src/components/scorecards/pills-page.css` | `2dc4a4f6d4059985581db18d9ac97c412c7723806df1436df4656fba4e8761f8` |
 | `src/components/scorecards/pills-ui.tsx` | `c2d9b7b062e2c571f1fb286fe6f0a3b87760b36cafb4ec8dc7b0aeb7d47beecc` |
 | `src/components/scorecards/useReviewRunner.ts` | `d57c76f9ab6d14c5104bd0707635a4f728ceb11b5063b4f9cacbda25313f535b` |
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
@@ -1067,7 +1068,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
 | `src/lib/analyser-x/copy.ts` | `51ccc0254ffb5d9d9ee7f817af2a47ee53a3f05ff3e54c9e70f75fe387f677f7` |
-| `src/lib/analyser-x/decision.ts` | `561621738b2d9e0c08b16c045a8b5c8769552cac4e9c3bdac8997a1d659e5a58` |
+| `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
 | `src/lib/analyser-x/invariants.ts` | `0a5734c7383f629d214b1a505ae5cba6dff7bddab88e52f5fd7e21dd8259194a` |
@@ -1076,15 +1077,16 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
 | `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
-| `src/lib/analyser-x/rules.ts` | `62b39c6a1aa4a6eb50dcc368034c33362d513ea3f8789f5bca3653a2cfe7120b` |
-| `src/lib/analyser-x/screen.ts` | `a12c31d9471c8ebf5dfbc9fe8cb82db228c194e420d5054503b6af6ff1e9c0e8` |
+| `src/lib/analyser-x/rules.ts` | `86e01b889d32d3bcc74b5b7ea1aace012536ca5e1872e6d3a3aa3c808fb88098` |
+| `src/lib/analyser-x/screen.ts` | `f1b38f1fb3471f7f24c9f7b2a2683e84f8f01f25d190b32e1c46b10e25f1b1c0` |
 | `src/lib/analyser-x/sections.ts` | `ed0bf952f885a0657a8f37880fadc1b50268e7d6b1884dc5576565ee21b99f32` |
+| `src/lib/analyser-x/tags.ts` | `6f6aa00598785f7c036c60996369d438f142e10d7005bfeaaa60bfd75167973b` |
 | `src/lib/analyser-x/test-helpers.ts` | `17da8d36981283a224627f933602aa341d14e77510b9440f6134067bd40f011a` |
-| `src/lib/analyser-x/types.ts` | `de767597d184f37701a894d942cb2f411f8277c7b1e22fbb0ed6c57e5be88ce8` |
+| `src/lib/analyser-x/types.ts` | `16753986af9231b18fe0037a18b9444be733149606dbc9e2db3b4aa4e160ab7a` |
 | `src/lib/analyser-x/verifier.ts` | `2aba0b3ec3b2b08f3ca4990e77c895802a63166bd2c8c84251c4ede6cd989c7c` |
 | `src/lib/analyser-x/version.ts` | `f5420b59fae65a7f27e0a4156721f8b60f2b4ef46d3c2fd4ceb478d5a09072d2` |
-| `src/lib/analysis-engine.ts` | `388ecc3c10ab9cfa27b7f33be6381c31c70e74e8b5551dd85f88c2a98944064c` |
-| `src/lib/analysis-types.ts` | `5521d764770c99de9a4a8648c6324f7f26c982998f4c813577cfc09c7d05728e` |
+| `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
+| `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
 | `src/lib/brand-inci.ts` | `ddefac2a3e75d2a27375e77d136ceeb52f07bad3688aa5267e1a032382e926cc` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
@@ -1104,6 +1106,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
 | `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
 | `src/lib/ingredient-canonical.ts` | `41ebe06c48c4c7e6c141019247acf2f45abd4060d4ea8c3fd030f9824b8404e9` |
+| `src/lib/ingredient-concerns.ts` | `90e9d1ba0a11ca7f45d323da56d013aae0f5051bf2a0c7aecacc20c9c8eb8986` |
 | `src/lib/ingredient-db.ts` | `1172509d23c12e59df5b3792e4520bb0669bc4807e45bdef5e1c117c4eb4fe7e` |
 | `src/lib/ingredient-directory.ts` | `0c13119e0ecd730600e9112409dc86acf5f4140e73ac2a5bd5e9084aba28578a` |
 | `src/lib/ingredient-intel.ts` | `e326d79922b4ff2d4e8133a4e1154c38208905a3ed68ed3b3b79b8826aa24598` |
@@ -1114,7 +1117,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `779d886bd8ce8f11c8bdc95f51166be33db18a5f729e64d14a815f9808a22d9d` |
+| `src/lib/pills-page.ts` | `5e7ea567dd819c07ffbef154510d71525819c7058a0204dc11e67765bfe7e48e` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `3974a4ef350c84e85d042782afc12b75e650c8775aa731aa9bdd0e579e471767` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |

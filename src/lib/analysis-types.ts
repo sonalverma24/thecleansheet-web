@@ -59,6 +59,9 @@ export interface CheckResult {
       which of the 26 EU allergens are in it" is knowable and worth a consumer's
       attention, unlike "no CoA is published". Ignored for every other state. */
   forceShow?: boolean;
+  /** The ingredients an adverse result is about, as the check matched them: an entry of the list, or the stem it matched inside an entry
+      ("laminaria" inside "Laminaria Ochroleuca Extract"). The page uses them to mark those rows in the ingredient list. */
+  ingredients?: string[];
 }
 
 export interface AnalysisReport {

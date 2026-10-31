@@ -23,6 +23,7 @@ import type { ProductScorecard, PregnancyScreen as ProductPregnancyScreen } from
 import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/scorecards/pill-palette";
 import { buildAtAGlance } from "@/lib/at-a-glance";
 import { reviewInciList } from "@/lib/review-inci";
+import { ingredientConcerns, type IngredientConcern } from "@/lib/ingredient-concerns";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import {
@@ -40,7 +41,11 @@ export interface BuyLink { name: string; url: string | null; price: string | nul
 export interface RegulatoryPanel {
   authorities: { id: Authority; label: string; result: "Meets" | "Falls short" | "None prohibited"; detail: string }[];
 }
-export interface DetailRow { n: string; title: string; oneLiner: string; rating: { word: string; marker: RowMarker }; body: string[] }
+export interface DetailRow {
+  n: string; title: string; oneLiner: string; rating: { word: string; marker: RowMarker }; body: string[];
+  /** Ingredient safety only: the ingredients its line (and the findings behind its colour) name, so the page can show which ones the line is about. */
+  named?: IngredientConcern[];
+}
 
 /** Today's standing, for the layout-only mode: the page is drawn in the new layout but the take card shows the standing the old page shows. `medicine` is a
     stored Licensed Drug, which the old page does not score; the page then hides what only makes sense for a cosmetic. */
@@ -76,6 +81,8 @@ export interface PillsPageModel {
   regulatoryCheck: { oneLiner: string; panel: RegulatoryPanel | null };
   /** Block 8: null when there is nothing to rate (a medicine, or a page we could not read). */
   details: DetailRow[] | null;
+  /** The rows of the ingredient list that the Ingredient safety findings name, each with the colour of its finding and a short label. Empty when none does. */
+  ingredientConcerns: IngredientConcern[];
   /** Block 9 */
   gaps: string[];
   /** Block 10 */
@@ -422,7 +429,7 @@ export function testLevelOf(review: ProductReview): number {
 const NOT_HELD_NOTE = /\bnot in our (analysed |reference )?(database|data)\b/i;
 export const isNotHeldNote = (note?: string): boolean => Boolean(note && NOT_HELD_NOTE.test(note));
 
-function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, product: ProductScorecard, medicine: boolean = d.key === "medicinal-product"): DetailRow[] | null {
+function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, product: ProductScorecard, medicine: boolean = d.key === "medicinal-product", concerns: IngredientConcern[] = []): DetailRow[] | null {
   if (medicine || (d.key === "not-enough-info" && d.gapKind === "acquisition")) return null;
   const pillar = (re: RegExp) => product.pillars.find((p) => re.test(p.name))?.note ?? "";
 
@@ -460,7 +467,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   const gaps = [it && it.usageWarningsClear === false ? "usage warnings" : "", it && it.phDisclosedWhereRelevant === false ? "pH" : "", it && it.activePercentagesDisclosed === false ? "active strengths" : ""].filter(Boolean);
 
   return [
-    { n: "01", title: "Ingredient safety", oneLiner: safetyLine, rating: safety, body: [...flagged.map((i) => `${i.name}: ${i.note}`), ...safetyTexts.slice(1).map((r) => r.text)].filter(Boolean) },
+    { n: "01", title: "Ingredient safety", oneLiner: safetyLine, rating: safety, body: [...flagged.map((i) => `${i.name}: ${i.note}`), ...safetyTexts.slice(1).map((r) => r.text)].filter(Boolean), ...(concerns.length ? { named: concerns } : {}) },
     { n: "02", title: "Formula logic", oneLiner: formulaLine, rating: colour(sec.formula), body: [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
     { n: "03", title: "Claims evidence", oneLiner: claimLine(product), rating: colour(sec.claims), body: [pillar(/claim support|claim/i)].filter(Boolean) },
     { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: colour(sec.tests), body: evidenceNotes },
@@ -588,6 +595,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const preg = product.pregnancyScreen;
   const checks = verifiedChecks(product, inci, preg);
   const panel = benchmarkPanel(d);
+  const concerns = ingredientConcerns(product.ingredients, d.reasons);
   const base: Omit<PillsPageModel, "faq"> = {
     release: ANALYSER_RELEASE,
     mode: standing ? "standing" : "pills",
@@ -605,7 +613,8 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     },
     claimCheck: { oneLiner: claimLine(product) },
     regulatoryCheck: { oneLiner: regulatoryLine(d, panel, medicine), panel: medicine ? null : regulatoryPanel(panel) },
-    details: detailsOf(d, settled, review, product, medicine),
+    details: detailsOf(d, settled, review, product, medicine, concerns),
+    ingredientConcerns: concerns,
     gaps: gapsOf(d, product, review, medicine),
     cheatCode: medicine ? null : (() => { const c = cheatCodeFor(product.productType, inci); return c ? { title: c.title, text: c.text } : null; })(),
     howToUse: medicine ? null : howToUseOf(review),

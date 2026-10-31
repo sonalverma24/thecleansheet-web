@@ -15,6 +15,7 @@ import { claimFlags } from "./claimflags";
 import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
 import { drugNoticeOf } from "@/lib/drug-signals";
+import { NAME_SEP } from "./tags";
 import type { ClaimValue, Finding, Rule, RuleContext, Severity } from "./types";
 
 const DAY_MS = 86_400_000;
@@ -199,7 +200,7 @@ const cautions: Rule[] = [
   rule({
     id: "caution.soft_adverse", severity: "caution", origin: "code", needsReliableList: true, stratum: 40,
     evaluate: (ctx, self) =>
-      (ctx.screen?.softAdverse ?? []).map((s) => mk(self, { label: s.label, detail: s.detail, pillar: s.pillar }, fact(ctx))),
+      (ctx.screen?.softAdverse ?? []).map((s) => mk(self, { label: s.label, detail: s.detail, pillar: s.pillar, ingredients: s.ingredients?.length ? s.ingredients.join(NAME_SEP) : undefined }, fact(ctx))),
   }),
   rule({
     id: "caution.audience", severity: "caution", origin: "code", stratum: 40,
