@@ -3,16 +3,13 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, ArrowUpRight, Building2, MessageSquareText } from "lucide-react";
 import BrandLogo from "@/components/brands/BrandLogo";
-import { getBrandDirectory, standingForProduct, type StandingColor, type PortfolioStanding } from "@/lib/brand-directory";
+import BrandProductGrid from "@/components/brands/BrandProductGrid";
+import { getBrandDirectory, type StandingColor, type PortfolioStanding } from "@/lib/brand-directory";
 
 export const revalidate = 300;
 
 const COLORS: Record<StandingColor, string> = {
   green: "#248179", yellow: "#D2A63C", red: "#FD6158", unrated: "#B0A8A4",
-};
-const COLOR_LABELS: Record<StandingColor, string> = {
-  green: "Green · Good Standing", yellow: "Yellow · Room to Improve",
-  red: "Red · Not Recommended", unrated: "Not rated",
 };
 const STANDING_LABELS: Record<PortfolioStanding, string> = {
   green: "Mostly Green", yellow: "Mostly Yellow", red: "Mostly Red",
@@ -25,7 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ brand: st
   if (!brand) return {};
   return {
     title: brand.name + " Brand Profile · The Clean Sheet",
-    description: "See all " + brand.products.length + " analysed products from " + brand.name + ", their standings, published company information, manufacturer disclosures and Reddit discussion analysis.",
+    description: "See all " + brand.products.length + " analysed products from " + brand.name + ", their ratings, published company information, manufacturer disclosures and Reddit discussion analysis.",
     alternates: { canonical: "https://thecleansheet.in/brands/" + brand.slug },
   };
 }
@@ -102,24 +99,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
             </div>
             <Link href="/products" className="text-[14px] text-[#248179] hover:underline">Browse all products</Link>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {brand.products.map((product) => {
-              const color = standingForProduct(product);
-              return (
-                <Link key={product.slug} href={"/analysis/" + product.slug}
-                  className="group rounded-2xl border border-[#e5dfd6] p-5 hover:border-[#248179] transition-colors flex flex-col gap-3">
-                  <span className="uppercase text-[11px] tracking-[0.08em] inline-flex items-center gap-2"
-                    style={{ color: COLORS[color] }}>
-                    <span className="h-2 w-2 rounded-full" style={{ background: COLORS[color] }} />
-                    {COLOR_LABELS[color]}
-                  </span>
-                  <h3 className="font-display font-light text-[21px] leading-snug group-hover:text-[#248179]">{product.productName}</h3>
-                  {product.summary && <p className="text-[13px] leading-[1.55] text-[#6c6865] line-clamp-2">{product.summary}</p>}
-                  <span className="mt-auto pt-3 text-[13px] text-[#248179]">Read the analysis →</span>
-                </Link>
-              );
-            })}
-          </div>
+          <BrandProductGrid products={brand.products} />
         </section>
 
         <section className="grid gap-5 md:grid-cols-2 mt-14" aria-label="Brand background">
