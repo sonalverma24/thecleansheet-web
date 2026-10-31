@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
+import { IDENTITY_PLACEHOLDER, isSameProduct, sanitizeInciList, titleIdentifiesProduct } from "@/lib/product-identity";
 
 const B = "Conscious Chemist";
 const full = ["Aqua", "Zinc Oxide", "Glycerin", "Niacinamide", "Squalane", "Bisabolol", "Allantoin", "Phenoxyethanol", "Carnauba Wax", "Resveratrol"];
@@ -56,5 +56,25 @@ describe("sanitizeInciList", () => {
   it("rejects marketing sentences", () => {
     const r = sanitizeInciList(["Aqua", "Lightweight formula that absorbs instantly without any white cast on skin", "Free from parabens and sulphates and alcohol and fragrance"]);
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("IDENTITY_PLACEHOLDER", () => {
+  it("matches the wording a page, a scraper or the model puts where a name should be", () => {
+    for (const text of [
+      "Page Not Found", "404", "Service Unavailable", "N/A", "Not available", "Unknown product", "Product not identified from partial INCI",
+      // what the model wrote for a pasted list on 2026-09-02, and its likely variants
+      "Not Identified Product", "Not Identified (Based on provided INCI)", "not identified product not identified based on provided inci",
+      "Unidentified Product", "Unknown Formulation", "Unknown Brand Serum", "Unnamed Formulation", "Not specified",
+      "Product based on the provided ingredient list", "Based on pasted INCI", "Provided INCI Analysis", "Pasted Ingredient List", "User-provided ingredients",
+      "INCI Analysis", "Ingredient List Analysis", "Ingredients only analysis",
+    ]) expect(IDENTITY_PLACEHOLDER.test(text), text).toBe(true);
+  });
+
+  it("does not match a real product or brand name", () => {
+    for (const text of [
+      "Cetaphil Gentle Skin Cleanser", "Cetaphil", "The Ordinary Niacinamide 10% + Zinc 1%", "Minimalist", "Dot & Key", "Not Your Mother's Clean Freak",
+      "Hydro Boost Water Gel", "Inci Skin Lab", "Ingredient Brew Hair Oil", "Skin Barrier Cream", "Identity Foundation", "Unseen Sunscreen",
+    ]) expect(IDENTITY_PLACEHOLDER.test(text), text).toBe(false);
   });
 });

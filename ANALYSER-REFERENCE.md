@@ -846,6 +846,15 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-01: A pasted ingredient list is analysed for the person who pasted it and is never saved or listed, in whatever format it arrives
+- **Decided by:** the owner. The rule is older than this entry (commit f5893ea, "Keep INCI-only scans out of the review directory", added the first guard) and was restated in the brief for this change; no quotation was kept, so none is given here.
+- **Reason:** a pasted ingredient list identifies no product: it has no brand and no name, so it must not become a row in `product_reviews` or a tile on `/products`. A read-only audit on 2026-11-01 found that production (main 56beba8) stopped only comma, semicolon and new-line lists of five or more items. A list separated by bullets, pipes, slashes, full stops or plain spaces, a list of four or fewer items, and an "Ingredients:" label with four items were each treated as a named product and saved under whatever name the model made up. The one real paste seen, on 2026-09-02, came back titled "Not Identified Product" (slug `not-identified-product-not-identified-based-on-provided-inci`). A URL already had a placeholder check; typed and pasted text had none.
+- **What it touched (what is saved and listed; no rating or wording changes):** a new `src/lib/inci-paste.ts` decides whether the input is a pasted list. It splits on comma, semicolon, new line, tab, bullet, pipe, slash, a spaced dash or a full stop that ends a word. It says "list" for an "Ingredients:" / "INCI:" label, for five or more items, for two to four items of which at least three quarters read as ingredient names, and for four or more space-separated words of which at least three quarters read. A word reads as an ingredient name when it is in the reference database, is a word only ingredient names use (Sodium, Extract), or ends the way chemical names do; a word a product is called (Serum, Cleanser, Face Wash) rules a list out. `src/lib/product-identity.ts` now holds the one `IDENTITY_PLACEHOLDER` pattern and widens it to "not identified", "unidentified", "unnamed product", "unknown formulation", "not specified", "based on provided INCI" and "INCI analysis". `runProductReview` (`src/lib/product-review-engine.ts`) saves only when the result's name and brand are not placeholders and, for text, the input is not a list (an INCIDecoder match still counts as an identity, as before). `runDeepScan` (`src/lib/review-engine.ts`, behind `/api/analyze`, which needs no sign-in) registers a verified product under the same rule; before, its guard was the old five-item test only. The person who pasted still gets their analysis.
+- **Measured** (read-only, no model call, by the tests in `src/lib/inci-paste.test.ts`): of 47 typed product names (the 7 sample products in `src/data/mockProducts.ts` and 40 written to be awkward, such as "Hyaluronic Acid Zinc Serum" and "Cetaphil, Gentle Skin Cleanser"), none is read as a list; each of the 7 sample products' own ingredient lists is read as a list in every separator above, as its first four items, and behind an "Ingredients:" label. Against `origin/main`'s guard, 11 of the list cases fail and with this change none does.
+- **Not changed:** how any analysis is made or rated, the prompts, the decision core, the URL rule (a page or an address must still name the product), and every row already stored: this change neither checks nor removes them.
+- **Known limits:** it is a heuristic. A paste of fewer than four space-separated words, or of names that neither the database nor the word lists know, can still read as a product; the placeholder check on the model's own title is the second line. A typed query that is nothing but ingredient names ("Zinc Oxide, Titanium Dioxide") reads as a list and is not saved. An unsaved analysis is still held in the server's memory for five minutes under the name the model gave it (separate follow-up).
+- **Undo:** revert the change. Nothing is migrated.
+
 ### 2026-10-30: When all five sections of a product page are green, the product is a Good choice, except for flags
 - **Decided by:** the owner, on 2026-10-30, in chat, about the Cetaphil Moisturising Cream whose five sections were all Strong while the colour was yellow: "if all sections are green - the end result should be green except for flags in my opinion." Then, asked to confirm the exact rule: "Yes, build it and make it live. No need to test it on the old products. From now on, any new analysis that happens should use this logic, either from backend or front end."
 - **Reason:** in the owner's words above. The page showed Claims evidence as Strong ("8 of 10 claims are publicly supported") while a separate claim-by-claim check inside the decision held the colour at yellow, so the sections and the colour disagreed on one product.
@@ -1101,6 +1110,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
 | `src/lib/inci-from-page.ts` | `d495296032ba2124118e356ff0b061e7746f4502199e3af9cf394554c2cd1311` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
+| `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
 | `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
 | `src/lib/ingredient-canonical.ts` | `41ebe06c48c4c7e6c141019247acf2f45abd4060d4ea8c3fd030f9824b8404e9` |
@@ -1116,15 +1126,15 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
 | `src/lib/pills-page.ts` | `779d886bd8ce8f11c8bdc95f51166be33db18a5f729e64d14a815f9808a22d9d` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
-| `src/lib/product-identity.ts` | `3974a4ef350c84e85d042782afc12b75e650c8775aa731aa9bdd0e579e471767` |
+| `src/lib/product-identity.ts` | `2e871b1b8e07e6ebbe5dc4b2c8b24d1a6cde8db61b7f2eef610937d05cd8b5e0` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `8820f33f5c848e327ebcca629d6db8f80286dfaf0b53697859b88d4986fa2027` |
+| `src/lib/product-review-engine.ts` | `e83b4680fe4952dcc52ed24860bf6a0711371367f37a4a1e6a2bc1aa51ae7476` |
 | `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
-| `src/lib/review-engine.ts` | `d282765a84ec3cb46dbff3fa6972c89a1598ad4e7e679dfa14fefdc048c71fe4` |
+| `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `3f510a2e7e091df4a0e98cbd36641d5beb86f3018b1c9d1d90b5bd3110d40ac8` |
 | `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
