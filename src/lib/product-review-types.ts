@@ -201,6 +201,10 @@ export interface ResearchLog {
   sourceUris: string[];
   sourceTitles: string[];
   recordedAt: string;
+  /** Claims kept because the brand's own website names them, and claims dropped because only retailers, resellers or reviewers did (claim-source.ts).
+      Absent on an analysis made before 2026-11-02. */
+  claimsKept?: number;
+  claimsDropped?: number;
 }
 
 /** Which strategy resolved a product image, best-trust first. "manual" = an

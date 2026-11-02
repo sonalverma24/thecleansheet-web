@@ -174,7 +174,7 @@ EVIDENCE INTEGRITY - NO FABRICATION (highest priority, overrides everything):
   - For a "free from X" / "X-free" claim (fragrance-free, alcohol-free, paraben-free): if the retrieved INCI does NOT list X, the claim is SUPPORTED. A clean INCI proves the claim true, do not invent a contradiction. Only flag a conflict when you can QUOTE X in the retrieved INCI. If you could not retrieve the INCI, say so and do not assume X is present.
   - For a "contains [active] X" claim: FIRST map the marketing name to its INCI name, THEN check the retrieved INCI. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid / Sodium Ascorbyl Phosphate / Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.
   - If a claimed active is genuinely absent from the retrieved INCI even after name-mapping, mark it UNVERIFIED (could not confirm), NOT contradicted. A retrieved INCI can be the wrong variant/size, truncated, or outdated, so its absence is not proof of absence. NEVER call a brand's advertising "misleading" or an ASCI violation solely because a claimed ingredient is missing from a scraped INCI. Only a claim that is affirmatively disproven (e.g. "fragrance-free" while Parfum is listed) may be called contradicted.
-  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw in a brand or marketplace source - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
+  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw on the brand's OWN website page for this exact product - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
   - ONE PRODUCT ONLY - never import another SKU's claims. Every claim in claimMap must be about the EXACT product under review (this variant, this format). A brand's homepage, "collections" pages, bundles, and marketplace listings routinely show OTHER products from the same brand right next to this one. Do NOT harvest a claim unless the source page is clearly about THIS product. A cross-CATEGORY mismatch is the tell-tale sign of misattribution and is forbidden: a body moisturizer / body wash / lotion must NOT carry hair, scalp, hair-fall, dandruff, frizz, or shine claims; a hair product must not carry skin/face claims; a face serum must not carry oral-care claims. If a striking claim (e.g. "50% less hair fall in 28 days") belongs to a different product type than the one you are reviewing, it is another SKU's claim - drop it. When unsure whether a claim is for this exact product, leave it out.
 
 ---
@@ -195,8 +195,8 @@ Step 2 - Map prices across all Indian platforms.
   Calculate price per ml or per g = price ÷ quantity.
 
 Step 3 - Find and catalogue EVERY claim.
-  Look on: brand website, Nykaa listing title, Amazon listing title and bullet points, product pack (if shown), and quick commerce listings.
-  Capture the EXACT claim text, not your paraphrase. Collect claims from all platforms.
+  Look ONLY on the brand's own website page for this exact product. That page is the one source of claims we hold the brand to. A claim that appears only on Nykaa, Amazon, Flipkart, Tira, a quick-commerce app, a reseller that copies the brand's text ("via Clinikally"), a review site or a retailer's brand-info blurb is NOT catalogued: do not list it in claimMap, even when it is a striking claim. If the brand's own page for this product cannot be found or read, return an EMPTY claimMap and say so in claimSummary and cleanSheetNote; never fill it from retailer listings.
+  Capture the EXACT claim text, not your paraphrase.
   SCOPE each claim to THIS product's own listing/PDP. Brand sites cross-sell other SKUs (a body spray page may link a hair oil, a bundle, a "bestsellers" strip); only catalogue a claim you can tie to this exact product. Never carry a hair/scalp claim onto a body product (or vice-versa) - a category mismatch means the claim is another product's. See EVIDENCE INTEGRITY: "ONE PRODUCT ONLY".
 
 Step 4 - Check evidence for each claim.
@@ -207,7 +207,7 @@ Step 4 - Check evidence for each claim.
 
 Step 5 - Check platform claim parity.
   Compare exact claim language across brand website, Nykaa, Amazon, and quick commerce.
-  Note where claims are stronger, weaker, or differently worded.
+  Note where claims are stronger, weaker, or differently worded. This step is a comparison note for platformParity only: a marketplace-only claim never becomes an entry in claimMap.
 
 Step 6 - Find INCI and assess ingredient transparency.
   Search: "[brand] [product name] ingredients" on the official brand product page or INKEE Decoder (formerly INCIDecoder).
@@ -359,6 +359,7 @@ BEST FOR / AVOID IF (consumerSuitability.bestFor and consumerSuitability.avoidIf
 - bestFor: who genuinely benefits (e.g. for a gentle cleanser: "Sensitive or reactive skin", "Daily morning cleanse", "Removing sweat and sunscreen").
 - avoidIf: a real, honest LIMITATION or trade-off of the product - a reason a specific shopper would be disappointed - NOT a vague safety warning. Think about what this product does NOT do well. For a gentle low-foam face wash, good avoidIf items are things like "You want a rich, foamy lather", "You wear heavy or waterproof makeup" (needs a dedicated remover), or "You want active treatment from a cleanser". For an exfoliating acid, "You have compromised or eczema-prone skin". For a fragranced product, "You react to fragrance".
 - Do NOT output boilerplate like "patch-test sensitive to new actives", "results vary", or "consult a dermatologist" unless it is genuinely the single most relevant caution for THIS product.
+- Never write an avoidIf line about fungal acne or Malassezia (we hold no sourced data on it), and never one about expecting a "clean" or "truly clean" formula (we do not define clean as an ingredient quality). The same goes for formulaLogic.irritancyConcerns. The site drops such lines.
 - If the product has no honest downside worth flagging, return an EMPTY avoidIf array rather than inventing one. An empty avoidIf is correct and expected for simple, well-formulated basics.
 
 INGREDIENT TRANSPARENCY SCORING SYSTEM:
@@ -648,7 +649,7 @@ OUTPUT JSON STRUCTURE:
   "claimMap": [
     {
       "text": "string - exact claim as stated by brand",
-      "source": "string - where this claim appears: Brand Website / Amazon Title / Nykaa Description / Product Pack / etc.",
+      "source": "string - always "Brand Website" (the brand's own page for this product). A claim not on that page is not listed at all.",
       "types": ["functional | appearance | active | concern | time-bound | clinical | safety | free-from | emotional"],
       "primaryType": "string - single primary type",
       "riskLevel": "low | medium | high | very-high | red-flag",
@@ -862,6 +863,66 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** how any analysis is made or rated, the prompts, the decision core, the URL rule (a page or an address must still name the product), and every row already stored: this change neither checks nor removes them.
 - **Known limits:** it is a heuristic. A paste of fewer than four space-separated words, or of names that neither the database nor the word lists know, can still read as a product; the placeholder check on the model's own title is the second line. A typed query that is nothing but ingredient names ("Zinc Oxide, Titanium Dioxide") reads as a list and is not saved. An unsaved analysis is still held in the server's memory for five minutes under the name the model gave it (separate follow-up).
 - **Undo:** revert the change. Nothing is migrated.
+### 2026-11-02: Only claims on the brand's own website are checked
+- **Decided by:** the owner, on 2026-11-02, in chat, after asking where three Re'equil claims came from ("I don't find these claims on the brand website, where are these coming from?"). Asked whether claims seen only on retailer listings should count against the brand: "yes brand website is the best source. nothing else".
+- **Reason:** the three Re'equil claims were labelled "Nykaa Brand Info" ("clinically tested to suit every unique skin type"), "Re'equil Brand Website (via Clinikally)" (a reseller; "Treats fine lines & wrinkles") and "Flipkart" ("All Skin Types"). None is on reequil.com except "For all skin types". The prompt told the model to collect claims "from all platforms", and the model wrote the `source` label as free text, with no link or quote kept, so a retailer's wording could be flagged against the brand as an ASCI or drug-boundary concern.
+- **What it touched:** (1) the prompt (`product-review-context.ts`): claims only from the brand's own page for the exact product; a marketplace-only claim never enters `claimMap`; with no readable brand page the model returns an empty list; the platform-parity step stays, as a comparison note. (2) `src/lib/claim-source.ts` (new), run when an analysis is made, right after the brand name is fixed: a claim is kept when its source label names the brand's own site among the places it was seen ("Brand Website", "Brand Website / Flipkart / Nykaa", "Official Website", "<Brand> Website", "<brand>.in"); "(implied)", "(via X)", "(General)", "(Global)", reviews, retailers and the pack do not count. The claim summary is counted again from what is kept. (3) `ResearchLog.claimsKept` and `claimsDropped` record the result; when some were dropped and none kept, the decision's `claimsSourceRead` is false and `gap.claims_unreliable` (a gap, "claims not examined") applies instead of reading an empty list as "no claims".
+- **Measured** (read-only, the 40 analyses stored on 2026-11-02, labels only): 37 of 40 hold at least one claim whose label names no brand site; 11 of 40 hold no claim at all that names one. Those would end with few or no claims if re-run on this rule, so the colour of some products will move when they are re-run. Stored analyses are NOT changed: no read-time filter was built, because it would shift the colour of a third of the products at once and the model's own scores were made with the retailer claims in view.
+- **Known limits:** the label is the model's own words, so the rule trusts it. A claim the model wrongly labels "Brand Website" is kept; a claim it labels only "Brand Website (implied)" is dropped. The real fix is to keep the page text and a quote for each claim and check the wording appears in it (the verifier work on `feat/analyser-verifier`), which is not on main. A product whose brand page cannot be read now shows as claims not examined (a gap), not as a clean claim check. On-pack claims are not counted unless the brand's page also shows them; say if they should be.
+- **Not changed:** the platform-parity score and text, stored analyses, the pill rules, `ANALYSER_APPROVED_BASELINE`.
+- **Undo:** revert the change; analyses made under it carry `claimsKept` and `claimsDropped`, which older code ignores.
+
+### 2026-10-30: The brand profile page draws its products with the /products card, and the words "Good Standing" and "Room to Improve" are not shown
+- **Decided by:** the owner, on 2026-10-30, in chat (issues list, round 2): "The products inside the brands page should show the same thumbnails style that is present on the /products page & don't mention good standing/room to improve tags anywhere across the website - even on compare."
+- **Reason:** `/brands/<brand>` listed each product as a text card headed "Green · Good Standing" / "Yellow · Room to Improve" (no picture, no rating circle, no ticks), and the public `llms-full.txt` still defined those words. The filters, the cards and the compare page already show colours only.
+- **What it touched:** `src/components/brands/BrandProductGrid.tsx` (new): the same `MarketCard` as /products, with the same compare rules, tray and message (no "Show only" button, as there is no filter to switch); `src/app/brands/[brand]/page.tsx` uses it; `src/app/llms-full.txt/route.ts` now says what Green, Yellow and Red mean.
+- **Checked live before the change** (HTML of `/`, `/brands`, `/brands/cetaphil`, `/products`, `/compare?items=...`, `/standard`, `/about`): the two phrases appeared only on the brand profile page and in `llms-full.txt`. The compare page shows the five pills ("Buy with caution" and so on), not those words.
+- **Not changed:** the internal names in code (`Standing`, `TIER_STYLES` labels), which are reached only by routes that no longer serve (the hand-written catalogue pages redirect) and by tests that use them as markers; the "Product portfolio standing: Mostly Green" panel on the brand page, which is a count of colours; the rating key wording ("Red: ... Not recommended").
+- **Seen, not changed:** the Cetaphil profile lists a row named just "Cetaphil" (slug `cetaphil-`, summary about the Gentle Skin Cleanser): a stored analysis whose product name was only the brand. Fixing it means renaming or re-running that row.
+- **Undo:** revert the change; no migration.
+
+### 2026-10-30: "Who should be careful" and "Worth knowing" never carry a "clean formula" line or an unsourced fungal-acne line
+- **Decided by:** the owner, on 2026-10-30, in chat (issues list, round 2): about the Beauty of Joseon Dynasty Cream, "you prefer a truly clean formula - to be never mentioned under who should be careful ok?"; about the Be Minimalist Vitamin B5 10% Moisturizer, "How is it saying under who should be careful - if you're prone to fungal acne? What is this supported by?"
+- **Reason:** the fungal-acne line came from one sentence the model wrote in `formulaLogic.irritancyConcerns` ("some sources suggest may feed Malassezia") with no source named, and the page repeated it as a caution. The reference database has no fungal-acne field, so nothing we hold supports it. "Expect a truly 'clean' formula" is not a finding: the site does not define clean as an ingredient quality.
+- **What it touched (display only):** `src/lib/fit-claims.ts` (new, `withoutUnsupportedFitLines`), applied at the start of `buildPillsPage` and `reviewToScorecard`, so the product page, its FAQ, the compare page and the cards read the same lists; the prompt (`product-review-context.ts`) tells the model not to write such lines. The lines are dropped, not reworded.
+- **Measured** (read-only, the 32 analyses stored on 2026-11-01): 3 have a fungal-acne line under avoidIf, 2 in irritancyConcerns, 2 have a "clean" line. Their pages change when this ships; nothing is re-run and no stored row is touched.
+- **Not decided:** a sourced, code-owned fungal-acne list (like the comedogenic one) would be a separate decision; the lines come back only if the owner approves a source for it.
+- **Undo:** revert the change; nothing is migrated.
+
+### 2026-10-30: A decimal point no longer cuts a sentence on the product page ("0.3% Retinol" was shown as "3% Retinol")
+- **Decided by:** found while checking the Re'equil Retinol Night Cream 0.3% page the owner questioned: its Formula logic row read "3% Retinol high in the INCI" for a 0.3% product. A fault, not a rule change.
+- **Reason:** `lead()` in `src/lib/pills-page.ts` split text at every full stop with a regex that skipped a stop followed by a digit, so a sentence containing a decimal lost everything before it and the page showed the rest. A tenfold misstatement on a retinol product.
+- **What it touched:** the sentence pattern in `lead()`: a stop ends a sentence only when a space or the end follows it. Used by the Formula logic one-liner only.
+- **Measured** (read-only, stored analyses with a decimal in the first 260 characters of the formula note): 1 of 32 (Re'equil). Any new analysis with a decimal early in the note was exposed.
+- **Undo:** revert the change; nothing is migrated.
+
+### 2026-10-30: Cyclopentasiloxane (D5) and Cyclohexasiloxane (D6) are not a pregnancy flag
+- **Decided by:** the owner asked, on 2026-10-30, in chat (issues list, round 2), about the Beauty of Joseon Dynasty Cream: "Why is it flagging these as pregnancy risk? What is the source data for this?" The change itself is the correction of a data row, made on the evidence below; the owner has not yet been asked to approve the audit of the other rows.
+- **Reason:** the flag came from our own reference file (`src/data/ingredients.json`): both rows carried "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use", with the sources "EU Annex III; SCCS opinion SCCS/1241/10 amended; EU Regulation 2018/675" (D5) and "EU Annex III" (D6). The rows' own notes say the concern is aquatic ("D5 bioaccumulates in aquatic environment"; "environmental bioaccumulation concern") and that leave-on use is permitted. The SCCS final opinion on D5 (SCCS/1549/15) concluded D5 is safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; its reproductive point is D4 present as an impurity. The EU limit is REACH Annex XVII entry 70 (rinse-off products; leave-on limits from 6 June 2027 under Regulation (EU) 2024/1328), an environmental restriction.
+- **What it touched:** the two rows: `Pregnancy_Restriction` is now the neutral "No specific restriction identified in source checked; standard cosmetic use" (the wording the Dimethicone row uses); `Verification_Notes` records why; `Last_Updated` 2026-10-30. Nothing else in the rows. D4 (Cyclotetrasiloxane, Repr. 1B) and Cyclomethicone (may contain D4) keep their flags: their sources support them.
+- **Measured** (read-only): 5 of 32 stored analyses list D5 or D6; their pregnancy chip changes when this ships (the flag is worked out when a page is drawn). 
+- **Found, not changed:** 8 other rows carry the same boilerplate sentence ("Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use."): Methylparaben, Ethylparaben, Propylparaben, Butylparaben, BHA, Eucalyptol, Perillyl Alcohol, Benzophenone-4 (and Ethylhexyl Methoxycinnamate with a near-identical line). Some may be right and some not; each needs its source read before it is kept or removed. The `EU_Annex` value "EU Annex III" on the D5 and D6 rows is also wrong (they are not in Annex III of the Cosmetics Regulation) and was left for the same audit.
+- **Undo:** revert the change; nothing is migrated.
+
+### 2026-10-30: Nykaa is searched for ingredients alongside INKEE Decoder and the brand's own site, and the most complete list wins
+- **Decided by:** the owner, on 2026-10-30, in chat, about the Lotus Herbals WhiteGlow Gel Creme and the Aqualogica Glow+ Hydra Gel Moisturizer, whose full ingredient lists are on Nykaa. Asked whether Nykaa should be a normal source for every analysis: "Make Nykaa's Ingredients tab a normal source for every analysis". Asked how to settle sources that disagree: "Prefer the most complete list". Her correction of the first plan: "The nykaa ingredient search should be along with inkee and brand website." On Aqualogica: "I need a solution that can be scaled, not for this one particular case."
+- **Reason:** in the owner's words above. Lotus showed an older formula from INKEE Decoder (no Niacinamide, Cyclopentasiloxane or Isopropyl Myristate; Almond Oil and Alpha-Arbutin instead) while the Nykaa page the shopper pasted listed the current one, because the engine never consulted the pasted retailer page for ingredients. Aqualogica showed no ingredient list at all although INKEE Decoder and the brand's own page both had it: the page-title check wanted 75% of the shopper's name words in the page title, and Nykaa's marketing-length name ("... For 24 Hour Intense Hydration") fails that for the shorter titles those pages use.
+- **What it touched:** `src/lib/brand-inci.ts` (`findBrandInci`): INKEE Decoder pages, the brand's own pages and Nykaa product pages (the pasted one and what a Firecrawl search for "<product> nykaa" finds) are read together, each under the same checks (code-extracted, page names the product, quote captured, an ingredient list). The most complete list wins, counted as components so a premix printed "A (And) B" is two; a tie goes to the better-captured source (brand page 4, Decoder and Nykaa 3), then to the page the shopper pasted. Lists that are the same formula written two ways (85% alike or more) are one candidate and length does not choose between them, because a source that splits a premix or a parser that cuts a name into pieces would win on count alone: capture decides, then the pasted page. A list that is a different formula (under 85% alike) is recorded on the winner as `alternatives` and the FAQ answer "How recent is this analysis?" says so. Each read is capped (Decoder 15 s, brand page 20 s, Nykaa 30 s) so one slow source cannot discard the others, and the whole lookup is capped at 40 s. `src/lib/nykaa-inci.ts` (new): renders the page, opens its Ingredients tab and reads the panel as a whole list, keeping Nykaa's own typos as printed; it refuses the product description that shows when the tab did not open. `src/lib/scrape.ts` (`fetchRenderedPage`, new): Firecrawl rendering with one retry. `src/lib/product-identity.ts` (`pageTitleNamesProduct`, new): a candidate page also names the product when its whole name sits inside the shopper's longer name (every distinctive word of the title is in the name, at least three of them, so a different type or variant such as "Cleanser", "Oil Free" or "Jello" never matches); `titleIdentifiesProduct` is unchanged because it also guards which listings may corroborate a claim. `src/lib/product-review-engine.ts`: the lookup now always runs, even when INKEE Decoder resolved by name, with that Decoder list as one candidate, bounded at 50 s; the winner's trust, origin and alternatives go into `inciEvidence`. `makeInciEvidence` takes a recorded trust (a Nykaa list is trust 3, as Decoder is; it was 2 as a retailer address, which would have switched every tick and the regulatory screen off). `sourceName` names INKEE Decoder and Nykaa instead of showing the host.
+- **Measured** (real network, no model call, no database): Lotus: Decoder by name 29 ingredients; Nykaa 30 entries (one extra only because Nykaa prints "Tocopheryl, Acetate" with a comma); Nykaa wins, Decoder recorded as the alternative. Aqualogica: no list before; the Decoder page is now found (24 entries, of which "*xylitylglucoside", "\"vitamin c" and a stray "Crosspolymer" are Decoder parse artefacts) and Nykaa is read (19 entries, the same formula with premixes joined and no artefacts): the same formula, so the pasted Nykaa page is used and no alternative is recorded.
+- **Measured later the same day on the Beauty of Joseon Dynasty Cream** (search only, no model): the stored analysis used INKEE Decoder's 2021 entry (with Cyclopentasiloxane, Dimethicone and Fragrance), so it said the brand's "silicone-free" and "fragrance-free" were contradicted. The brand's own page today lists 38 ingredients with no silicone and no fragrance, and Nykaa's list (37) agrees with it. With this change the brand page wins (trust 4) and the Decoder list is not used. Brinton Acmist Moisturizing Cream Gel: no list from the brand site or Decoder by name; the Nykaa page gives 17 ingredients. Both need a re-run to change.
+- **Known limits:** a longer list is not always the current one, which is why the lists that lost are always recorded; in the Lotus case the pick rests on Nykaa being longer by one entry that is a comma typo, so it should be read as "the pasted page's list", not as a proof of completeness. Nykaa's typos ("Butyl Methcaydibenzoy| Methane", "Isononyl. Isononanoate", "Tocopheryl, Acetate,triethanolamine") are kept as printed and will show as not in our reference database until the owner signs off aliases. Rendering a Nykaa page takes 13 to 15 s when it works, sometimes much longer or times out (HTTP 408), and costs Firecrawl credits (one search more per analysis, up to two page renders); a render that overruns its cap is dropped and the other sources are used, so Nykaa can be absent on a slow day. Other retailers (Amazon, Flipkart, Purplle...) still never supply a list.
+- **Not done, and why:** the owner also approved reading the brand's own page with a JavaScript-rendering fetch on every analysis, to catch tests such as COSRX's study. The spike showed it would not have fixed COSRX: its results block (+74.46% skin barrier strength, +87.30% skin density, 20 adults) appears only to a real browser session in India, and Firecrawl did not get it even with an Indian location, cookie, variant parameter and stealth proxy. It was not built; a decision on that is open.
+- **Not changed:** the colour or pill rules, the prompts, stored analyses (nothing is re-run by this change), the approved baseline id `X1-approved-2026-10-28`.
+- **Undo:** revert the change. Analyses made after it carry the new `origin` and `alternatives` fields in `inciEvidence`, which older code ignores.
+
+### 2026-10-30: An animal-origin cross needs an origin with no other route; commonly comedogenic ingredients are named under "Who should be careful"
+- **Decided by:** the owner, on 2026-10-30, in chat, about the Aestura Atobarrier 365 Cream: "Aestura's review says - animal derived ingredients, can we please verify claims like this first? A simple google search got me that this is not animal derived. Also, Comedogenicity risk should be mentioned under who should be careful, right? Fix this and fix the logic behind it".
+- **Reason:** in the owner's words above. The page drew "Animal-origin ingredient: Cholesterol" with a cross because the reference row for Cholesterol reads "Animal (lanolin) / Biotechnological": the ingredient can come from either, and nothing we hold says which route this product's supplier uses. A web check found no statement of the source from the brand, no vegan certification, and retailers that disagree (one lists the cream as vegan, another as not), so neither a tick nor a cross can be shown. Separately, the same page said "Acne-prone skin (non-comedogenic)" for a formula that contains Oleic Acid and Ethylhexyl Palmitate, both on the repository's own comedogenic list (commonly rated 3 or more); that rule lived only in the old engine and never reached this page.
+- **What it touched (display only):** `src/lib/review-to-scorecard.ts`, `buildVeganScreen` (now exported): an ingredient is listed as animal-origin only when its reference origin names an animal source and no plant, synthetic, microbial, fermentation, biotech or yeast route; otherwise its origin is unresolved, which the At a glance strip does not draw. The word "milk" no longer counts inside "milk thistle". `src/lib/pills-page.ts`, `comedogenicIngredientsOf` and `buildPillsPage`: for a leave-on face product whose whole ingredient list is source-backed, the ingredients on the comedogenic list lead "Who should be careful" ("Acne-prone or breakout-prone skin: contains X and Y, commonly rated comedogenic."), the model's own acne or "non-comedogenic" lines are dropped so the page never says both, and the FAQ answer follows.
+- **Measured** (read-only): in the 839-row reference file, 10 rows were flagged animal-origin at High confidence; 3 still are (Hydrolyzed Silk, Shellac, Propolis Extract), 6 are now unresolved (Cholesterol, Retinyl Palmitate, Acetyl Glucosamine, Carnosine, Acetyl Carnitine, Oleyl Alcohol) and 1 is no longer flagged at all (Milk Thistle Extract, which was caught only by the word "milk" in a plant's name). Run offline on the stored Aestura analysis, the cross is gone and the comedogenic line leads the cautions.
+- **Known limits:** the comedogenic list is short (17 names) and its scale is a laboratory rating, not a result on skin, so no match is never shown as "non-comedogenic". The vegan **tick** is still given to an ingredient whose reference says "Vegan: Yes" while also naming an animal route (Oleic Acid, Hydrogenated Lecithin); a snail product shows "unresolved" rather than a cross because Snail Secretion Filtrate is Medium confidence. Neither was changed; both want the owner's call.
+- **Not changed:** the colour or pill any product gets, the decision core, stored analyses, the prompts, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
+- **Undo:** revert the change; nothing is migrated and no stored analysis is touched: both are worked out when a page is drawn.
 
 ### 2026-10-30: When all five sections of a product page are green, the product is a Good choice, except for flags
 - **Decided by:** the owner, on 2026-10-30, in chat, about the Cetaphil Moisturising Cream whose five sections were all Strong while the colour was yellow: "if all sections are green - the end result should be green except for flags in my opinion." Then, asked to confirm the exact rule: "Yes, build it and make it live. No need to test it on the old products. From now on, any new analysis that happens should use this logic, either from backend or front end."
@@ -1072,7 +1133,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
 | `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |
 | `src/data/ingredient-aliases.ts` | `d428faa6ba2be4f561581c0348566a158e605efb9476681d975a5c20e4f445b8` |
-| `src/data/ingredients.json` | `2829920e6071c97b37bb36eb2056d456065a8652b56f2fc2351c432484f4f474` |
+| `src/data/ingredients.json` | `e93cdff9d08f5d5042c57327c189a01d549fe41fcee2f3070ec3bba34d0e1dda` |
 | `src/data/ingredients/claim-ontology.ts` | `c26f56943006af4a4daef5a1d2793d9fc425fbed86bbb38d35e15d977d08763f` |
 | `src/data/ingredients/concepts.ts` | `2c709afb7b734c259f84b0e663020d79df00645264d35758f4960a7e227fa9a5` |
 | `src/data/taxonomy/index.ts` | `c74f427f9b8fdb9dad017a24324fa6c7d0947f0f908ab6eeb7aff02bb296a602` |
@@ -1080,10 +1141,10 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
 | `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
-| `src/lib/analyser-x/adapter.ts` | `fd1b33bc76c2c6f9c4768063283f8ff6fcf4850093d6e4ee6efceeea19654979` |
+| `src/lib/analyser-x/adapter.ts` | `78d1578e0a8655a01b5ed42f737277fc4181cd8ce6650f347c020257e8c04def` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `51ccc0254ffb5d9d9ee7f817af2a47ee53a3f05ff3e54c9e70f75fe387f677f7` |
+| `src/lib/analyser-x/copy.ts` | `f1a40b600e3cf114a92a247ea39aa217364c4966de7b90f69181715a29412fef` |
 | `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
@@ -1104,20 +1165,22 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `ddefac2a3e75d2a27375e77d136ceeb52f07bad3688aa5267e1a032382e926cc` |
+| `src/lib/brand-inci.ts` | `5db2a9f1e497aed015ed7394f7c1d4bf1b9315a85221c147c8868b68f97b558c` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
+| `src/lib/claim-source.ts` | `affea1c809828d7a8931d11f382bb624bc0ac00b5fcccc0115df6efddf8f7a29` |
 | `src/lib/claims-context.ts` | `9fe1aa10c247220a8fba83c2458f421444b8d233708cc06d4a4ef2696add6b6f` |
 | `src/lib/compliance-pillar.ts` | `c7a2c2a575d1e19548175e53bc716998a1e94135649bce8fd6e008134cc6b8a6` |
 | `src/lib/drug-signals.ts` | `e4eba39275c9b08603e036d14fcf0d659ad4a7e75c342d9263b52863c76a63a0` |
 | `src/lib/evidence-images.ts` | `3997d516c3a0f9d5d048edc929a1241d9aefb805ed9ad082449ae23896cbdbed` |
+| `src/lib/fit-claims.ts` | `9757dde7e85691d1bf03570ada39c430e064de46b9c0907c958364760b316be4` |
 | `src/lib/gemini.ts` | `800010027e49b589ca6e5813790bbc2e4c8919518c34ddcd8f2c4ecbb6815964` |
 | `src/lib/inci-catchall.ts` | `c83855004cb4603bb90c1ba15e195352ff073742968998d444802778fb8e7254` |
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `d495296032ba2124118e356ff0b061e7746f4502199e3af9cf394554c2cd1311` |
+| `src/lib/inci-from-page.ts` | `0f23ad1fdc8424e26ab8ba0f5cf60c6c80a423f9f3b1f07eeabd9c1ec573ddfa` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1130,30 +1193,31 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/ingredient-product-index.ts` | `7edef7cea639ac4b9463092dd351b97dce5247ad5e0240be99834a12edfd0613` |
 | `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
 | `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
+| `src/lib/nykaa-inci.ts` | `9c58530bb2805a53080cdeb7d44742950a2159786904c85a767d80c8d3316477` |
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `5e7ea567dd819c07ffbef154510d71525819c7058a0204dc11e67765bfe7e48e` |
+| `src/lib/pills-page.ts` | `83be45fd15e51b63a9b133a5420d8a076d00ba9e960e46ac30462e69115d3888` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
-| `src/lib/product-identity.ts` | `2e871b1b8e07e6ebbe5dc4b2c8b24d1a6cde8db61b7f2eef610937d05cd8b5e0` |
+| `src/lib/product-identity.ts` | `6b84f2ffc748cd468149bbcc1ba5b6212091b3e6a01a7935b8c3fc54fab3df25` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
-| `src/lib/product-review-context.ts` | `310980e863d56219897ceaee525a8eb83de04bcf2838c44cdadca1c647ba1d9e` |
-| `src/lib/product-review-engine.ts` | `b26248b79b2e5b1c7ebafd938210f95403dcb68c192cae66838dc087e986171b` |
-| `src/lib/product-review-types.ts` | `e45baa3a994d6525bacca279ce18026c2f62d80d6ea682fdd6a526b653d5f437` |
+| `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
+| `src/lib/product-review-engine.ts` | `30fea905a7a732271cf499f52b376d81c0c76422155b4b07abb7a7debc187df2` |
+| `src/lib/product-review-types.ts` | `3bf6a4556cab4320dd55b7b6006833f9a03892059e6739a183181ac04f8639fe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
 | `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
-| `src/lib/review-ingredient-state.ts` | `3f510a2e7e091df4a0e98cbd36641d5beb86f3018b1c9d1d90b5bd3110d40ac8` |
+| `src/lib/review-ingredient-state.ts` | `136cf48bb84c167a24c6d94277109711bb03df5b82a3a0b922a8e80c493d80a6` |
 | `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
-| `src/lib/review-to-scorecard.ts` | `7af517fb57516b8b8c5a294873b43e505ef01c1c9f1bfc9d0eb14f528faa6c7a` |
+| `src/lib/review-to-scorecard.ts` | `c2a9c64a5334cc3e3cd173bc1d72d4db9a6763e9626bd2f183759e05fd1a9f2a` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
-| `src/lib/review-verifier.ts` | `f70fcf7c5bf91e6d1b1fe397ddd7016750428141e531a22524ef463af7558cdb` |
+| `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
-| `src/lib/scrape.ts` | `0d482e1eaa87b1a1f6b2f1652ba7380e6c30502a5727c1f7929fab334db785d5` |
+| `src/lib/scrape.ts` | `14ff3a9ebd3168117388fc305321926545f9a3ad2c186a0e8ddb5ecd659f192c` |
 | `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
 | `src/lib/unrated-kind.ts` | `425eb9ce2e45b4c57c2765165af9b909e3d334bc6e77bf0d6108e4ff53afaa74` |
 | `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |
