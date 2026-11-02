@@ -20,6 +20,7 @@ import { evaluate } from "./rules";
 import { MIN_SCREEN_COVERAGE } from "./kb";
 import { AUTHORITIES } from "./regulatory";
 import { PILLS, render } from "./copy";
+import { NAME_SEP, tagOf } from "./tags";
 import { safetyMarker } from "./sections";
 import type { BenchmarkValue, Decision, DecisionKey, DecisionReason, Finding, RuleContext } from "./types";
 import { ANALYSER_METHOD_VERSION } from "./version";
@@ -94,6 +95,13 @@ function reasonOf(f: Finding, extra: Record<string, unknown> = {}): DecisionReas
   if (typeof p.claim === "string") evidence.claim = p.claim;
   if (typeof p.source === "string") evidence.source = p.source;
   if (typeof p.capturedAt === "string") evidence.capturedAt = p.capturedAt;
+  // The ingredients a finding names: the several a soft check matched, the one entry an unnamed-entry finding is about, or the one ingredient it states.
+  const named = typeof p.ingredients === "string" ? p.ingredients.split(NAME_SEP) : typeof p.entry === "string" ? [p.entry] : typeof p.ingredient === "string" ? [p.ingredient] : [];
+  if (named.length) {
+    evidence.ingredients = named.filter(Boolean);
+    const tag = tagOf(f);
+    if (tag) evidence.tag = tag;
+  }
   return {
     ruleId: f.ruleId, kind: f.severity, origin: f.origin,
     text: render(f, extra),

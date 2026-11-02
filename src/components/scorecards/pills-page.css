@@ -79,3 +79,7 @@ a.pp-pill:hover { border-color: #248179; color: #1d6761; }
 @media (prefers-reduced-motion: reduce) {
   .pp-chev svg, .pp-shop, a.pp-pill { transition: none; }
 }
+
+/* ── The ingredient list: the row an in-page link lands on, and a rating chip that may wrap on a narrow screen ── */
+[data-list="ingredients"] > li:target { background: #f0f6f6; border-radius: 10px; }
+.pp-rate[data-wrap] { white-space: normal; text-align: left; }

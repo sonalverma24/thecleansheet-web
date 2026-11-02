@@ -148,6 +148,8 @@ export interface SoftFinding {
   label: string;
   pillar: string;
   detail: string;
+  /** The ingredients the check matched (see CheckResult.ingredients), so the page can mark them in the list. */
+  ingredients?: string[];
 }
 
 export interface ScreenValue {
@@ -276,7 +278,13 @@ export interface DecisionReason {
   kind: Severity;
   origin: "code" | "model";
   text: string;
-  evidence?: { ingredient?: string; claim?: string; source?: string; capturedAt?: string };
+  evidence?: {
+    ingredient?: string; claim?: string; source?: string; capturedAt?: string;
+    /** Every ingredient the finding names, as the check matched it: a list entry, or a stem found inside one. */
+    ingredients?: string[];
+    /** The short label the finding puts beside each ingredient it names ("Comedogenicity risk"). */
+    tag?: string;
+  };
 }
 
 export interface Decision {

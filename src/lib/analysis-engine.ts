@@ -86,7 +86,7 @@ interface Ctx {
   db: DbFindings;
 }
 
-type Eval = { state: CheckState; detail: string; source?: string; penalty?: number; forceShow?: boolean };
+type Eval = { state: CheckState; detail: string; source?: string; penalty?: number; forceShow?: boolean; ingredients?: string[] };
 
 interface CheckDef {
   id: string;
@@ -166,7 +166,7 @@ const CHECKS: CheckDef[] = [
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to screen." };
       const hits = c.db.endocrine;
       return hits.length
-        ? { state: "adverse", detail: hits.map((h) => `${h.name}: ${h.note}`).join(" "), penalty: 15 }
+        ? { state: "adverse", detail: hits.map((h) => `${h.name}: ${h.note}`).join(" "), penalty: 15, ingredients: hits.map((h) => h.name) }
         : { state: "verified", detail: "No ingredient with a recognised endocrine-activity concern found in the database." };
     } },
   { id: "carcinogenicity", pillar: "Ingredient Safety & Toxicity", subCategory: "Toxicology", label: "Carcinogenicity / formaldehyde-releaser screen", axis: "safety", obtainability: "public",
@@ -178,7 +178,7 @@ const CHECKS: CheckDef[] = [
         ...formaldehyde.map((f) => `Formaldehyde-releaser: ${f.stem}`),
       ];
       return hits.length
-        ? { state: "adverse", detail: hits.join(" "), penalty: 12 }
+        ? { state: "adverse", detail: hits.join(" "), penalty: 12, ingredients: [...c.db.cmr.map((h) => h.name), ...formaldehyde.map((f) => f.stem)] }
         : { state: "verified", detail: "No IARC-classified or formaldehyde-releasing ingredient found in the database screen." };
     } },
   { id: "bioaccumulation", pillar: "Ingredient Safety & Toxicity", subCategory: "Toxicology", label: "Bioaccumulation potential", axis: "safety", obtainability: "private",
@@ -189,7 +189,7 @@ const CHECKS: CheckDef[] = [
       const hits = inciHas(c.inciJoined, COMEDOGENIC);
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to assess comedogenicity." };
       return hits.length
-        ? { state: "adverse", detail: `Contains ingredient(s) commonly rated comedogenic: ${hits.join(", ")}. May not suit very acne-prone skin.`, penalty: 8 }
+        ? { state: "adverse", detail: `Contains ingredient(s) commonly rated comedogenic: ${hits.join(", ")}. May not suit very acne-prone skin.`, penalty: 8, ingredients: hits }
         : { state: "verified", detail: "No commonly-comedogenic ingredient found - a reasonable fit for acne-prone skin." };
     } },
   { id: "mutagenicity", pillar: "Ingredient Safety & Toxicity", subCategory: "Functional Safety", label: "Mutagenicity / genotoxicity report", axis: "safety", obtainability: "private",
@@ -211,7 +211,7 @@ const CHECKS: CheckDef[] = [
       const hits = SENSITISING_PRESERVATIVES.filter((p) => inciHas(c.inciJoined, [p.stem]).length > 0);
       if (!hits.length) return { state: "verified", detail: "No high-sensitisation preservative (MI/MCI/formaldehyde-releaser) from our screen was found." };
       const leaveOnMI = !c.isRinseOff && hits.some((h) => /isothiazolinone/i.test(h.stem));
-      return { state: "adverse", detail: hits.map((h) => h.note).join(" ") + (leaveOnMI ? " Notable in a leave-on product." : ""), penalty: leaveOnMI ? 12 : 6 };
+      return { state: "adverse", detail: hits.map((h) => h.note).join(" ") + (leaveOnMI ? " Notable in a leave-on product." : ""), penalty: leaveOnMI ? 12 : 6, ingredients: hits.map((h) => h.stem) };
     } },
   { id: "extract_allergens", pillar: "Irritation & Allergen Risk", subCategory: "Ingredient Level", label: "Essential-oil / extract allergen breakdown", axis: "proof", obtainability: "brand",
     applies: (c) => c.isFragranced || /oil|extract|essential/i.test(c.inciJoined),
@@ -222,7 +222,7 @@ const CHECKS: CheckDef[] = [
       const hits = inciHas(c.inciJoined, SULPHATE_SURFACTANTS);
       if (!c.hasInci) return { state: "not-disclosed", detail: "No INCI to assess the surfactant system." };
       return hits.length
-        ? { state: "adverse", detail: `Built on a stronger sulphate surfactant (${hits.join(", ")}) - effective, but can feel stripping on sensitive skin or in hard water.`, penalty: 8 }
+        ? { state: "adverse", detail: `Built on a stronger sulphate surfactant (${hits.join(", ")}) - effective, but can feel stripping on sensitive skin or in hard water.`, penalty: 8, ingredients: hits }
         : { state: "verified", detail: "Uses milder (non-sulphate) surfactants." };
     } },
   { id: "hript", pillar: "Irritation & Allergen Risk", subCategory: "Product Level", label: "HRIPT patch test", axis: "proof", obtainability: "brand",
@@ -349,7 +349,7 @@ export function runAnalysis(review: ProductReview): AnalysisReport {
       return { result: { ...base, state: "not-applicable" as CheckState, detail: "Not applicable to this product type." }, penalty: 0 };
     }
     const ev = def.evaluate(ctx);
-    const result: CheckResult = { ...base, state: ev.state, detail: ev.detail, source: ev.source, forceShow: ev.forceShow };
+    const result: CheckResult = { ...base, state: ev.state, detail: ev.detail, source: ev.source, forceShow: ev.forceShow, ...(ev.ingredients?.length ? { ingredients: ev.ingredients } : {}) };
     const penalty = ev.state === "adverse" && def.axis === "safety" && def.obtainability !== "private" ? (ev.penalty ?? 15) : 0;
     return { result, penalty };
   });

@@ -34,7 +34,7 @@ export function computeScreen(review: ProductReview, inci: string[], flags: Clai
 
   const softAdverse = runAnalysis(review).checks
     .filter((c) => c.state === "adverse" && !c.hard && CODE_PILLARS.includes(c.pillar))
-    .map((c) => ({ label: c.label, pillar: c.pillar, detail: c.detail }));
+    .map((c) => ({ label: c.label, pillar: c.pillar, detail: c.detail, ...(c.ingredients?.length ? { ingredients: c.ingredients } : {}) }));
 
   const hardOverride = prohibited.length > 0 || flags.contradicted.length > 0 || flags.fairness.length > 0;
   const standing = pillarStanding({
