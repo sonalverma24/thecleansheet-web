@@ -644,6 +644,45 @@ describe("cyclic silicones D5 and D6 are not a pregnancy flag (reference data fi
   });
 });
 
+describe("the templated pregnancy caution is gone where the sources do not support it (reference data audit, 2026-11-02)", () => {
+  const screenOf = (names: string[]) => page(rv({ productName: "Daily Cream", category: "Moisturizer", inciIngredients: [...BASE, ...names] }));
+  const flags = (names: string[]) => screenOf(names).product.pregnancyScreen?.flags.map((f) => f.ingredient) ?? [];
+
+  it.each(["Methylparaben", "Ethylparaben", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate"])("%s raises no pregnancy flag", (name) => {
+    expect(flags([name])).toEqual([]);
+  });
+
+  it("a product with every one of them shows no pregnancy chip", () => {
+    const { model } = screenOf(["Methylparaben", "Ethylparaben", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate"]);
+    expect(model.highlights.filter((h) => /pregnan/i.test(h.label))).toEqual([]);
+  });
+
+  // Butylparaben and BHA keep a flag because their sources do record a pregnancy-relevant finding, but it is worded as the source words it.
+  it.each([
+    ["Butylparaben", /SCCS\/1651\/23/, /anogenital distance.*Candidate List/],
+    // Listed as "BHA": the INCI name "Butylated Hydroxyanisole" does not resolve to this row (no alias is signed off), so that spelling is not screened at all.
+    ["BHA", /SCCS\/1682\/25/, /fetal malformations.*0\.07%/],
+    ["Eucalyptol", /EMA\/HMPC\/307782\/2012/, /not been established.*no cosmetic pregnancy restriction/],
+    ["Benzophenone-3", /SCCS\/1625\/20/, /placental tissue.*inconclusive/],
+  ])("%s still raises a pregnancy flag, worded as its source words it, with the source named", (name, source, wording) => {
+    const { product, model } = screenOf([name]);
+    const [flag, ...others] = product.pregnancyScreen!.flags;
+    expect(others).toEqual([]);
+    expect(flag.ingredient).toBe(name);
+    expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only/);
+    expect(flag.restriction).toMatch(wording);
+    expect(flag.restriction, "the templated sentence is not what the sources say").not.toMatch(/endocrine disruption data|precautionary avoidance of high-frequency/);
+    expect(flag.source).toMatch(source);
+    const chip = model.highlights.find((h) => /pregnan/i.test(h.label));
+    expect(chip).toMatchObject({ label: `Pregnancy ingredient flag: ${name}`, state: "no" });
+    expect(chip?.detail).toContain(flag.restriction);
+  });
+
+  it("the flags that rest on a pregnancy-specific source are untouched: retinol, Retinyl Palmitate, D4", () => {
+    expect(flags(["Retinol", "Retinyl Palmitate", "Cyclotetrasiloxane"])).toEqual(["Retinol", "Retinyl Palmitate", "Cyclotetrasiloxane"]);
+  });
+});
+
 describe("when sources disagree on the ingredient list, the page says so (owner decision, 2026-10-30)", () => {
   const faq = (m: PillsPageModel) => m.faq.find((f) => f.q === "How recent is this analysis?")?.a;
   const NYKAA_URL = "https://www.nykaa.com/test-product/p/123";

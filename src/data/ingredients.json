@@ -2090,7 +2090,7 @@
     "Ingredient_Origin": "Synthetic",
     "Concern_Level_TCS": "Medium",
     "EU_Status": "Permitted (restricted in rinse-off ≥0.1% from 2020)",
-    "EU_Annex": "EU Annex III",
+    "EU_Annex": "Not in Annex III of the Cosmetics Regulation; restricted under REACH Annex XVII entry 70",
     "India_Status": "Permitted",
     "US_FDA_Status": "Permitted",
     "Korea_Status": "Permitted",
@@ -2115,9 +2115,9 @@
     "Key_Safety_Notes": "D5 bioaccumulates in aquatic environment; EU restricted in rinse-off cosmetics; endocrine disruption concern (aquatic); brands should reformulate rinse-off products if above EU limit; leave-on permitted; check if submission is rinse-off",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. The SCCS final opinion on D5 (SCCS/1549/15) found it safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one.",
-    "Source_Reference": "EU Annex III; SCCS opinion SCCS/1241/10 amended; EU Regulation 2018/675",
-    "Last_Updated": "2026-10-30"
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. The SCCS final opinion on D5 (SCCS/1549/15) found it safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one. EU_Annex corrected 2026-11-02: cyclopentasiloxane is not in Annex III of the Cosmetics Regulation (it was cited as 'EU Annex III'); the restriction is REACH Annex XVII entry 70, and Source_Reference now says so. The citation 'EU Regulation 2018/675' was left as written and could not be checked against the legal text",
+    "Source_Reference": "REACH Annex XVII entry 70; SCCS opinion SCCS/1241/10 amended; SCCS/1549/15; EU Regulation 2018/675",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Cyclohexasiloxane",
@@ -2130,7 +2130,7 @@
     "Ingredient_Origin": "Synthetic",
     "Concern_Level_TCS": "Medium",
     "EU_Status": "Restricted in rinse-off ≥0.1%",
-    "EU_Annex": "EU Annex III",
+    "EU_Annex": "Not in Annex III of the Cosmetics Regulation; restricted under REACH Annex XVII entry 70",
     "India_Status": "Permitted",
     "US_FDA_Status": "Permitted",
     "Korea_Status": "Permitted",
@@ -2155,9 +2155,9 @@
     "Key_Safety_Notes": "Similar to D5, environmental bioaccumulation concern; restricted in rinse-off in EU",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. D6 has no SCCS opinion of its own; the SCCS final opinion on D5 (SCCS/1549/15), its closest relative, found D5 safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5 or D6. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one.",
-    "Source_Reference": "EU Annex III",
-    "Last_Updated": "2026-10-30"
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products Pregnancy caution removed 2026-10-30: the earlier text was not supported by the sources cited. D6 has no SCCS opinion of its own; the SCCS final opinion on D5 (SCCS/1549/15), its closest relative, found D5 safe in cosmetics at the reported concentrations, except in hair-styling aerosols and sun-care sprays; the reproductive concern in that opinion is D4 present as an impurity, not D5 or D6. The EU limit (REACH Annex XVII entry 70, rinse-off products) rests on environmental persistence and bioaccumulation, so the Key_Safety_Notes 'endocrine' wording is an aquatic concern, not a human one. EU_Annex corrected 2026-11-02: cyclohexasiloxane is not in Annex III of the Cosmetics Regulation (it was cited as 'EU Annex III'); the restriction is REACH Annex XVII entry 70, and Source_Reference now says so",
+    "Source_Reference": "REACH Annex XVII entry 70",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Dimethiconol",
@@ -3749,15 +3749,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Avoid in baby products (precautionary)",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Wide use across all cosmetic categories",
     "Key_Safety_Notes": "Weak estrogenic activity; SCCS concluded safe at permitted levels for general population; TCS precautionary avoidance in baby and pregnancy submissions",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "High",
-    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge",
+    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge. Pregnancy caution removed 2026-11-02: the earlier text ('endocrine disruption data; precautionary avoidance of high-frequency leave-on use') is not in the sources cited. SCCS/1652/23 (final, corrigendum February 2024) found methylparaben safe as a preservative up to 0.4% (0.8% for ester mixtures) with its endocrine activity weighed; SCCS/1348/10 and SCCP/1183/08 call methylparaben and ethylparaben 'not subject of concern'; SCCS/1514/13 (quoting SCCS/1348/10) says the unborn foetus is better protected than a dermally exposed newborn by the mother's more efficient inactivation of parabens. The 'TCS precautionary avoidance in baby and pregnancy submissions' phrase in Key_Safety_Notes is the site's own earlier precaution and was left as written",
     "Source_Reference": "EU Annex V; SCCS/1514/13",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Ethylparaben",
@@ -3789,15 +3789,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Avoid in baby products (precautionary)",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Wide use across cosmetic categories",
     "Key_Safety_Notes": "Short-chain paraben; lower endocrine risk than propyl/butyl but precautionary avoidance in sensitive populations",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "High",
-    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge",
+    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge. Pregnancy caution removed 2026-11-02: the earlier text is not in the sources cited. SCCS/1348/10 (section 5) says use of methylparaben and ethylparaben at the maximum authorised concentrations can be considered safe, and SCCP/1183/08 calls both 'not subject of concern'; SCCS/1514/13 (quoting SCCS/1348/10) says the unborn foetus is better protected than a dermally exposed newborn by the mother's more efficient inactivation of parabens. No ethylparaben-specific SCCS opinion newer than these was found (not an exhaustive search). Key_Safety_Notes was left as written",
     "Source_Reference": "EU Annex V; SCCS",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Propylparaben",
@@ -3829,15 +3829,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Max 0.14% propyl+butyl combined in nappy area products children under 3",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "General cosmetics",
     "Key_Safety_Notes": "Stronger endocrine disruption evidence; EU restricted in nappy area; TCS requires avoidance in baby and pregnancy submissions",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products. Pregnancy caution removed 2026-11-02: the earlier text is not in the sources cited. SCCS/1623/20 (final, 2021) judged propylparaben safe as a preservative up to 0.14%, took a NOAEL of 1000 mg/kg/day for reproductive and developmental effects from five good-quality GLP studies (one an OECD 414 prenatal study with no effect on females or foetuses), and found the endocrine evidence not sufficient to regard it as an endocrine disruptor; SCCS/1514/13 (quoting SCCS/1348/10) says the unborn foetus is better protected than a dermally exposed newborn by the mother's more efficient inactivation of parabens. Not verified: the ECHA RAC opinion on propylparaben (adopted March 2023) could not be read because ECHA blocks automated access; a secondary summary says RAC found no reproductive classification warranted. Key_Safety_Notes ('TCS requires avoidance in baby and pregnancy submissions') was left as written",
     "Source_Reference": "EU Annex V; SCCS; nappy area restriction",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Butylparaben",
@@ -3869,15 +3869,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Max 0.14% propyl+butyl combined nappy area children under 3",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "Caution during pregnancy is precautionary only: in rat studies, butylparaben given to dams during pregnancy and nursing reduced anogenital distance and sperm count in male offspring, and the SCCS took its point of departure from the anogenital-distance effect. The SCCS judged butylparaben safe as a preservative up to 0.14% (as acid) (SCCS/1651/23); it is also on the EU REACH Candidate List for endocrine-disrupting properties affecting human health.",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "General cosmetics",
     "Key_Safety_Notes": "Strongest endocrine disruption signal among permitted parabens; automatic concern flag in baby and pregnancy submissions",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
-    "Source_Reference": "EU Annex V; SCCS/1514/13",
-    "Last_Updated": "2026-05-11"
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products. Pregnancy wording replaced 2026-11-02: the earlier text ('endocrine disruption data; precautionary avoidance of high-frequency leave-on use') overstated what the sources say. SCCS/1651/23 (final, 2023) judged butylparaben safe as a preservative up to 0.14% (as acid), took its point of departure from the decrease in anogenital distance in male rat offspring dosed during gestation and lactation, and says safety concerns for children cannot be excluded without child-specific exposure data; SCCS/1514/13 (quoting SCCS/1348/10) says the unborn foetus is better protected than a dermally exposed newborn by the mother's more efficient inactivation of parabens. ECHA added butylparaben to the SVHC Candidate List on 25 June 2020 for endocrine-disrupting properties affecting human health (several trade summaries agree; the ECHA page itself could not be read). SVHC_Flag on this row still reads No; it was not changed here and needs its own check",
+    "Source_Reference": "EU Annex V; SCCS/1651/23; SCCS/1514/13; ECHA SVHC Candidate List (2020)",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Chlorphenesin",
@@ -4069,15 +4069,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Avoid in baby sunscreens",
-    "Pregnancy_Restriction": "Caution during pregnancy; systemic absorption demonstrated; precautionary avoidance.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Sunscreens",
     "Key_Safety_Notes": "Major EU restriction, SCCS 2021 reduced to 0.5% from 10%; endocrine disruption concern; significant formulation challenge for EU-US dual-market brands",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products. Pregnancy caution removed 2026-11-02: 'systemic absorption demonstrated' is not a pregnancy statement. SCCS/1622/20 (final, June 2021) judged homosalate safe as a UV filter up to 0.5% and not safe at 10%, and called the endocrine evidence 'inconclusive, and at best equivocal'; its only pregnancy-type findings (more post-implantation loss from 300 mg/kg/day in a screening study) the SCCS said cannot be considered conclusive and reliable (constant-light error, few pregnancies). SCCS/1638/21 (December 2021) then judged 7.34% safe in face cream and pump spray. Closest call of the removals. Not verified: what the Commission adopted into Annex VI; Max_Concentration_EU on this row ('0.5% max EU') and its source 'SCCS/1638/21' do not agree with each other and were left as written",
     "Source_Reference": "EU Annex VI; SCCS/1638/21",
-    "Last_Updated": "2026-05-11"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Butyl Methoxydibenzoylmethane",
@@ -7069,15 +7069,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "None",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "Caution during pregnancy is precautionary only: older animal studies, mostly oral, found effects of BHA on fertility and development, with some indication of fetal malformations, and the SCCS judged them too weak to set a limit from. The SCCS considers BHA safe on skin up to 0.07% in leave-on and rinse-off products (SCCS/1682/25); that advice does not cover oral-care or inhaled products.",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Some lip products (restricted EU) rinse-off",
     "Key_Safety_Notes": "Lipid-phase antioxidant; EU restricted due to endocrine concern; endocrine flag; IARC Group 2B; prefer tocopherol as safer antioxidant alternative for leave-on face products; COSMOS-prohibited",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
-    "Source_Reference": "EU Annex III; IARC; SCCS",
-    "Last_Updated": "2026-05-11"
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products. Pregnancy wording replaced 2026-11-02: the earlier text overstated what the sources say. SCCS/1682/25 (final, adopted 26 March 2026) found BHA safe on skin up to 0.07% in leave-on and rinse-off products (dermal use only; not oral-care or inhaled products), recorded older animal studies with effects on fertility (sperm), developmental neurobehavioural effects and indications of fetal malformations that it judged not robust enough to set a point of departure, and called the evidence for an endocrine mode of action not robust. The same opinion states BHA is currently not regulated under the Cosmetics Regulation, which contradicts this row's EU_Annex ('EU Annex III') and Max_Concentration_EU; Source_Reference no longer cites Annex III, but those two fields were not changed here and need their own check",
+    "Source_Reference": "SCCS/1682/25 (2026); IARC",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "BHT (Butylated Hydroxytoluene)",
@@ -13189,15 +13189,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Not for children under 2 near face/nose",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "Caution during pregnancy is precautionary only: safety in pregnancy has not been established for eucalyptus oil, whose main constituent is eucalyptol (1,8-cineole), and animal studies show 1,8-cineole crosses the placenta. The EMA herbal committee (HMPC) advises against medicinal use of the oil in pregnancy for lack of data (EMA/HMPC/307782/2012); we found no cosmetic pregnancy restriction.",
     "IFRA_Restriction": "Fragrance/aromatic ingredient; check IFRA 49th Amendment standard for applicable product category restrictions",
     "Common_Products": "Cooling products muscle rubs natural deodorants",
     "Key_Safety_Notes": "Monoterpene from eucalyptus; cooling decongestant; antimicrobial; EU fragrance allergen (extended list, declaration required); IFRA limits; paediatric safety: avoid nasal application in infants (respiratory distress reported)",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "Basic regulatory status sourced from general cosmetic ingredient knowledge; extended jurisdiction fields require direct regulatory database verification",
-    "Source_Reference": "IFRA; paediatric safety; EU extended allergen list",
-    "Last_Updated": "2026-06-06"
+    "Verification_Notes": "Basic regulatory status sourced from general cosmetic ingredient knowledge; extended jurisdiction fields require direct regulatory database verification. Pregnancy wording replaced 2026-11-02: Endocrine_Flag on this row is No and no source cited supports 'endocrine disruption data'. EMA/HMPC/307782/2012 (assessment report on eucalyptus oil, draft, 15 June 2013) records that safety in pregnancy and lactation has not been established, that 1,8-cineole crosses the placenta in rodents, and proposes the section 4.6 wording that use in pregnancy and lactation is not recommended; a later addendum for eucalyptus leaf (EMA/HMPC/679833/2021, 26 January 2022) says this is 'already not recommended in the HMPC documents'. That is advice for herbal medicines, not cosmetics. The final HMPC monograph text was not read",
+    "Source_Reference": "IFRA; paediatric safety; EU extended allergen list; EMA/HMPC/307782/2012 (pregnancy)",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Glycerin (Vegetable)",
@@ -19589,15 +19589,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "None",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Fragrance/aromatic ingredient; check IFRA 49th Amendment standard for applicable product category restrictions",
     "Common_Products": "Natural fragrance systems solvent",
     "Key_Safety_Notes": "Natural terpene alcohol; occurs in essential oils; fragrance component; low sensitization risk; IFRA limits apply; used as solvent and fragrance carrier",
     "TCS_Evaluator_Flag": "No",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "Basic regulatory status sourced from general cosmetic ingredient knowledge; extended jurisdiction fields require direct regulatory database verification",
+    "Verification_Notes": "Basic regulatory status sourced from general cosmetic ingredient knowledge; extended jurisdiction fields require direct regulatory database verification. Pregnancy caution removed 2026-11-02: the earlier text ('endocrine disruption data') has no source. Endocrine_Flag on this row is No, Key_Safety_Notes describe a low-sensitization natural terpene, and no SCCS opinion or CIR report on perillyl alcohol was found. Not verified: CosIng, IFRA and RIFM assessments were not read directly, so a pregnancy caution from those would need adding with its source",
     "Source_Reference": "IFRA; EU CosIng",
-    "Last_Updated": "2026-06-06"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Isododecane",
@@ -20189,15 +20189,15 @@
     "Max_Concentration_Korea": "7.5% (sunscreen functional cosmetic)",
     "Format_Restriction": "Both",
     "Baby_Restriction": "None",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data. Precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Sunscreens SPF products",
     "Key_Safety_Notes": "Most widely used UVB filter globally; photounstable alone (requires photostabiliser or encapsulation); endocrine disruption concern (estrogenic activity in studies); SCCS reassessment ongoing; FDA proposed 0.5% (insufficient safety data 2021); coral reef/aquatic toxicity concerns (Hawaii reef-safe bans); TCS: flag endocrine and environmental concern; monitor regulatory status",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "High",
-    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge",
+    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge. Pregnancy caution removed 2026-11-02: the earlier text is not in the sources cited. SCCS/1671/24 (final, corrigendum adopted 26 March 2026) found EHMC safe as a UV filter up to 10% in sunscreen, face, hand and lip products (including propellant and pump sprays), also for children, and as a UV stabiliser at lower concentrations, while recording that it is endocrine-active (estrogenic, weakly anti-androgenic) in vitro and in vivo. Its prenatal studies in rats and rabbits found no increase in malformed foetuses; an NTP one-generation study found no reproductive toxicity and 'equivocal' evidence of developmental toxicity (postnatal body weight, delayed puberty markers), which the SCCS carried into its assessment. Closest call of the removals. Key_Safety_Notes ('SCCS reassessment ongoing') is out of date and was left as written",
     "Source_Reference": "EU Annex VI; SCCS reassessment; FDA 2021 proposed rule; Hawaii ban; coral reef data",
-    "Last_Updated": "2026-05-12"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Benzophenone-3",
@@ -20229,15 +20229,15 @@
     "Max_Concentration_Korea": "5% (sunscreen functional cosmetic)",
     "Format_Restriction": "Both",
     "Baby_Restriction": "Warning label: contains oxybenzone",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruptor with documented absorption. Precautionary avoidance of high-dose leave-on application during pregnancy.",
+    "Pregnancy_Restriction": "Caution during pregnancy is precautionary only: benzophenone-3 is absorbed through the skin and has been detected in placental tissue, and human studies of exposure in pregnancy report mixed birth-outcome associations. The SCCS judged the evidence that it is an endocrine disruptor inconclusive and advised lower limits for body products (SCCS/1625/20).",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Broad-spectrum sunscreens, use diminishing due to restrictions",
     "Key_Safety_Notes": "Broad-spectrum UV filter; significant endocrine disruption evidence (estrogenic anti-androgenic); high dermal absorption; EU significantly restricted in 2022 (6%/0.5%); FDA proposed 0.5%; Hawaii banned (coral reef); SCCS assessment concluded concerns at high use; TCS should flag strongly; recommend preference for alternatives",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "Medium",
-    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products",
-    "Source_Reference": "EU Annex VI Commission Regulation 2022; FDA 2021; SCCS/1593/17; Hawaii SB2571",
-    "Last_Updated": "2026-05-12"
+    "Verification_Notes": "EU Annex restriction verified; other jurisdictions sourced from general regulatory knowledge; verify Australia TGA and Canada Health Canada directly for regulated products. Pregnancy wording replaced 2026-11-02: the earlier text called benzophenone-3 an 'endocrine disruptor'; SCCS/1625/20 (final, March 2021) says the evidence for endocrine-disrupting properties is 'inconclusive, and at best equivocal'. The same opinion cites human studies of BP-3 exposure during pregnancy with mixed birth-outcome associations and detection of BP-3 in placental tissue, and found 6% not safe as a UV filter in body creams and sprays (safe at 6% in face cream, hand cream and lipstick; 2.2% in body products). Not verified: the row's older source 'SCCS/1593/17' was not found; the EU limits adopted into Annex VI (the row says 6% body, 0.5% face) differ from the SCCS figures and were not checked against the legal text",
+    "Source_Reference": "EU Annex VI Commission Regulation 2022; FDA 2021; SCCS/1625/20; SCCS/1593/17; Hawaii SB2571",
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Benzophenone-4",
@@ -20269,15 +20269,15 @@
     "Max_Concentration_Korea": "No specific MFDS limit identified in source checked; verify if ingredient is used in a Korean functional cosmetic category",
     "Format_Restriction": "Both",
     "Baby_Restriction": "None",
-    "Pregnancy_Restriction": "Caution during pregnancy; endocrine disruption data; precautionary avoidance of high-frequency leave-on use.",
+    "Pregnancy_Restriction": "No specific restriction identified in source checked; standard cosmetic use",
     "IFRA_Restriction": "Not applicable as primary fragrance material; no IFRA restriction relevant to cosmetic use",
     "Common_Products": "Sunscreens UV-absorbers in haircare products",
     "Key_Safety_Notes": "Water-soluble UV absorber; used in hair care to protect product colour from UV degradation; also as sunscreen active; lower systemic exposure concern than oxybenzone; some endocrine concern but less studied",
     "TCS_Evaluator_Flag": "Yes",
     "Data_Confidence": "High",
-    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge",
+    "Verification_Notes": "Core regulatory status verified against EU CosIng and India CR 2020 sources; extended jurisdiction data added from general cosmetic regulatory knowledge. Pregnancy caution removed 2026-11-02: the earlier text is not in the sources cited. SCCS/1660/23 (final, adopted 27 March 2024) found benzophenone-4 safe as a UV filter up to 5% (total dermal aggregate exposure) with the endocrine concern weighed; its OECD 422 study (gavage up to 1250 mg/kg/day from before mating through gestation and lactation) found no effect on pregnancy rate, litter size, pup survival or pup abnormalities, though the SCCS noted deviations from the test guideline. Key_Safety_Notes ('some endocrine concern but less studied') was left as written",
     "Source_Reference": "EU Annex VI; endocrine monitoring",
-    "Last_Updated": "2026-05-12"
+    "Last_Updated": "2026-11-02"
   },
   {
     "INCI_Name": "Palmitoyl Proline",
