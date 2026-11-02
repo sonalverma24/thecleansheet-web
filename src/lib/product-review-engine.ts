@@ -6,6 +6,7 @@
    claim evidence, formula overreach). The LLM researches; code decides.
 ──────────────────────────────────────────────────────────────── */
 
+import { createHash } from "node:crypto";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
@@ -713,6 +714,32 @@ export type ProductReviewResult =
    invalidateReviewCache for an immediate refresh. */
 const REVIEW_CACHE = new Map<string, { result: ProductReviewResult; at: number }>();
 const REVIEW_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min, matches the page's ISR revalidate
+
+/* Analyses that are returned but never saved (a pasted ingredient list; a result the model could only title with a
+   placeholder) are remembered here for the same five minutes, so the same paste is instant. They are deliberately NOT in
+   REVIEW_CACHE. That map is what getStored() reads, and getStored() backs the /analysis page, the de-dupe passes and
+   retryStoredReviewImage(), which writes whatever it is given into product_reviews. The name the model chose for a pasted
+   list is not a product's address: kept under it, the first person's analysis could be served to a second paste, or saved
+   by a later typed query. This map is keyed on the text the person pasted, and only runProductReview reads it, so an
+   unsaved analysis cannot be reached by any product slug. */
+const UNSAVED_CACHE = new Map<string, { result: ProductReviewResult; at: number }>();
+const UNSAVED_CACHE_MAX = 50; // the key is whatever a visitor pastes, so the map is bounded; the oldest entry goes first
+const unsavedKey = (q: string): string => createHash("sha256").update(q.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim()).digest("hex");
+
+function getUnsaved(q: string): ProductReviewResult | null {
+  const hit = UNSAVED_CACHE.get(unsavedKey(q));
+  return hit && Date.now() - hit.at < REVIEW_CACHE_TTL_MS ? hit.result : null;
+}
+
+function rememberUnsaved(q: string, result: ProductReviewResult): void {
+  const now = Date.now();
+  for (const [key, entry] of UNSAVED_CACHE) if (now - entry.at >= REVIEW_CACHE_TTL_MS) UNSAVED_CACHE.delete(key);
+  const key = unsavedKey(q);
+  UNSAVED_CACHE.delete(key); // re-insert so the map stays in order of when each entry was made
+  while (UNSAVED_CACHE.size >= UNSAVED_CACHE_MAX) UNSAVED_CACHE.delete(UNSAVED_CACHE.keys().next().value as string);
+  UNSAVED_CACHE.set(key, { result, at: now });
+}
+
 /* Bump when the rubric/verdict logic changes so stale stored reviews are not served. */
 export const RUBRIC_REV = "r7"; // r7: total code-summed from sections + claimEvidence capped to the finished-product evidence actually in claimMap + approval requires a retrieved INCI; r6: 4-tier stamp rename + code-verified hard-flag guardrails
 /** Revisions a stored review may carry and still be served. A row is served when its `rubric_rev` is in
@@ -1201,6 +1228,12 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const q = query.trim();
   if (!q) return { type: "error" };
 
+  // The same pasted list (or typed text) asked again within minutes: it was analysed but not saved, so it is not in the repository to be found there.
+  if (!isURL(q)) {
+    const unsaved = getUnsaved(q);
+    if (unsaved) return servedAsStored(withFreshVerdict(unsaved));
+  }
+
   // ── Resolve the product to ONE canonical identity ──
   // Name queries: resolve on INCIDecoder (ambiguous → ask, don't guess).
   // URLs: scrape the page, take its product name, then resolve the same way.
@@ -1564,8 +1597,9 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   const result: ProductReviewResult = { type: "product-review", review, verdict };
   // Persist to the repository (which feeds the /brands directory grid) only for an
-  // identified product. An unidentified INCI-only scan is cached in-process so a
-  // repeat paste this session is instant, but it never reaches the directory DB.
+  // identified product. An unidentified INCI-only scan is remembered in-process, apart
+  // from the saved reviews and under the text that was pasted, so a repeat paste is
+  // instant but it never reaches the directory DB or any product's page.
   if (productIdentified) {
     await store(canonicalSlug, result);
     // The pages that show analyses are ISR-cached for 5 minutes; refresh them now so a fresh analysis shows up
@@ -1573,7 +1607,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // on the very next visit instead of after the window (see site-refresh.ts). Best-effort, never blocks.
     refreshAfterNewAnalysis(canonicalSlug);
   } else {
-    REVIEW_CACHE.set(canonicalSlug, { result, at: Date.now() });
+    rememberUnsaved(q, result);
   }
   return result;
 }
