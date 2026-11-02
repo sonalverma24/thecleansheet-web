@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { ALL_BRANDS } from "@/data/brands";
 
 // POST /api/admin/seed - seeds all brand + product data from TypeScript files into Supabase.
-// Protected by ADMIN_BOOTSTRAP_TOKEN.
+// Admin only: the caller must be signed in with an email on the ADMIN_EMAILS allowlist.
+// No shared secret is read from the request body, so nothing in the browser bundle can open it.
 // Safe to re-run: uses upsert on slug.
 
-export async function POST(req: NextRequest) {
-  const { token } = await req.json().catch(() => ({}));
-  if (token !== process.env.ADMIN_BOOTSTRAP_TOKEN) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+export async function POST() {
+  const auth = await requireAdmin();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.status === 401 ? "Unauthorized" : "Forbidden" }, { status: auth.status });
   }
+  console.info(`[Admin Seed] ${auth.email} started a seed run`);
 
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const db = createAdminClient();
 
   const log: string[] = [];
   let brandCount   = 0;
