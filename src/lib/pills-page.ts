@@ -288,9 +288,12 @@ function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
     const reviewed = check.evidenceStatus === "Evidence visible" && check.decision === "Publicly supported";
     const contradicted = check.evidenceStatus === "Evidence visible" && check.decision === "Not publicly supported";
     // Short on purpose: the chip is a keyword. The note and the source stay in `detail`, and the Claim check block has the full story.
-    const claimLabel = reviewed ? `${label}: supported` : contradicted ? `${label}: not supported` : `${label}: brand claim`;
+    // A vegan claim is "not supported" under a cross only when our own screen has verified an animal-only ingredient (owner decision, 2026-11-01).
+    // A model's reading that the list contradicts it rests on an origin nobody checked, so it is not drawn; the open question is listed under Gaps.
+    const unverifiedVegan = contradicted && label === "Vegan claim" && !product.veganScreen?.animalIngredients.length;
+    const claimLabel = reviewed ? `${label}: supported` : contradicted && !unverifiedVegan ? `${label}: not supported` : `${label}: brand claim`;
     const detail = [check.note, check.sourceUrl ? `Source: ${check.sourceUrl}` : ""].filter(Boolean).join(" ");
-    return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
+    return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted && !unverifiedVegan ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
   });
 }
 
@@ -302,9 +305,20 @@ function veganOriginHighlight(product: ProductScorecard): Highlight | null {
     : screen.status === "conflict" ? `Animal-origin ingredient: ${joinAnd(screen.animalIngredients)}`
     : "Vegan ingredient origin unknown";
   const sources = screen.sources.map((s) => `${s.ingredient}: ${s.source}`).join("; ");
+  const toConfirm = screen.originToConfirm.length ? ` Animal or plant not established (see Gaps): ${joinAnd(screen.originToConfirm)}.` : "";
   const unknown = screen.unknownIngredients.length ? ` Unresolved origin: ${joinAnd(screen.unknownIngredients)}.` : "";
-  const detail = [sources ? `Ingredient-origin sources: ${sources}.` : "", unknown, "This screen is separate from cruelty-free certification."].filter(Boolean).join(" ");
+  const detail = [sources ? `Ingredient-origin sources: ${sources}.` : "", toConfirm, unknown, "This screen is separate from cruelty-free certification."].filter(Boolean).join(" ");
   return { label, state, ...(detail ? { detail } : {}) };
+}
+
+/** Ingredients that may be animal-derived, where our reference does not settle it, are a gap and not a chip: what would settle it is the brand saying which source this product uses.
+    Silent for a medicine and when the ingredient list is not source-backed (the screen lists nothing then; the list itself is the gap). Owner decision, 2026-11-01. */
+export function originGapOf(screen: ProductScorecard["veganScreen"]): string | null {
+  const names = screen?.originToConfirm ?? [];
+  if (!names.length) return null;
+  const shown = names.slice(0, 5);
+  const list = names.length > shown.length ? `${shown.join(", ")} and ${names.length - shown.length} more` : joinAnd(shown);
+  return `Confirmation from the brand of whether ${list} ${names.length === 1 ? "is" : "are"} animal- or plant-derived.`;
 }
 
 /** The strip shows at most this many chips. */
@@ -520,6 +534,8 @@ export function gapsOf(d: Decision, product: ProductScorecard, review: ProductRe
   if (!medicine && d.key !== "not-enough-info") {
     const next = NEXT_RUNG[Math.min(6, Math.max(1, testLevelOf(review)))];
     if (next && !out.length) out.push(next);
+    const origin = originGapOf(product.veganScreen);
+    if (origin) out.push(origin);
   }
   return out.length ? [...new Set(out)] : ["Nothing important is missing from the public information we found."];
 }

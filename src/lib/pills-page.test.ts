@@ -532,3 +532,67 @@ describe("comedogenicity is named under 'Who should be careful' (owner decision,
     expect(cream([...BASE, "Linoleic Acid"]).fit.careful).toEqual(suitability.avoidIf);
   });
 });
+
+describe("animal or plant derived: a chip only when verified, otherwise a gap (owner decision, 2026-11-01)", () => {
+  const cream = (inci: string[], ev?: Parameters<typeof rv>[1]) => page(rv({ productName: "Barrier Cream", category: "Moisturizer", inciIngredients: inci }, ev));
+  const labels = (m: PillsPageModel) => m.highlights.map((h) => h.label);
+
+  it("an ingredient the reference leaves open between animal and plant is no chip at all; it is a line under Gaps", () => {
+    const { model: m, product } = cream([...BASE, "Cholesterol"]);
+    expect(product.veganScreen).toMatchObject({ status: "unknown", animalIngredients: [], originToConfirm: ["Cholesterol"] });
+    expect(labels(m).filter((l) => /animal|vegan/i.test(l))).toEqual([]);
+    expect(m.gaps).toContain("Confirmation from the brand of whether Cholesterol is animal- or plant-derived.");
+  });
+
+  it("an ingredient the reference states is animal-only, at high confidence with a source, stays a cross, and is not also a gap", () => {
+    const { model: m } = cream([...BASE, "Beeswax"]);
+    expect(m.highlights).toContainEqual(expect.objectContaining({ label: "Animal-origin ingredient: Beeswax", state: "no" }));
+    expect(m.gaps.join(" ")).not.toMatch(/Beeswax/);
+  });
+
+  it("a verified cross and an open question can stand together: each in its own place", () => {
+    const { model: m } = cream([...BASE, "Shellac", "Cholesterol"]);
+    expect(labels(m)).toContain("Animal-origin ingredient: Shellac");
+    expect(m.gaps).toContain("Confirmation from the brand of whether Cholesterol is animal- or plant-derived.");
+    expect(m.gaps.join(" ")).not.toMatch(/Shellac/);
+  });
+
+  it("names up to five ingredients, then counts the rest; one line, said once", () => {
+    const { model: m } = cream([...BASE, "Cholesterol", "Oleic Acid", "Stearic Acid", "Myristic Acid", "Glycine", "Lecithin", "Squalene"]);
+    const lines = m.gaps.filter((g) => /animal- or plant-derived/.test(g));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/^Confirmation from the brand of whether .+ and 2 more are animal- or plant-derived\.$/);
+  });
+
+  it("says nothing when the ingredient list is not source-backed: the list itself is the gap", () => {
+    const { model: m, product } = cream([...BASE, "Cholesterol"], evidence.model());
+    expect(product.veganScreen?.originToConfirm).toEqual([]);
+    expect(m.gaps.join(" ")).not.toMatch(/animal- or plant-derived/);
+  });
+
+  it("the chip's own note points to Gaps and names the open ingredients", () => {
+    const { model: m } = cream([...BASE, "Shellac", "Cholesterol"]);
+    expect(m.highlights.find((h) => /^Animal-origin/.test(h.label))?.detail).toMatch(/Animal or plant not established \(see Gaps\): Cholesterol\./);
+  });
+
+  describe("a 'Vegan claim: not supported' cross is the same assertion, so it needs the same proof", () => {
+    const contradicted: ClaimsCheckItem = { claim: "100% vegan", evidenceStatus: "Evidence visible", decision: "Not publicly supported", note: "The ingredient list contradicts it." };
+    const withClaim = (inci: string[]) => {
+      const review = rv({ productName: "Barrier Cream", category: "Moisturizer", inciIngredients: inci });
+      const { product } = reviewToScorecard(review, deriveVerdict(review));
+      const p = { ...product, claimsCheck: [contradicted] };
+      return buildPillsPage(review, p, NOW, decideReview(review, NOW));
+    };
+
+    it("is not drawn when no ingredient is verified animal-only (the model's reading rests on an origin nobody checked)", () => {
+      const m = withClaim([...BASE, "Cholesterol"]);
+      expect(labels(m).filter((l) => /vegan/i.test(l))).toEqual([]);
+      expect(m.gaps).toContain("Confirmation from the brand of whether Cholesterol is animal- or plant-derived.");
+    });
+
+    it("is drawn when a listed ingredient is verified animal-only", () => {
+      const m = withClaim([...BASE, "Beeswax"]);
+      expect(m.highlights).toContainEqual(expect.objectContaining({ label: "Vegan claim: not supported", state: "no" }));
+    });
+  });
+});

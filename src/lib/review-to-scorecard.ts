@@ -93,36 +93,43 @@ function retinoidFlag(ingredient: string): PregnancyIngredientFlag | null {
   return { ingredient, restriction: "A retinoid; generally advised against during pregnancy.", source: vitaminA.source, confidence: confidence as "high" | "medium" };
 }
 
-/** Origin text that names an animal source. "Milk thistle" is a plant, so "milk" does not count when it is followed by "thistle". */
-const ANIMAL_ORIGIN_RE = /animal[- ]derived|animal origin|dairy|milk(?! thistle)|whey|beeswax|lanolin|carmine|shellac|silk|collagen|keratin|snail|fish|crustacean/;
+/** Origin text that names an animal source anywhere in it: the word "animal" ("Animal (honeybee)", "Synthetic / Animal-derived") or a named animal material.
+    "Milk thistle" is a plant, so "milk" does not count when it is followed by "thistle". */
+const ANIMAL_ROUTE_RE = /\banimal\b|shellfish|dairy|milk(?! thistle)|whey|beeswax|lanolin|carmine|shellac|silk|collagen|keratin|snail|fish|crustacean/;
 /** A route by which the same ingredient is also made without an animal: its origin depends on the supplier. */
 const OTHER_ROUTE_RE = /\b(?:plant|botanical|vegetable|synthetic|microbial|ferment(?:ation)?|biotech\w*|yeast|mineral|inorganic)\b/;
 
-/** An ingredient is shown as animal-origin only when its reference origin names an animal source and no other route ("Animal (silkworm)", "Animal-derived (insect secretion)").
-    Where the reference says it can be animal OR plant/synthetic/biotech ("Animal (lanolin) / Biotechnological" for Cholesterol), which route this product's supplier uses
-    is not stated, so the origin is unresolved: neither a tick nor a cross. */
+/** The screen sorts every named ingredient into one of four places. Owner decision, 2026-11-01: "unless explicitly mentioned it's animal ingredient and verified, we shall never
+    show this under a pill ... it can go under gaps - to show whether it is animal or plant derived."
+      animalIngredients   the only ones drawn as a cross: the reference row is high-confidence, sourced, names an animal source and no other route, and its vegan column is not "Yes";
+      originToConfirm     may be animal and may not: the row names an animal route beside a plant, synthetic or biotech one ("Animal (lanolin) / Biotechnological" for Cholesterol),
+                          or names one at lower confidence, or its own vegan column is not a plain "Yes" ("No", "Depends on source", "Yes, if ..."). No chip, no tick: it is listed under Gaps;
+      resolved            a sourced, high-confidence non-animal origin and a vegan "Yes": counts toward the tick, listed nowhere;
+      unknownIngredients  no usable row, or nothing in it that raises the question: not drawn and not listed as a gap (the reference-coverage gap already says so). */
 export function buildVeganScreen(ingredients: string[], reliableList: boolean): VeganScreen {
-  if (!reliableList) return { status: "unknown", animalIngredients: [], unknownIngredients: ingredients, sources: [] };
+  if (!reliableList) return { status: "unknown", animalIngredients: [], originToConfirm: [], unknownIngredients: ingredients, sources: [] };
   const animalIngredients: string[] = [];
+  const originToConfirm: string[] = [];
   const unknownIngredients: string[] = [];
   const sources: VeganScreen["sources"] = [];
   for (const name of ingredients) {
     const row = lookupIngredient(name);
-    if (!row || !rowLooksValid(row) || !row.Source_Reference.trim() || !/^high$/i.test(row.Data_Confidence ?? "")) {
+    if (!row || !rowLooksValid(row) || !row.Source_Reference.trim()) {
       unknownIngredients.push(name);
       continue;
     }
-    sources.push({ ingredient: name, source: row.Source_Reference });
+    const high = /^high$/i.test(row.Data_Confidence ?? "");
+    if (high) sources.push({ ingredient: name, source: row.Source_Reference });
     const origin = row.Ingredient_Origin.toLowerCase();
-    if (ANIMAL_ORIGIN_RE.test(origin)) {
-      (OTHER_ROUTE_RE.test(origin) ? unknownIngredients : animalIngredients).push(name);
-      continue;
-    }
+    const vegan = row.Vegan.trim();
+    const animalRoute = ANIMAL_ROUTE_RE.test(origin);
+    if (high && animalRoute && !OTHER_ROUTE_RE.test(origin) && !/^yes$/i.test(vegan)) { animalIngredients.push(name); continue; }
+    if (animalRoute || (vegan !== "" && !/^yes$/i.test(vegan))) { originToConfirm.push(name); continue; }
     const nonAnimal = /\b(?:plant|botanical|vegetable|synthetic|microbial|ferment(?:ation)?|mineral|inorganic)\b/.test(origin);
-    if (!nonAnimal || !/^yes$/i.test(row.Vegan.trim())) unknownIngredients.push(name);
+    if (!high || !nonAnimal || !/^yes$/i.test(vegan)) unknownIngredients.push(name);
   }
-  const status = animalIngredients.length ? "conflict" : unknownIngredients.length || !ingredients.length ? "unknown" : "screened";
-  return { status, animalIngredients, unknownIngredients, sources };
+  const status = animalIngredients.length ? "conflict" : unknownIngredients.length || originToConfirm.length || !ingredients.length ? "unknown" : "screened";
+  return { status, animalIngredients, originToConfirm, unknownIngredients, sources };
 }
 
 function guessProductType(category: string): ProductScorecard["productType"] {
