@@ -30,7 +30,9 @@ function sourceOf(url: string | undefined, trust: Trust, hasList: boolean): List
   if (url && /(?:inci|inkee)decoder\.com/i.test(url)) return "incidecoder";
   if (trust >= 5) return "pack";
   if (trust === 4) return "brand_page";
-  if (trust === 2) return "retailer";
+  // A retailer page read by code with its quote captured is trust 3 (a Nykaa list, owner decision 2026-10-30); a retailer address alone is trust 2.
+  // Both are a retailer page, not "our own reading of the page", which is the model's transcription at trust 1.
+  if (trust === 2 || trust === 3) return "retailer";
   return "model";
 }
 

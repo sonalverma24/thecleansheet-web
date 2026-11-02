@@ -595,6 +595,8 @@ describe("animal or plant derived: a chip only when verified, otherwise a gap (o
       const m = withClaim([...BASE, "Beeswax"]);
       expect(m.highlights).toContainEqual(expect.objectContaining({ label: "Vegan claim: not supported", state: "no" }));
     });
+  });
+});
 
 describe("when sources disagree on the ingredient list, the page says so (owner decision, 2026-10-30)", () => {
   const faq = (m: PillsPageModel) => m.faq.find((f) => f.q === "How recent is this analysis?")?.a;
@@ -616,5 +618,14 @@ describe("when sources disagree on the ingredient list, the page says so (owner 
     const m = page(fromNykaa()).model;
     expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. We re-check analyses older than six months.");
     expect(m.highlights.map((h) => h.label)).toEqual(expect.arrayContaining(["Fragrance free", "Paraben free"]));
+  });
+});
+
+describe("a Nykaa list is named as a retailer page (source label, 2026-11-01)", () => {
+  it("the confidence sentence says the list comes from a retailer page, not from 'our own reading of the page'", () => {
+    const nykaa = makeInciEvidence("https://www.nykaa.com/test/p/123", "Aqua, Glycerin, Niacinamide, Phenoxyethanol", "2026-10-20T00:00:00.000Z", undefined, false, { trust: 3, origin: "nykaa" });
+    const { model: m } = page(rv({ productName: "Test Gel", category: "Moisturizer" }, nykaa));
+    expect(m.take.confidence.sentence).toMatch(/the ingredient list comes from a retailer page/);
+    expect(sentences(m).join(" ")).not.toMatch(/our own reading of the page/);
   });
 });
