@@ -39,7 +39,7 @@ vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => u
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
 
-import { runProductReview } from "@/lib/product-review-engine";
+import { getStoredReview, runProductReview } from "@/lib/product-review-engine";
 
 const modelSays = (over: Parameters<typeof makeReview>[0] = {}) => ({ text: JSON.stringify(makeReview(over)), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
 const page = (title: string) => `Title: ${title}\n\n${"This is the product page. ".repeat(20)}`;
@@ -98,9 +98,8 @@ describe("runProductReview: a pasted ingredient list", () => {
   });
 });
 
-/* The in-process review cache outlives a test, and an unsaved result is cached under the name the model gave it, so each case gives the model a name of its own. */
-let named = 0;
-const inventedName = () => modelSays({ productName: `Glow Lab Hydrating Gel Cream ${++named}`, brand: "Glow Lab" });
+/* The in-process cache outlives a test. An unsaved result is remembered under the text it came from, never under the name the model gave it, so every case below pastes or types text of its own, and the model may give them all the same name. */
+const inventedName = () => modelSays({ productName: "Glow Lab Hydrating Gel Cream", brand: "Glow Lab" });
 
 describe("runProductReview: a pasted ingredient list, whatever separates its items", () => {
   const LIST = ["Aqua", "Glycerin", "Niacinamide", "Sodium Hyaluronate", "Panthenol", "Allantoin", "Phenoxyethanol"];
@@ -125,6 +124,7 @@ describe("runProductReview: a pasted ingredient list, whatever separates its ite
 });
 
 describe("runProductReview: a typed product name", () => {
+  let typedQueries = 0; // a result that is not saved is remembered under the text it came from, so each case types its own
   it("is saved when the model names the product", async () => {
     h.generate.mockResolvedValue(modelSays({ productName: "Cetaphil Gentle Skin Cleanser", brand: "Cetaphil" }));
     const out = await runProductReview("Cetaphil Gentle Skin Cleanser");
@@ -139,8 +139,108 @@ describe("runProductReview: a typed product name", () => {
     ["no brand", { productName: "Glow Lab Night Cream", brand: "" }],
   ])("is returned but not saved when the model gives %s", async (_label, over) => {
     h.generate.mockResolvedValue(modelSays(over));
-    const out = await runProductReview("night cream formula");
+    const out = await runProductReview(`night cream formula ${++typedQueries}`);
     expect(out.type).toBe("product-review");
     expect(savedReviews()).toEqual([]);
+  });
+});
+
+/* A pasted list is analysed for the person who pasted it. The engine keeps that result for a few minutes so the same
+   paste is instant, but it must stay apart from the saved reviews: the name the model chose for it is not a product's
+   address, so no other paste, no typed query and no /analysis page may be served it, and nothing may write it to the
+   repository. The leak needs a brand page found for the model's name (the list is then non-empty, so the saved-review
+   reader treats it as a real stored review), which is what brandPageFound sets up. The cache outlives a test, and a typed
+   name does get saved, so every case below has a product of its own. */
+describe("runProductReview: an analysis that is not saved stays out of the saved reviews", () => {
+  const LIST = ["Aqua", "Glycerin", "Niacinamide", "Panthenol", "Allantoin", "Tocopherol"];
+  const pasteOf = (...extra: string[]) => [...LIST, ...extra].join(", ");
+  let products = 0;
+  /** A product the model will name, the page the brand is said to publish for it, and the words a shopper would type to find it. */
+  const newProduct = () => {
+    const productName = `Hydrating Gel Cream ${++products}`;
+    h.brandInci.mockResolvedValue({ ingredients: LIST, quote: LIST.join(", "), source: `https://glowlab.example.test/products/gel-cream-${products}`, pageTitles: [productName] });
+    return {
+      says: (heroPromise: string) => modelSays({ productName, brand: "Glow Lab", heroPromise }),
+      slug: `glow-lab-hydrating-gel-cream-${products}`,
+      typed: `Glow Lab ${productName}`,
+    };
+  };
+  const heroOf = (out: Awaited<ReturnType<typeof runProductReview>>) => (out.type === "product-review" ? out.review.heroPromise : out.type);
+
+  beforeEach(() => { h.brandInci.mockReset(); });
+
+  it("never serves one person's pasted-list analysis to a different paste the model names the same way", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValueOnce(product.says("first person"));
+    const first = await runProductReview(pasteOf("Squalane"));
+    h.generate.mockResolvedValueOnce(product.says("second person"));
+    const second = await runProductReview(pasteOf("Ceramide NP"));
+    expect(h.generate).toHaveBeenCalledTimes(2);
+    expect(heroOf(first)).toBe("first person");
+    expect(heroOf(second)).toBe("second person");
+    expect(savedReviews()).toEqual([]);
+  });
+
+  it("does not answer, or write to the repository, a later typed query that spells the name the model chose", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValueOnce(product.says("from the pasted list"));
+    await runProductReview(pasteOf("Bisabolol"));
+    expect(savedReviews()).toEqual([]);
+
+    h.generate.mockResolvedValueOnce(product.says("from the typed name"));
+    const typed = await runProductReview(product.typed);
+    expect(h.generate).toHaveBeenCalledTimes(2); // the typed query was analysed afresh, not served the pasted list's analysis
+    expect(heroOf(typed)).toBe("from the typed name");
+    expect(savedReviews().map((row) => (row.result as { review: { heroPromise: string } }).review.heroPromise)).toEqual(["from the typed name"]);
+  });
+
+  it("is not served by the product page lookup under the name the model chose", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValueOnce(product.says("pasted"));
+    await runProductReview(pasteOf("Allantoin Extract"));
+    expect(await getStoredReview(product.slug)).toBeNull();
+    expect(await getStoredReview(product.slug, { strict: true })).toBeNull();
+  });
+
+  it("answers an identical repeat paste without asking the model again, and still saves nothing", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValue(product.says("pasted twice"));
+    const paste = pasteOf("Beta-Glucan");
+    const first = await runProductReview(paste);
+    const again = await runProductReview(`  ${paste.toUpperCase()}\n`); // same text up to case and spacing
+    expect(h.generate).toHaveBeenCalledTimes(1);
+    expect(heroOf(first)).toBe("pasted twice");
+    expect(heroOf(again)).toBe("pasted twice");
+    expect(savedReviews()).toEqual([]);
+  });
+
+  it("remembers a pasted list for five minutes only", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValue(product.says("remembered"));
+    const paste = pasteOf("Madecassoside");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      await runProductReview(paste);
+      vi.setSystemTime(Date.now() + 4 * 60 * 1000);
+      await runProductReview(paste);
+      expect(h.generate).toHaveBeenCalledTimes(1);
+      vi.setSystemTime(Date.now() + 2 * 60 * 1000);
+      await runProductReview(paste);
+      expect(h.generate).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps at most a few dozen pasted lists in memory, dropping the oldest", async () => {
+    const product = newProduct();
+    h.generate.mockResolvedValue(product.says("bounded"));
+    const pastes = Array.from({ length: 60 }, (_, i) => pasteOf(`Plant Extract ${i}`));
+    for (const paste of pastes) await runProductReview(paste);
+    expect(h.generate).toHaveBeenCalledTimes(60);
+    await runProductReview(pastes[59]); // newest: still remembered
+    expect(h.generate).toHaveBeenCalledTimes(60);
+    await runProductReview(pastes[0]); // oldest: dropped
+    expect(h.generate).toHaveBeenCalledTimes(61);
   });
 });
