@@ -30,6 +30,8 @@ export type ReviewRunOutcome =
   | { kind: "disambig"; query: string; options: { name: string }[] }
   /** A nutraceutical or a prescription drug: there is no review, so the UI shows a popup instead of opening a page. */
   | { kind: "unrated"; unrated: UnratedKind; productName: string; brand: string }
+  /** A brand alone, or a kind of product: we ask which product, and offer the brand's analysed products when we hold any. Nothing was analysed. */
+  | { kind: "needs-product"; query: string; brand: string | null; suggestions: { name: string; slug: string }[] }
   | { kind: "auth" }
   | { kind: "error"; error: ReviewRunError };
 
@@ -44,12 +46,17 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
     brand?: string;
     query?: string;
     options?: { name: string }[];
+    suggestions?: { name?: unknown; slug?: unknown }[];
     review?: { productSlug?: string };
   };
   if (status === 503 || d.error === "busy") return { kind: "error", error: "busy" };
   if (d.type === "product-review" && d.review?.productSlug) return { kind: "done", slug: d.review.productSlug };
   if (d.type === "disambiguation" && Array.isArray(d.options) && d.options.length) {
     return { kind: "disambig", query: d.query ?? query, options: d.options };
+  }
+  if (d.type === "needs-product") {
+    const suggestions = (Array.isArray(d.suggestions) ? d.suggestions : []).flatMap((x) => (typeof x?.name === "string" && typeof x?.slug === "string" && x.name && x.slug ? [{ name: x.name, slug: x.slug }] : []));
+    return { kind: "needs-product", query: d.query ?? query, brand: typeof d.brand === "string" && d.brand ? d.brand : null, suggestions };
   }
   if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug" || d.kind === "drug") && d.productName) {
     return { kind: "unrated", unrated: d.kind, productName: d.productName, brand: d.brand ?? "" };

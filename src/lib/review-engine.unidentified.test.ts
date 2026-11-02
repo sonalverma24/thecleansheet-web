@@ -63,7 +63,7 @@ describe("runDeepScan: what joins the verified registry", () => {
     ["an unknown brand", { productName: "Glow Lab Night Cream", brand: "Unknown" }],
   ])("returns the analysis but registers nothing when the model gives %s", async (_label, over) => {
     h.generate.mockResolvedValue(scorecard(over));
-    const out = await runDeepScan("night cream formula", null);
+    const out = await runDeepScan("Glow Lab Night Cream", null);
     expect(out.type).toBe("single");
     expect(h.upsert).not.toHaveBeenCalled();
   });

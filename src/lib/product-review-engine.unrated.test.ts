@@ -110,7 +110,7 @@ describe("runProductReview", () => {
 
   it("still reviews and stores a cosmetic", async () => {
     h.generate.mockResolvedValueOnce(model({ productName: "Alpha Cleanser", category: "Face Wash" }));
-    const out = await runProductReview("Alpha Cleanser");
+    const out = await runProductReview("Acme Alpha Cleanser");
     expect(out.type).toBe("product-review");
     expect(h.upserts).toHaveLength(1);
   });

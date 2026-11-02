@@ -20,6 +20,8 @@ import { validateScorecard, computeVerdict, computeClaimIntegrity, METHODOLOGY_V
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
 import { IDENTITY_PLACEHOLDER } from "@/lib/product-identity";
 import { looksLikeInciList } from "@/lib/inci-paste";
+import { getBrandCatalogue, knownBrandNames } from "@/lib/brand-catalogue";
+import { brandTyped, namesStoredProduct, queryNamesNoProduct, resultNamesNoProduct, type NeedsProductResult, type NoSpecificProduct } from "@/lib/specific-product";
 import { resolveProductImage, imageFromMarkdown, searchProductImage } from "@/lib/product-image";
 import type {
   CheckedClaim, ClaimCheckResult, Scorecard, ComparisonResult, ExpertAnswer, FinalVerdict,
@@ -358,7 +360,20 @@ export type DeepScanResult =
   | { type: "comparison"; comparison: ComparisonResult }
   | { type: "answer"; answer: ExpertAnswer }
   | { type: "unidentified" }
+  /** A search that is only a brand, or a kind of product: the person is asked which product. Nothing is scored or registered (see specific-product.ts). */
+  | NeedsProductResult
   | { type: "out_of_scope" };
+
+/** The search, when it is only `brand` (or `brand` and a kind of product). The "kind of product only" reading was decided before the model was asked and is not decided again here. */
+const brandOnlyQuery = (q: string, brand: string): NoSpecificProduct | null => {
+  const names = queryNamesNoProduct(q, [brand]);
+  return names?.reason === "brand-only" ? names : null;
+};
+
+/** The question that stands in for a scorecard when the search named no product. Nothing here is saved or registered; this older engine has no repository of analyses to suggest from. */
+function needsProduct(no: NoSpecificProduct, q: string): NeedsProductResult {
+  return { type: "needs-product", query: q, brand: brandTyped(no, q), suggestions: [] };
+}
 
 /** Runs Layer 2 (or comparison/expert path). Throws TransientModelError when the model is unavailable. */
 export async function runDeepScan(query: string, claimFindings: Compact): Promise<DeepScanResult> {
@@ -387,6 +402,14 @@ export async function runDeepScan(query: string, claimFindings: Compact): Promis
   const kind = classifyQuery(urlInput || q);
   const isExpert = !urlInput && kind === "question";
   const isComparison = !urlInput && !isExpert && kind === "comparison";
+
+  // A search that is only a brand ("Cetaphil") or a kind of product ("Sunscreen") asks which product, before the model is asked: left to it, it names a product of its own,
+  // and that was registered. A question or a comparison is not a search for one product, and a search that is exactly the name of a product we hold goes on.
+  if (!urlInput && kind === "product" && !looksLikeInciList(q)) {
+    const held = await getBrandCatalogue();
+    const names = queryNamesNoProduct(q, knownBrandNames(held));
+    if (names && !namesStoredProduct(q, held.rows)) return needsProduct(names, q);
+  }
 
   const systemInstruction = isComparison
     ? COMPARISON_SYSTEM_PROMPT
@@ -477,6 +500,12 @@ ${scrapedContext}`;
   if (!isValidScorecard(parsed as Record<string, unknown>)) return { type: "out_of_scope" };
 
   const scorecard = validateScorecard(parsed as Scorecard, claimFindings);
+  // The model may answer a search that names no product with one of its own making: the brand again as the product, or the brand and a kind of product, or (a brand we do
+  // not know) a search that is only the brand it returned. That names no product, so it is neither shown nor registered: the person is asked which product they mean.
+  if (urlInput || !looksLikeInciList(query)) {
+    const names = resultNamesNoProduct(scorecard.productName, scorecard.brand ?? "") ?? (urlInput ? null : brandOnlyQuery(q, scorecard.brand ?? ""));
+    if (names) return urlInput ? { type: "unidentified" } : needsProduct(names, q);
+  }
   if (urlInput && ((identityPlaceholder(sourceIdentityHint) && !hasDescriptiveProductPath(urlInput)) ||
     identityPlaceholder(scorecard.productName) || identityPlaceholder(scorecard.brand))) {
     return { type: "unidentified" };
@@ -525,6 +554,7 @@ export async function runFullReview(query: string): Promise<ReviewResult> {
   const deep = await runDeepScan(query, cf);
 
   if (deep.type === "unidentified") return { kind: "unidentified" };
+  if (deep.type === "needs-product") return { kind: "out_of_scope" }; // nothing calls this pipeline; the search routes ask the person instead
 
   if (deep.type === "single") {
     const result: ReviewResult = { kind: "product", claimCheck, claimLayerDown, scorecard: deep.scorecard, verdict: deep.verdict };

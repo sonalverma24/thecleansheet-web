@@ -26,6 +26,7 @@ export type ReviewRunnerState =
   | { phase: "running"; query: string; stepIdx: number }
   | { phase: "disambig"; query: string; options: { name: string }[] }
   | { phase: "unrated"; unrated: UnratedKind; productName: string; brand: string }
+  | { phase: "needs-product"; query: string; brand: string | null; suggestions: { name: string; slug: string }[] }
   | { phase: "error"; error: ReviewRunError };
 
 export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) {
@@ -78,6 +79,9 @@ export function useReviewRunner({ autoRun = true }: { autoRun?: boolean } = {}) 
           askToSignIn(text);
         } else if (outcome.kind === "disambig") {
           setState({ phase: "disambig", query: outcome.query, options: outcome.options });
+        } else if (outcome.kind === "needs-product") {
+          track("review_needs_product", { brand: outcome.brand });
+          setState({ phase: "needs-product", query: outcome.query, brand: outcome.brand, suggestions: outcome.suggestions });
         } else if (outcome.kind === "unrated") {
           setState({ phase: "unrated", unrated: outcome.unrated, productName: outcome.productName, brand: outcome.brand });
         } else {

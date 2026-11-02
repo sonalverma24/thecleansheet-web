@@ -20,6 +20,8 @@ import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
 import { isSameProduct, titleIdentifiesProduct, IDENTITY_PLACEHOLDER } from "@/lib/product-identity";
 import { looksLikeInciList } from "@/lib/inci-paste";
+import { getBrandCatalogue, knownBrandNames, suggestionsFor, type BrandCatalogue } from "@/lib/brand-catalogue";
+import { brandTyped, namesStoredProduct, queryNamesNoProduct, resultNamesNoProduct, type NeedsProductResult, type NoSpecificProduct } from "@/lib/specific-product";
 import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
 import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -699,6 +701,8 @@ export type ProductReviewResult =
   | { type: "unrated"; kind: UnratedKind; productName: string; brand: string }
   /** A URL that did not establish which product it is (an error page, a bare store link). Never stored, never listed. */
   | { type: "unidentified" }
+  /** A search that is only a brand, or a kind of product ("Cetaphil", "Sunscreen"): the person is asked which product. Nothing is analysed, stored or listed (see specific-product.ts). */
+  | NeedsProductResult
   | { type: "out_of_scope" }
   | { type: "error" };
 
@@ -834,6 +838,27 @@ export async function getUnratedSlugs(): Promise<Map<string, UnratedKind>> {
   }
   UNRATED_SLUGS = { at: Date.now(), kinds };
   return kinds;
+}
+
+/** The search, when it is only `brand` (or `brand` and a kind of product). The "kind of product only" reading was decided before the model was asked and is not decided again here. */
+const brandOnlyQuery = (q: string, brand: string): NoSpecificProduct | null => {
+  const names = queryNamesNoProduct(q, [brand]);
+  return names?.reason === "brand-only" ? names : null;
+};
+
+/* A search that names no specific product (a brand alone, a kind of product: see specific-product.ts) is answered with a question, not an analysis: which product?
+   The brand is named in it only when the person typed it, never a brand the model chose. When we hold analyses of that brand they are offered, but only
+   those the product page would serve (current rubric, not retracted, a cosmetic). Nothing here writes anything. */
+async function needsProductResult(no: NoSpecificProduct, q: string, catalogue?: BrandCatalogue): Promise<NeedsProductResult> {
+  const held = catalogue ?? (await getBrandCatalogue());
+  const brand = brandTyped(no, q);
+  const unrated = brand ? await getUnratedSlugs() : null;
+  return {
+    type: "needs-product",
+    query: q,
+    brand,
+    suggestions: suggestionsFor(held, brand, (row) => isAcceptedRubricRev(row.rubricRev) && !RETRACTED_SLUGS.has(row.slug) && !unrated?.has(row.slug)),
+  };
 }
 
 /* Verdict logic lives in code, so always re-derive it when serving a stored
@@ -1228,6 +1253,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   const q = query.trim();
   if (!q) return { type: "error" };
 
+  // A search that is only a brand ("Cetaphil") or a kind of product ("Sunscreen") asks which product, before anything is looked up, analysed or saved: left to the model it
+  // names a product of its own ("M .Y Sunscreen"), and that was saved and listed. The exception is a search that is exactly the name of a product we hold.
+  if (!isURL(q) && !looksLikeInciList(q)) {
+    const held = await getBrandCatalogue();
+    const names = queryNamesNoProduct(q, knownBrandNames(held));
+    if (names && !namesStoredProduct(q, held.rows)) return needsProductResult(names, q, held);
+  }
+
   // The same pasted list (or typed text) asked again within minutes: it was analysed but not saved, so it is not in the repository to be found there.
   if (!isURL(q)) {
     const unsaved = getUnsaved(q);
@@ -1412,6 +1445,20 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      too (a stored review keeps neither, so later checks read only its name, category and listing notes). */
   const notACosmetic = unratedResultOf(review, { pageText: `${capturedPageText}\n${evidenceBlock}`, labelText: labelRead.labelText });
   if (notACosmetic) return notACosmetic;
+
+  /* The model may answer a search that names no product with one of its own making: the brand again as the product ("Cetaphil" by Cetaphil), or the brand and a kind of
+     product ("Cetaphil Cleanser"), or, when the brand is unknown to us, a search that is only the brand it returned ("Brinton"). Such a result names no product, so it is not
+     shown, saved or listed: the person is asked which product they mean (a link that did not establish its product is "unidentified", as before). A pasted ingredient list has
+     no product by design and goes on to be shown unsaved, below. The ask is remembered for five minutes so the same search does not ask the model again. */
+  if (isURL(q) || inci || !looksLikeInciList(q)) {
+    const names = resultNamesNoProduct(review.productName, review.brand) ?? (isURL(q) || inci ? null : brandOnlyQuery(q, review.brand));
+    if (names) {
+      if (isURL(q)) return { type: "unidentified" };
+      const ask = await needsProductResult(names, q);
+      rememberUnsaved(q, ask);
+      return ask;
+    }
+  }
 
   /* Guardrail 2 (corroboration): verify that each claim we might penalise the
      brand for is genuinely present in a source we actually read. A red-flag /

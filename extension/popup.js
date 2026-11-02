@@ -246,6 +246,12 @@ function render(data, query) {
       if (Array.isArray(data.options) && data.options.length)
         return showDisambiguation(data.query || query, data.options);
       return showMessage("Something went wrong", "Please try again.");
+    case "needs-product":
+      // A brand alone, or a kind of product: nothing was analysed. The same words as the site (MESSAGES.needsProduct in src/lib/analyser-x/copy.ts).
+      return showMessage(
+        data.brand ? `Which ${data.brand} product do you mean?` : "Which product do you mean?",
+        data.brand ? "Paste its name or link." : "Paste its name, with the brand, or its link."
+      );
     case "out_of_scope":
       return showMessage(
         "Not a beauty product",

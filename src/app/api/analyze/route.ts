@@ -7,6 +7,7 @@
 import { runDeepScan, compactClaimFindings } from "@/lib/review-engine";
 import { TransientModelError, busyResponse } from "@/lib/gemini";
 import { rateLimit, rateLimited } from "@/lib/rate-limit";
+import { MESSAGES } from "@/lib/analyser-x/copy";
 
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
@@ -32,6 +33,9 @@ export async function POST(req: Request) {
     }
     if (result.type === "answer") {
       return Response.json({ type: "answer", answer: result.answer });
+    }
+    if (result.type === "needs-product") {
+      return Response.json({ ...result, message: `${MESSAGES.needsProduct(result.brand)} ${MESSAGES.needsProductHint(result.brand)}` });
     }
     if (result.type === "unidentified") {
       return Response.json({ type: "unidentified", message: "I couldn't identify the product from this URL, so I haven't saved it." });
