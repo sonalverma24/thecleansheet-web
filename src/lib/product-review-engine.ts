@@ -8,6 +8,7 @@
 
 import { createHash } from "node:crypto";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
+import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -1416,6 +1417,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      computed, so a rebrand (Minimalist → Be Minimalist) can't store the same
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
+
+  /* Only the claims on the brand's own website are checked (owner rule, 2026-11-02). The prompt asks for that; this is the backstop for a label that cites only a
+     retailer, a reseller or a reviewer. The counts go into the research log so a product whose brand page gave no claims reads "claims not examined", not "no claims". */
+  review = withBrandWebsiteClaimsOnly(review).review;
 
   /* A nutraceutical or a drug is not a cosmetic: no review, nothing stored, nothing added to the registry or the ingredient directory. This runs first, before anything is
      written. A drug is named by what the product says: a prescription notice, a Drug Facts label, a drug-only maker; so here the product page and the label artwork are read
