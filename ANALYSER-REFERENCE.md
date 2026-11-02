@@ -863,6 +863,14 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** how any analysis is made or rated, the prompts, the decision core, the URL rule (a page or an address must still name the product), and every row already stored: this change neither checks nor removes them.
 - **Known limits:** it is a heuristic. A paste of fewer than four space-separated words, or of names that neither the database nor the word lists know, can still read as a product; the placeholder check on the model's own title is the second line. A typed query that is nothing but ingredient names ("Zinc Oxide, Titanium Dioxide") reads as a list and is not saved. An unsaved analysis is still held in the server's memory for five minutes under the name the model gave it (separate follow-up).
 - **Undo:** revert the change. Nothing is migrated.
+### 2026-11-02: A pasted brand URL meets the Decoder list again once the brand is known, and a label glued to a page's list no longer starts it with page copy
+- **Decided by:** a fault found while re-running the Beauty of Joseon Dynasty Cream on the new engine, which the owner had asked for ("Re-run - sure"). It follows the owner's rule of 2026-10-30 that the brand's own page, Nykaa and INKEE Decoder are searched together as equals, and her rule of 2026-11-02 that the brand website is the best source.
+- **Reason:** for `https://beautyofjoseon.com/products/dynasty-cream` the first lookup takes the first word of the URL slug ("dynasty") as the brand, so the brand's own page (`beautyofjoseon.com`) was refused as not the brand's; the Decoder list found by name then won without ever meeting it, and the corrected-brand lookup ran only when no list had been found at all. Separately, that page prints "Full Ingredient List" with no line break after its copy, so the page reader's first two entries were "soothe" and "and address uneven texture Full Ingredient List Water".
+- **What it touched:** `src/lib/product-review-engine.ts`: the second lookup, made with the brand the model names, now also runs when no page list was taken (the Decoder list won, or nothing was found), and the Decoder list competes in it. `src/lib/inci-from-page.ts`: `startAtListLabel`, applied to a page read (not to `extractInciWithQuote`, which must agree with the extractor it replaced), starts the list after a label that sits inside one of the first three entries.
+- **Measured** (real network, no model): the brand page read gave 38 entries, the first two page copy; after the change, 37 ingredients starting "Water, Glycerin, Hydrogenated Polydecene", the quote starting at "Water". The Decoder entry the first run chose, "Beauty of Joseon Dynasty Cream [2021]", also has no silicone, so the wrong-formula problem seen on the stored page was the older Decoder entry (`beauty-of-joseon-dynasty-cream`, with Cyclopentasiloxane and Fragrance).
+- **Not changed:** how lists are compared, the order of trust, stored analyses.
+- **Undo:** revert the change; nothing is migrated.
+
 ### 2026-11-02: Only claims on the brand's own website are checked
 - **Decided by:** the owner, on 2026-11-02, in chat, after asking where three Re'equil claims came from ("I don't find these claims on the brand website, where are these coming from?"). Asked whether claims seen only on retailer listings should count against the brand: "yes brand website is the best source. nothing else".
 - **Reason:** the three Re'equil claims were labelled "Nykaa Brand Info" ("clinically tested to suit every unique skin type"), "Re'equil Brand Website (via Clinikally)" (a reseller; "Treats fine lines & wrinkles") and "Flipkart" ("All Skin Types"). None is on reequil.com except "For all skin types". The prompt told the model to collect claims "from all platforms", and the model wrote the `source` label as free text, with no link or quote kept, so a retailer's wording could be flagged against the brand as an ASCI or drug-boundary concern.
@@ -1180,7 +1188,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `0f23ad1fdc8424e26ab8ba0f5cf60c6c80a423f9f3b1f07eeabd9c1ec573ddfa` |
+| `src/lib/inci-from-page.ts` | `e151905ed590e4a2b1cf31abe2e3ed4b7bef9031b8009fe8f514b8f1ab4de4fb` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1204,7 +1212,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `30fea905a7a732271cf499f52b376d81c0c76422155b4b07abb7a7debc187df2` |
+| `src/lib/product-review-engine.ts` | `ad53f405f5432501ae6af408b28136e498ca2dbf05f4ce539c3ecb0586a5ddff` |
 | `src/lib/product-review-types.ts` | `3bf6a4556cab4320dd55b7b6006833f9a03892059e6739a183181ac04f8639fe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |

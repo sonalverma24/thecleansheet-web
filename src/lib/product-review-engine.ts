@@ -1387,9 +1387,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
-    if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
+    // It runs when no list was taken from a page (nothing found, or the Decoder list won): with the first word of a URL slug as the brand ("dynasty" for Beauty of Joseon's
+    // /products/dynasty-cream) the brand's own page was refused as not the brand's, so the Decoder list, found by name, won without ever meeting it. The Decoder list competes again here.
+    if (isValidProductReview(parsed) && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
       // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
-      pageInci = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen)), PEER_LOOKUP_MS); // the model was already asked for this product
+      const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen), inci ? [decoderAsPage(inci)] : []), PEER_LOOKUP_MS); // the model was already asked for this product
+      if (second && inci && second.source === inci.source) inciAlternatives = second.alternatives ?? inciAlternatives; // the Decoder list won again: it stays the answer
+      else pageInci = second;
       if (pageInci) {
         const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
         suffix = block;

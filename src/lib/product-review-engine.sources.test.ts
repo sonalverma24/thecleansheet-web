@@ -88,3 +88,31 @@ describe("runProductReview: sources searched together", () => {
     expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER });
   });
 });
+
+describe("runProductReview: a URL whose slug does not start with the brand (Beauty of Joseon /products/dynasty-cream, 2026-11-02)", () => {
+  // The first lookup takes "gel" for the brand, so the brand's own page is refused; the model then names the brand, and the second lookup must let the brand's page meet the Decoder list.
+  const BRAND_PAGE = "https://lotus.example.com/products/gel-creme";
+  const brandPage = { ingredients: current, quote: current.join(", "), source: BRAND_PAGE, pageTitles: ["Lotus Gel Creme"], siteName: "Lotus", trust: 4, origin: "brand-page" };
+
+  it("looks again with the brand the model named, offering the Decoder list, and publishes the brand page's list when it wins", async () => {
+    h.brandInci.mockResolvedValueOnce(null).mockResolvedValueOnce(brandPage);
+    await runProductReview(BRAND_PAGE);
+    expect(h.brandInci).toHaveBeenCalledTimes(2);
+    const [query, brand, supplied, , known] = h.brandInci.mock.calls[1] as [string, string, string, unknown, { source: string }[]];
+    expect([query, brand, supplied]).toEqual(["Lotus Lotus Gel Creme", "Lotus", BRAND_PAGE]);
+    expect(known.map((k) => k.source)).toEqual([DECODER]);
+    expect(stored()).toMatchObject({ inciIngredients: current, inciSourceUrl: BRAND_PAGE, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
+  });
+
+  it("keeps the Decoder list when it wins the second look too, recording what lost", async () => {
+    h.brandInci.mockResolvedValueOnce(null).mockResolvedValueOnce({ ingredients: older, quote: older.join(", "), source: DECODER, pageTitles: ["Lotus Gel Creme"], trust: 3, origin: "decoder", alternatives: [{ source: BRAND_PAGE, origin: "brand-page", count: 7 }] });
+    await runProductReview(BRAND_PAGE);
+    expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER, inciEvidence: { origin: "decoder", alternatives: [{ source: BRAND_PAGE, origin: "brand-page", count: 7 }] } });
+  });
+
+  it("does not look a second time when the first lookup already took a page's list", async () => {
+    h.brandInci.mockResolvedValue(brandPage);
+    await runProductReview(BRAND_PAGE);
+    expect(h.brandInci).toHaveBeenCalledTimes(1);
+  });
+});

@@ -530,12 +530,29 @@ export function extractMarkdownTitles(md: string): string[] {
     reader as a fallback for bot-protected storefronts. Null if neither yields a
     confident list. Also returns the raw text span the list was read from and the
     page's own titles; neither changes which list is accepted. */
+/** "Full Ingredient List", "Ingredients:" or "Key ingredients" standing inside one of the first entries, with the first ingredient after it. */
+const GLUED_LABEL = /\b(?:full\s+)?ingredients?(?:\s+list)?\s*:?\s+/i;
+
+/** A page that prints no line break between its copy and the list label ("...and address uneven texture Full Ingredient List Water, Glycerin") glues the copy and the
+    label onto the first entries: Beauty of Joseon's list began "soothe", "and address uneven texture Full Ingredient List Water". The list starts after the label; the
+    entries before it are page copy. Applied to a page read, not to extractInciWithQuote, which must keep agreeing with the extractor it replaced. */
+export function startAtListLabel(ex: InciExtraction | null): InciExtraction | null {
+  if (!ex) return ex;
+  const at = ex.ingredients.slice(0, 3).findIndex((x) => GLUED_LABEL.test(x));
+  if (at < 0) return ex;
+  const inItem = GLUED_LABEL.exec(ex.ingredients[at])!;
+  const first = ex.ingredients[at].slice(inItem.index + inItem[0].length).trim();
+  const inQuote = GLUED_LABEL.exec(ex.quote);
+  if (!first || !looksLikeIngredient(first) || !inQuote) return ex;
+  return { ingredients: [first, ...ex.ingredients.slice(at + 1)], quote: ex.quote.slice(inQuote.index + inQuote[0].length).trim() };
+}
+
 export async function fetchInciFromProductPage(url: string): Promise<PageINCI | null> {
   const html = await fetchRawHtml(url);
   if (html) {
     // The visible text first; the page's own data wins only when it holds a longer list (the markup shows
     // the key ingredients, or a list cut short, and the popup shows the whole).
-    const visible = extractInciWithQuote(stripTags(html));
+    const visible = startAtListLabel(extractInciWithQuote(stripTags(html)));
     const embedded = extractEmbeddedInci(html, url);
     const ex = embedded && (!visible || embedded.ingredients.length > visible.ingredients.length) ? embedded : visible;
     if (ex && ex.ingredients.length >= 5) {
@@ -546,7 +563,7 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = extractInciWithQuote(md);
+    const ex = startAtListLabel(extractInciWithQuote(md));
     if (ex && ex.ingredients.length >= 5) {
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
     }
