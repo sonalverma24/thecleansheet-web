@@ -644,38 +644,78 @@ describe("cyclic silicones D5 and D6 are not a pregnancy flag (reference data fi
   });
 });
 
-describe("the templated pregnancy caution is gone where the sources do not support it (reference data audit, 2026-11-02)", () => {
+describe("the templated pregnancy caution is gone, and every flag that stands gives its reason in one line (reference data audit and owner decision, 2026-11-02)", () => {
   const screenOf = (names: string[]) => page(rv({ productName: "Daily Cream", category: "Moisturizer", inciIngredients: [...BASE, ...names] }));
   const flags = (names: string[]) => screenOf(names).product.pregnancyScreen?.flags.map((f) => f.ingredient) ?? [];
 
-  it.each(["Methylparaben", "Ethylparaben", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate"])("%s raises no pregnancy flag", (name) => {
+  it.each(["Methylparaben", "Ethylparaben"])("%s raises no pregnancy flag: the SCCS says the unborn foetus is better protected than a newborn, and it was not among the ingredients the owner chose to flag", (name) => {
     expect(flags([name])).toEqual([]);
   });
 
-  it("a product with every one of them shows no pregnancy chip", () => {
-    const { model } = screenOf(["Methylparaben", "Ethylparaben", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate"]);
-    expect(model.highlights.filter((h) => /pregnan/i.test(h.label))).toEqual([]);
-  });
-
-  // Butylparaben and BHA keep a flag because their sources do record a pregnancy-relevant finding, but it is worded as the source words it.
+  // Each of these has a primary source we read; the line says what the source says, including that the SCCS judged the ingredient safe at its limit.
+  // BHA is listed as "BHA": the INCI name "Butylated Hydroxyanisole" does not resolve to the row (no alias is signed off), so that spelling is not screened at all.
   it.each([
-    ["Butylparaben", /SCCS\/1651\/23/, /anogenital distance.*Candidate List/],
-    // Listed as "BHA": the INCI name "Butylated Hydroxyanisole" does not resolve to this row (no alias is signed off), so that spelling is not screened at all.
-    ["BHA", /SCCS\/1682\/25/, /fetal malformations.*0\.07%/],
-    ["Eucalyptol", /EMA\/HMPC\/307782\/2012/, /not been established.*no cosmetic pregnancy restriction/],
-    ["Benzophenone-3", /SCCS\/1625\/20/, /placental tissue.*inconclusive/],
-  ])("%s still raises a pregnancy flag, worded as its source words it, with the source named", (name, source, wording) => {
+    ["Butylparaben", /SCCS\/1651\/23/, /Candidate List/],
+    ["BHA", /SCCS\/1682\/25/, /fetal malformations/],
+    ["Eucalyptol", /EMA\/HMPC\/307782\/2012/, /not been established/],
+    ["Benzophenone-3", /SCCS\/1625\/20/, /placental tissue/],
+    ["Propylparaben", /SCCS\/1623\/20/, /indications of endocrine effects/],
+    ["Benzophenone-4", /SCCS\/1660\/23/, /benzophenone UV-filter class/],
+    ["Ethylhexyl Methoxycinnamate", /SCCS\/1671\/24/, /endocrine-active/],
+    ["Homosalate", /SCCS\/1622\/20/, /not safe at the old 10% limit/],
+  ])("%s raises a flag worded as its source words it, with the source named", (name, source, wording) => {
     const { product, model } = screenOf([name]);
     const [flag, ...others] = product.pregnancyScreen!.flags;
     expect(others).toEqual([]);
     expect(flag.ingredient).toBe(name);
-    expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only/);
+    expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only: /);
     expect(flag.restriction).toMatch(wording);
-    expect(flag.restriction, "the templated sentence is not what the sources say").not.toMatch(/endocrine disruption data|precautionary avoidance of high-frequency/);
     expect(flag.source).toMatch(source);
     const chip = model.highlights.find((h) => /pregnan/i.test(h.label));
     expect(chip).toMatchObject({ label: `Pregnancy ingredient flag: ${name}`, state: "no" });
     expect(chip?.detail).toContain(flag.restriction);
+  });
+
+  // The data records no pregnancy-specific finding for these, so the line says why they are flagged and that no pregnancy finding is recorded.
+  it.each(["Formaldehyde", "Aminobenzoic Acid", "Disperse Blue 1", "Toluene-2,5-Diamine Sulfate", "Ammonium Persulfate", "Benzophenone-1", "Benzophenone-8"])(
+    "%s is flagged as a precaution and says that no pregnancy-specific finding is recorded", (name) => {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag.ingredient).toBe(name);
+      expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only: /);
+      expect(flag.restriction).toMatch(/no pregnancy-specific finding is recorded\.$/);
+    });
+
+  it("Perillyl Alcohol is flagged, and the line says no pregnancy data were found", () => {
+    const [flag] = screenOf(["Perillyl Alcohol"]).product.pregnancyScreen!.flags;
+    expect(flag.restriction).toBe("Caution during pregnancy is precautionary only: we found no pregnancy safety data for this fragrance terpene alcohol.");
+  });
+
+  // These used to print as "Tretinoin: Yes". Each now gives its reason.
+  it.each(["Retinol Acetate", "Tretinoin", "Adapalene", "Tazarotene", "Chlorobutanol", "Thimerosal", "4-Methylbenzylidene Camphor", "Resorcinol", "Salicylic Acid", "Azadirachta Indica Seed Oil"])(
+    "%s is flagged with a one-line reason, never a bare 'Yes'", (name) => {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag.ingredient).toBe(name);
+      expect(flag.restriction).toMatch(/^Caution during pregnancy/);
+      expect(flag.restriction).not.toMatch(/^yes$/i);
+      expect(flag.restriction.length).toBeGreaterThan(60);
+    });
+
+  it("Neem seed oil is flagged even though its old text said no restriction applies; the old text no longer contradicts the chip", () => {
+    const [flag] = screenOf(["Azadirachta Indica Seed Oil"]).product.pregnancyScreen!.flags;
+    expect(flag.restriction).toMatch(/though neither is thought relevant to refined topical seed oil\.$/);
+    expect(flag.restriction).not.toMatch(/no restriction identified/);
+  });
+
+  it("every one-line reason is one sentence: nothing printed beside a chip runs on", () => {
+    const names = ["Butylparaben", "BHA", "Eucalyptol", "Benzophenone-3", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate", "Formaldehyde", "Aminobenzoic Acid",
+      "Disperse Blue 1", "Toluene-2,5-Diamine Sulfate", "Ammonium Persulfate", "Benzophenone-1", "Benzophenone-8", "Retinol Acetate", "Tretinoin", "Adapalene", "Tazarotene", "Chlorobutanol", "Thimerosal",
+      "4-Methylbenzylidene Camphor", "Resorcinol", "Salicylic Acid", "Azadirachta Indica Seed Oil"];
+    for (const name of names) {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag?.ingredient, name).toBe(name);
+      expect(flag.restriction, name).not.toMatch(/\.\s+[A-Z]/);
+      expect(flag.restriction.length, name).toBeLessThanOrEqual(340);
+    }
   });
 
   it("the flags that rest on a pregnancy-specific source are untouched: retinol, Retinyl Palmitate, D4", () => {

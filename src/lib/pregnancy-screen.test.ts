@@ -14,18 +14,21 @@ describe("pregnancy screen", () => {
     expect(r.cautioned[0].note).toMatch(/^Caution during pregnancy/);
   });
 
-  it("a bare 'Yes' in the database is a caution", () => {
+  it("a hazard row whose pregnancy note is a precaution is a caution (Formaldehyde; it used to hold a bare 'Yes', and the screen still reads one as a caution)", () => {
     expect(pregnancyScreen(["Aqua", "Formaldehyde"]).cautioned.map((c) => c.name)).toEqual(["Formaldehyde"]);
   });
 
   it("soft wording counts as a caution, because a wrong 'no caution' tick is the dangerous error", () => {
-    // Salicylic Acid: "...high-dose or large-area use is commonly cautioned; ... Advise clinician review"
+    // Salicylic Acid: "...high-dose or large-area use is commonly cautioned and oral salicylates are contraindicated..."
     expect(pregnancyScreen(["Aqua", "Salicylic Acid"]).status).toBe("caution");
   });
 
-  it("a note that says an oral restriction does not apply to a topical cosmetic is not a caution", () => {
-    // Neem seed oil: "Oral neem preparations have historical emmenagogue use - not applicable to refined topical cosmetic seed oil"
-    expect(pregnancyScreen(["Aqua", "Azadirachta Indica Seed Oil"])).toEqual({ status: "clear", cautioned: [], unresolved: [] });
+  it("neem seed oil is a caution since the owner's decision of 2026-11-02; its old 'not applicable to refined topical cosmetic seed oil' note is gone, so no row exercises that branch now", () => {
+    // The page's own check never skipped that wording, so the page flagged neem while its text said no restriction applied. The owner chose to flag it with a one-line reason.
+    const r = pregnancyScreen(["Aqua", "Azadirachta Indica Seed Oil"]);
+    expect(r.status).toBe("caution");
+    expect(r.cautioned.map((x) => x.name)).toEqual(["Azadirachta Indica Seed Oil"]);
+    expect(r.cautioned[0].note).toMatch(/^Caution during pregnancy is precautionary only: azadirachtin from neem/);
   });
 
   it("a retinoid is a caution even though the database holds no row for it", () => {
