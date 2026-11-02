@@ -60,6 +60,23 @@ export function isSameProduct(a: IdentityCandidate, b: IdentityCandidate): boole
   return !!a.inci?.length && !!b.inci?.length && inciSimilarity(a.inci, b.inci) >= 0.95;
 }
 
+/** Wording that stands where a product's name or brand should be when the page, the scraper or the model could not name
+    one: an error page ("Page Not Found", "404"), a gap ("Unknown product", "N/A"), or the model's own account of a paste
+    ("Not Identified Product", "Not Identified (Based on provided INCI)", "INCI Analysis"). A result carrying any of it
+    identifies no product, so neither engine saves it. Both engines test names against this one pattern. */
+export const IDENTITY_PLACEHOLDER = new RegExp([
+  "\\b(?:",
+  [
+    "unknown (?:product|brand|formula(?:tion)?)", "product not identified", "could not be identified", "unable to identify",
+    "not identified", "unidentified", "unnamed (?:product|formula(?:tion)?)", "not specified",
+    "(?:based on|from) (?:the |your )?(?:provided|supplied|given|submitted|pasted|entered) (?:inci|ingredients?)",
+    "(?:provided|supplied|submitted|pasted) (?:inci|ingredients?)",
+    "(?:inci|ingredient)s?(?: list)?(?: only)? (?:analysis|scan|paste)",
+    "page not found", "not found", "service unavailable", "temporarily unavailable", "product unavailable", "not available", "n\\s*\\/\\s*a",
+  ].join("|"),
+  ")\\b|\\b404\\b",
+].join(""), "i");
+
 /** Does a marketplace page title name THIS product? Used before a scraped listing is
     allowed to corroborate a claim: "Cetaphil Gentle Skin Cleanser …" must not stand
     in for "Cetaphil Facial Cleanser". At least 75% of the product's own name words

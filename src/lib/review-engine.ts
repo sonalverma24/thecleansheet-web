@@ -18,6 +18,8 @@ import { CLEAN_SHEET_SYSTEM_PROMPT, COMPARISON_SYSTEM_PROMPT, EXPERT_ANSWER_SYST
 import { generateResilient } from "@/lib/gemini";
 import { validateScorecard, computeVerdict, computeClaimIntegrity, METHODOLOGY_VERSION } from "@/lib/verdict-engine";
 import { upsertVerifiedProduct, slugify } from "@/lib/verified-store";
+import { IDENTITY_PLACEHOLDER } from "@/lib/product-identity";
+import { looksLikeInciList } from "@/lib/inci-paste";
 import { resolveProductImage, imageFromMarkdown, searchProductImage } from "@/lib/product-image";
 import type {
   CheckedClaim, ClaimCheckResult, Scorecard, ComparisonResult, ExpertAnswer, FinalVerdict,
@@ -70,16 +72,6 @@ function isURL(text: string): boolean {
   } catch {
     return false;
   }
-}
-
-/* A bare INCI paste (an ingredient list on its own) identifies no product - only
-   its formula, with no brand or product name - so its review is never registered
-   in the directory. Heuristic: not a URL, and five or more comma / newline /
-   semicolon-separated tokens; a typed product name has none. */
-function looksLikeInciList(text: string): boolean {
-  if (isURL(text)) return false;
-  const parts = text.split(/[,\n;]+/).map((s) => s.trim()).filter(Boolean);
-  return parts.length >= 5;
 }
 
 function isComparisonQuery(query: string): boolean {
@@ -187,8 +179,6 @@ function productNameFromURL(url: string): string {
     return "";
   }
 }
-
-const IDENTITY_PLACEHOLDER = /\b(?:unknown product|product not identified|could not be identified|unable to identify|not identified from|page not found|not found|service unavailable|temporarily unavailable|product unavailable|not available|n\s*\/\s*a)\b|\b404\b/i;
 
 function identityPlaceholder(value: unknown): boolean {
   if (typeof value !== "string" || !value.trim()) return true;
@@ -493,10 +483,10 @@ ${scrapedContext}`;
   }
   const verdict = computeVerdict(scorecard, claimFindings);
   // A URL is a specific product page; anything else is identified only if it isn't
-  // a bare INCI-list paste. Unidentified scans are reviewed but not registered.
-  const identified = urlInput
-    ? !identityPlaceholder(sourceIdentityHint) || hasDescriptiveProductPath(urlInput)
-    : !looksLikeInciList(query);
+  // a bare INCI-list paste. Either way the scorecard must carry a real product name
+  // and brand, not a placeholder. Unidentified scans are reviewed but not registered.
+  const identified = !identityPlaceholder(scorecard.productName) && !identityPlaceholder(scorecard.brand) &&
+    (urlInput ? !identityPlaceholder(sourceIdentityHint) || hasDescriptiveProductPath(urlInput) : !looksLikeInciList(query));
   await registerIfVerified(scorecard, verdict, claimFindings, identified);
   return { type: "single", scorecard, verdict };
 }

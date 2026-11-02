@@ -17,7 +17,8 @@ import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
-import { isSameProduct, titleIdentifiesProduct } from "@/lib/product-identity";
+import { isSameProduct, titleIdentifiesProduct, IDENTITY_PLACEHOLDER } from "@/lib/product-identity";
+import { looksLikeInciList } from "@/lib/inci-paste";
 import { evidenceForReview, isAnchored, makeInciEvidence } from "@/lib/review-verifier";
 import { buildProductPageChecks } from "@/lib/web-shopper-checks";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -35,8 +36,6 @@ import type { ProductReview, DerivedVerdict, ReviewGate, ProductReviewScores, Cl
 export const REVIEW_METHODOLOGY_VERSION = "TCS v3.0";
 
 const isURL = (t: string) => /^https?:\/\//i.test(t.trim());
-
-const IDENTITY_PLACEHOLDER = /\b(?:unknown product|product not identified|could not be identified|unable to identify|not identified from|page not found|not found|service unavailable|temporarily unavailable|product unavailable|not available|n\s*\/\s*a)\b|\b404\b/i;
 
 const SKIP_URL_SEGMENTS = new Set([
   "collections", "products", "pages", "categories", "category",
@@ -66,18 +65,6 @@ function hasDescriptiveProductPath(url: string): boolean {
   const hint = productNameHintFromURL(url);
   if (identityPlaceholder(hint)) return false;
   return (hint.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2;
-}
-
-/* A bare INCI paste (an ingredient list on its own) identifies no product: it
-   carries a formula but no brand or product name. Reviews of such scans are shown
-   to the user but never added to the public directory - the directory is for
-   identified products only. Heuristic: not a URL, and five or more comma / newline
-   / semicolon-separated tokens. A typed product name ("Cetaphil Gentle Skin
-   Cleanser") has none; a real ingredient list always does. */
-function looksLikeInciList(t: string): boolean {
-  if (isURL(t)) return false;
-  const parts = t.split(/[,\n;]+/).map((s) => s.trim()).filter(Boolean);
-  return parts.length >= 5;
 }
 
 /** Tolerant JSON extraction · handles a stray prose preamble or code fence. */
@@ -1515,10 +1502,11 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // A scan of a bare INCI list (no URL, no product name) has no confirmed product
   // identity, so its review is returned to the user but kept OUT of the public
   // directory - neither the /brands repository grid nor the verified library.
-  const productIdentified = isURL(q)
-    ? !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
-      (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q))
-    : !!inci || !looksLikeInciList(q);
+  // Saving needs both: an input that names a product (a URL whose page or address does, or
+  // text that is not a pasted list) AND a result the model could name. A result titled with
+  // a placeholder ("Not Identified Product") identifies nothing, whatever was typed.
+  const productIdentified = !identityPlaceholder(review.productName) && !identityPlaceholder(review.brand) &&
+    (isURL(q) ? (!identityPlaceholder(pageName) || hasDescriptiveProductPath(q)) : !!inci || !looksLikeInciList(q));
 
   // Page checks are generated from a user-supplied product URL only. They remain
   // separate from score, rubric, and the three-dot outcome.

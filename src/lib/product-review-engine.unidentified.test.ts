@@ -6,7 +6,8 @@ import { makeReview } from "@/lib/review.fixtures";
    A URL that names no product, or whose page is an error page, must come back as "unidentified":
    the model is not asked, and nothing is saved. A pasted ingredient list is a different case and
    must keep working: it has no product name by design, so it is reviewed, shown to the person who
-   pasted it, and kept out of the saved repository. Every outside dependency is replaced. */
+   pasted it, and kept out of the saved repository, in whatever format it was pasted. A typed product name still
+   saves, unless the model could only title it with a placeholder. Every outside dependency is replaced. */
 const h = vi.hoisted(() => {
   const upserts: Record<string, unknown>[] = [];
   const chain: unknown = new Proxy(function () {}, {
@@ -92,6 +93,53 @@ describe("runProductReview: a pasted ingredient list", () => {
   it("is still reviewed and returned, but is not saved to the repository", async () => {
     h.generate.mockResolvedValue(modelSays());
     const out = await runProductReview("Aqua, Glycerin, Niacinamide, Phenoxyethanol, Panthenol, Allantoin");
+    expect(out.type).toBe("product-review");
+    expect(savedReviews()).toEqual([]);
+  });
+});
+
+/* The in-process review cache outlives a test, and an unsaved result is cached under the name the model gave it, so each case gives the model a name of its own. */
+let named = 0;
+const inventedName = () => modelSays({ productName: `Glow Lab Hydrating Gel Cream ${++named}`, brand: "Glow Lab" });
+
+describe("runProductReview: a pasted ingredient list, whatever separates its items", () => {
+  const LIST = ["Aqua", "Glycerin", "Niacinamide", "Sodium Hyaluronate", "Panthenol", "Allantoin", "Phenoxyethanol"];
+  const pastes: Record<string, string> = {
+    "bullets": LIST.map((x) => `• ${x}`).join(" "),
+    "pipes": LIST.join(" | "),
+    "slashes": LIST.join(" / "),
+    "full stops": `${LIST.join(". ")}.`,
+    "plain spaces": LIST.join(" "),
+    "four items": LIST.slice(0, 4).join(", "),
+    "three items": LIST.slice(0, 3).join(", "),
+    "an Ingredients: label and four items": `Ingredients: ${LIST.slice(0, 4).join(", ")}`,
+  };
+  for (const [format, paste] of Object.entries(pastes)) {
+    it(`is returned to the person but not saved, with ${format}, even when the model gives it a product name`, async () => {
+      h.generate.mockResolvedValue(inventedName());
+      const out = await runProductReview(paste);
+      expect(out.type).toBe("product-review");
+      expect(savedReviews()).toEqual([]);
+    });
+  }
+});
+
+describe("runProductReview: a typed product name", () => {
+  it("is saved when the model names the product", async () => {
+    h.generate.mockResolvedValue(modelSays({ productName: "Cetaphil Gentle Skin Cleanser", brand: "Cetaphil" }));
+    const out = await runProductReview("Cetaphil Gentle Skin Cleanser");
+    expect(out.type).toBe("product-review");
+    expect(savedReviews()).toHaveLength(1);
+  });
+
+  it.each([
+    ["a name and brand that say it was not identified", { productName: "Not Identified Product", brand: "Not Identified (Based on provided INCI)" }],
+    ["a placeholder name", { productName: "Unknown Formulation", brand: "Glow Lab" }],
+    ["an unknown brand", { productName: "Glow Lab Night Cream", brand: "Unknown" }],
+    ["no brand", { productName: "Glow Lab Night Cream", brand: "" }],
+  ])("is returned but not saved when the model gives %s", async (_label, over) => {
+    h.generate.mockResolvedValue(modelSays(over));
+    const out = await runProductReview("night cream formula");
     expect(out.type).toBe("product-review");
     expect(savedReviews()).toEqual([]);
   });
