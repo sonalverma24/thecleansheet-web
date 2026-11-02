@@ -1387,17 +1387,28 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
-    if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
+    // It runs unless the first lookup already ended on the brand's own page: with the first word of a URL slug as the brand ("dynasty" for Beauty of Joseon's
+    // /products/dynasty-cream) the brand's own page was refused as not the brand's, so a Decoder list (found by name, or by the search) won without ever meeting it.
+    // Whatever list the first lookup took competes again here, with the right brand.
+    const taken = pageInci ?? (inci ? decoderAsPage(inci) : null);
+    let listChanged = false;
+    if (isValidProductReview(parsed) && taken?.origin !== "brand-page" && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
       // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
-      pageInci = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen)), PEER_LOOKUP_MS); // the model was already asked for this product
-      if (pageInci) {
-        const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
-        suffix = block;
-        gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
-        parsed = parseJSON(gen.text);
-        grounding = gen.groundingMetadata;
-        if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
+      const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen), taken ? [taken] : []), PEER_LOOKUP_MS); // the model was already asked for this product
+      if (second && taken && second.source === taken.source) { // the first list won again: it stays the answer, with what lost recorded
+        if (pageInci) pageInci = second; else inciAlternatives = second.alternatives ?? inciAlternatives;
+      } else if (second) {
+        pageInci = second;
+        listChanged = true;
       }
+    }
+    if (listChanged && pageInci && isValidProductReview(parsed)) {
+      const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
+      suffix = block;
+      gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
+      parsed = parseJSON(gen.text);
+      grounding = gen.groundingMetadata;
+      if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     }
     // No grounding means the model wrote this without a web search. Ask again (same prompt), and take the new answer only if it is valid and grounded.
     for (let again = 0; again < GROUNDING_RETRIES && isValidProductReview(parsed) && grounding === null && Date.now() - startedAt < RETRY_STARTS_BEFORE_MS; again++) {
