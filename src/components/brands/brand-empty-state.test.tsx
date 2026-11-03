@@ -9,6 +9,11 @@ vi.mock("@/lib/brand-directory", async (importOriginal) => ({
   getBrandDirectory: async () => [],
 }));
 
+// The marketplace asks the sign-in gate (it needs an AuthProvider, which a static render does not have); these tests are about the empty state, not the gate.
+vi.mock("@/components/auth/useSignInGate", () => ({
+  useSignInGate: () => ({ signedIn: false, guard: (_reason: string, action: () => void) => { action(); return true; }, openLink: () => {} }),
+}));
+
 /* The owner may delete every stored analysis and rebuild them. While there are none, /brands and /products must say so, not show an empty search box
    with "No brands match" / "No products match", and /brands must not print "0 covered brands". */
 
