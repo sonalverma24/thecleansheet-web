@@ -848,6 +848,13 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-03 (latest, third entry): WishCare's own shop on mywishcare.com counts as the brand's page
+- **Decided by:** the owner's rule of 2026-11-03, "the brands page must be the winner at all times", applied while re-running WishCare's Cellular Reset 0.1% Retinal Shot at the owner's request. The owner has not named the site.
+- **Reason:** the brand-domain rule (`isBrandIngredientUrl`) accepts a site whose name starts with the brand's. WishCare's shop is `mywishcare.com`, so its own product page (37 entries, retinal included) was never a brand page: the re-run read INKEE Decoder's list (39 entries) and the validator held it ("not the brand's page"), against the rule.
+- **What it touched:** `src/lib/brand-inci.ts` (`OWN_SHOP_HOSTS`): `wishcare` = `mywishcare.com`, for that brand only (checked 2026-11-03: the site's store search lists the product at /products/retinal-retinol-serum; the `brands` table has no WishCare row). Every other rule is unchanged: https only, a bare domain with no subdomain other than www, not the home page, and the page's title must still name the product. Two tests in `brand-inci.test.ts`.
+- **Not changed:** other brands whose shop is not named after them still need their own line.
+- **Undo:** remove the `wishcare` line from `OWN_SHOP_HOSTS`.
+
 ### 2026-11-03 (latest, second entry): A brand's list that a "(and)" blend cut short is read to its end, blends as their components
 - **Decided by:** the owner's rule of 2026-11-03, "the brands page must be the winner at all times", and the owner's request to re-run WishCare's Cellular Reset 0.1% Retinal Shot ("Wishcare - do a rerun"). Not seen by the owner in this form.
 - **Reason:** the owner's rule: the brand's page can only win with the brand's whole list. WishCare's page (mywishcare.com/products/retinal-retinol-serum) prints 37 entries; the reader returned 19. A blend is printed as one comma piece, "Aqua (and) Butylene Glycol (and) Crambe Maritima Leaf Extract", nine words, too long to be an entry, so the reader rejected it and the list ended at "Curcuma Longa Extract": every entry after it was lost, among them **Retinal**, the product's active, and the stored row (written by re-run 3 from Nykaa's key-actives blurb) had four phrases. A re-run on the brand's page with this fault would have stored 19 of 37 entries as the brand's list.
@@ -1274,7 +1281,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `ef1b3af6613b6ce0f1940716c032a4e38358d66d950db846eea08b80751ce290` |
+| `src/lib/brand-inci.ts` | `91ffe43b62997901119a7dfd75bf90c592c372d89c9c4666f600d769f5603a3e` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |

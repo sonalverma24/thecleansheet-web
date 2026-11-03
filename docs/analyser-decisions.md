@@ -1,6 +1,13 @@
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-03 (latest, third entry): WishCare's own shop on mywishcare.com counts as the brand's page
+- **Decided by:** the owner's rule of 2026-11-03, "the brands page must be the winner at all times", applied while re-running WishCare's Cellular Reset 0.1% Retinal Shot at the owner's request. The owner has not named the site.
+- **Reason:** the brand-domain rule (`isBrandIngredientUrl`) accepts a site whose name starts with the brand's. WishCare's shop is `mywishcare.com`, so its own product page (37 entries, retinal included) was never a brand page: the re-run read INKEE Decoder's list (39 entries) and the validator held it ("not the brand's page"), against the rule.
+- **What it touched:** `src/lib/brand-inci.ts` (`OWN_SHOP_HOSTS`): `wishcare` = `mywishcare.com`, for that brand only (checked 2026-11-03: the site's store search lists the product at /products/retinal-retinol-serum; the `brands` table has no WishCare row). Every other rule is unchanged: https only, a bare domain with no subdomain other than www, not the home page, and the page's title must still name the product. Two tests in `brand-inci.test.ts`.
+- **Not changed:** other brands whose shop is not named after them still need their own line.
+- **Undo:** remove the `wishcare` line from `OWN_SHOP_HOSTS`.
+
 ### 2026-11-03 (latest, second entry): A brand's list that a "(and)" blend cut short is read to its end, blends as their components
 - **Decided by:** the owner's rule of 2026-11-03, "the brands page must be the winner at all times", and the owner's request to re-run WishCare's Cellular Reset 0.1% Retinal Shot ("Wishcare - do a rerun"). Not seen by the owner in this form.
 - **Reason:** the owner's rule: the brand's page can only win with the brand's whole list. WishCare's page (mywishcare.com/products/retinal-retinol-serum) prints 37 entries; the reader returned 19. A blend is printed as one comma piece, "Aqua (and) Butylene Glycol (and) Crambe Maritima Leaf Extract", nine words, too long to be an entry, so the reader rejected it and the list ended at "Curcuma Longa Extract": every entry after it was lost, among them **Retinal**, the product's active, and the stored row (written by re-run 3 from Nykaa's key-actives blurb) had four phrases. A re-run on the brand's page with this fault would have stored 19 of 37 entries as the brand's list.
