@@ -19,6 +19,18 @@ describe("approved catalogue rerun", () => {
   it("accepts a sourced fresh result even if its canonical slug changes, preserving the old URL at write time", () => {
     expect(validateReplacement(row("old-url", "2026-07-01"), { ...review, productSlug: "new-url" }, "buy-with-caution", "look-elsewhere")).toEqual([]);
   });
+  it("accepts a replacement whose list came from a Nykaa product page (a source since 2026-10-30), and still holds one from another retailer", () => {
+    const from = (url: string) => ({ ...review, inciEvidence: makeInciEvidence(url, "Aqua, Glycerin, Niacinamide, Panthenol", "2026-11-03", "Alpha Serum", false, { trust: 3, origin: "nykaa" as const }) });
+    expect(validateReplacement(row("a", "2026-07-01"), from("https://www.nykaa.com/test-alpha-serum/p/123"), "not-enough-info", "buy-with-caution")).toEqual([]);
+    expect(validateReplacement(row("a", "2026-07-01"), from("https://www.amazon.in/Test-Alpha-Serum/dp/B0X123"), "not-enough-info", "buy-with-caution")).toContain("ingredient-source-not-primary");
+  });
+  it("does not hold a replacement for being shorter when its list is the brand's own page, but still holds a shorter list from another source", () => {
+    const r = row("one", "2026-07-01");
+    r.result = { type: "product-review", review: { ...review, inciIngredients: [...review.inciIngredients!, "Tocopherol", "Citric Acid", "Retinol", "Polysorbate 20", "Parfum"] } };
+    const from = (url: string, origin: "brand-page" | "decoder") => ({ ...review, inciEvidence: makeInciEvidence(url, "Aqua, Glycerin, Niacinamide, Panthenol", "2026-11-03", "Alpha Serum", false, { trust: origin === "brand-page" ? 4 : 3, origin }) });
+    expect(validateReplacement(r, from("https://test.in/products/alpha-serum", "brand-page"), "buy-with-caution", "buy-with-caution")).not.toContain("ingredient-list-shorter");
+    expect(validateReplacement(r, from("https://inkeedecoder.com/products/test-alpha-serum", "decoder"), "buy-with-caution", "buy-with-caution")).toContain("ingredient-list-shorter");
+  });
   it("rejects wrong products and model-only ingredients before writing", () => {
     const bad = { ...review, brand: "Other", productName: "Beta Shampoo", inciEvidence: undefined };
     expect(validateReplacement(row("one", "2026-07-01"), bad, "buy-with-caution", "not-enough-info")).toEqual(expect.arrayContaining(["brand-changed", "product-identity-changed", "primary-ingredient-source-missing", "decision-lost"]));

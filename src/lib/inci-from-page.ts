@@ -141,6 +141,12 @@ const LABEL =
 const ANCHOR =
   /\b(aqua|water|glycerin|glycerine|butylene glycol|niacinamide|cetearyl alcohol|phenoxyethanol|dimethicone|centella|sodium|tocopherol|caprylic\/capric|cetyl)\b/i;
 
+/* A water-free formula (a dry shampoo, a balm, an oil, a powder) has none of the words above: Antinorm's High & Dry is "Zea Mays (Corn) Starch, Bentonite,
+   Oryza Sativa (Rice) Starch, Magnesium Aluminum Silicate, Kaolin Powder, ...". What marks it as an ingredient list is the botanical INCI form: a Latin name, the
+   common name in brackets, then the part used ("Zea Mays (Corn) Starch", "Cocos Nucifera (Coconut) Oil", "Maranta Arundinacea (Arrowroot) Root Powder"). Marketing
+   copy does not write that, and a bracket with nothing after it ("Salicylic Acid (BHA)") is not it. Two such entries stand in for the word above. */
+const BOTANICAL_INCI = /^[A-Za-z]{3,} [A-Za-z]{3,}(?: [A-Za-z]{3,})? \([A-Za-z][A-Za-z '\-]{1,38}\) [A-Za-z]{3,}/;
+
 /* A retailer feature bullet ("8 Hours Water Resistant", "Dermatologically
    Tested") can satisfy ANCHOR by accident - "water" is a substring of a claim,
    not a real "Water"/"Aqua" ingredient entry. If most of the accepted run
@@ -404,7 +410,7 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
   flush();
 
   if (best.length < 5 || !bestSpan) return null;
-  if (!best.some((x) => ANCHOR.test(x))) return null;
+  if (!best.some((x) => ANCHOR.test(x)) && best.filter((x) => BOTANICAL_INCI.test(x)).length < 2) return null;
   const marketingHits = best.filter((x) => MARKETING_PHRASE_RE.test(x)).length;
   if (marketingHits / best.length >= 0.5) return null;
   if (cutAtStart(parts, bestFirst)) return null;
@@ -460,13 +466,26 @@ function containsRun(longer: string[], base: string[]): boolean {
   return false;
 }
 
-/** The list read from the page's visible text, with the entries a run-on hid at its edges put back. The block reading is used only when it
-    holds the visible list whole and in order and has more entries: it can add what the page copy swallowed, never replace, reorder or
-    shorten the list, and never supplies a list the visible reading refused (a list cut in two by a gap, or none). */
+/** Whether the block reading `blocks` is the same list as `base` with the text a run-on glued to its two ends taken off: the same number of entries, the same
+    entries between the first and the last, and a first entry that ends with the block's first (a label before it: "FULL INGREDIENTS Zea Mays (Corn) Starch") and a
+    last entry that starts with the block's last (the next accordion's title after it: "Maize Starch MORE"). Identical lists are not "refined": nothing to change. */
+function trimsEdges(blocks: string[], base: string[]): boolean {
+  const n = base.length;
+  if (blocks.length !== n || n < 3) return false;
+  for (let i = 1; i < n - 1; i++) if (!sameEntry(blocks[i], base[i])) return false;
+  const [first, last, blockFirst, blockLast] = [base[0].toLowerCase(), base[n - 1].toLowerCase(), blocks[0].toLowerCase(), blocks[n - 1].toLowerCase()];
+  const firstOk = first === blockFirst || first.endsWith(` ${blockFirst}`);
+  const lastOk = last === blockLast || last.startsWith(`${blockLast} `);
+  return firstOk && lastOk && !(first === blockFirst && last === blockLast);
+}
+
+/** The list read from the page's visible text, put right by the list read in its own block. The block reading is used when it holds the visible list whole and in
+    order with more entries (the page copy swallowed some), or when it is the same list with the text glued to its first and last entries taken off. It never
+    replaces, reorders or shortens a list otherwise, and never supplies a list the visible reading refused (a list cut in two by a gap, or none). */
 export function extendFromBlocks(visible: InciExtraction | null, html: string): InciExtraction | null {
   if (!visible) return null;
   const blocks = extractInciFromBlocks(html);
-  return blocks && containsRun(blocks.ingredients, visible.ingredients) ? blocks : visible;
+  return blocks && (containsRun(blocks.ingredients, visible.ingredients) || trimsEdges(blocks.ingredients, visible.ingredients)) ? blocks : visible;
 }
 
 /* ── Lists the page ships in its own data ─────────────────────── */
