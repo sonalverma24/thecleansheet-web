@@ -35,11 +35,12 @@ const NYKAA = "https://www.nykaa.com/lotus-gel-creme/p/10787966";
 const older = ["Aqua", "Almond Oil", "Glycerin", "Stearic Acid", "Methyl Paraben", "Fragrance"];
 const current = ["Aqua (Om Water)", "Niacinamide", "Glycerin", "Propylene Glycol", "Methyl Paraben Sodium", "Fragrance", "Titanium Dioxide"];
 const decoderResult = { productName: "Lotus Gel Creme", slug: "lotus-gel-creme", ingredients: older, tags: [], source: DECODER, imageUrl: null, sourceQuote: older.join(", "), pageTitle: "Lotus Gel Creme" };
-const modelSays = () => ({ text: JSON.stringify(makeReview({ productName: "Lotus Gel Creme", brand: "Lotus" })), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
+const modelSays = () => ({ text: JSON.stringify(makeReview({ productName: "Lotus Peach Gel Creme", brand: "Lotus" })), groundingMetadata: { webSearchQueries: ["q"], sourceUris: ["https://v/1"], sourceTitles: ["v.in"] } });
 const stored = () => (h.upserts.find((row) => "result" in row) as { result: { review: { inciIngredients: string[]; inciSourceUrl: string; inciEvidence: Record<string, unknown> } } } | undefined)?.result.review;
 
 beforeEach(() => {
   invalidateReviewCache("lotus-gel-creme"); // the engine keeps finished reviews in memory by slug; one test's answer must not be served to the next
+  invalidateReviewCache("lotus-lotus-peach-gel-creme"); // the slug the model's answer is kept under (brand + product name)
   h.upserts.length = 0;
   h.generate.mockReset();
   h.fetchPage.mockReset();
@@ -101,7 +102,7 @@ describe("runProductReview: a URL whose slug does not start with the brand (Beau
     await runProductReview(BRAND_PAGE);
     expect(h.brandInci).toHaveBeenCalledTimes(2);
     const [query, brand, supplied, , known] = h.brandInci.mock.calls[1] as [string, string, string, unknown, { source: string }[]];
-    expect([query, brand, supplied]).toEqual(["Lotus Lotus Gel Creme", "Lotus", BRAND_PAGE]);
+    expect([query, brand, supplied]).toEqual(["Lotus Lotus Peach Gel Creme", "Lotus", BRAND_PAGE]);
     expect(known.map((k) => k.source)).toEqual([DECODER]);
     expect(stored()).toMatchObject({ inciIngredients: current, inciSourceUrl: BRAND_PAGE, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
   });
@@ -133,7 +134,7 @@ describe("runProductReview: a URL whose slug does not start with the brand (Beau
     await runProductReview(OLD_ADDRESS);
     expect(h.brandInci).toHaveBeenCalledTimes(2);
     const [query, brand, supplied] = h.brandInci.mock.calls[1] as [string, string, string];
-    expect([query, brand, supplied]).toEqual(["Lotus Lotus Gel Creme", "Lotus", OLD_ADDRESS]);
+    expect([query, brand, supplied]).toEqual(["Lotus Lotus Peach Gel Creme", "Lotus", OLD_ADDRESS]);
     expect(stored()).toMatchObject({ inciIngredients: current, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
   });
 

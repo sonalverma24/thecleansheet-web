@@ -47,6 +47,24 @@ describe("interpretReviewResponse", () => {
     expect(interpretReviewResponse(200, { type: "unrated", kind: "nutraceutical" }, "x")).toEqual({ kind: "error", error: "fail" });
   });
 
+  it("asks which product when the search was a brand or a kind of product, with the analysed products to open", () => {
+    const suggestions = [{ name: "Cetaphil Gentle Skin Cleanser", slug: "cetaphil-gentle-skin-cleanser" }];
+    expect(interpretReviewResponse(200, { type: "needs-product", query: "Cetaphil", brand: "Cetaphil", suggestions }, "cetaphil"))
+      .toEqual({ kind: "needs-product", query: "Cetaphil", brand: "Cetaphil", suggestions });
+    expect(interpretReviewResponse(200, { type: "needs-product", query: "Sunscreen", brand: null, suggestions: [] }, "sunscreen"))
+      .toEqual({ kind: "needs-product", query: "Sunscreen", brand: null, suggestions: [] });
+  });
+
+  it("is never an error when the ask arrives with parts missing: it falls back to the typed query, no brand and no suggestions", () => {
+    expect(interpretReviewResponse(200, { type: "needs-product" }, "typed")).toEqual({ kind: "needs-product", query: "typed", brand: null, suggestions: [] });
+    expect(interpretReviewResponse(200, { type: "needs-product", brand: "", suggestions: "oops" }, "typed")).toEqual({ kind: "needs-product", query: "typed", brand: null, suggestions: [] });
+  });
+
+  it("keeps only the suggestions it can open: a name and a slug, both text", () => {
+    const out = interpretReviewResponse(200, { type: "needs-product", brand: "Plum", suggestions: [{ name: "A", slug: "a" }, { name: "no slug" }, { slug: "no-name" }, { name: 3, slug: "x" }, null, { name: "", slug: "empty" }] }, "plum");
+    expect(out).toEqual({ kind: "needs-product", query: "plum", brand: "Plum", suggestions: [{ name: "A", slug: "a" }] });
+  });
+
   it("treats a review with no slug as a failure rather than navigating nowhere", () => {
     expect(interpretReviewResponse(200, { type: "product-review", review: {} }, "x")).toEqual({ kind: "error", error: "fail" });
     expect(interpretReviewResponse(200, null, "x")).toEqual({ kind: "error", error: "fail" });

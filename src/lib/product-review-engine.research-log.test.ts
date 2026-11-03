@@ -62,7 +62,7 @@ describe("runProductReview: researchLog", () => {
         text: asModelText("Alpha Cleanser"),
         groundingMetadata: { webSearchQueries: ["alpha cleanser ingredients", "alpha cleanser price"], sourceUris: ["https://v/1", "https://v/2"], sourceTitles: ["alpha.in", "nykaa.com"] },
       });
-    const out = await runProductReview("Alpha Cleanser");
+    const out = await runProductReview("Acme Alpha Cleanser");
     expect(out.type).toBe("product-review");
     if (out.type !== "product-review") return;
     const log = out.review.researchLog!;
@@ -81,7 +81,7 @@ describe("runProductReview: researchLog", () => {
   it("asks the model again when its answer had no web search, and still gives the shopper a page (never an error) if every try had none", async () => {
     h.brandInci.mockResolvedValue(brandPage("beta-serum"));
     h.generate.mockResolvedValue({ text: asModelText("Beta Serum"), groundingMetadata: null });
-    const out = await runProductReview("Beta Serum");
+    const out = await runProductReview("Acme Beta Serum");
     expect(out.type).toBe("product-review");
     if (out.type !== "product-review") return;
     expect(h.generate).toHaveBeenCalledTimes(3); // the first call and two retries, the same as the re-runs allow
@@ -95,7 +95,7 @@ describe("runProductReview: researchLog", () => {
     h.generate
       .mockResolvedValueOnce({ text: asModelText("Flaky Serum"), groundingMetadata: null })
       .mockRejectedValueOnce(new Error("upstream 503"));
-    const out = await runProductReview("Flaky Serum");
+    const out = await runProductReview("Acme Flaky Serum");
     expect(out.type).toBe("product-review");
     expect(h.generate).toHaveBeenCalledTimes(2); // the retry was tried once, failed, and no further retry was made
     expect(h.upserts).toHaveLength(1);

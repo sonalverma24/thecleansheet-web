@@ -133,6 +133,10 @@ export const MESSAGES = {
   held: "We are verifying this analysis and will publish it when that is done.",
   commitFailed: "We could not save this analysis. Please try again.",
   askUser: "We have a very similar product already analysed. Is it this one?",
+  /** A search that is only a brand ("Cetaphil") or a kind of product ("Sunscreen"): we ask which product, and analyse and save nothing. See specific-product.ts. */
+  needsProduct: (brand: string | null) => (brand ? `Which ${brand} product do you mean?` : "Which product do you mean?"),
+  needsProductHint: (brand: string | null) => (brand ? "Paste its name or link." : "Paste its name, with the brand, or its link."),
+  needsProductPick: (brand: string | null) => (brand ? `Or open one of the ${brand} products we have already analysed:` : "Or open one we have already analysed:"),
 } as const;
 
 /* ── language lint ─────────────────────────────────────────────── */
