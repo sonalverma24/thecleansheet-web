@@ -1392,7 +1392,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // Whatever list the first lookup took competes again here, with the right brand.
     const taken = pageInci ?? (inci ? decoderAsPage(inci) : null);
     let listChanged = false;
-    if (isValidProductReview(parsed) && taken?.origin !== "brand-page" && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
+    // For a pasted address it also runs when the brand's first word matches: the name the first lookup searched with was worked out from the address, which says nothing about whether the
+    // page is titled that way (Lakme's old address and the page's new title, "Peach Milk 2% Pro-Ceramide + Peptide Creme", share almost nothing), while the model's name comes from the page.
+    // Without it the brand's own page failed the title check, and a Nykaa page for another product (the Ultra Light Gel) was taken for the Creme's list (2026-11-03).
+    if (isValidProductReview(parsed) && taken?.origin !== "brand-page" && (isURL(q) || parsed.brand.toLowerCase() !== brandHint.toLowerCase())) {
       // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
       const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen), taken ? [taken] : []), PEER_LOOKUP_MS); // the model was already asked for this product
       if (second && taken && second.source === taken.source) { // the first list won again: it stays the answer, with what lost recorded

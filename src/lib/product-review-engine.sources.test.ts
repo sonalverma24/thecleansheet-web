@@ -124,6 +124,19 @@ describe("runProductReview: a URL whose slug does not start with the brand (Beau
     expect(h.generate).toHaveBeenCalledTimes(1);
   });
 
+  // 2026-11-03: Lakme's Peach Milk Creme, pasted by its old address (.../lakme-peach-ceramide-moisturizer-...). The slug starts with the brand, so the brand "hint" equals the model's brand
+  // and no second look was made; the page's real title shares almost nothing with the address, so the brand's own page failed the title check and another product's Nykaa list was taken.
+  it("looks again for a pasted address even when its slug starts with the brand the model named, so the page's real name is used", async () => {
+    const OLD_ADDRESS = "https://lotus.example.com/products/lotus-gel-creme-old-name-50g";
+    h.resolve.mockResolvedValue({ chosen: null, distinct: [], ambiguous: true });
+    h.brandInci.mockResolvedValueOnce(decoderPage).mockResolvedValueOnce({ ...brandPage, source: OLD_ADDRESS });
+    await runProductReview(OLD_ADDRESS);
+    expect(h.brandInci).toHaveBeenCalledTimes(2);
+    const [query, brand, supplied] = h.brandInci.mock.calls[1] as [string, string, string];
+    expect([query, brand, supplied]).toEqual(["Lotus Lotus Gel Creme", "Lotus", OLD_ADDRESS]);
+    expect(stored()).toMatchObject({ inciIngredients: current, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
+  });
+
   it("does not look a second time when the first lookup already ended on the brand's own page", async () => {
     h.brandInci.mockResolvedValue(brandPage);
     await runProductReview(BRAND_PAGE);
