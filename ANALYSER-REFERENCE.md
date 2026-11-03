@@ -875,6 +875,14 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** no stored analysis is changed by this entry. The Lakme row is still grey. Its fresh analysis is held by the re-run for `product-identity-changed` (stored name "Peach Creme Moisturiser, Ceramide & Peptide, ..." against the brand's "Peach Milk 2% Pro-Ceramide + Peptide Creme"), so applying it needs the owner's approval of the name change, as for Be Minimalist.
 - **Undo:** revert the commit, or restore the `parsed.brand.toLowerCase() !== brandHint.toLowerCase()` condition alone.
 
+### 2026-11-03 (latest): Tools, appliances and accessories are not analysed
+- **Decided by:** the owner, on 2026-11-03, in chat, after the analysis of Skince's Volumizer Hot Air Brush and Bombae's 2-in-1 Heat Protectant came up in the grey list: "Anything that's not personal care and beauty - cosmetic.. needs to be rejected from analysing - like heat prtectent tools, air brush etc."
+- **Reason:** in the owner's words above. A tool has no formula, so there is no ingredient list to read and nothing to screen; the stored analysis of the hot air brush (written 2026-10-30) was Grey with no list and nine "Brand Website" claims about drying and volume.
+- **What it touched:** `src/lib/unrated-kind.ts`: a fourth kind, `"tool"`, beside nutraceutical, prescription drug and drug. It goes through the same gate as those, so a new search for a tool answers "This is a tool, not a cosmetic" and is never stored, and a stored analysis of a tool leaves its page, the lists, the sitemap and the stats. A product is a tool when its category does not resolve to a cosmetic type in the closed category list (the category the model gave decides when there is one) AND either (a) that category holds a generic word (appliance, device, gadget, tool, accessory) or a specific tool phrase (hair dryer, hot air brush, flat iron, straightener, curling iron, trimmer, shaver, razor, epilator, face roller, gua sha, massager, makeup brush, brush set, beauty blender, comb, tweezers, nail clipper, scrunchie ...), or (b) the NAME holds a specific tool phrase and no word for a cosmetic format (serum, spray, cream, shampoo, powder ...). So "Heat Protectant for Flat Irons and Hair Dryers" and "Smoothing Serum for Straighteners" stay rated. `src/components/scorecards/UnratedNotice.tsx` (the notice copy; nothing to sign up for) and `src/lib/review-run.ts` (the search box accepts the new kind). 10 new tests in `unrated-kind.test.ts`.
+- **Measured:** over the 51 stored analyses on 2026-11-03 (name and category): one is a tool, Skince Volumizer Hot Air Brush; the other 50 are unchanged, including Bombae's 2-in-1 Heat Protectant, whose category is "Hair Serum / Heat Protectant", a cosmetic. (Its grey is a different fault: the re-run could not identify the product from its bundle page.)
+- **Not changed:** no row was deleted or edited. The Skince row stays in the table and is hidden by the same rule as the others, so undoing the rule brings it back. Products that are not personal care at all (a household cleaner, a food) are still turned away by the engine's existing out-of-scope check, when the model calls them that. Oral-care devices and other non-beauty gadgets are not listed by name. The rule leans toward "rated": a tool whose category the model wrote as a cosmetic type, or a name with a format word, is still analysed. The new rule is checked only after a product is identified, as for nutraceuticals: a search for a tool still spends the model call that identifies it.
+- **Undo:** revert the commit, or remove `"tool"` from `unratedKindOf` (the two other edits are harmless without it).
+
 ### 2026-11-03 (night, second entry): A list whose entries carry a concentration is refused as the ingredient list
 - **Decided by:** not yet the owner. Found by me while checking what the grey re-run (run 3) wrote on 2026-11-03.
 - **Reason:** WishCare's Cellular Reset 0.1% Retinal Shot was refreshed from grey to Buy with caution on a "list" of four entries, `0.1% Retinal, Tetrapeptide, 3% Caffeine, Niacinamide & Ginseng Pdrn`, read from a Nykaa panel. They are the product's key actives, not its INCI. The re-run took them for the whole list because the Nykaa change of the same day (a Nykaa list is a source) removed the only check that had held that row, and `sanitizeInciList` rejects a token only when it is nothing but digits and percent signs ("0.1% Retinal" has letters), with a pass mark of three entries.
@@ -1292,7 +1300,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ScorecardBadge.tsx` | `ac3beafbed835890200c81e3d33fe0f6acf79436793e57cf774b1478771caade` |
 | `src/components/scorecards/ScorecardTabs.tsx` | `5f642c36c562ec2c69545f91a116ecd5b620f1ffa2e3019048a5e4cb6566c72e` |
 | `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
-| `src/components/scorecards/UnratedNotice.tsx` | `e37cfac4ab9b9c55085cfabc16e72ce91004e9cf967eedcfad7ef4dbf1fc7b41` |
+| `src/components/scorecards/UnratedNotice.tsx` | `816f537890064c9b56dbd4ee0ab966748032b5f4da320600dea59cae2acdee5b` |
 | `src/components/scorecards/UnratedProductPage.tsx` | `2fb73b2b15ba35be2cdd5129c8d242bf7712fd0962029a724e5f5656265a5a73` |
 | `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
@@ -1382,7 +1390,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `136cf48bb84c167a24c6d94277109711bb03df5b82a3a0b922a8e80c493d80a6` |
-| `src/lib/review-run.ts` | `fc35de89907c1b7bfac29cb6d748c6d0583b900ef4e11184b2779b6cd72f02f0` |
+| `src/lib/review-run.ts` | `9c8faab13a03ba941cbbf97a7aba1157b7d95c19b1920e5a99729e2a28c3f13e` |
 | `src/lib/review-to-scorecard.ts` | `0152e2132464eb32588b90d03b09da076fb32101458ce360ba45f7d7e4e8c60a` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
@@ -1390,6 +1398,6 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
 | `src/lib/scrape.ts` | `14ff3a9ebd3168117388fc305321926545f9a3ad2c186a0e8ddb5ecd659f192c` |
 | `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
-| `src/lib/unrated-kind.ts` | `425eb9ce2e45b4c57c2765165af9b909e3d334bc6e77bf0d6108e4ff53afaa74` |
+| `src/lib/unrated-kind.ts` | `2c9eda296422616f443c2c94301a3d632fe4b8fa34d4b910a674bd2ffeb86a95` |
 | `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |
 | `src/lib/web-shopper-checks.ts` | `648e8b518771d73ca288d79b2c32452f9bdd942587927cd2a5540258b5fd5ec5` |
