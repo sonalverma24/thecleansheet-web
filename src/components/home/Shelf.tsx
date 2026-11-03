@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { ShelfCard } from "@/lib/home-shelf";
+import { isTileRoute, tileImage } from "@/lib/tile-image";
 
 /* The product shelf. Cards are real stored reviews with their real standing; the
    category chips are the only client-side state. On a phone the chips and the cards
@@ -67,10 +68,11 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
               <div className="relative aspect-square border-b border-[#e5dfd6] bg-white">
                 {p.image && (
                   <Image
-                    src={p.image}
+                    src={tileImage(p.slug, p.image) ?? p.image}
                     alt={`${p.brand} ${p.name}`}
                     fill
                     sizes="(min-width: 1024px) 280px, (min-width: 768px) 45vw, 236px"
+                    unoptimized={isTileRoute(tileImage(p.slug, p.image))}
                     className="object-contain p-3"
                   />
                 )}
