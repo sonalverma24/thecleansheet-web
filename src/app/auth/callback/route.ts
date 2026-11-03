@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-next-path";
 import { parseSubscriber, recordSubscriber } from "@/lib/subscribers";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/account";
+  // A path on this site only: `next` comes from the address, so it is checked before it is used.
+  const next = safeNextPath(searchParams.get("next"), origin);
   const openReview = searchParams.get("openReview");
   const subscribe = searchParams.get("subscribe") === "true";
 

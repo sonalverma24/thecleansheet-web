@@ -66,12 +66,15 @@ export default function MarketCard({
   comparing,
   compareBlock,
   onCompare,
+  onOpen,
 }: {
   product: ProductScorecard;
   comparing: boolean;
   /** Why this product cannot join the comparison now (another type is being compared, the list is full, or its type is not filed), or null. */
   compareBlock: string | null;
   onCompare: (id: string) => void;
+  /** Called first when the card's link is clicked. It may stop the navigation (the sign-in gate does), in which case the open is not counted. */
+  onOpen?: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
 }) {
   // The rating is one circle: green, yellow, red, or grey (not rated). A card of a stored review (the pills page) shows the circle its page shows; a catalogue
   // product with no stored review shows the circle of its standing. No label either way.
@@ -116,7 +119,13 @@ export default function MarketCard({
         <h3 className="font-sans font-bold text-[14px] md:text-[15px] leading-[1.3] text-[#282828] line-clamp-2">
           <Link
             href={productHref(product)}
-            onClick={() => track("scorecard_opened", { slug: product.slug })}
+            onClick={(e) => {
+              onOpen?.(e, productHref(product));
+              if (!e.defaultPrevented) track("scorecard_opened", { slug: product.slug });
+            }}
+            onAuxClick={(e) => {
+              if (e.button === 1) onOpen?.(e, productHref(product));
+            }}
             className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-[#248179] focus-visible:after:rounded-[14px]"
           >
             {product.productName}
