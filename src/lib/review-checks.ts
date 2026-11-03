@@ -11,14 +11,13 @@
 ──────────────────────────────────────────────────────────────── */
 import type { ProductReview } from "@/lib/product-review-types";
 import { isSourceBackedInci } from "@/lib/inci-source-backing";
-import { isBrandIngredientUrl } from "@/lib/brand-inci";
-import { incidecoderProductSlug } from "@/lib/inci-fetch";
+import { isPrimaryIngredientUrl } from "@/lib/brand-inci";
 import { sanitizeInciList } from "@/lib/product-identity";
 
 export type ReviewCheckIssue =
   /** No ingredient list with a captured source quote (trust 3 or more, not cut short, at least 3 items). */
   | "primary-ingredient-source-missing"
-  /** The list did not come from a Decoder product page or the brand's own product page. */
+  /** The list did not come from a Decoder product page, the brand's own product page or a Nykaa product page. */
   | "ingredient-source-not-primary"
   /** The list holds something that is not an ingredient name. */
   | "invalid-ingredient-list"
@@ -30,7 +29,7 @@ export function reviewCheckIssues(review: ProductReview): ReviewCheckIssue[] {
   const list = review.inciIngredients ?? [];
   if (!isSourceBackedInci(review, list)) issues.push("primary-ingredient-source-missing");
   const url = review.inciEvidence?.sourceUrl ?? "";
-  if (!incidecoderProductSlug(url) && !isBrandIngredientUrl(url, review.brand)) issues.push("ingredient-source-not-primary");
+  if (!isPrimaryIngredientUrl(url, review.brand)) issues.push("ingredient-source-not-primary");
   if (!sanitizeInciList(list).ok) issues.push("invalid-ingredient-list");
   if (!review.researchLog?.grounded) issues.push("web-search-missing");
   return issues;

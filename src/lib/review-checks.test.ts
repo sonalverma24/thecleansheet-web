@@ -44,7 +44,7 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
   });
 
   it("refuses a list taken from a retailer page, even with a quote", () => {
-    const url = "https://www.nykaa.com/plix-night-cream/p/123";
+    const url = "https://www.amazon.in/Plix-Night-Cream/dp/B0X123";
     const r = review({ inciSourceUrl: url, inciEvidence: makeInciEvidence(url, QUOTE, WHEN, "Plix Night Cream") });
     expect(reviewCheckIssues(r)).toEqual(["primary-ingredient-source-missing", "ingredient-source-not-primary"]);
   });
@@ -54,6 +54,14 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
     const evidence = makeInciEvidence(url, QUOTE, WHEN, "Oil Control Face Moisturizer");
     expect(reviewCheckIssues(review({ brand: "Chemist at Play", inciSourceUrl: url, inciEvidence: evidence }))).toEqual([]);
     expect(reviewCheckIssues(review({ brand: "Plix", inciSourceUrl: url, inciEvidence: evidence }))).toEqual(["ingredient-source-not-primary"]);
+  });
+
+  it("passes a list read off a Nykaa product page, captured at trust 3 like Decoder; a Nykaa page that is not a product page, and any other retailer, still do not", () => {
+    const nykaa = "https://www.nykaa.com/plix-night-cream/p/123";
+    const read = (url: string) => review({ inciSourceUrl: url, inciEvidence: makeInciEvidence(url, QUOTE, WHEN, "Plix Night Cream", false, { trust: 3, origin: "nykaa" }) });
+    expect(reviewCheckIssues(read(nykaa))).toEqual([]);
+    for (const other of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.nykaa.com/plix-night-cream/p/123/extra", "https://www.amazon.in/Plix/dp/B0X123", "https://www.flipkart.com/plix/p/itm1"])
+      expect(reviewCheckIssues(read(other)), other).toContain("ingredient-source-not-primary");
   });
 
   it("refuses a model-reported list that has no source", () => {
@@ -81,7 +89,7 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
   it("reports a missing ingredient list as three separate issues, so a re-run can refuse it while a live search still shows the page", () => {
     const noList = review({ inciIngredients: [], ingredientReads: [], inciSourceUrl: undefined, inciEvidence: undefined });
     expect(reviewCheckIssues(noList)).toHaveLength(3);
-    const retailer = "https://www.nykaa.com/plix-night-cream/p/123";
+    const retailer = "https://www.amazon.in/Plix-Night-Cream/dp/B0X123";
     expect(reviewCheckIssues(review({ inciSourceUrl: retailer, inciEvidence: makeInciEvidence(retailer, QUOTE, WHEN, "Plix Night Cream") }))).toContain("ingredient-source-not-primary");
   });
 });
