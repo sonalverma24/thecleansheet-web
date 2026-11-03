@@ -25,7 +25,7 @@ EVIDENCE INTEGRITY - NO FABRICATION (highest priority, overrides everything):
   - For a "free from X" / "X-free" claim (fragrance-free, alcohol-free, paraben-free): if the retrieved INCI does NOT list X, the claim is SUPPORTED. A clean INCI proves the claim true, do not invent a contradiction. Only flag a conflict when you can QUOTE X in the retrieved INCI. If you could not retrieve the INCI, say so and do not assume X is present.
   - For a "contains [active] X" claim: FIRST map the marketing name to its INCI name, THEN check the retrieved INCI. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid / Sodium Ascorbyl Phosphate / Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.
   - If a claimed active is genuinely absent from the retrieved INCI even after name-mapping, mark it UNVERIFIED (could not confirm), NOT contradicted. A retrieved INCI can be the wrong variant/size, truncated, or outdated, so its absence is not proof of absence. NEVER call a brand's advertising "misleading" or an ASCI violation solely because a claimed ingredient is missing from a scraped INCI. Only a claim that is affirmatively disproven (e.g. "fragrance-free" while Parfum is listed) may be called contradicted.
-  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw in a brand or marketplace source - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
+  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw on the brand's OWN website page for this exact product - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
   - ONE PRODUCT ONLY - never import another SKU's claims. Every claim in claimMap must be about the EXACT product under review (this variant, this format). A brand's homepage, "collections" pages, bundles, and marketplace listings routinely show OTHER products from the same brand right next to this one. Do NOT harvest a claim unless the source page is clearly about THIS product. A cross-CATEGORY mismatch is the tell-tale sign of misattribution and is forbidden: a body moisturizer / body wash / lotion must NOT carry hair, scalp, hair-fall, dandruff, frizz, or shine claims; a hair product must not carry skin/face claims; a face serum must not carry oral-care claims. If a striking claim (e.g. "50% less hair fall in 28 days") belongs to a different product type than the one you are reviewing, it is another SKU's claim - drop it. When unsure whether a claim is for this exact product, leave it out.
 
 ---
@@ -46,8 +46,8 @@ Step 2 - Map prices across all Indian platforms.
   Calculate price per ml or per g = price ÷ quantity.
 
 Step 3 - Find and catalogue EVERY claim.
-  Look on: brand website, Nykaa listing title, Amazon listing title and bullet points, product pack (if shown), and quick commerce listings.
-  Capture the EXACT claim text, not your paraphrase. Collect claims from all platforms.
+  Look ONLY on the brand's own website page for this exact product. That page is the one source of claims we hold the brand to. A claim that appears only on Nykaa, Amazon, Flipkart, Tira, a quick-commerce app, a reseller that copies the brand's text ("via Clinikally"), a review site or a retailer's brand-info blurb is NOT catalogued: do not list it in claimMap, even when it is a striking claim. If the brand's own page for this product cannot be found or read, return an EMPTY claimMap and say so in claimSummary and cleanSheetNote; never fill it from retailer listings.
+  Capture the EXACT claim text, not your paraphrase.
   SCOPE each claim to THIS product's own listing/PDP. Brand sites cross-sell other SKUs (a body spray page may link a hair oil, a bundle, a "bestsellers" strip); only catalogue a claim you can tie to this exact product. Never carry a hair/scalp claim onto a body product (or vice-versa) - a category mismatch means the claim is another product's. See EVIDENCE INTEGRITY: "ONE PRODUCT ONLY".
 
 Step 4 - Check evidence for each claim.
@@ -58,7 +58,7 @@ Step 4 - Check evidence for each claim.
 
 Step 5 - Check platform claim parity.
   Compare exact claim language across brand website, Nykaa, Amazon, and quick commerce.
-  Note where claims are stronger, weaker, or differently worded.
+  Note where claims are stronger, weaker, or differently worded. This step is a comparison note for platformParity only: a marketplace-only claim never becomes an entry in claimMap.
 
 Step 6 - Find INCI and assess ingredient transparency.
   Search: "[brand] [product name] ingredients" on the official brand product page or INKEE Decoder (formerly INCIDecoder).
@@ -500,7 +500,7 @@ OUTPUT JSON STRUCTURE:
   "claimMap": [
     {
       "text": "string - exact claim as stated by brand",
-      "source": "string - where this claim appears: Brand Website / Amazon Title / Nykaa Description / Product Pack / etc.",
+      "source": "string - always \"Brand Website\" (the brand's own page for this product). A claim not on that page is not listed at all.",
       "types": ["functional | appearance | active | concern | time-bound | clinical | safety | free-from | emotional"],
       "primaryType": "string - single primary type",
       "riskLevel": "low | medium | high | very-high | red-flag",

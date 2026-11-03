@@ -12,6 +12,15 @@ import { catalogueConfirmsPage } from "./brand-catalogue";
 const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
 
+/** A brand's own shop when it is not on a domain named after the brand: a brand that sells under its parent company's site. Keyed by the compacted brand
+ *  name, each value a bare host (no www). A reviewed list, not a guess: the `brands` table cannot supply it (16 brands, none of them these), and
+ *  isBrandIngredientUrl is synchronous and also judges stored analyses (review-checks, the re-run policy), so it cannot ask a database. An entry is added only after
+ *  the host is confirmed as the brand's own, and is for that brand alone: a parent company's site also sells other brands. The product page must still name the product. */
+const OWN_SHOP_HOSTS = new Map<string, readonly string[]>([
+  // chemistatplay.in answers 301 to innovist.com (checked 2026-11-03). innovist.com also sells Bare Anatomy, SunScoop and Anecdote, which stay unlisted.
+  ["chemistatplay", ["innovist.com"]],
+]);
+
 /** Conservative discovery filter: unknown domain spellings stay unverified. */
 export function isBrandIngredientUrl(raw: string, brand: string): boolean {
   try {
@@ -20,9 +29,11 @@ export function isBrandIngredientUrl(raw: string, brand: string): boolean {
     const host = u.hostname.toLowerCase().replace(/^www\./, "");
     const labels = host.split(".");
     if (!(labels.length === 2 || (labels.length === 3 && labels[1] === "co" && labels[2] === "in")) || /^\d+(\.\d+)*$/.test(host)) return false;
-    const domain = compact(labels[0]);
     const b = compact(brand);
-    return b.length >= 3 && domain.startsWith(b) && SUFFIXES.has(domain.slice(b.length)) && u.pathname !== "/";
+    if (b.length < 3 || u.pathname === "/") return false;
+    if (OWN_SHOP_HOSTS.get(b)?.includes(host)) return true;
+    const domain = compact(labels[0]);
+    return domain.startsWith(b) && SUFFIXES.has(domain.slice(b.length));
   } catch { return false; }
 }
 

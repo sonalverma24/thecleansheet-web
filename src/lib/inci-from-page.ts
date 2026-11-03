@@ -427,6 +427,48 @@ export function extractInciFromHtml(html: string): string[] {
   return extractInciFromText(stripTags(html));
 }
 
+/* ── A list that runs on from the page copy before it ──────────── */
+
+/* Tags that start or end a block of text. The ones after the tag name are a space, "/" or ">", so a custom element such as <p-icon> is not one. */
+const BLOCK_TAG = /<\/?(?:address|article|aside|blockquote|br|dd|details|dialog|div|dl|dt|fieldset|figcaption|figure|footer|form|h[1-6]|header|hr|li|main|nav|ol|p|pre|section|summary|table|tbody|td|tfoot|th|thead|tr|ul)(?=[\s/>])[^>]*>/gi;
+
+/** The longest list found inside a single block of the page: the text between two block tags, with inline tags stripped. When
+    the tags are stripped from the whole page the blocks run together, and a list that follows a heading or a paragraph with no
+    punctuation between them ("... Clinically Tested Brands That Lead Aqua, Niacinamide, ...") has its first entry swallowed
+    by the copy before it; as page copy that piece is far too long to be an entry and is dropped. Read on its own, the block
+    holds the list and nothing else. A block that is not a list, or a list that a block boundary cuts in two, gives nothing or a
+    shorter list: this is only ever consulted through extendFromBlocks. */
+export function extractInciFromBlocks(rawHtml: string): InciExtraction | null {
+  const html = flattenRichTextDumps(rawHtml).replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
+  let best: InciExtraction | null = null;
+  for (const chunk of html.split(BLOCK_TAG)) {
+    if ((chunk.match(/,/g)?.length ?? 0) < 4) continue; // five entries need four commas
+    const ex = extractInciWithQuote(stripTags(chunk));
+    if (ex && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
+  }
+  return best;
+}
+
+const sameEntry = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
+
+/** Whether `longer` holds `base`, entry for entry and in order, with more entries before it or after it. */
+function containsRun(longer: string[], base: string[]): boolean {
+  if (longer.length <= base.length) return false;
+  for (let at = 0; at + base.length <= longer.length; at++) {
+    if (base.every((entry, i) => sameEntry(longer[at + i], entry))) return true;
+  }
+  return false;
+}
+
+/** The list read from the page's visible text, with the entries a run-on hid at its edges put back. The block reading is used only when it
+    holds the visible list whole and in order and has more entries: it can add what the page copy swallowed, never replace, reorder or
+    shorten the list, and never supplies a list the visible reading refused (a list cut in two by a gap, or none). */
+export function extendFromBlocks(visible: InciExtraction | null, html: string): InciExtraction | null {
+  if (!visible) return null;
+  const blocks = extractInciFromBlocks(html);
+  return blocks && containsRun(blocks.ingredients, visible.ingredients) ? blocks : visible;
+}
+
 /* ── Lists the page ships in its own data ─────────────────────── */
 
 /* Names storefronts give the full ingredient text in their page data. Only a STRING value counts: the
@@ -525,6 +567,23 @@ export function extractMarkdownTitles(md: string): string[] {
   return [...new Set([titleLine, heading].map((t) => (t ? tidy(t) : "")).filter(Boolean))];
 }
 
+/** "Full Ingredient List", "Ingredients:" or "Key ingredients" standing inside one of the first entries, with the first ingredient after it. */
+const GLUED_LABEL = /\b(?:full\s+)?ingredients?(?:\s+list)?\s*:?\s+/i;
+
+/** A page that prints no line break between its copy and the list label ("...and address uneven texture Full Ingredient List Water, Glycerin") glues the copy and the
+    label onto the first entries: Beauty of Joseon's list began "soothe", "and address uneven texture Full Ingredient List Water". The list starts after the label; the
+    entries before it are page copy. Applied to a page read, not to extractInciWithQuote, which must keep agreeing with the extractor it replaced. */
+export function startAtListLabel(ex: InciExtraction | null): InciExtraction | null {
+  if (!ex) return ex;
+  const at = ex.ingredients.slice(0, 3).findIndex((x) => GLUED_LABEL.test(x));
+  if (at < 0) return ex;
+  const inItem = GLUED_LABEL.exec(ex.ingredients[at])!;
+  const first = ex.ingredients[at].slice(inItem.index + inItem[0].length).trim();
+  const inQuote = GLUED_LABEL.exec(ex.quote);
+  if (!first || !looksLikeIngredient(first) || !inQuote) return ex;
+  return { ingredients: [first, ...ex.ingredients.slice(at + 1)], quote: ex.quote.slice(inQuote.index + inQuote[0].length).trim() };
+}
+
 /** Resolve a product page URL to its published INCI. Tries the raw HTML first
     (keeps accordion content the Jina reader collapses), then the keyless Jina
     reader as a fallback for bot-protected storefronts. Null if neither yields a
@@ -533,9 +592,9 @@ export function extractMarkdownTitles(md: string): string[] {
 export async function fetchInciFromProductPage(url: string): Promise<PageINCI | null> {
   const html = await fetchRawHtml(url);
   if (html) {
-    // The visible text first; the page's own data wins only when it holds a longer list (the markup shows
-    // the key ingredients, or a list cut short, and the popup shows the whole).
-    const visible = extractInciWithQuote(stripTags(html));
+    // The visible text first, with any entry a run-on from the copy before the list hid put back (the list read on its own, in its block), then started after a label glued to the copy;
+    // the page's own data wins only when it holds a longer list (the markup shows the key ingredients, or a list cut short, and the popup shows the whole).
+    const visible = startAtListLabel(extendFromBlocks(extractInciWithQuote(stripTags(html)), html));
     const embedded = extractEmbeddedInci(html, url);
     const ex = embedded && (!visible || embedded.ingredients.length > visible.ingredients.length) ? embedded : visible;
     if (ex && ex.ingredients.length >= 5) {
@@ -546,7 +605,7 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = extractInciWithQuote(md);
+    const ex = startAtListLabel(extractInciWithQuote(md));
     if (ex && ex.ingredients.length >= 5) {
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
     }

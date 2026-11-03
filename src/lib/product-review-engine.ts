@@ -8,6 +8,7 @@
 
 import { createHash } from "node:crypto";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
+import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -1387,16 +1388,28 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (parsed?.type === "out_of_scope") return { type: "out_of_scope" };
     // A retailer/name hint may omit a multiword brand. Once the reader identifies
     // it, make one lookup with that identity and reanalyse against the captured INCI.
-    let namedLater: import("@/lib/inci-from-page").PageINCI | null = null;
-    if (isValidProductReview(parsed) && !inci && !pageInci && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
+    // It runs unless the first lookup already ended on the brand's own page: with the first word of a URL slug as the brand ("dynasty" for Beauty of Joseon's
+    // /products/dynasty-cream) the brand's own page was refused as not the brand's, so a Decoder list (found by name, or by the search) won without ever meeting it.
+    // Whatever list the first lookup took competes again here, with the right brand.
+    const taken = pageInci ?? (inci ? decoderAsPage(inci) : null);
+    let listChanged = false;
+    if (isValidProductReview(parsed) && taken?.origin !== "brand-page" && parsed.brand.toLowerCase() !== brandHint.toLowerCase()) {
       // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
-      namedLater = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen)), PEER_LOOKUP_MS); // the model was already asked for this product
+      const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen), taken ? [taken] : []), PEER_LOOKUP_MS); // the model was already asked for this product
+      if (second && taken && second.source === taken.source) { // the first list won again: it stays the answer, with what lost recorded
+        if (pageInci) pageInci = second; else inciAlternatives = second.alternatives ?? inciAlternatives;
+      } else if (second) {
+        pageInci = second;
+        listChanged = true;
+      }
     }
-    // Last resort, once the reader has named the product and no primary source gave a list: a list the owner typed in from the product's own pack
-    // (src/data/inci/owner-supplied.ts). It is matched on the brand and the exact product name, and recorded as owner-supplied.
-    if (!namedLater && isValidProductReview(parsed) && !inci && !pageInci) namedLater = findOwnerSupplied(parsed.brand, parsed.productName);
-    if (namedLater && isValidProductReview(parsed)) {
-      pageInci = namedLater;
+    // Last resort, once the reader has named the product and no primary source gave a list (not Decoder, not a page, not the corrected-brand lookup above): a list the
+    // owner typed in from the product's own pack (src/data/inci/owner-supplied.ts). It is matched on the brand and the exact product name, and recorded as owner-supplied.
+    if (isValidProductReview(parsed) && !inci && !pageInci) {
+      const owned = findOwnerSupplied(parsed.brand, parsed.productName);
+      if (owned) { pageInci = owned; listChanged = true; }
+    }
+    if (listChanged && pageInci && isValidProductReview(parsed)) {
       const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });
       suffix = block;
       gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
@@ -1422,6 +1435,10 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
      computed, so a rebrand (Minimalist → Be Minimalist) can't store the same
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
+
+  /* Only the claims on the brand's own website are checked (owner rule, 2026-11-02). The prompt asks for that; this is the backstop for a label that cites only a
+     retailer, a reseller or a reviewer. The counts go into the research log so a product whose brand page gave no claims reads "claims not examined", not "no claims". */
+  review = withBrandWebsiteClaimsOnly(review).review;
 
   /* A nutraceutical or a drug is not a cosmetic: no review, nothing stored, nothing added to the registry or the ingredient directory. This runs first, before anything is
      written. A drug is named by what the product says: a prescription notice, a Drug Facts label, a drug-only maker; so here the product page and the label artwork are read

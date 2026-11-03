@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractInciFromText, extractInciWithQuote, extractMarkdownTitles, extractPageMeta, sentenceSpans } from "@/lib/inci-from-page";
+import { extractInciFromText, extractInciWithQuote, extractMarkdownTitles, extractPageMeta, sentenceSpans, startAtListLabel } from "@/lib/inci-from-page";
 
 /* LEGACY is a verbatim copy of extractInciFromText as it stood before quotes were
    added. The new extractor must accept exactly the same list for every input: the quote
@@ -801,5 +801,25 @@ describe("only a piece with two label words, the first capture too long, differs
     }
     expect(checked).toBeGreaterThan(300);
     expect(differing).toBeGreaterThan(0);
+  });
+});
+
+describe("startAtListLabel: a label glued to the list by a page with no line break (Beauty of Joseon, 2026-11-02)", () => {
+  const page = "Deep hydration. Comfortably absorbs to soothe, and address uneven texture Full Ingredient List Water, Glycerin, Hydrogenated Polydecene, 1,2-Hexanediol, Niacinamide, Squalane, Butylene Glycol, Propanediol, Xanthan Gum, Panax Ginseng Root Water, Sodium Hyaluronate How to use Apply after toner.";
+
+  it("starts the list after the label: the page copy before it is not an ingredient", () => {
+    const raw = extractInciWithQuote(page);
+    const r = startAtListLabel(raw);
+    expect(r?.ingredients.slice(0, 3)).toEqual(["Water", "Glycerin", "Hydrogenated Polydecene"]);
+    expect(r?.ingredients.join(" ")).not.toMatch(/soothe|Full Ingredient List/i);
+    expect(r?.quote.startsWith("Water, Glycerin")).toBe(true);
+    // The extractor itself still returns what it always did.
+    expect(raw?.ingredients.join(" ")).toMatch(/Full Ingredient List/i);
+  });
+
+  it("leaves a list that has no label in its first entries, and a null, as they were", () => {
+    const plain = extractInciWithQuote("Water, Glycerin, Hydrogenated Polydecene, 1,2-Hexanediol, Niacinamide, Squalane, Butylene Glycol, Propanediol, Xanthan Gum");
+    expect(startAtListLabel(plain)).toBe(plain);
+    expect(startAtListLabel(null)).toBeNull();
   });
 });
