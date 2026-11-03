@@ -1,8 +1,7 @@
 import type { ProductReview } from "@/lib/product-review-types";
 import { brandKey, isSameProduct, titleIdentifiesProduct, sanitizeInciList } from "@/lib/product-identity";
 import { isSourceBackedInci } from "@/lib/inci-source-backing";
-import { isBrandIngredientUrl } from "@/lib/brand-inci";
-import { incidecoderProductSlug } from "@/lib/inci-fetch";
+import { isPrimaryIngredientUrl } from "@/lib/brand-inci";
 
 export interface RerunRow {
   product_slug: string; product_name: string; brand: string;
@@ -46,10 +45,11 @@ export function validateReplacement(old: RerunRow, fresh: ProductReview, oldPill
   const list = fresh.inciIngredients ?? [];
   if (!isSourceBackedInci(fresh, list)) errors.push("primary-ingredient-source-missing");
   const url = fresh.inciEvidence?.sourceUrl ?? "";
-  if (!incidecoderProductSlug(url) && !isBrandIngredientUrl(url, fresh.brand)) errors.push("ingredient-source-not-primary");
+  if (!isPrimaryIngredientUrl(url, fresh.brand)) errors.push("ingredient-source-not-primary");
   if (!sanitizeInciList(list).ok) errors.push("invalid-ingredient-list");
   const priorCount = before?.inciIngredients?.length ?? 0;
-  if (priorCount && before && isSourceBackedInci(before, before.inciIngredients ?? []) && list.length < Math.ceil(priorCount * 0.9)) errors.push("ingredient-list-shorter");
+  // A shorter list from the brand's own page is the brand's word on what the product holds now (the stored one may be another source's older or other version): not held for its length.
+  if (priorCount && before && isSourceBackedInci(before, before.inciIngredients ?? []) && list.length < Math.ceil(priorCount * 0.9) && fresh.inciEvidence?.origin !== "brand-page") errors.push("ingredient-list-shorter");
   if (!fresh.researchLog?.grounded) errors.push("web-search-missing");
   if (oldPill !== "not-enough-info" && newPill === "not-enough-info") errors.push("decision-lost");
   return errors;

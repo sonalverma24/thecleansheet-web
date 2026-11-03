@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PAGE_FINDER_SYSTEM_PROMPT, READ_CAP_MS, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
+import { PAGE_FINDER_SYSTEM_PROMPT, READ_CAP_MS, askModelForProductPage, findBrandInci, isBrandIngredientUrl, isPrimaryIngredientUrl, recordCandidates, searchBrandPages, shortNameOnOwnPage, withKnownCandidates } from "./brand-inci";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchIncidecoderProduct } from "./inci-fetch";
 import { fetchPageMarkdown } from "./scrape";
@@ -509,5 +509,111 @@ describe("a brand whose own shop is not on a domain named after it", () => {
     const read = vi.fn();
     expect(await findBrandInci("Plix Oil Control Face Moisturizer", "Plix", undefined, { search: async () => [capUrl], read })).toBeNull();
     expect(read).not.toHaveBeenCalled();
+  });
+});
+
+/* 2026-11-03: Antinorm's High & Dry. The brand's page is titled just "High & Dry", which the title rule cannot accept (it wants three distinctive words of a
+   title inside the shopper's longer name), so a page that carried the whole list was refused as "not this product". */
+describe("a brand's own page for a product with a short name of its own", () => {
+  const url = "https://antinorm.co/products/high-dry?variant=46510272839818&utm_source=google&gclid=abc";
+  const name = "Antinorm High & Dry Everyday Oil-Absorbing Dry Shampoo + Refill";
+  const list = ["Zea Mays (Corn) Starch", "Bentonite", "Oryza Sativa (Rice) Starch", "Magnesium Aluminum Silicate", "Kaolin Powder", "Maranta Arundinacea (Arrowroot) Root Powder", "Maize Starch"];
+  const page = (over: Partial<{ source: string; pageTitles: string[] }> = {}) => ({ source: url, ingredients: list, quote: list.join(", "), pageTitles: ["High & Dry"], siteName: null, ...over });
+
+  it("is taken when the title and the address say the same words and the shopper's whole name holds them", async () => {
+    expect(shortNameOnOwnPage(url, ["High & Dry"], "Antinorm", name)).toBe(true);
+    expect(await findBrandInci(name, "Antinorm", url, { search: async () => [], read: async () => page() })).toMatchObject({ origin: "brand-page", trust: 4, ingredients: list });
+    expect(await findBrandInci(name, "Antinorm", undefined, { search: async () => ["https://antinorm.co/products/high-dry"], read: async () => page({ source: "https://antinorm.co/products/high-dry" }) })).toMatchObject({ ingredients: list });
+  });
+
+  it("is not taken when anything disagrees: another product's address, a word the name lacks, a kind of product only, one word, another domain", () => {
+    expect(shortNameOnOwnPage("https://antinorm.co/products/bye-bye-blow-dry", ["High & Dry"], "Antinorm", name)).toBe(false); // address and title disagree
+    expect(shortNameOnOwnPage(url, ["High & Dry"], "Antinorm", "Antinorm Bye Bye Blow Dry")).toBe(false); // the name lacks the title's words
+    expect(shortNameOnOwnPage("https://antinorm.co/products/face-wash", ["Face Wash"], "Antinorm", "Antinorm Face Wash Gel")).toBe(false); // only a kind of product
+    expect(shortNameOnOwnPage("https://antinorm.co/products/serum", ["Serum"], "Antinorm", "Antinorm Vitamin C Serum")).toBe(false); // one word
+    expect(shortNameOnOwnPage("https://www.nykaa.com/high-dry/p/123", ["High & Dry"], "Antinorm", name)).toBe(false); // not the brand's own domain
+    expect(shortNameOnOwnPage(url, ["High & Dry"], "Plix", name)).toBe(false); // not this brand's domain
+    expect(shortNameOnOwnPage(url, [], "Antinorm", name)).toBe(false); // no title at all
+  });
+
+  it("does not let findBrandInci take a page it would still refuse: no quote, or another product's page", async () => {
+    expect(await findBrandInci(name, "Antinorm", url, { search: async () => [], read: async () => ({ ...page(), quote: "" }) })).toBeNull();
+    expect(await findBrandInci(name, "Antinorm", "https://antinorm.co/products/bye-bye-blow-dry", { search: async () => [], read: async () => page({ source: "https://antinorm.co/products/bye-bye-blow-dry" }) })).toBeNull();
+  });
+});
+
+describe("what counts as a primary ingredient source", () => {
+  it("is a Decoder product page, the brand's own product page or a Nykaa product page, and nothing else", () => {
+    expect(isPrimaryIngredientUrl("https://inkeedecoder.com/products/plix-night-cream", "Plix")).toBe(true);
+    expect(isPrimaryIngredientUrl("https://www.plixlife.com/product/night-cream/602", "Plix")).toBe(true);
+    expect(isPrimaryIngredientUrl("https://www.nykaa.com/plix-night-cream/p/123", "Plix")).toBe(true);
+    for (const u of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.amazon.in/Plix/dp/B0X123", "https://www.flipkart.com/plix/p/itm1", "https://plixlife.com.evil.test/product/a", "", "not a url"])
+      expect(isPrimaryIngredientUrl(u, "Plix"), u).toBe(false);
+  });
+});
+
+/* 2026-11-03 (owner rule: "the brand's page must be the winner at all times"). The analysis of Be Minimalist's SPF 50 carried Retinol that the brand's own page does not
+   list: it came from INKEE Decoder's page for the product (34 entries, a list 73% like the brand's 30), and the brand's page was never even a candidate, because the model
+   named the brand "Minimalist" and beminimalist.co begins with "be". */
+describe("the brand's own page wins whenever it passes the checks", () => {
+  const brandUrl = "https://beminimalist.co/products/multi-vitamin-spf-50";
+  const decoderUrl = "https://inkeedecoder.com/products/be-minimalist-spf-50-sunscreen-pa";
+  const nykaaUrl = "https://www.nykaa.com/minimalist-spf-50-sunscreen/p/123456";
+  const query = "Minimalist SPF 50 Sunscreen";
+  const brandList = ["Water/Aqua", "Octocrylene", "Butyl Methoxydibenzoylmethane", "Isododecane", "Niacinamide", "Titanium Dioxide", "Allantoin", "Panthenol", "Sodium Hyaluronate", "Tocopheryl acetate", "Xanthan Gum", "Silica"];
+  const decoderList = ["Aqua", "Octocrylene", "Butyl Methoxydibenzoylmethane", "Isododecane", "Niacinamide", "Titanium Dioxide", "Allantoin", "Panthenol", "Sodium Hyaluronate", "Tocopherol Acetate", "Retinol", "Polysorbate 20", "Polyacrylate Crosspolymer-6", "Trisodium Ethylenediamine Disuccinate", "Xanthan Gum", "Silica"];
+  const brandPage = { source: brandUrl, ingredients: brandList, quote: brandList.join(", "), pageTitles: ["Multi-Vitamin SPF 50 | Minimalist", "SPF 50 Sunscreen"] };
+  const decoderPage = { source: decoderUrl, ingredients: decoderList, quote: decoderList.join(", "), pageTitles: ["Minimalist SPF 50 Sunscreen"] };
+  const nykaaPage = { source: nykaaUrl, ingredients: [...decoderList, "Parfum", "Citric Acid"], quote: "x", pageTitles: ["Minimalist SPF 50 Sunscreen"] };
+  const deps = (over: Record<string, unknown> = {}) => ({ search: async () => [brandUrl, decoderUrl, nykaaUrl], read: async () => brandPage, readDecoder: async () => decoderPage, searchNykaa: async () => [], readNykaa: async () => nykaaPage, ...over });
+
+  it("beats a longer Decoder list, and the list that lost is recorded, so the choice is visible", async () => {
+    const r = await findBrandInci(query, "Be Minimalist", undefined, deps());
+    expect(r).toMatchObject({ source: brandUrl, origin: "brand-page", trust: 4 });
+    expect(r?.ingredients).toEqual(brandList);
+    expect(r?.ingredients).not.toContain("Retinol");
+    expect(r?.alternatives).toHaveLength(2); // both other sources differ from the brand's list
+    expect(r?.alternatives).toContainEqual({ source: decoderUrl, origin: "decoder", count: decoderList.length });
+    expect(r?.alternatives?.map((a) => a.origin).sort()).toEqual(["decoder", "nykaa"]);
+  });
+
+  it("beats a longer Nykaa list as well, and a Decoder list that is the same formula is not recorded as a rival", async () => {
+    const sameAsBrand = { ...decoderPage, ingredients: [...brandList.slice(0, -1), "Silica"], quote: "y" };
+    const r = await findBrandInci(query, "Be Minimalist", undefined, deps({ readDecoder: async () => sameAsBrand }));
+    expect(r).toMatchObject({ source: brandUrl, origin: "brand-page" });
+    expect(r?.alternatives?.map((a) => a.origin)).toEqual(["nykaa"]);
+  });
+
+  it("wins even when the brand's list is far shorter than another source's", async () => {
+    const short = { ...brandPage, ingredients: brandList.slice(0, 6), quote: brandList.slice(0, 6).join(", ") };
+    expect(await findBrandInci(query, "Be Minimalist", undefined, deps({ read: async () => short }))).toMatchObject({ source: brandUrl, origin: "brand-page" });
+  });
+
+  it("is found whichever way the brand is spelled: the model's 'Minimalist' is the brand 'Be Minimalist'", async () => {
+    expect(isBrandIngredientUrl(brandUrl, "Minimalist")).toBe(true);
+    expect(isBrandIngredientUrl(brandUrl, "Be Minimalist")).toBe(true);
+    expect(await findBrandInci(query, "Minimalist", undefined, deps())).toMatchObject({ source: brandUrl, origin: "brand-page" });
+  });
+
+  it("is only a page that passes the same checks: one that does not name the product, has no quote or is not a list never wins, and the next source is used", async () => {
+    for (const bad of [{ ...brandPage, pageTitles: ["Lip Balm SPF 30 | Minimalist"] }, { ...brandPage, quote: "" }, { ...brandPage, ingredients: ["Contains no parabens", "Free from sulphates", "Made without fragrance"] }])
+      expect(await findBrandInci(query, "Be Minimalist", undefined, deps({ read: async () => bad, readNykaa: async () => null })), JSON.stringify(bad.pageTitles)).toMatchObject({ origin: "decoder", source: decoderUrl });
+  });
+
+  it("changes nothing when there is no brand page: the most complete list still wins", async () => {
+    expect(await findBrandInci(query, "Be Minimalist", undefined, deps({ search: async () => [decoderUrl, nykaaUrl], read: vi.fn() }))).toMatchObject({ source: nykaaUrl, origin: "nykaa" });
+  });
+});
+
+describe("a brand's own site is recognised from the owner's brands table", () => {
+  it("accepts the sites that are not named with the brand's name alone, for that brand only", () => {
+    for (const [brand, url] of [
+      ["Deconstruct", "https://thedeconstruct.in/products/x"], ["Dot & Key", "https://www.dotandkey.com/products/x"], ["Hyphen", "https://letshyphen.com/products/x"],
+      ["Pilgrim", "https://discoverpilgrim.com/products/x"], ["Plum", "https://plumgoodness.com/products/x"], ["Derma Co", "https://thedermaco.com/products/x"],
+    ] as const) {
+      expect(isBrandIngredientUrl(url, brand), brand).toBe(true);
+      expect(isBrandIngredientUrl(url, "Plix"), `${brand} site for another brand`).toBe(false);
+      expect(isBrandIngredientUrl(url.replace("https://", "https://evil."), brand), `${brand} look-alike`).toBe(false);
+    }
   });
 });

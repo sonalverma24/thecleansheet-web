@@ -1,13 +1,14 @@
 /** Deterministic fallback for retailer/name inputs. Search discovers pages; a matching product page on a recognisable brand domain, an INKEE/INCI Decoder
  * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
- * checks is read, and the most complete list wins, with the other lists recorded so the choice is visible. Other retailers (Amazon, Flipkart...) never supply it. */
+ * checks is read; the brand's own page wins whenever one passes (owner rule, 2026-11-03), otherwise the most complete list wins, and the other lists are recorded so the choice is visible. Other retailers (Amazon, Flipkart...) never supply it. */
 import { fetchInciFromProductPage, type InciAlternative, type PageINCI } from "./inci-from-page";
 import { fetchIncidecoderProduct, incidecoderProductSlug } from "./inci-fetch";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchPageMarkdown } from "./scrape";
-import { inciSimilarity, pageTitleNamesProduct, sanitizeInciList } from "./product-identity";
+import { inciSimilarity, nameTokens, pageTitleNamesProduct, sanitizeInciList } from "./product-identity";
 import { isNykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
 import { catalogueConfirmsPage } from "./brand-catalogue";
+import { brandNameVariants } from "./verified-store";
 
 const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
@@ -19,6 +20,14 @@ const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics",
 const OWN_SHOP_HOSTS = new Map<string, readonly string[]>([
   // chemistatplay.in answers 301 to innovist.com (checked 2026-11-03). innovist.com also sells Bare Anatomy, SunScoop and Anecdote, which stay unlisted.
   ["chemistatplay", ["innovist.com"]],
+  // The owner's own `brands.website_url` (read 2026-11-03) for the brands whose site is not named with the brand's name alone ("thedeconstruct", "letshyphen",
+  // "discoverpilgrim", "plumgoodness", "thedermaco", "dotandkey" for "Dot & Key"). Minimalist is not here: "Be Minimalist" and "Minimalist" are one brand (brandNameVariants).
+  ["deconstruct", ["thedeconstruct.in"]],
+  ["dotkey", ["dotandkey.com"]],
+  ["hyphen", ["letshyphen.com"]],
+  ["pilgrim", ["discoverpilgrim.com"]],
+  ["plum", ["plumgoodness.com"]],
+  ["dermaco", ["thedermaco.com"]],
 ]);
 
 /** Conservative discovery filter: unknown domain spellings stay unverified. */
@@ -29,12 +38,45 @@ export function isBrandIngredientUrl(raw: string, brand: string): boolean {
     const host = u.hostname.toLowerCase().replace(/^www\./, "");
     const labels = host.split(".");
     if (!(labels.length === 2 || (labels.length === 3 && labels[1] === "co" && labels[2] === "in")) || /^\d+(\.\d+)*$/.test(host)) return false;
-    const b = compact(brand);
-    if (b.length < 3 || u.pathname === "/") return false;
-    if (OWN_SHOP_HOSTS.get(b)?.includes(host)) return true;
+    if (u.pathname === "/") return false;
     const domain = compact(labels[0]);
-    return domain.startsWith(b) && SUFFIXES.has(domain.slice(b.length));
+    // Every spelling the brand is known by counts ("Minimalist" and "Be Minimalist" are one brand, and the model may give either).
+    return brandNameVariants(brand).some((name) => {
+      const b = compact(name);
+      return b.length >= 3 && (!!OWN_SHOP_HOSTS.get(b)?.includes(host) || (domain.startsWith(b) && SUFFIXES.has(domain.slice(b.length))));
+    });
   } catch { return false; }
+}
+
+/** Words that name a kind of product, not a product: a page called "Face Wash" or "Hair Oil" could be any of a brand's. */
+const KIND_WORDS = new Set([
+  "face", "wash", "cleanser", "serum", "cream", "gel", "lotion", "oil", "moisturizer", "moisturiser", "sunscreen", "shampoo", "conditioner", "mask", "toner", "mist", "balm",
+  "scrub", "soap", "body", "hair", "skin", "lip", "eye", "hand", "foot", "sun", "care", "spray", "powder", "stick", "milk", "fluid", "set", "kit", "combo", "pack",
+]);
+
+/** A brand's own page for a product that has a short name of its own ("High & Dry"): the title rule wants three distinctive words, which a two-word name cannot have.
+ *  The page counts as the product when its title, and the product's last address segment (/products/high-dry), say the same two or more words, every one of them is
+ *  in the product's name, and at least one is not just a kind of product. Title and address agreeing with each other, and with the whole name, is what a generic or
+ *  wrong page does not do. Only for a page on the brand's own domain; any other candidate still has to pass the title rule. */
+export function shortNameOnOwnPage(source: string, titles: string[] | undefined, brand: string, productName: string): boolean {
+  if (!isBrandIngredientUrl(source, brand)) return false;
+  const stem = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
+  let handle = "";
+  try { handle = decodeURIComponent(new URL(source).pathname.split("/").filter(Boolean).pop() ?? "").toLowerCase().replace(/\.html?$/, ""); } catch { return false; }
+  const slug = new Set([...nameTokens(handle.replace(/[-_]+/g, " "), brand)].map(stem));
+  const want = new Set([...nameTokens(productName, brand)].map(stem));
+  if (slug.size < 2 || ![...slug].some((w) => !KIND_WORDS.has(w)) || ![...slug].every((w) => want.has(w))) return false;
+  return (titles ?? []).some((title) => {
+    const have = new Set([...nameTokens(title, brand)].map(stem));
+    return have.size === slug.size && [...have].every((w) => slug.has(w));
+  });
+}
+
+/** Whether a list read from `url` came from a primary source: an INKEE Decoder product page, the brand's own product page, or a Nykaa product page. The checks that
+ *  decide whether a stored or replacement analysis is source-backed (review-checks.ts, the re-run policy) share this one definition. Nykaa has been a source since
+ *  2026-10-30 (a Nykaa list is captured at trust 3, like Decoder); the re-run policy did not know it and held every replacement whose only list came from there. */
+export function isPrimaryIngredientUrl(url: string, brand: string): boolean {
+  return !!incidecoderProductSlug(url) || isBrandIngredientUrl(url, brand) || isNykaaProductUrl(url);
 }
 
 /** Firecrawl web search, URLs only (no page content, so one credit). Empty when the key is unset or the call fails. */
@@ -199,7 +241,7 @@ const listCount = (page: PageINCI): number => new Set(components(page).map((c) =
 const SAME_FORMULA = 0.85;
 
 /** Find the product's ingredient list. Decoder pages, the brand's own pages and Nykaa product pages (the pasted one, and what search finds) are read together;
-    each must name the product, carry a captured quote and be an ingredient list. The most complete list wins; a tie goes to the better-captured source (a brand's
+    each must name the product, carry a captured quote and be an ingredient list. The brand's own page wins whenever one passes; otherwise the most complete list wins; a tie goes to the better-captured source (a brand's
     page over Decoder or Nykaa), then to the page the shopper pasted; lists that are the same formula are decided by capture and the pasted page, not by length.
     Sources whose list is a different formula are recorded on the winner as `alternatives`.
     `known` holds a list already found elsewhere (the Decoder page the engine resolved by name), which competes on the same terms. */
@@ -207,7 +249,8 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
   const tried = new Set<string>();
   const readDecoder = deps.readDecoder ?? readDecoderPage;
   const listOk = (page: PageINCI | null): page is PageINCI => !!page?.quote?.trim() && sanitizeInciList(page.ingredients).ok;
-  const usable = (page: PageINCI | null): page is PageINCI => listOk(page) && !!page.pageTitles?.some((title) => pageTitleNamesProduct(title, brand, query));
+  const usable = (page: PageINCI | null): page is PageINCI =>
+    listOk(page) && (!!page.pageTitles?.some((title) => pageTitleNamesProduct(title, brand, query)) || shortNameOnOwnPage(page.source, page.pageTitles, brand, query));
 
   const readAll = async (candidates: string[]): Promise<Read[]> => {
     const fresh = [...new Set(candidates)].filter((u) => !tried.has(u));
@@ -233,13 +276,17 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
 
   const choose = (reads: Read[]): PageINCI | null => {
     if (!reads.length) return null;
-    // The most complete list wins; a tie goes to the better-captured source, then to the page the shopper pasted...
-    const top = [...reads].sort((a, b) => listCount(b.page) - listCount(a.page) || (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied))[0];
+    // The brand's own page wins whenever one passes the checks (owner rule, 2026-11-03: "the brand's page must be the winner at all times"): the brand states what is in its
+    // product now, while another source can be an older formula or another version (INKEE Decoder's list for Be Minimalist's SPF 50 has Retinol that the brand's page does not).
+    // Among the brand's own pages, and when there is none among all the sources, the most complete list wins; a tie goes to the better-captured source, then to the page the shopper pasted...
+    const own = reads.filter((r) => r.page.origin === "brand-page");
+    const pool = own.length ? own : reads;
+    const top = [...pool].sort((a, b) => listCount(b.page) - listCount(a.page) || (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied))[0];
     // ...but lists that are the same formula written two ways are one candidate, and length does not choose between them: a source that splits a premix, or a parser that cuts a name
     // into pieces, would win on count alone. Capture decides, then the pasted page (INKEE Decoder's 24 entries for Aqualogica include "*xylitylglucoside" and a stray "Crosspolymer";
-    // Nykaa's 19 are the same formula, clean).
+    // Nykaa's 19 are the same formula, clean). A source outside the pool never wins, but a list of it that differs is recorded as an alternative.
     const same = reads.filter((r) => r === top || inciSimilarity(components(r.page), components(top.page)) >= SAME_FORMULA);
-    const best = [...same].sort((a, b) => (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied) || listCount(b.page) - listCount(a.page))[0];
+    const best = [...same].filter((r) => pool.includes(r)).sort((a, b) => (b.page.trust ?? 3) - (a.page.trust ?? 3) || Number(b.supplied) - Number(a.supplied) || listCount(b.page) - listCount(a.page))[0];
     const alternatives: InciAlternative[] = reads
       .filter((r) => !same.includes(r))
       .map((r) => ({ source: r.page.source, origin: r.page.origin ?? "decoder", count: listCount(r.page) }));
