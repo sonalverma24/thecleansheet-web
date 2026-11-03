@@ -49,6 +49,13 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
     expect(reviewCheckIssues(r)).toEqual(["primary-ingredient-source-missing", "ingredient-source-not-primary"]);
   });
 
+  it("passes a list read off Chemist at Play's own shop on innovist.com, and no other brand's list from that address", () => {
+    const url = "https://innovist.com/products/oil-control-face-moisturizer";
+    const evidence = makeInciEvidence(url, QUOTE, WHEN, "Oil Control Face Moisturizer");
+    expect(reviewCheckIssues(review({ brand: "Chemist at Play", inciSourceUrl: url, inciEvidence: evidence }))).toEqual([]);
+    expect(reviewCheckIssues(review({ brand: "Plix", inciSourceUrl: url, inciEvidence: evidence }))).toEqual(["ingredient-source-not-primary"]);
+  });
+
   it("refuses a model-reported list that has no source", () => {
     const r = review({ inciSourceUrl: undefined, inciEvidence: undefined });
     expect(reviewCheckIssues(r)).toContain("primary-ingredient-source-missing");
