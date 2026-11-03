@@ -174,7 +174,7 @@ EVIDENCE INTEGRITY - NO FABRICATION (highest priority, overrides everything):
   - For a "free from X" / "X-free" claim (fragrance-free, alcohol-free, paraben-free): if the retrieved INCI does NOT list X, the claim is SUPPORTED. A clean INCI proves the claim true, do not invent a contradiction. Only flag a conflict when you can QUOTE X in the retrieved INCI. If you could not retrieve the INCI, say so and do not assume X is present.
   - For a "contains [active] X" claim: FIRST map the marketing name to its INCI name, THEN check the retrieved INCI. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid / Sodium Ascorbyl Phosphate / Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.
   - If a claimed active is genuinely absent from the retrieved INCI even after name-mapping, mark it UNVERIFIED (could not confirm), NOT contradicted. A retrieved INCI can be the wrong variant/size, truncated, or outdated, so its absence is not proof of absence. NEVER call a brand's advertising "misleading" or an ASCI violation solely because a claimed ingredient is missing from a scraped INCI. Only a claim that is affirmatively disproven (e.g. "fragrance-free" while Parfum is listed) may be called contradicted.
-  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw in a brand or marketplace source - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
+  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw on the brand's OWN website page for this exact product - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
   - ONE PRODUCT ONLY - never import another SKU's claims. Every claim in claimMap must be about the EXACT product under review (this variant, this format). A brand's homepage, "collections" pages, bundles, and marketplace listings routinely show OTHER products from the same brand right next to this one. Do NOT harvest a claim unless the source page is clearly about THIS product. A cross-CATEGORY mismatch is the tell-tale sign of misattribution and is forbidden: a body moisturizer / body wash / lotion must NOT carry hair, scalp, hair-fall, dandruff, frizz, or shine claims; a hair product must not carry skin/face claims; a face serum must not carry oral-care claims. If a striking claim (e.g. "50% less hair fall in 28 days") belongs to a different product type than the one you are reviewing, it is another SKU's claim - drop it. When unsure whether a claim is for this exact product, leave it out.
 
 ---
@@ -195,8 +195,8 @@ Step 2 - Map prices across all Indian platforms.
   Calculate price per ml or per g = price ÷ quantity.
 
 Step 3 - Find and catalogue EVERY claim.
-  Look on: brand website, Nykaa listing title, Amazon listing title and bullet points, product pack (if shown), and quick commerce listings.
-  Capture the EXACT claim text, not your paraphrase. Collect claims from all platforms.
+  Look ONLY on the brand's own website page for this exact product. That page is the one source of claims we hold the brand to. A claim that appears only on Nykaa, Amazon, Flipkart, Tira, a quick-commerce app, a reseller that copies the brand's text ("via Clinikally"), a review site or a retailer's brand-info blurb is NOT catalogued: do not list it in claimMap, even when it is a striking claim. If the brand's own page for this product cannot be found or read, return an EMPTY claimMap and say so in claimSummary and cleanSheetNote; never fill it from retailer listings.
+  Capture the EXACT claim text, not your paraphrase.
   SCOPE each claim to THIS product's own listing/PDP. Brand sites cross-sell other SKUs (a body spray page may link a hair oil, a bundle, a "bestsellers" strip); only catalogue a claim you can tie to this exact product. Never carry a hair/scalp claim onto a body product (or vice-versa) - a category mismatch means the claim is another product's. See EVIDENCE INTEGRITY: "ONE PRODUCT ONLY".
 
 Step 4 - Check evidence for each claim.
@@ -207,7 +207,7 @@ Step 4 - Check evidence for each claim.
 
 Step 5 - Check platform claim parity.
   Compare exact claim language across brand website, Nykaa, Amazon, and quick commerce.
-  Note where claims are stronger, weaker, or differently worded.
+  Note where claims are stronger, weaker, or differently worded. This step is a comparison note for platformParity only: a marketplace-only claim never becomes an entry in claimMap.
 
 Step 6 - Find INCI and assess ingredient transparency.
   Search: "[brand] [product name] ingredients" on the official brand product page or INKEE Decoder (formerly INCIDecoder).
@@ -649,7 +649,7 @@ OUTPUT JSON STRUCTURE:
   "claimMap": [
     {
       "text": "string - exact claim as stated by brand",
-      "source": "string - where this claim appears: Brand Website / Amazon Title / Nykaa Description / Product Pack / etc.",
+      "source": "string - always "Brand Website" (the brand's own page for this product). A claim not on that page is not listed at all.",
       "types": ["functional | appearance | active | concern | time-bound | clinical | safety | free-from | emotional"],
       "primaryType": "string - single primary type",
       "riskLevel": "low | medium | high | very-high | red-flag",
@@ -920,6 +920,22 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Known limits:** "verified" means the reference row says so at high confidence with a source; it is not a statement about this product's supplier, which is why the open cases are asked of the brand. The reference's non-animal side includes synthetic and biotech routes, so "plant-derived" in the gap line is looser than the data (Retinyl Palmitate is "Synthetic / Animal-derived"). A few very common ingredients (Stearic Acid, Glycine, Myristic Acid) will put a line under Gaps on many pages; that is what the reference says today, not a verdict on those products. The tick, and the `VEGAN` badge that reads it (`src/data/badges/resolver.ts`), are now harder to earn: any listed ingredient with an animal route blocks them. **Not changed, and open:** sentences the model writes (the claim-by-claim notes in the Claim check block, and the stored take or "biggest concern" of a few analyses such as Belif The True Cream, which said its vegan claim was "contradicted by Cholesterol") are not checked against this rule; fixing that means changing the prompt and is the owner's call. This closes two limits listed in the 2026-10-30 entry below: the tick for a "Vegetable / Animal" ingredient, and the Medium-confidence snail row, which is now listed under Gaps.
 - **Not changed:** the colour or pill any product gets (the decision core never reads the vegan screen), stored analyses, the prompts, and `ANALYSER_APPROVED_BASELINE` (X1-approved-2026-10-28).
 - **Undo:** revert the change; nothing is migrated and no stored analysis is touched: the screen is worked out when a page is drawn.
+### 2026-11-02: A pasted brand URL meets the Decoder list again once the brand is known, and a label glued to a page's list no longer starts it with page copy
+- **Decided by:** a fault found while re-running the Beauty of Joseon Dynasty Cream on the new engine, which the owner had asked for ("Re-run - sure"). It follows the owner's rule of 2026-10-30 that the brand's own page, Nykaa and INKEE Decoder are searched together as equals, and her rule of 2026-11-02 that the brand website is the best source.
+- **Reason:** for `https://beautyofjoseon.com/products/dynasty-cream` the first lookup takes the first word of the URL slug ("dynasty") as the brand, so the brand's own page (`beautyofjoseon.com`) was refused as not the brand's; a Decoder list then won without ever meeting it (here the first lookup's own search found INKEE's page and returned it as the winner), and the corrected-brand lookup ran only when no list had been taken from a page at all. Separately, that page prints "Full Ingredient List" with no line break after its copy, so the page reader's first two entries were "soothe" and "and address uneven texture Full Ingredient List Water".
+- **What it touched:** `src/lib/product-review-engine.ts`: the second lookup, made with the brand the model names, now runs unless the first lookup already ended on the brand's own page, and whatever list the first lookup took (a Decoder list found by name or by the search, a Nykaa list, or none) competes in it. `src/lib/inci-from-page.ts`: `startAtListLabel`, applied to a page read (not to `extractInciWithQuote`, which must agree with the extractor it replaced), starts the list after a label that sits inside one of the first three entries.
+- **Measured** (real network, no model): the brand page read gave 38 entries, the first two page copy; after the change, 37 ingredients starting "Water, Glycerin, Hydrogenated Polydecene", the quote starting at "Water". The Decoder entry the first run chose, "Beauty of Joseon Dynasty Cream [2021]", also has no silicone, so the wrong-formula problem seen on the stored page was the older Decoder entry (`beauty-of-joseon-dynasty-cream`, with Cyclopentasiloxane and Fragrance).
+- **Not changed:** how lists are compared, the order of trust, stored analyses.
+- **Undo:** revert the change; nothing is migrated.
+
+### 2026-11-02: Only claims on the brand's own website are checked
+- **Decided by:** the owner, on 2026-11-02, in chat, after asking where three Re'equil claims came from ("I don't find these claims on the brand website, where are these coming from?"). Asked whether claims seen only on retailer listings should count against the brand: "yes brand website is the best source. nothing else".
+- **Reason:** the three Re'equil claims were labelled "Nykaa Brand Info" ("clinically tested to suit every unique skin type"), "Re'equil Brand Website (via Clinikally)" (a reseller; "Treats fine lines & wrinkles") and "Flipkart" ("All Skin Types"). None is on reequil.com except "For all skin types". The prompt told the model to collect claims "from all platforms", and the model wrote the `source` label as free text, with no link or quote kept, so a retailer's wording could be flagged against the brand as an ASCI or drug-boundary concern.
+- **What it touched:** (1) the prompt (`product-review-context.ts`): claims only from the brand's own page for the exact product; a marketplace-only claim never enters `claimMap`; with no readable brand page the model returns an empty list; the platform-parity step stays, as a comparison note. (2) `src/lib/claim-source.ts` (new), run when an analysis is made, right after the brand name is fixed: a claim is kept when its source label names the brand's own site among the places it was seen ("Brand Website", "Brand Website / Flipkart / Nykaa", "Official Website", "<Brand> Website", "<brand>.in"); "(implied)", "(via X)", "(General)", "(Global)", reviews, retailers and the pack do not count. The claim summary is counted again from what is kept. (3) `ResearchLog.claimsKept` and `claimsDropped` record the result; when some were dropped and none kept, the decision's `claimsSourceRead` is false and `gap.claims_unreliable` (a gap, "claims not examined") applies instead of reading an empty list as "no claims".
+- **Measured** (read-only, the 40 analyses stored on 2026-11-02, labels only): 37 of 40 hold at least one claim whose label names no brand site; 11 of 40 hold no claim at all that names one. Those would end with few or no claims if re-run on this rule, so the colour of some products will move when they are re-run. Stored analyses are NOT changed: no read-time filter was built, because it would shift the colour of a third of the products at once and the model's own scores were made with the retailer claims in view.
+- **Known limits:** the label is the model's own words, so the rule trusts it. A claim the model wrongly labels "Brand Website" is kept; a claim it labels only "Brand Website (implied)" is dropped. The real fix is to keep the page text and a quote for each claim and check the wording appears in it (the verifier work on `feat/analyser-verifier`), which is not on main. A product whose brand page cannot be read now shows as claims not examined (a gap), not as a clean claim check. On-pack claims are not counted unless the brand's page also shows them; say if they should be.
+- **Not changed:** the platform-parity score and text, stored analyses, the pill rules, `ANALYSER_APPROVED_BASELINE`.
+- **Undo:** revert the change; analyses made under it carry `claimsKept` and `claimsDropped`, which older code ignores.
 
 ### 2026-10-30: The brand profile page draws its products with the /products card, and the words "Good Standing" and "Room to Improve" are not shown
 - **Decided by:** the owner, on 2026-10-30, in chat (issues list, round 2): "The products inside the brands page should show the same thumbnails style that is present on the /products page & don't mention good standing/room to improve tags anywhere across the website - even on compare."
@@ -1191,7 +1207,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
 | `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
-| `src/lib/analyser-x/adapter.ts` | `d309b5796149e7dfa2f6c9b4165e25bdff77e7585f9caeeb3058b4a98277cd4a` |
+| `src/lib/analyser-x/adapter.ts` | `74d259164f7ac1873ac6fba4d15401abe3d1af6ca3c7000dcece1855797ee20b` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
 | `src/lib/analyser-x/copy.ts` | `f1a40b600e3cf114a92a247ea39aa217364c4966de7b90f69181715a29412fef` |
@@ -1219,6 +1235,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
+| `src/lib/claim-source.ts` | `affea1c809828d7a8931d11f382bb624bc0ac00b5fcccc0115df6efddf8f7a29` |
 | `src/lib/claims-context.ts` | `9fe1aa10c247220a8fba83c2458f421444b8d233708cc06d4a4ef2696add6b6f` |
 | `src/lib/compliance-pillar.ts` | `c7a2c2a575d1e19548175e53bc716998a1e94135649bce8fd6e008134cc6b8a6` |
 | `src/lib/drug-signals.ts` | `e4eba39275c9b08603e036d14fcf0d659ad4a7e75c342d9263b52863c76a63a0` |
@@ -1229,7 +1246,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `dbc89a05c5e1bcbd2e5b6fba3e69afd2325562ac08d2bd769e3315e846867691` |
+| `src/lib/inci-from-page.ts` | `e5640163038425609fc060b1caa869d58aab36f3d319b25ab796051d69a72121` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1252,9 +1269,9 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-identity.ts` | `6b84f2ffc748cd468149bbcc1ba5b6212091b3e6a01a7935b8c3fc54fab3df25` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
-| `src/lib/product-review-context.ts` | `fe4cd26b6a3c2f6a0b1921ec56f14ef379b992dbe379ade99a5f9f08ef3fef59` |
-| `src/lib/product-review-engine.ts` | `e4afb4400547b089934f081427aa7225fffbd90b325790afe590cc610677b81d` |
-| `src/lib/product-review-types.ts` | `17d23c0d3a3d127b1a3f149bdcbe12f38001070ad3ee56dfc5a5a05f4ac58e9c` |
+| `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
+| `src/lib/product-review-engine.ts` | `3e9b99260e4757bc5887b555aedb7b4c86a7dbe32f7d0eca7e30354f707b6546` |
+| `src/lib/product-review-types.ts` | `3bf6a4556cab4320dd55b7b6006833f9a03892059e6739a183181ac04f8639fe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
 | `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |

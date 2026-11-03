@@ -85,7 +85,8 @@ export function factsFromReview(review: ProductReview, now: string, over: Adapte
     grounded: review.researchLog ? review.researchLog.grounded : null,
     inciSource: listValue.source,
     errors: [],
-    claimsSourceRead: null,
+    // A new analysis records how many claims the brand's own page gave (claim-source.ts). Dropped some and kept none: the page was not read, so no claims is "not examined".
+    claimsSourceRead: review.researchLog && (review.researchLog.claimsDropped ?? 0) > 0 && review.researchLog.claimsKept === 0 ? false : null,
     ...over.acquisition,
   };
   store.add({ predicate: "acquisition", subject, value: acq as unknown as Record<string, unknown>, trust: 5, origin: "derived", spans: [], derivedFrom: [] });

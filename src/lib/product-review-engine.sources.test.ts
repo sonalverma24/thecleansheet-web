@@ -88,3 +88,45 @@ describe("runProductReview: sources searched together", () => {
     expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER });
   });
 });
+
+describe("runProductReview: a URL whose slug does not start with the brand (Beauty of Joseon /products/dynasty-cream, 2026-11-02)", () => {
+  // The first lookup takes "gel" for the brand, so the brand's own page is refused; the model then names the brand, and the second lookup must let the brand's page meet the list the first took.
+  const BRAND_PAGE = "https://lotus.example.com/products/gel-creme";
+  const brandPage = { ingredients: current, quote: current.join(", "), source: BRAND_PAGE, pageTitles: ["Lotus Gel Creme"], siteName: "Lotus", trust: 4, origin: "brand-page" };
+  const decoderPage = { ingredients: older, quote: older.join(", "), source: DECODER, pageTitles: ["Lotus Gel Creme"], trust: 3, origin: "decoder" };
+  beforeEach(() => invalidateReviewCache("lotus-lotus-gel-creme")); // these analyses are stored under the brand-prefixed slug; the engine keeps finished reviews in memory by slug
+
+  it("looks again with the brand the model named, offering the Decoder list found by name, and publishes the brand page's list when it wins", async () => {
+    h.brandInci.mockResolvedValueOnce(null).mockResolvedValueOnce(brandPage);
+    await runProductReview(BRAND_PAGE);
+    expect(h.brandInci).toHaveBeenCalledTimes(2);
+    const [query, brand, supplied, , known] = h.brandInci.mock.calls[1] as [string, string, string, unknown, { source: string }[]];
+    expect([query, brand, supplied]).toEqual(["Lotus Lotus Gel Creme", "Lotus", BRAND_PAGE]);
+    expect(known.map((k) => k.source)).toEqual([DECODER]);
+    expect(stored()).toMatchObject({ inciIngredients: current, inciSourceUrl: BRAND_PAGE, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
+  });
+
+  it("does the same when the Decoder list was not found by name but came back as the first lookup's winner (what happened on Beauty of Joseon)", async () => {
+    h.resolve.mockResolvedValue({ chosen: null, distinct: [], ambiguous: true });
+    h.brandInci.mockResolvedValueOnce(decoderPage).mockResolvedValueOnce(brandPage);
+    await runProductReview(BRAND_PAGE);
+    expect(h.brandInci).toHaveBeenCalledTimes(2);
+    const known = h.brandInci.mock.calls[1][4] as { source: string }[];
+    expect(known.map((k) => k.source)).toEqual([DECODER]);
+    expect(stored()).toMatchObject({ inciIngredients: current, inciSourceUrl: BRAND_PAGE, inciEvidence: { captureTrust: 4, origin: "brand-page" } });
+  });
+
+  it("keeps the first list, with what lost recorded, when it wins the second look too, and does not ask the model again", async () => {
+    h.resolve.mockResolvedValue({ chosen: null, distinct: [], ambiguous: true });
+    h.brandInci.mockResolvedValueOnce(decoderPage).mockResolvedValueOnce({ ...decoderPage, alternatives: [{ source: BRAND_PAGE, origin: "brand-page", count: 7 }] });
+    await runProductReview(BRAND_PAGE);
+    expect(stored()).toMatchObject({ inciIngredients: older, inciSourceUrl: DECODER, inciEvidence: { origin: "decoder", alternatives: [{ source: BRAND_PAGE, origin: "brand-page", count: 7 }] } });
+    expect(h.generate).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not look a second time when the first lookup already ended on the brand's own page", async () => {
+    h.brandInci.mockResolvedValue(brandPage);
+    await runProductReview(BRAND_PAGE);
+    expect(h.brandInci).toHaveBeenCalledTimes(1);
+  });
+});
