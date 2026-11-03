@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PAGE_FINDER_SYSTEM_PROMPT, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
+import { PAGE_FINDER_SYSTEM_PROMPT, READ_CAP_MS, askModelForProductPage, findBrandInci, isBrandIngredientUrl, recordCandidates, searchBrandPages, withKnownCandidates } from "./brand-inci";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchIncidecoderProduct } from "./inci-fetch";
 import { fetchPageMarkdown } from "./scrape";
@@ -13,7 +13,7 @@ const list = { source: url, ingredients: ["Aqua", "Glycerin", "Niacinamide", "Pa
 describe("primary brand ingredient acquisition", () => {
   it("reads a matching brand product page and keeps its exact source and quotation", async () => {
     const deps = { search: vi.fn().mockResolvedValue([url]), read: vi.fn().mockResolvedValue(list) };
-    expect(await findBrandInci("Plix Pomegranate Youth Renewal Night Cream", "Plix", undefined, deps)).toEqual(list);
+    expect(await findBrandInci("Plix Pomegranate Youth Renewal Night Cream", "Plix", undefined, deps)).toMatchObject(list);
   });
   it("never upgrades retailer, deceptive-domain, private-address or unrelated results to a brand source", () => {
     for (const u of ["https://www.nykaa.com/plix/p/123", "https://plixlife.com.evil.test/product/a", "http://plixlife.com/product/a", "https://127.0.0.1/product/a", "https://plixlife.local/product/a", "https://plixlife.com@evil.test/product/a"])
@@ -36,10 +36,10 @@ const decoderList = { source: decoderUrl, ingredients: ["Aqua", "Glycerin", "Nia
 const dkQuery = "Dot & Key Strawberry Bright 10% Niacinamide Face Serum";
 
 describe("a Decoder product page that a search surfaces", () => {
-  it("is a primary source: read, matched to the product and used before any brand page", async () => {
+  it("is a primary source: read, matched to the product, and used when it is the most complete list", async () => {
     const read = vi.fn();
     const deps = { search: async () => ["https://www.dotandkey.com/products/serum", decoderUrl], read, readDecoder: vi.fn().mockResolvedValue(decoderList) };
-    expect(await findBrandInci(dkQuery, "Dot", undefined, deps)).toEqual(decoderList);
+    expect(await findBrandInci(dkQuery, "Dot", undefined, deps)).toMatchObject(decoderList);
     expect(deps.readDecoder).toHaveBeenCalledWith(decoderUrl);
     expect(read).not.toHaveBeenCalled();
   });
@@ -51,7 +51,7 @@ describe("a Decoder product page that a search surfaces", () => {
   it("falls back to the brand's own page when the Decoder page does not match", async () => {
     const brand = { ...list, source: url };
     const deps = { search: async () => [decoderUrl, url], read: vi.fn().mockResolvedValue(brand), readDecoder: async () => null };
-    expect(await findBrandInci("Plix Pomegranate Youth Renewal Night Cream", "Plix", undefined, deps)).toEqual(brand);
+    expect(await findBrandInci("Plix Pomegranate Youth Renewal Night Cream", "Plix", undefined, deps)).toMatchObject(brand);
   });
   it("is read with the engine's Decoder parser, and a quote cut short is refused", async () => {
     const result = { productName: "Dot & Key Serum", slug: "dot-key-serum", ingredients: decoderList.ingredients, tags: [], source: decoderUrl, imageUrl: null, sourceQuote: decoderList.quote, pageTitle: "Dot & Key Serum | INKEE Decoder" };
@@ -105,12 +105,12 @@ describe("a web-grounded model asked where the page is", () => {
   it("is asked only when nothing else gave a list, and the page it names is read by the code", async () => {
     const askModel = vi.fn().mockResolvedValue([amahvasUrl]);
     const read = vi.fn().mockResolvedValue(amahvasPage);
-    expect(await findBrandInci(amahvasQuery, "Amahvas", undefined, { search: async () => [], read, askModel })).toEqual(amahvasPage);
+    expect(await findBrandInci(amahvasQuery, "Amahvas", undefined, { search: async () => [], read, askModel })).toMatchObject(amahvasPage);
     expect(askModel).toHaveBeenCalledWith(amahvasQuery);
     expect(read).toHaveBeenCalledWith(amahvasUrl);
 
     const found = vi.fn();
-    expect(await findBrandInci(amahvasQuery, "Amahvas", undefined, { search: async () => [amahvasUrl], read: async () => amahvasPage, askModel: found })).toEqual(amahvasPage);
+    expect(await findBrandInci(amahvasQuery, "Amahvas", undefined, { search: async () => [amahvasUrl], read: async () => amahvasPage, askModel: found })).toMatchObject(amahvasPage);
     expect(found).not.toHaveBeenCalled();
   });
   it("does not make a retailer, a marketplace or another brand's page a source, whatever the model says", async () => {
@@ -230,7 +230,7 @@ describe("a page the first lookup was shown is judged again once the brand is kn
     const read = vi.fn(async () => juicyPage);
     const second = withKnownCandidates({ search: async () => [], read, askModel: undefined }, first.seen);
     expect(second.askModel).toBeUndefined(); // no second model call is made
-    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, second)).toEqual(juicyPage);
+    expect(await findBrandInci(identified, "Juicy Chemistry", undefined, second)).toMatchObject(juicyPage);
     expect(read).toHaveBeenCalledWith(juicyUrl);
   });
 
@@ -260,5 +260,147 @@ describe("a page the first lookup was shown is judged again once the brand is kn
     expect(await findBrandInci(typed, "Juicy", undefined, first.deps)).toBeNull();
     expect(first.seen.size).toBe(0);
     expect(await withKnownCandidates({ search: async () => { throw new Error("down"); }, read: vi.fn() }, [juicyUrl]).search("x")).toEqual([juicyUrl]);
+  });
+});
+
+/* Nykaa, INKEE Decoder and the brand's own site are searched together as equals (owner decision, 2026-10-30). */
+describe("Nykaa, INKEE Decoder and the brand site searched together", () => {
+  const nykaaUrl = "https://www.nykaa.com/lotus-herbals-whiteglow-skin-whitening-brightening-gel-creme-spf-25-pa/p/10787966";
+  const lotusDecoderUrl = "https://inkeedecoder.com/products/lotus-herbals-whiteglow-skin-whitening-and-brighening-gel-creme";
+  const lotusQuery = "Lotus Herbals Whiteglow Skin Whitening Brightening Gel Creme Spf 25 Pa";
+  const names = (n: number, from = "A") => Array.from({ length: n }, (_, i) => `Ingredient ${from}${i}`);
+  const decoderOlder = { source: lotusDecoderUrl, ingredients: names(29, "D"), quote: names(29, "D").join(", "), pageTitles: ["Lotus Herbals Whiteglow Skin Whitening Brightening Gel Creme"], trust: 3 as const, origin: "decoder" as const };
+  const nykaaCurrent = { source: nykaaUrl, ingredients: names(30, "N"), quote: names(30, "N").join(", "), pageTitles: ["Lotus Herbals WhiteGlow Skin Whitening & Brightening Gel Cream SPF 25 PA+++|With Niacinamide"], siteName: "Nykaa", trust: 3 as const, origin: "nykaa" as const };
+  const deps = (over: Record<string, unknown> = {}) => ({
+    search: async () => [lotusDecoderUrl], read: vi.fn().mockResolvedValue(null), readDecoder: vi.fn().mockResolvedValue(decoderOlder),
+    searchNykaa: async () => [nykaaUrl], readNykaa: vi.fn().mockResolvedValue(nykaaCurrent), ...over,
+  });
+
+  it("reads all three kinds of page and the most complete list wins, with the list that lost recorded on it (Lotus)", async () => {
+    const d = deps();
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, d);
+    expect(d.readDecoder).toHaveBeenCalledWith(lotusDecoderUrl);
+    expect(d.readNykaa).toHaveBeenCalledWith(nykaaUrl);
+    expect(r).toMatchObject({ source: nykaaUrl, origin: "nykaa", trust: 3 });
+    expect(r?.ingredients).toHaveLength(30);
+    expect(r?.alternatives).toEqual([{ source: lotusDecoderUrl, origin: "decoder", count: 29 }]);
+  });
+
+  it("the longer list wins whichever source it comes from, and the shorter Nykaa list loses to a longer Decoder one", async () => {
+    const short = { ...nykaaCurrent, ingredients: names(12, "N"), quote: names(12, "N").join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: async () => short }));
+    expect(r).toMatchObject({ source: lotusDecoderUrl, origin: "decoder" });
+    expect(r?.alternatives).toEqual([{ source: nykaaUrl, origin: "nykaa", count: 12 }]);
+  });
+
+  it("on equal length the better-captured source wins: a brand page over Decoder and Nykaa", async () => {
+    const brandUrl = "https://lotus.in/products/whiteglow-skin-brightening-gel-creme-spf-25";
+    const brandPage = { source: brandUrl, ingredients: names(29, "B"), quote: names(29, "B").join(", "), pageTitles: ["Lotus Herbals Whiteglow Skin Whitening Brightening Gel Creme Spf 25 Pa"] };
+    const same29 = { ...nykaaCurrent, ingredients: names(29, "N"), quote: names(29, "N").join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus", nykaaUrl, deps({ search: async () => [lotusDecoderUrl, brandUrl], read: async () => brandPage, readNykaa: async () => same29 }));
+    expect(r).toMatchObject({ source: brandUrl, origin: "brand-page", trust: 4 });
+    expect(r?.alternatives?.map((a) => a.origin).sort()).toEqual(["decoder", "nykaa"]);
+  });
+
+  it("on equal length and trust the page the shopper pasted wins", async () => {
+    const same29 = { ...nykaaCurrent, ingredients: names(29, "N"), quote: names(29, "N").join(", ") };
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: async () => same29 }))).toMatchObject({ origin: "nykaa" });
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", lotusDecoderUrl, deps({ readNykaa: async () => same29 }))).toMatchObject({ origin: "decoder" });
+  });
+
+  it("records no alternative when the other source agrees (a list that is the same to within a few ingredients)", async () => {
+    const agrees = { ...decoderOlder, ingredients: names(30, "N"), quote: names(30, "N").join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readDecoder: async () => agrees }));
+    expect(r?.alternatives).toBeUndefined();
+  });
+
+  it("falls back to the other sources when Nykaa cannot be read, and Nykaa is not consulted without its dependencies", async () => {
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: async () => null }))).toMatchObject({ source: lotusDecoderUrl });
+    const d = deps();
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, { search: d.search, read: d.read, readDecoder: d.readDecoder })).toMatchObject({ source: lotusDecoderUrl });
+  });
+
+  it("never lets a longer page win that is not the product, has no quote, or is not an ingredient list", async () => {
+    for (const bad of [
+      { ...nykaaCurrent, pageTitles: ["Lotus Herbals Whiteglow Night Face Cream"] },
+      { ...nykaaCurrent, quote: "" },
+      { ...nykaaCurrent, ingredients: Array.from({ length: 40 }, (_, i) => `Free from number ${i} of the many things we leave out`) },
+    ]) expect(await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: async () => bad }))).toMatchObject({ source: lotusDecoderUrl });
+  });
+
+  it("still refuses every other retailer, and Nykaa pages that are not product pages", async () => {
+    const d = deps({ search: async () => ["https://www.amazon.in/dp/B01MYRU03Y", "https://www.flipkart.com/p/x", "https://www.nykaa.com/lotus/reviews/10787966"], searchNykaa: async () => ["https://www.nykaa.com/brands/lotus/c/1"] });
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", "https://www.amazon.in/dp/B01MYRU03Y", d)).toBeNull();
+    expect(d.readNykaa).not.toHaveBeenCalled();
+    expect(d.read).not.toHaveBeenCalled();
+  });
+
+  it("lets a list already found elsewhere (the Decoder page the engine resolved by name) compete on the same terms", async () => {
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ search: async () => [], readDecoder: vi.fn() }), [decoderOlder]);
+    expect(r).toMatchObject({ origin: "nykaa" });
+    expect(r?.alternatives).toEqual([{ source: lotusDecoderUrl, origin: "decoder", count: 29 }]);
+    // ...and it is the answer when nothing else gives a list.
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", undefined, { search: async () => [], read: vi.fn() }, [decoderOlder])).toMatchObject({ source: lotusDecoderUrl });
+  });
+
+  it("finds the right Decoder and Nykaa pages for a long retailer name (Aqualogica): the pages name a shorter product", async () => {
+    const q = "Aqualogica Glow Hydra Gel Moisturizer With Papaya Vitamin C For 24 Hour Intense Hydration";
+    const decUrl = "https://inkeedecoder.com/products/aqualogica-glow-hydra-gel-moisturizer";
+    const nyUrl = "https://www.nykaa.com/aqualogica-glow-hydra-gel-moisturizer-with-papaya-vitamin-c-for-24-hour-intense-hydration/p/30489182";
+    const dec = { source: decUrl, ingredients: names(21, "D"), quote: names(21, "D").join(", "), pageTitles: ["Aqualogica Glow+ Hydra Gel Moisturizer"], trust: 3 as const, origin: "decoder" as const };
+    const ny = { ...nykaaCurrent, source: nyUrl, ingredients: names(19, "N"), quote: names(19, "N").join(", "), pageTitles: ["Aqualogica Glow+ Hydra Gel Moisturizer With Papaya & Vitamin C For 24 Hour Intense Hydration"] };
+    const r = await findBrandInci(q, "Aqualogica", nyUrl, { search: async () => [decUrl], read: vi.fn(), readDecoder: async () => dec, searchNykaa: async () => [], readNykaa: async () => ny });
+    expect(r).toMatchObject({ source: decUrl });
+    expect(r?.alternatives).toEqual([{ source: nyUrl, origin: "nykaa", count: 19 }]);
+    // A different product with a similar name is not accepted, from any source.
+    const oilFree = { ...dec, pageTitles: ["Aqualogica Glow+ Oil Free Moisturizer With Papaya & Vitamin C"] };
+    expect(await findBrandInci(q, "Aqualogica", undefined, { search: async () => [decUrl], read: vi.fn(), readDecoder: async () => oilFree })).toBeNull();
+  });
+
+  it("compares components, so a source that joins a premix is neither shorter nor 'different' beside one that splits it (Aqualogica)", async () => {
+    const split = ["Aqua", "Ethylhexylglycerin", "Phenoxyethanol", "Dimethicone", "Dimethicone Crosspolymer", "Xylitylglucoside", "Anhydroxylitol", "Xylitol", "Glycerin", "Niacinamide"];
+    const joined = ["Aqua", "Ethylhexylglycerin (And) Phenoxyethanol", "Dimethicone (And) Dimethicone Crosspolymer", "Xylitylglucoside (And) Anhydroxylitol (And) Xylitol", "Glycerin", "Niacinamide"];
+    const dec = { ...decoderOlder, ingredients: split, quote: split.join(", ") };
+    const ny = { ...nykaaCurrent, ingredients: joined, quote: joined.join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readDecoder: async () => dec, readNykaa: async () => ny }));
+    expect(r).toMatchObject({ origin: "nykaa" }); // the same 10 components, so the tie goes to the page the shopper pasted
+    expect(r?.alternatives).toBeUndefined();
+  });
+
+  it("lists that are the same formula are decided by capture and the pasted page, not by length: a parser's stray pieces do not win (Aqualogica)", async () => {
+    const common = names(20, "C"); // the real lists share 22 of about 25 components (0.86 alike)
+    const clean = [...common, "Beheneth-25 Methacrylate Crosspolymer"];
+    const glitchy = [...common, "Beheneth-25 Methacrylate", "Crosspolymer"];
+    const dec = { ...decoderOlder, ingredients: glitchy, quote: glitchy.join(", ") };
+    const ny = { ...nykaaCurrent, ingredients: clean, quote: clean.join(", ") };
+    const r = await findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readDecoder: async () => dec, readNykaa: async () => ny }));
+    expect(r).toMatchObject({ origin: "nykaa" });
+    expect(r?.alternatives).toBeUndefined();
+    // With no pasted page to break the tie, trust is equal and the longer of the two is used.
+    expect(await findBrandInci(lotusQuery, "Lotus Herbals", undefined, deps({ readDecoder: async () => dec, readNykaa: async () => ny, search: async () => [lotusDecoderUrl], searchNykaa: async () => [nykaaUrl] }))).toMatchObject({ origin: "decoder" });
+    // A brand page that is the same formula beats both, even when shorter.
+    const brandUrl = "https://lotus.in/products/whiteglow-skin-brightening-gel-creme-spf-25";
+    const brand = { source: brandUrl, ingredients: clean, quote: clean.join(", "), pageTitles: [lotusQuery] };
+    expect(await findBrandInci(lotusQuery, "Lotus", nykaaUrl, deps({ search: async () => [lotusDecoderUrl, brandUrl], read: async () => brand, readDecoder: async () => dec, readNykaa: async () => ny }))).toMatchObject({ origin: "brand-page", trust: 4 });
+  });
+
+  it("a Nykaa read that takes too long is dropped: the Decoder list that was already read is still used, and the lookup does not wait on it", async () => {
+    vi.useFakeTimers();
+    try {
+      const never = vi.fn(() => new Promise<null>(() => {}));
+      const pending = findBrandInci(lotusQuery, "Lotus Herbals", nykaaUrl, deps({ readNykaa: never }));
+      await vi.advanceTimersByTimeAsync(READ_CAP_MS.nykaa - 1000);
+      let settled = false; void pending.then(() => { settled = true; });
+      await Promise.resolve();
+      expect(settled).toBe(false); // still inside the cap
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(await pending).toMatchObject({ source: lotusDecoderUrl, origin: "decoder" });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("asks Firecrawl for Nykaa pages as well, and the pages a first lookup was shown include them", async () => {
+    const { deps: wrapped, seen } = recordCandidates(deps());
+    await wrapped.searchNykaa!("x");
+    expect([...seen]).toContain(nykaaUrl);
   });
 });

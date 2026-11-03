@@ -7,6 +7,7 @@ import { decideReview } from "@/lib/analyser-x";
 import { lint } from "@/lib/analyser-x/copy";
 import { BASE, claimOf, evidence, rv } from "@/lib/analyser-x/test-helpers";
 import { reviewInciList } from "@/lib/review-inci";
+import { makeInciEvidence } from "@/lib/review-verifier";
 import type { ClaimsCheckItem } from "@/data/brands/types";
 import type { ProductReview } from "@/lib/product-review-types";
 import { GLANCE_MAX, buildPillsPage, buyLinksOf, claimLine, dayText, highlightsOf, shortActives, testLevelOf, verifiedChecks, type PillsPageModel } from "./pills-page";
@@ -594,5 +595,37 @@ describe("animal or plant derived: a chip only when verified, otherwise a gap (o
       const m = withClaim([...BASE, "Beeswax"]);
       expect(m.highlights).toContainEqual(expect.objectContaining({ label: "Vegan claim: not supported", state: "no" }));
     });
+  });
+});
+
+describe("when sources disagree on the ingredient list, the page says so (owner decision, 2026-10-30)", () => {
+  const faq = (m: PillsPageModel) => m.faq.find((f) => f.q === "How recent is this analysis?")?.a;
+  const NYKAA_URL = "https://www.nykaa.com/test-product/p/123";
+  const fromNykaa = (alternatives?: NonNullable<ProductReview["inciEvidence"]>["alternatives"]) =>
+    rv({ productName: "Gel Cream", category: "Moisturizer" }, makeInciEvidence(NYKAA_URL, BASE.join(", "), "2026-10-20T00:00:00.000Z", "Gel Cream", false, { trust: 3, origin: "nykaa", alternatives }));
+
+  it("names the source the list came from, and each source that listed something different with its count", () => {
+    const m = page(fromNykaa([{ source: "https://inkeedecoder.com/products/gel-cream", origin: "decoder", count: 29 }])).model;
+    expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. INKEE Decoder (29 ingredients) lists a different ingredient list; this analysis used the most complete one. We re-check analyses older than six months.");
+  });
+
+  it("says 'Another Nykaa page' when the other list is on a second Nykaa page, instead of repeating the name", () => {
+    const m = page(fromNykaa([{ source: "https://www.nykaa.com/test-product-pack/p/456", origin: "nykaa", count: 18 }])).model;
+    expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. Another Nykaa page (18 ingredients) lists a different ingredient list; this analysis used the most complete one. We re-check analyses older than six months.");
+  });
+
+  it("says nothing extra when the sources agreed, and keeps the Nykaa list source-backed (ticks are drawn)", () => {
+    const m = page(fromNykaa()).model;
+    expect(faq(m)).toBe("Analysed on 20 Oct 2026 from Nykaa. We re-check analyses older than six months.");
+    expect(m.highlights.map((h) => h.label)).toEqual(expect.arrayContaining(["Fragrance free", "Paraben free"]));
+  });
+});
+
+describe("a Nykaa list is named as a retailer page (source label, 2026-11-01)", () => {
+  it("the confidence sentence says the list comes from a retailer page, not from 'our own reading of the page'", () => {
+    const nykaa = makeInciEvidence("https://www.nykaa.com/test/p/123", "Aqua, Glycerin, Niacinamide, Phenoxyethanol", "2026-10-20T00:00:00.000Z", undefined, false, { trust: 3, origin: "nykaa" });
+    const { model: m } = page(rv({ productName: "Test Gel", category: "Moisturizer" }, nykaa));
+    expect(m.take.confidence.sentence).toMatch(/the ingredient list comes from a retailer page/);
+    expect(sentences(m).join(" ")).not.toMatch(/our own reading of the page/);
   });
 });

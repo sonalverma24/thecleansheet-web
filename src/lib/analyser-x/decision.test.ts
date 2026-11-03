@@ -209,3 +209,25 @@ describe("every decision is explained", () => {
     for (const x of r.decision.reasons) expect(r.settled.some((f) => f.ruleId === x.ruleId)).toBe(true);
   });
 });
+
+describe("where the ingredient list is said to come from", () => {
+  const LIST = "Aqua, Glycerin, Niacinamide, Phenoxyethanol";
+  const sourceFor = (url: string | null, trust: 1 | 2 | 3 | 4 | 5) =>
+    decideReview(rv({}, makeInciEvidence(url, LIST, REVIEWED, undefined, false, { trust })), NOW).decision.basis.listSource;
+
+  it("a Nykaa list read by code with its quote captured (trust 3) is a retailer page, not 'our own reading of the page'", () => {
+    expect(sourceFor("https://www.nykaa.com/lotus/p/10787966", 3)).toBe("retailer");
+  });
+
+  it("a retailer address alone (trust 2) is a retailer page too", () => {
+    expect(sourceFor("https://www.nykaa.com/lotus/p/10787966", 2)).toBe("retailer");
+  });
+
+  it("the other sources keep their names: a Decoder address, the brand's page, the pack and the model's own transcription", () => {
+    expect(sourceFor("https://incidecoder.com/products/test-product", 3)).toBe("incidecoder");
+    expect(sourceFor("https://inkeedecoder.com/products/test-product", 3)).toBe("incidecoder");
+    expect(sourceFor("https://brand.example/products/test", 4)).toBe("brand_page");
+    expect(sourceFor("https://brand.example/pack-photo", 5)).toBe("pack");
+    expect(sourceFor(null, 1)).toBe("model");
+  });
+});

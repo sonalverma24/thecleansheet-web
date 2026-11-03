@@ -32,7 +32,16 @@ export interface PageINCI {
   pageTitles?: string[];
   /** The page's og:site_name, when it states one. */
   siteName?: string | null;
+  /** How reliably the text was captured (see CaptureTrust): 4 a brand's own page, 3 INKEE Decoder or a Nykaa product page. */
+  trust?: 3 | 4;
+  /** Which kind of source the list came from. */
+  origin?: InciOrigin;
+  /** Other sources read for the same product whose list differs from this one, so a choice between sources is never silent. */
+  alternatives?: InciAlternative[];
 }
+
+export type InciOrigin = "decoder" | "brand-page" | "nykaa";
+export interface InciAlternative { source: string; origin: InciOrigin; count: number }
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";

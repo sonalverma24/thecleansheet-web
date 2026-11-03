@@ -607,7 +607,12 @@ function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: P
   }
   out.push({ q: "Does it do what it says?", a: m.claimCheck.oneLiner });
   if (m.fit.careful.length) out.push({ q: "Who should be careful with it?", a: `People to take care with: ${m.fit.careful.map((c) => c.replace(/[.\s]+$/, "")).join("; ")}.` });
-  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)} from ${sourceName(review.inciEvidence?.sourceUrl ?? review.dataSource?.inciSource ?? "")}. We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
+  // When another source listed different ingredients, the page says so: the choice of list is never silent.
+  const others = review.inciEvidence?.alternatives ?? [];
+  const usedName = sourceName(review.inciEvidence?.sourceUrl ?? "");
+  const otherName = (source: string): string => { const n = sourceName(source); return n === usedName ? `Another ${n} page` : n; };
+  const otherNote = others.length ? ` ${joinAnd(others.map((a) => `${otherName(a.source)} (${a.count} ingredients)`))} ${others.length === 1 ? "lists" : "list"} a different ingredient list; this analysis used the most complete one.` : "";
+  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)} from ${sourceName(review.inciEvidence?.sourceUrl ?? review.dataSource?.inciSource ?? "")}.${otherNote} We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
   return out;
 }
 

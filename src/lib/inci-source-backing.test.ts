@@ -9,10 +9,13 @@ import type { ProductReview } from "@/lib/product-review-types";
 
 const WHEN = "2026-10-21T00:00:00.000Z";
 const URL = "https://incidecoder.com/products/x";
+const NYKAA = "https://www.nykaa.com/test-face-wash/p/123";
 const LIST = ["Aqua", "Glycerin", "Niacinamide", "Phenoxyethanol"];
 
 const cases: Record<string, { review: ProductReview; backed: boolean; readWithoutQuote: boolean; status: string }> = {
   "a captured quote": { review: makeReview({ inciSourceUrl: URL, inciEvidence: makeInciEvidence(URL, LIST.join(", "), WHEN, "Test Face Wash") }), backed: true, readWithoutQuote: false, status: "Full INCI in reference database" },
+  "a Nykaa product page read by code, recorded at trust 3 with its quote (owner decision, 2026-10-30)": { review: makeReview({ inciSourceUrl: NYKAA, inciEvidence: makeInciEvidence(NYKAA, LIST.join(", "), WHEN, "Test Face Wash", false, { trust: 3, origin: "nykaa" }) }), backed: true, readWithoutQuote: false, status: "Full INCI in reference database" },
+  "a retailer address recorded the old way, at retailer trust": { review: makeReview({ inciSourceUrl: NYKAA, inciEvidence: makeInciEvidence(NYKAA, LIST.join(", "), WHEN, "Test Face Wash") }), backed: false, readWithoutQuote: false, status: "Partial" },
   "a legacy row: a reference page URL and no quote": { review: makeReview({ inciSourceUrl: URL }), backed: false, readWithoutQuote: true, status: "List read, source quote not captured" },
   "a quote that was cut short": { review: makeReview({ inciSourceUrl: URL, inciEvidence: makeInciEvidence(URL, "Aqua, Glycerin", WHEN, "Test Face Wash", true) }), backed: false, readWithoutQuote: false, status: "Partial" },
   "a list the model reported with no source": { review: makeReview(), backed: false, readWithoutQuote: false, status: "Partial" },

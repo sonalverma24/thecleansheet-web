@@ -184,6 +184,10 @@ export interface InciEvidence {
   retrievedAt: string;
   matchedTitle?: string;
   quoteTruncated?: boolean;
+  /** Which kind of source the list was read from: INKEE Decoder, the brand's own page, or a Nykaa product page. Absent on older analyses. */
+  origin?: "decoder" | "brand-page" | "nykaa";
+  /** Other sources read for this product whose list differs from the one used (the most complete list is used), so the choice is visible. */
+  alternatives?: { source: string; origin: "decoder" | "brand-page" | "nykaa"; count: number }[];
 }
 
 /** What the model searched and cited while producing a review (Google Search grounding).

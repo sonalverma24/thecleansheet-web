@@ -78,3 +78,33 @@ describe("IDENTITY_PLACEHOLDER", () => {
     ]) expect(IDENTITY_PLACEHOLDER.test(text), text).toBe(false);
   });
 });
+
+import { pageTitleNamesProduct } from "./product-identity";
+
+describe("pageTitleNamesProduct: does a candidate ingredient page name the shopper's product (owner decision, 2026-10-30)", () => {
+  const AQUA = "Aqualogica Glow Hydra Gel Moisturizer With Papaya Vitamin C For 24 Hour Intense Hydration";
+
+  it("accepts a page whose whole name sits inside the shopper's longer retailer name", () => {
+    expect(pageTitleNamesProduct("Aqualogica Glow+ Hydra Gel Moisturizer", "Aqualogica", AQUA)).toBe(true);
+    expect(pageTitleNamesProduct("Aqualogica Glow+ Hydra Gel Moisturizer With Papaya & Vitamin C For 24 Hour Intense Hydration(100g)", "Aqualogica", AQUA)).toBe(true);
+  });
+
+  it("the old rule is not what accepts it: the stricter titleIdentifiesProduct still refuses the short title", () => {
+    expect(titleIdentifiesProduct("Aqualogica Glow+ Hydra Gel Moisturizer", "Aqualogica", AQUA)).toBe(false);
+  });
+
+  it("refuses a different product with a similar name: another type, another variant, another brand", () => {
+    for (const title of ["Aqualogica Glow+ Oil Free Moisturizer With Papaya & Vitamin C", "Aqualogica Glow+ Jello Moisturizer", "Aqualogica Glow+ Hydra Gel Cleanser", "Aqualogica Glow+ Hydra Gel Sunscreen SPF 50", "Plix Glow Hydra Gel Moisturizer"])
+      expect(pageTitleNamesProduct(title, "Aqualogica", AQUA), title).toBe(false);
+  });
+
+  it("refuses a short generic title, which could match many products", () => {
+    expect(pageTitleNamesProduct("Aqualogica Gel Moisturizer", "Aqualogica", AQUA)).toBe(false);
+    expect(pageTitleNamesProduct("Minimalist Niacinamide Serum", "Minimalist", "Minimalist 10% Niacinamide Serum 30ml")).toBe(false);
+  });
+
+  it("refuses a missing title", () => {
+    expect(pageTitleNamesProduct(null, "Aqualogica", AQUA)).toBe(false);
+    expect(pageTitleNamesProduct("", "Aqualogica", AQUA)).toBe(false);
+  });
+});

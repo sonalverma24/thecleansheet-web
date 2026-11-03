@@ -219,6 +219,8 @@ describe("copy", () => {
   it("names a source in words, and a date as 20 Oct 2026, never as an address or an ISO string", () => {
     expect(sourceName("incidecoder")).toBe("INCIDecoder");
     expect(sourceName("https://www.incidecoder.com/products/x")).toBe("INCIDecoder");
+    expect(sourceName("https://inkeedecoder.com/products/x")).toBe("INKEE Decoder");
+    expect(sourceName("https://www.nykaa.com/lotus/p/10787966")).toBe("Nykaa");
     expect(sourceName("https://www.brand.example/products/x")).toBe("brand.example");
     expect(sourceName("brand_page")).toBe("the brand's product page");
     expect(sourceName(undefined)).toBe("the source");
