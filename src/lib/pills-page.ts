@@ -26,6 +26,7 @@ import { reviewInciList } from "@/lib/review-inci";
 import { ingredientConcerns, type IngredientConcern } from "@/lib/ingredient-concerns";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
+import { COMEDOGENIC, inciHas } from "@/data/analysis/ingredient-risk";
 import {
   ANALYSER_RELEASE, AUTHORITIES, GREEN_FROM, INGREDIENT_CAUTIONS, RED_UNDER, STALE_DAYS, benchmarkPanel, decideReview, reviewSections, safetyMarker, shortList, sourceName, testLevelOfClaims,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
@@ -287,9 +288,12 @@ function claimEvidenceHighlights(product: ProductScorecard): Highlight[] {
     const reviewed = check.evidenceStatus === "Evidence visible" && check.decision === "Publicly supported";
     const contradicted = check.evidenceStatus === "Evidence visible" && check.decision === "Not publicly supported";
     // Short on purpose: the chip is a keyword. The note and the source stay in `detail`, and the Claim check block has the full story.
-    const claimLabel = reviewed ? `${label}: supported` : contradicted ? `${label}: not supported` : `${label}: brand claim`;
+    // A vegan claim is "not supported" under a cross only when our own screen has verified an animal-only ingredient (owner decision, 2026-11-01).
+    // A model's reading that the list contradicts it rests on an origin nobody checked, so it is not drawn; the open question is listed under Gaps.
+    const unverifiedVegan = contradicted && label === "Vegan claim" && !product.veganScreen?.animalIngredients.length;
+    const claimLabel = reviewed ? `${label}: supported` : contradicted && !unverifiedVegan ? `${label}: not supported` : `${label}: brand claim`;
     const detail = [check.note, check.sourceUrl ? `Source: ${check.sourceUrl}` : ""].filter(Boolean).join(" ");
-    return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
+    return [{ label: claimLabel, state: reviewed ? "yes" as const : contradicted && !unverifiedVegan ? "no" as const : "unknown" as const, ...(detail ? { detail } : {}) }];
   });
 }
 
@@ -301,9 +305,20 @@ function veganOriginHighlight(product: ProductScorecard): Highlight | null {
     : screen.status === "conflict" ? `Animal-origin ingredient: ${joinAnd(screen.animalIngredients)}`
     : "Vegan ingredient origin unknown";
   const sources = screen.sources.map((s) => `${s.ingredient}: ${s.source}`).join("; ");
+  const toConfirm = screen.originToConfirm.length ? ` Animal or plant not established (see Gaps): ${joinAnd(screen.originToConfirm)}.` : "";
   const unknown = screen.unknownIngredients.length ? ` Unresolved origin: ${joinAnd(screen.unknownIngredients)}.` : "";
-  const detail = [sources ? `Ingredient-origin sources: ${sources}.` : "", unknown, "This screen is separate from cruelty-free certification."].filter(Boolean).join(" ");
+  const detail = [sources ? `Ingredient-origin sources: ${sources}.` : "", toConfirm, unknown, "This screen is separate from cruelty-free certification."].filter(Boolean).join(" ");
   return { label, state, ...(detail ? { detail } : {}) };
+}
+
+/** Ingredients that may be animal-derived, where our reference does not settle it, are a gap and not a chip: what would settle it is the brand saying which source this product uses.
+    Silent for a medicine and when the ingredient list is not source-backed (the screen lists nothing then; the list itself is the gap). Owner decision, 2026-11-01. */
+export function originGapOf(screen: ProductScorecard["veganScreen"]): string | null {
+  const names = screen?.originToConfirm ?? [];
+  if (!names.length) return null;
+  const shown = names.slice(0, 5);
+  const list = names.length > shown.length ? `${shown.join(", ")} and ${names.length - shown.length} more` : joinAnd(shown);
+  return `Confirmation from the brand of whether ${list} ${names.length === 1 ? "is" : "are"} animal- or plant-derived.`;
 }
 
 /** The strip shows at most this many chips. */
@@ -519,6 +534,8 @@ export function gapsOf(d: Decision, product: ProductScorecard, review: ProductRe
   if (!medicine && d.key !== "not-enough-info") {
     const next = NEXT_RUNG[Math.min(6, Math.max(1, testLevelOf(review)))];
     if (next && !out.length) out.push(next);
+    const origin = originGapOf(product.veganScreen);
+    if (origin) out.push(origin);
   }
   return out.length ? [...new Set(out)] : ["Nothing important is missing from the public information we found."];
 }
@@ -541,6 +558,24 @@ function fitCautionsOf(review: ProductReview): string[] {
     .filter((item) => item.length > 0 && !MEDICAL_AUDIENCE_NOTE_RE.test(item) && !THIRD_PARTY_ATTRIBUTION_RE.test(item))
     .slice(0, 4);
 }
+
+/* ── comedogenicity (code-owned) ─────────────────────────────── */
+
+/** Products left on the skin, on the face. A rinse-off, a toner, a baby product or a hair, body, hand, foot, lip or nail product is not what the acne-prone caution is about. */
+const COMEDOGENIC_PRODUCT_TYPES = new Set<ProductScorecard["productType"]>(["leave-on", "treatment", "sunscreen", "eye-area"]);
+const NOT_FACE_CATEGORY_RE = /\b(?:hair|scalp|body|hand|foot|feet|lip|nail)\b/i;
+/** Model-written lines that already speak about acne or clogging: replaced by the code-owned line when it applies, so the page never says both. */
+const ACNE_FIT_RE = /acne[- ]prone|non[- ]?comedogenic|comedogen|clog|breakout|pore[- ]?block/i;
+
+/** The ingredients on the source-backed list that the repo's own comedogenic list names (`COMEDOGENIC`: commonly rated 3 or more on the standard scale), as written on the label.
+    Empty unless the whole list is source-backed and the product is a leave-on face product. The list is short, so an empty answer is never read as "non-comedogenic". */
+export function comedogenicIngredientsOf(product: ProductScorecard, category: string | undefined, inci: string[]): string[] {
+  const full = FULL_INCI_STATUSES.has(product.inciCompleteness?.status ?? "") && inci.length > 0;
+  if (!full || !COMEDOGENIC_PRODUCT_TYPES.has(product.productType) || NOT_FACE_CATEGORY_RE.test(category ?? "")) return [];
+  return inci.filter((name) => inciHas(name, COMEDOGENIC).length > 0);
+}
+
+const comedogenicCaution = (names: string[]): string => `Acne-prone or breakout-prone skin: contains ${joinAnd(names.slice(0, 3))}, commonly rated comedogenic.`;
 
 function howToUseOf(review: ProductReview): PillsPageModel["howToUse"] {
   const c = review.consumerSuitability;
@@ -594,6 +629,7 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
   const inci = reviewInciList(review);
   const preg = product.pregnancyScreen;
   const checks = verifiedChecks(product, inci, preg);
+  const comedogenic = comedogenicIngredientsOf(product, review.category, inci);
   const panel = benchmarkPanel(d);
   const concerns = ingredientConcerns(product.ingredients, d.reasons);
   const base: Omit<PillsPageModel, "faq"> = {
@@ -606,8 +642,9 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     keyActives: shortActives(product.keyActives.map((a) => a.name)).slice(0, 3),
     highlights: capGlance(checks),
     fit: {
-      suits: [...(review.consumerSuitability?.bestFor ?? [])].filter(Boolean),
-      careful: fitCautionsOf(review),
+      // A formula with commonly comedogenic ingredients is not "Acne-prone skin (non-comedogenic)": the model's acne suitability lines go, and the code-owned caution leads "Who should be careful".
+      suits: [...(review.consumerSuitability?.bestFor ?? [])].filter((s) => Boolean(s) && !(comedogenic.length && ACNE_FIT_RE.test(s))),
+      careful: comedogenic.length ? [comedogenicCaution(comedogenic), ...fitCautionsOf(review).filter((c) => !ACNE_FIT_RE.test(c))].slice(0, 4) : fitCautionsOf(review),
       india: product.indiaContext,
       price: priceLineOf(review),
     },

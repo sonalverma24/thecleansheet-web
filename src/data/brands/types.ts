@@ -46,7 +46,10 @@ export type PregnancyScreen = {
 
 export type VeganScreen = {
   status: "screened" | "conflict" | "unknown";
+  /** Ingredients our reference states are animal-derived with no other route, at high confidence and with a source. The only ones drawn as a cross. */
   animalIngredients: string[];
+  /** Ingredients that may be animal-derived but whose route the reference leaves open (or does not settle): never drawn as a chip, listed under Gaps. */
+  originToConfirm: string[];
   unknownIngredients: string[];
   sources: { ingredient: string; source: string }[];
 };

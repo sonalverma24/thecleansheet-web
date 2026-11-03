@@ -505,6 +505,7 @@ function VeganIngredientScreen({ product }: { product: ProductScorecard }) {
         <span className="text-[10px] uppercase tracking-[0.1em] text-[#8A6A16]">{label}</span>
       </div>
       {screen.animalIngredients.length > 0 && <p className="text-xs text-[#282828] mt-2">Animal-origin records: {screen.animalIngredients.join(", ")}.</p>}
+      {screen.originToConfirm.length > 0 && <p className="text-xs text-[#8A6A16] mt-2">Animal or plant source not established: {screen.originToConfirm.slice(0, 8).join(", ")}{screen.originToConfirm.length > 8 ? ` and ${screen.originToConfirm.length - 8} more` : ""}.</p>}
       {screen.unknownIngredients.length > 0 && <p className="text-xs text-[#8A6A16] mt-2">Origin unknown or not high-confidence: {screen.unknownIngredients.slice(0, 8).join(", ")}{screen.unknownIngredients.length > 8 ? ` and ${screen.unknownIngredients.length - 8} more` : ""}.</p>}
       {screen.status === "screened" && <p className="text-xs text-[#282828]/60 mt-2">All named ingredients have a sourced, high-confidence non-animal origin record.</p>}
       {screen.sources.length > 0 && <details className="mt-3">
