@@ -10,6 +10,7 @@ import { RatingDot } from "@/components/scorecards/RatingDot";
 import { getDisplayPrice } from "@/lib/product-card-helpers";
 import { productGroup } from "@/lib/registry-filters";
 import { seedImageFor, shelfNote } from "@/lib/home-shelf";
+import { isTileRoute, tileImage } from "@/lib/tile-image";
 import { track } from "@/lib/analytics";
 
 /* One product in the /brands marketplace. Same card as the home shelf: a clean pack
@@ -77,7 +78,7 @@ export default function MarketCard({
   // product with no stored review shows the circle of its standing. No label either way.
   const marker = product.pill ? product.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: product.reviewTier, score: product.score })];
   const glance = product.pill && product.glance?.length ? product.glance : null;
-  const image = seedImageFor(product) ?? product.image ?? null;
+  const image = tileImage(product.slug, seedImageFor(product) ?? product.image ?? null);
   const category = productGroup(product);
   // Some catalogue prices are free text ("Rs.150–340 (for 100ml)"): show the rupee sign, not "Rs.".
   const price = getDisplayPrice(product).replace(/Rs\.?\s*/gi, "₹");
@@ -94,6 +95,7 @@ export default function MarketCard({
             alt=""
             fill
             sizes="(min-width: 1024px) 260px, (min-width: 768px) 30vw, 46vw"
+            unoptimized={isTileRoute(image)}
             className="object-contain p-3"
           />
         ) : (
