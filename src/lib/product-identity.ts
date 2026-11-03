@@ -133,6 +133,9 @@ export function sanitizeInciList(raw: string[]): InciCheck {
     for (const p of parts) {
       if (p.length > MAX_ITEM_LEN || p.split(" ").length > 9) { issues.push(`not an ingredient name: "${p.slice(0, 40)}…"`); continue; }
       if (/^[\d\s.%]+$/.test(p) || !/[a-z]/i.test(p)) { issues.push(`non-INCI token: "${p}"`); continue; }
+      // A concentration in front of the name ("0.1% Retinal", "3% Caffeine") is a claim from a key-ingredients panel, never an INCI name. WishCare's Nykaa panel gave four of them and
+      // they were taken for the whole ingredient list (2026-11-03). Names that start with a digit ("1,2-Hexanediol", "3-O-Ethyl Ascorbic Acid") have no percent sign.
+      if (/^\d+(?:[.,]\d+)?\s*%/.test(p)) { issues.push(`concentration claim: "${p}"`); continue; }
       out.push(p);
     }
   }
