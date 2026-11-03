@@ -5,6 +5,7 @@ import "./globals.css";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import AcquisitionTracker from "@/components/AcquisitionTracker";
+import { Analytics } from "@vercel/analytics/next";
 
 /* Playfair Display, fallback for Cooper BT if browser hasn't loaded
    the self-hosted font yet (flash prevention). Cooper BT woff2 files
@@ -192,6 +193,7 @@ export default function RootLayout({
         <AuthProvider>
           <SiteChrome>{children}</SiteChrome>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
