@@ -848,6 +848,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
+- **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).
+- **Reason:** measured on the live pages. The product is pasted as `lakmeindia.com/products/lakme-peach-ceramide-moisturizer-with-hyaluronic-for-dry-skin-normal-skin-sensitive-skin-50g`, its old address; the page is titled "Lakme Peach Milk 2% Pro-Ceramide + Peptide Creme | Barrier Repair ...". For a pasted address the engine searches with a name worked out from the address and takes the brand from its first word. The title check refused the brand's page against that name, and the corrected-brand lookup (the one that uses the name the model read from the page) did not run, because the first word, "lakme", equals the brand the model named. The first lookup's list stood, and it came from a **Nykaa page for another product**, the Ultra Light Gel (26 entries starting "Water, Dimethicone, Glycerin..."), not the Creme's 40 ("Water, Paraffinum Liquidum..."). The re-run held that row on its changed name, so nothing wrong was written; the cause was found by comparing the lists.
+- **What it touched:** `src/lib/product-review-engine.ts`: the corrected-brand lookup now also runs for any pasted address (`isURL(q)`), not only when the brand's first word differs from the model's brand. It still does not run when the first lookup already ended on the brand's own page. Every identity check is unchanged: the brand's page must still name the product, under the model's name from the page instead of the name guessed from the address. A name typed in as text behaves as before.
+- **Measured:** with the page's real name as the query, the brand's page wins with 40 entries (Water first), ahead of the Nykaa Gel list. The new test in `product-review-engine.sources.test.ts` fails against the previous engine ("called 1 time, expected 2") and passes now.
+- **Not changed:** no stored analysis is changed by this entry. The Lakme row is still grey. Its fresh analysis is held by the re-run for `product-identity-changed` (stored name "Peach Creme Moisturiser, Ceramide & Peptide, ..." against the brand's "Peach Milk 2% Pro-Ceramide + Peptide Creme"), so applying it needs the owner's approval of the name change, as for Be Minimalist.
+- **Undo:** revert the commit, or restore the `parsed.brand.toLowerCase() !== brandHint.toLowerCase()` condition alone.
+
 ### 2026-11-03 (night, second entry): A list whose entries carry a concentration is refused as the ingredient list
 - **Decided by:** not yet the owner. Found by me while checking what the grey re-run (run 3) wrote on 2026-11-03.
 - **Reason:** WishCare's Cellular Reset 0.1% Retinal Shot was refreshed from grey to Buy with caution on a "list" of four entries, `0.1% Retinal, Tetrapeptide, 3% Caffeine, Niacinamide & Ginseng Pdrn`, read from a Nykaa panel. They are the product's key actives, not its INCI. The re-run took them for the whole list because the Nykaa change of the same day (a Nykaa list is a source) removed the only check that had held that row, and `sanitizeInciList` rejects a token only when it is nothing but digits and percent signs ("0.1% Retinal" has letters), with a pass mark of three entries.
@@ -1297,7 +1305,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `3e9b99260e4757bc5887b555aedb7b4c86a7dbe32f7d0eca7e30354f707b6546` |
+| `src/lib/product-review-engine.ts` | `c3a5d8ff6898c8f4cd1480baf9569e1f1b7c0448219a2ce6378f07d463243be0` |
 | `src/lib/product-review-types.ts` | `3bf6a4556cab4320dd55b7b6006833f9a03892059e6739a183181ac04f8639fe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
