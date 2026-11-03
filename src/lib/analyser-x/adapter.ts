@@ -25,8 +25,10 @@ import { decide, type DecideOutput } from "./decision";
 import { reviewSections } from "./sections";
 import type { AcquisitionValue, ClaimValue, ListSource, ListValue, RuleContext, Trust } from "./types";
 
-function sourceOf(url: string | undefined, trust: Trust, hasList: boolean): ListSource {
+function sourceOf(url: string | undefined, trust: Trust, hasList: boolean, origin?: string): ListSource {
   if (!hasList) return "none";
+  // A list the owner typed in from the product's own pack is named for what it is, not as "our own reading of the page" (src/data/inci/owner-supplied.ts).
+  if (origin === "owner-supplied") return "pack";
   if (url && /(?:inci|inkee)decoder\.com/i.test(url)) return "incidecoder";
   if (trust >= 5) return "pack";
   if (trust === 4) return "brand_page";
@@ -54,7 +56,7 @@ export function factsFromReview(review: ProductReview, now: string, over: Adapte
 
   const listValue: ListValue = {
     ingredients: inci,
-    source: sourceOf(ev.sourceUrl || undefined, trust, inci.length > 0),
+    source: sourceOf(ev.sourceUrl || undefined, trust, inci.length > 0, review.inciEvidence?.origin),
     url: ev.sourceUrl || undefined,
     quote: ev.quote || undefined,
     capturedAt: ev.retrievedAt ?? review.reviewedAt,

@@ -184,10 +184,11 @@ export interface InciEvidence {
   retrievedAt: string;
   matchedTitle?: string;
   quoteTruncated?: boolean;
-  /** Which kind of source the list was read from: INKEE Decoder, the brand's own page, or a Nykaa product page. Absent on older analyses. */
-  origin?: "decoder" | "brand-page" | "nykaa";
+  /** Which kind of source the list was read from: INKEE Decoder, the brand's own page, a Nykaa product page, or a list the owner typed in from the product's pack
+      (src/data/inci/owner-supplied.ts), where `quote` is the text as printed and `sourceUrl` is the brand page that shows the product. Absent on older analyses. */
+  origin?: "decoder" | "brand-page" | "nykaa" | "owner-supplied";
   /** Other sources read for this product whose list differs from the one used (the most complete list is used), so the choice is visible. */
-  alternatives?: { source: string; origin: "decoder" | "brand-page" | "nykaa"; count: number }[];
+  alternatives?: { source: string; origin: "decoder" | "brand-page" | "nykaa" | "owner-supplied"; count: number }[];
 }
 
 /** What the model searched and cited while producing a review (Google Search grounding).

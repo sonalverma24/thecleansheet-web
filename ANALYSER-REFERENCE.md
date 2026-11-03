@@ -848,6 +848,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-01: A list the owner types in from a product's pack is a last-resort source; a brand's renamed product is recognised by its catalogue
+- **Decided by:** the owner, in chat on 2026-10-31, asked why the Humuss Beauty sunscreen shows no ingredient list when earlier analyses always did, and offered these fixes. Chosen: the title-gate fix, an owner-supplied list, and two retailers that agree. Not chosen: reading ingredient lists off pack images with a model.
+- **Reason:** Humuss's own page prints only three key-ingredient icons and none of its 12 gallery images is an ingredient panel (front-of-pack shots, claim icons, a certificate of analysis, stability reports and a manufacturer's safety data sheet whose "composition" is raw-material trade names such as "Parsol-TX" and "Sepigel 305", not an INCI list), INKEE Decoder has no entry, and the brand's own name for the product ("Sun-sational - SPF 50 Hyaluronic Acid Sunscreen") shares too few words with the retailer title we analysed for the title check to accept it. Before X1 (26 Oct) and the 28 Oct primary-source rule the same gap was hidden: of 273 analyses stored before 26 Oct, 241 showed a list and 112 of those 241 had no source at all (the model had written them); none of the 35 stored after 28 Oct has a model-written list. The 2026-10-28 rule ("a list must stay a quoted source, never model-written") stays: nothing here lets a model write a list.
+- **What it touched:** (1) `src/data/inci/owner-supplied.ts` and `src/lib/owner-supplied-inci.ts`: an entry holds the brand, the exact product names it is for, a brand-page or Decoder URL, the list verbatim as printed, a date and where it was read. The ingredients are parsed from the quote, so they cannot disagree with it. An entry is used only when Decoder, the brand's page and Nykaa found no list, after the reader has named the product, matched on brand and exact product name (any word order, never by containment, so another SPF, shade or size never borrows it). It is recorded at capture trust 3 with origin `owner-supplied`, and the page says the list was printed on the pack and typed in by The Clean Sheet. It lives in the repository, not the database, because the frozen re-run runner's child process cannot read the database and every entry is then a dated, reviewed change. A malformed entry fails the tests. The data file ships empty: the Humuss list must be copied from its pack. (2) `src/lib/brand-catalogue.ts`, used by `findBrandInci`: a brand's own page whose title fails the name check is still taken when the brand's Shopify product feed (`/products.json`) holds exactly one product that is clearly this one: at least 4 words and 60% of its own words shared, the same SPF/size/percentage numbers, no sample, set, shade or form on one side only, and a lead of 2 shared words over the next-best. A store without a feed, or one we could not read in full, confirms nothing. The page must still carry a captured quote and a sane list. Decoder and Nykaa pages are not affected. (3) The decision core names an owner-supplied list "the pack",; in `src/lib/analyser-x/adapter.ts`. (A Nykaa list had been named "our own reading of the page"; main fixed that separately in 3d11dd8, so it is not part of this change.)
+- **Not done, and why:** accepting a retailer's list when two retailers agree was chosen but is not built, because the measurement said not to. Measured 2026-11-01 on the 26 distinct products the catalogue re-runs held (31 records) plus Humuss: today's pipeline (Decoder, the brand's page with the catalogue check, Nykaa; no model page-finder) found a list for 12 of the 26 (Nykaa 5, Decoder 5, the brand's own page 2). Of the 14 left, 2 had any brand-domain page in the search results and neither gave a list; the catalogue check rescued none; a non-Nykaa retailer page gave a list for 3, only 2 of them under a title that names the product, and **no product had two retailers with the same list**, so the rule would have resolved 0 of 14 (the plan's bar was 30%). For Humuss, Flipkart and Amazon gave no list text. Limit of the measurement: the retailer reads used the general page extractor on Firecrawl-rendered text for at most three retailer hosts each, so a retailer that keeps its list in a block the renderer does not return would be missed; it shows no evidence the rule would help, not proof that it could not. Cost: 69 searches and 58 renders in the clean run (about 24 searches and 8 renders more in a first run that rate-limiting made invalid, discarded). Nothing here reads a list off a pack image.
+- **Known limits:** the catalogue check helps only Shopify brands, and only when the brand prints a list as page text; it does not fix Humuss on its own. A new entry is needed for each product, and a shopper's search worded so that the reader names the product differently needs that name added to the entry. A list typed from a pack is as current as the pack the owner read.
+- **Not changed:** the colour or pill rules, the prompts, stored analyses (nothing is re-run by this change), the approved baseline id `X1-approved-2026-10-28`; a new baseline and tag are needed before any re-run uses this code.
+- **Undo:** revert the change. Entries already used are recorded in `inciEvidence.origin`; older code ignores the value.
 ### 2026-11-02 (later): Every ingredient on the pregnancy audit lists shows a caution, and each says why in one line
 - **Decided by:** the owner, on 2026-11-02, in chat, after being given the audit's lists (what would show a caution, and what the audit doubted): "All these can be flagged as caution but mention note saying why we have flagged them in one liner."
 - **Reason:** in the owner's words above; no further reason was given. This **supersedes the removals in the entry below** for five rows (Propylparaben, Perillyl Alcohol, Benzophenone-4, Ethylhexyl Methoxycinnamate, Homosalate), which show a caution again. Methylparaben and Ethylparaben were not in the lists the owner answered and stay neutral; say so if they should be flagged too.
@@ -1132,6 +1140,12 @@ The generator embeds the current model prompt in `ANALYSER-REFERENCE.md`; its fr
 
 Corrective release (28 October): exact matching normalises accents and punctuation; an exact product match is not replaced by a nearby variant. Explicitly empty saved analyses are retried on search. When no list is retained, model claims of full INCI, source names, formula assessment and ingredient-based suitability are reconciled in both fresh storage and page rendering.
 
+Added 1 November 2026 (see the decision log entry of that date):
+
+- **A list the owner typed in from the pack** (`src/data/inci/owner-supplied.ts`, `src/lib/owner-supplied-inci.ts`) stands in only when Decoder, the brand's page and Nykaa found no list. The entry carries the list verbatim as printed, a brand-page or Decoder URL that shows the product, the date and where it was read; it is matched on brand and exact product name; it is recorded at capture trust 3 with origin `owner-supplied`. Never add a list from memory, a retailer or a model.
+- **A brand's own name for a product.** A brand-domain page whose title fails the name check is still read when the brand's Shopify product feed shows exactly one product that is clearly the one asked for (`src/lib/brand-catalogue.ts`). It must still carry a captured quote and a sane list.
+- **Not built:** accepting a retailer list when two retailers agree. It relaxes the 28 October rule and waits on a measurement.
+
 ## 11. Approved source fingerprints
 
 CI compares these SHA-256 fingerprints with the source. Any change in these files requires regenerating this reference and reviewing the change against the approved baseline in docs/ANALYSER-APPROVED.md.
@@ -1183,7 +1197,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
 | `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
-| `src/lib/analyser-x/adapter.ts` | `d309b5796149e7dfa2f6c9b4165e25bdff77e7585f9caeeb3058b4a98277cd4a` |
+| `src/lib/analyser-x/adapter.ts` | `b371d1d34bee1f1283518bc1b98911d00519c563a9415c4c358873441bdd02f2` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
 | `src/lib/analyser-x/copy.ts` | `f1a40b600e3cf114a92a247ea39aa217364c4966de7b90f69181715a29412fef` |
@@ -1207,7 +1221,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `5db2a9f1e497aed015ed7394f7c1d4bf1b9315a85221c147c8868b68f97b558c` |
+| `src/lib/brand-inci.ts` | `aafd783e524f038fac7bb04ec711031001858efe626102c07e829701ff73f9b8` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1221,7 +1235,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `0f23ad1fdc8424e26ab8ba0f5cf60c6c80a423f9f3b1f07eeabd9c1ec573ddfa` |
+| `src/lib/inci-from-page.ts` | `056692135ad47089f479e65604dc577e1c5c8bba1a4ba1c6affac2c3126614a1` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1235,18 +1249,19 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
 | `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
 | `src/lib/nykaa-inci.ts` | `9c58530bb2805a53080cdeb7d44742950a2159786904c85a767d80c8d3316477` |
+| `src/lib/owner-supplied-inci.ts` | `27904ab93e5cda3564c149eab948533249e2df9d288b8eacf9c7be7795bb62b3` |
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `3441ad15c2aead894e6bbd7c66094af1b7ec3b89ae73be3c151d955c0b9b2be7` |
+| `src/lib/pills-page.ts` | `2a1a504e5b4215146223baa9321fc443e1021ef5896eb13e220760d69cb2474a` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `6b84f2ffc748cd468149bbcc1ba5b6212091b3e6a01a7935b8c3fc54fab3df25` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `fe4cd26b6a3c2f6a0b1921ec56f14ef379b992dbe379ade99a5f9f08ef3fef59` |
-| `src/lib/product-review-engine.ts` | `e4afb4400547b089934f081427aa7225fffbd90b325790afe590cc610677b81d` |
-| `src/lib/product-review-types.ts` | `17d23c0d3a3d127b1a3f149bdcbe12f38001070ad3ee56dfc5a5a05f4ac58e9c` |
+| `src/lib/product-review-engine.ts` | `7706742948a18e5f7ca910564c7d0fde45e1bf9c78b32be02bf57d30fe4c93a1` |
+| `src/lib/product-review-types.ts` | `af389c9f26d74aa46f6115a7248191e455fa082c9e0a0b4a6861a634e4012d79` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `389273e88209c1d60b5d0ef5460844a70b59216d8a7440e8414cd0ee373da6f8` |
 | `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |

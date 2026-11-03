@@ -40,7 +40,7 @@ export interface PageINCI {
   alternatives?: InciAlternative[];
 }
 
-export type InciOrigin = "decoder" | "brand-page" | "nykaa";
+export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "owner-supplied";
 export interface InciAlternative { source: string; origin: InciOrigin; count: number }
 
 const UA =
