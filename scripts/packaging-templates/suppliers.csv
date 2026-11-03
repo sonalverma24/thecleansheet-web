@@ -1,0 +1,2 @@
+id,slug,name,businessType,city,state,website,yearEstablished,about,credentials,contactPerson,contactEmail,contactPhone,contactAgreedPublic,eprStatus,eprReference,eprCheckedOn,eprNote,listedOn
+# FAKE EXAMPLE (delete this row),example-slug,FAKE EXAMPLE Packaging Ltd,manufacturer,Exampleton,Exampleland,https://example.com,1999,"Short factual description in our words, no marketing copy.",iso-9001|ref=EX-0000; other|label=Example board,Example Person,person@example.com,+00 0000 000000,yes,registered,EX-REF-0,2026-01-01,Reference as supplied,2026-01-01
