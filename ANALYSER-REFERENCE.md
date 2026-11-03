@@ -1295,7 +1295,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/adapter.ts` | `8eeac5cc53080cc8a860a87de3f9b8e123a4c1f9473534187411a435bcc5ca91` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `f1a40b600e3cf114a92a247ea39aa217364c4966de7b90f69181715a29412fef` |
+| `src/lib/analyser-x/copy.ts` | `1c8968ed917d2647bede349b13759b42ad57dcb8c4f47a4789d16c3906234db8` |
 | `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
@@ -1331,7 +1331,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `96304bc14cd5f6791b2c0a44df213348e899bcb40a62357a4d9f0e310b7daaa6` |
+| `src/lib/inci-from-page.ts` | `1a9065044dc19e8d62a1d9022c704043e125afa1f62a5c1d4841a0be016ba4d8` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
@@ -1356,14 +1356,14 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `c3a5d8ff6898c8f4cd1480baf9569e1f1b7c0448219a2ce6378f07d463243be0` |
-| `src/lib/product-review-types.ts` | `3bf6a4556cab4320dd55b7b6006833f9a03892059e6739a183181ac04f8639fe` |
+| `src/lib/product-review-engine.ts` | `9ec29f6a83ed659d2ef193027d90a172a733df003e6e1c1a813168d4b9f0a410` |
+| `src/lib/product-review-types.ts` | `e0b8c9cb4b61897a308887e5b8693c680fbfff3c6c26c3df5c4cb583a485c641` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
-| `src/lib/review-engine.ts` | `34ecbe876898bebe0345a70d7daefe0a732456cfa617013783fe4c00c423d13c` |
+| `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `136cf48bb84c167a24c6d94277109711bb03df5b82a3a0b922a8e80c493d80a6` |
-| `src/lib/review-run.ts` | `1d19fad30908feec5547f5fc2018c7069fb04832684f65fa97b1e74e27e8989d` |
+| `src/lib/review-run.ts` | `fc35de89907c1b7bfac29cb6d748c6d0583b900ef4e11184b2779b6cd72f02f0` |
 | `src/lib/review-to-scorecard.ts` | `0152e2132464eb32588b90d03b09da076fb32101458ce360ba45f7d7e4e8c60a` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
