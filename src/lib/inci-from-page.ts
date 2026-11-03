@@ -427,6 +427,48 @@ export function extractInciFromHtml(html: string): string[] {
   return extractInciFromText(stripTags(html));
 }
 
+/* ── A list that runs on from the page copy before it ──────────── */
+
+/* Tags that start or end a block of text. The ones after the tag name are a space, "/" or ">", so a custom element such as <p-icon> is not one. */
+const BLOCK_TAG = /<\/?(?:address|article|aside|blockquote|br|dd|details|dialog|div|dl|dt|fieldset|figcaption|figure|footer|form|h[1-6]|header|hr|li|main|nav|ol|p|pre|section|summary|table|tbody|td|tfoot|th|thead|tr|ul)(?=[\s/>])[^>]*>/gi;
+
+/** The longest list found inside a single block of the page: the text between two block tags, with inline tags stripped. When
+    the tags are stripped from the whole page the blocks run together, and a list that follows a heading or a paragraph with no
+    punctuation between them ("... Clinically Tested Brands That Lead Aqua, Niacinamide, ...") has its first entry swallowed
+    by the copy before it; as page copy that piece is far too long to be an entry and is dropped. Read on its own, the block
+    holds the list and nothing else. A block that is not a list, or a list that a block boundary cuts in two, gives nothing or a
+    shorter list: this is only ever consulted through extendFromBlocks. */
+export function extractInciFromBlocks(rawHtml: string): InciExtraction | null {
+  const html = flattenRichTextDumps(rawHtml).replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
+  let best: InciExtraction | null = null;
+  for (const chunk of html.split(BLOCK_TAG)) {
+    if ((chunk.match(/,/g)?.length ?? 0) < 4) continue; // five entries need four commas
+    const ex = extractInciWithQuote(stripTags(chunk));
+    if (ex && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
+  }
+  return best;
+}
+
+const sameEntry = (a: string, b: string): boolean => a.toLowerCase() === b.toLowerCase();
+
+/** Whether `longer` holds `base`, entry for entry and in order, with more entries before it or after it. */
+function containsRun(longer: string[], base: string[]): boolean {
+  if (longer.length <= base.length) return false;
+  for (let at = 0; at + base.length <= longer.length; at++) {
+    if (base.every((entry, i) => sameEntry(longer[at + i], entry))) return true;
+  }
+  return false;
+}
+
+/** The list read from the page's visible text, with the entries a run-on hid at its edges put back. The block reading is used only when it
+    holds the visible list whole and in order and has more entries: it can add what the page copy swallowed, never replace, reorder or
+    shorten the list, and never supplies a list the visible reading refused (a list cut in two by a gap, or none). */
+export function extendFromBlocks(visible: InciExtraction | null, html: string): InciExtraction | null {
+  if (!visible) return null;
+  const blocks = extractInciFromBlocks(html);
+  return blocks && containsRun(blocks.ingredients, visible.ingredients) ? blocks : visible;
+}
+
 /* ── Lists the page ships in its own data ─────────────────────── */
 
 /* Names storefronts give the full ingredient text in their page data. Only a STRING value counts: the
@@ -533,9 +575,9 @@ export function extractMarkdownTitles(md: string): string[] {
 export async function fetchInciFromProductPage(url: string): Promise<PageINCI | null> {
   const html = await fetchRawHtml(url);
   if (html) {
-    // The visible text first; the page's own data wins only when it holds a longer list (the markup shows
-    // the key ingredients, or a list cut short, and the popup shows the whole).
-    const visible = extractInciWithQuote(stripTags(html));
+    // The visible text first, with any entry a run-on from the copy before the list hid put back (the list read on its own, in its block);
+    // the page's own data wins only when it holds a longer list (the markup shows the key ingredients, or a list cut short, and the popup shows the whole).
+    const visible = extendFromBlocks(extractInciWithQuote(stripTags(html)), html);
     const embedded = extractEmbeddedInci(html, url);
     const ex = embedded && (!visible || embedded.ingredients.length > visible.ingredients.length) ? embedded : visible;
     if (ex && ex.ingredients.length >= 5) {

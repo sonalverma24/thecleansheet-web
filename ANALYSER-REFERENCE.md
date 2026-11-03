@@ -848,6 +848,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-03: Chemist at Play's own shop on innovist.com counts as the brand's page, and a list that runs on from page copy keeps its first entry
+- **Decided by:** not the owner in words. The owner asked for the fix after the analysis page for Chemist at Play's Oil Control Face Moisturizer showed Grey and "could not verify a complete ingredient list" although the brand's page prints the full list. The owner has not yet seen the change.
+- **Reason:** no reason in the owner's words beyond the request above. Two faults, both measured on the live page (innovist.com/products/oil-control-face-moisturizer, 2026-11-03). (1) chemistatplay.in now answers 301 to innovist.com, and the brand-domain rule (`isBrandIngredientUrl`) only knew a domain that starts with the brand's name, so the page the search ranked first was discarded before it was read. (2) Once that page is read, the list comes back with 24 of 25 entries and without Aqua: the page prints the list straight after a heading with no punctuation between them, so the first piece is page copy plus "Aqua", is rejected as too long, and the list started at Niacinamide, which misstates the order.
+- **What it touched:** `src/lib/brand-inci.ts` (`OWN_SHOP_HOSTS`, `isBrandIngredientUrl`): a short reviewed list of brands whose own shop is not on a domain named after them; today one entry, Chemist at Play = `innovist.com`, for that brand alone (innovist.com also sells Bare Anatomy, SunScoop and Anecdote). Every other rule is unchanged: https only, no port or credentials, a bare domain (or `.co.in`) with no subdomain, not the home page, and the page's title must still name the product. `isBrandIngredientUrl` is also what `review-checks.ts` and `scripts/approved-rerun-policy.ts` use to decide whether a stored list came from a primary source, so all three now agree. The `brands` table could not supply it: it holds 16 rows, none of them Chemist at Play. `src/lib/inci-from-page.ts` (`extractInciFromBlocks`, `extendFromBlocks`): the list is also read inside its own block (the text between two block tags) and that reading is used only when it holds the visible list whole and in order and has more entries, so it adds what the page copy swallowed and never replaces, reorders, shortens or originates a list.
+- **Measured:** the Innovist page now gives 25 entries, Aqua first and Sodium Gluconate last, quoted from "Aqua, Niacinamide, ..." to "..., Sodium Gluconate" with no page copy; `findBrandInci` for the product (one Firecrawl search, nothing written) returns it as a trust 4 brand page. Tests: `brand-inci.test.ts`, `review-checks.test.ts` and the new `inci-from-page.blocks.test.ts` (fixture trimmed from the live markup; it gave 24 entries from Niacinamide before the change).
+- **Not changed:** no stored analysis was re-run or overwritten, so the live Chemist at Play page stays Grey until it is re-analysed. A list that follows page copy inside the same block, and the Jina-reader fallback (`fetchPageMarkdown`), are not covered. Other brands that sell under a parent company's site need their own entry.
+- **Undo:** revert the commit. To turn off only the shop alias, empty `OWN_SHOP_HOSTS`; to turn off only the block reading, make `extendFromBlocks` return `visible`.
+
 ### 2026-11-02 (later): Every ingredient on the pregnancy audit lists shows a caution, and each says why in one line
 - **Decided by:** the owner, on 2026-11-02, in chat, after being given the audit's lists (what would show a caution, and what the audit doubted): "All these can be flagged as caution but mention note saying why we have flagged them in one liner."
 - **Reason:** in the owner's words above; no further reason was given. This **supersedes the removals in the entry below** for five rows (Propylparaben, Perillyl Alcohol, Benzophenone-4, Ethylhexyl Methoxycinnamate, Homosalate), which show a caution again. Methylparaben and Ethylparaben were not in the lists the owner answered and stay neutral; say so if they should be flagged too.
@@ -1207,7 +1215,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `5db2a9f1e497aed015ed7394f7c1d4bf1b9315a85221c147c8868b68f97b558c` |
+| `src/lib/brand-inci.ts` | `a873a6ce35321cc4e00cd10864d5dad84561ebb27530143303182634cbf06922` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1221,7 +1229,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `0f23ad1fdc8424e26ab8ba0f5cf60c6c80a423f9f3b1f07eeabd9c1ec573ddfa` |
+| `src/lib/inci-from-page.ts` | `dbc89a05c5e1bcbd2e5b6fba3e69afd2325562ac08d2bd769e3315e846867691` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |

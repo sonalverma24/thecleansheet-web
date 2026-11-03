@@ -404,3 +404,69 @@ describe("Nykaa, INKEE Decoder and the brand site searched together", () => {
     expect([...seen]).toContain(nykaaUrl);
   });
 });
+
+/* 2026-11-03: Chemist at Play now sells on innovist.com (chemistatplay.in answers 301 to it). The brand-domain rule only knew
+   domains that start with the brand's name, so the product page the search ranked first was discarded and the analysis went grey
+   ("could not verify a complete ingredient list") although the page prints the full list. The `brands` table has no Chemist at
+   Play row (16 brands in all), so a stored website cannot tell the engine: a small reviewed list of a brand's own shop does. */
+describe("a brand whose own shop is not on a domain named after it", () => {
+  const capUrl = "https://innovist.com/products/oil-control-face-moisturizer";
+  const capQuery = "Chemist at Play Oil Control Face Moisturizer with 3% Niacinamide, 1% Postbiotics & 1% Vitamin B5";
+  const capList = ["Aqua", "Niacinamide", "Glycerin", "Phytosqualane", "Pentylene Glycol", "Lecithin", "Cetyl Alcohol", "Phenoxyethanol", "Sodium Gluconate"];
+  const capPage = { source: capUrl, ingredients: capList, quote: capList.join(", "), pageTitles: ["Oil Control Face Moisturizer with Niacinamide | Chemist at Play"], siteName: "Innovist" };
+
+  it("accepts innovist.com for Chemist at Play, however the brand is spelled", () => {
+    for (const brand of ["Chemist at Play", "Chemist At Play", "chemist at play", "Chemistatplay"]) {
+      expect(isBrandIngredientUrl(capUrl, brand), brand).toBe(true);
+      expect(isBrandIngredientUrl("https://www.innovist.com/products/oil-control-face-moisturizer", brand), brand).toBe(true);
+    }
+  });
+
+  it("still accepts the old chemistatplay.in address, which keeps working for sources saved before the move", () => {
+    expect(isBrandIngredientUrl("https://chemistatplay.in/products/oil-control-face-moisturizer", "Chemist at Play")).toBe(true);
+  });
+
+  it("is that brand's alone: innovist.com also sells other brands, and does not become a source for any brand", () => {
+    for (const brand of ["Plix", "Anecdote", "Bare Anatomy", "SunScoop", "Chemist"]) expect(isBrandIngredientUrl(capUrl, brand), brand).toBe(false);
+  });
+
+  it("keeps the filter strict for Chemist at Play: retailers, marketplaces, blogs, social pages and look-alike domains stay out", () => {
+    for (const u of [
+      "https://www.nykaa.com/chemist-at-play-oil-control-face-moisturizer/p/123",
+      "https://www.amazon.in/Chemist-at-Play-Oil-Control/dp/B0X",
+      "https://www.flipkart.com/chemist-at-play-oil-control/p/itm1",
+      "https://www.instagram.com/chemistatplay/",
+      "https://chemistatplay.blogspot.com/2026/oil-control-review.html",
+      "https://innovist.com.evil.test/products/oil-control-face-moisturizer",
+      "https://evil-innovist.com/products/oil-control-face-moisturizer",
+      "https://xinnovist.com/products/oil-control-face-moisturizer",
+      "https://innovist.co/products/oil-control-face-moisturizer",
+      "https://innovist.in/products/oil-control-face-moisturizer",
+      "https://blog.innovist.com/products/oil-control-face-moisturizer",
+      "https://innovist.com@evil.test/products/oil-control-face-moisturizer",
+      "https://innovist.com:8443/products/oil-control-face-moisturizer",
+      "http://innovist.com/products/oil-control-face-moisturizer",
+      "https://innovist.com/",
+      "https://innovist.local/products/oil-control-face-moisturizer",
+    ]) expect(isBrandIngredientUrl(u, "Chemist at Play"), u).toBe(false);
+  });
+
+  it("reads the innovist.com page the search ranks first and returns its whole list, not a retailer's", async () => {
+    const nykaa = "https://www.nykaa.com/chemist-at-play-oil-control-face-moisturizer/p/123";
+    const read = vi.fn().mockResolvedValue(capPage);
+    expect(await findBrandInci(capQuery, "Chemist at Play", undefined, { search: async () => [capUrl, nykaa], read })).toMatchObject({ source: capUrl, ingredients: capList, origin: "brand-page", trust: 4 });
+    expect(read).toHaveBeenCalledTimes(1);
+    expect(read).toHaveBeenCalledWith(capUrl);
+  });
+
+  it("still discards the page when the title does not name the product, even on the brand's own shop", async () => {
+    const other = { ...capPage, pageTitles: ["SPF 50 Sunscreen | SunScoop"] };
+    expect(await findBrandInci(capQuery, "Chemist at Play", undefined, { search: async () => [capUrl], read: async () => other })).toBeNull();
+  });
+
+  it("does not read innovist.com for a different brand", async () => {
+    const read = vi.fn();
+    expect(await findBrandInci("Plix Oil Control Face Moisturizer", "Plix", undefined, { search: async () => [capUrl], read })).toBeNull();
+    expect(read).not.toHaveBeenCalled();
+  });
+});
