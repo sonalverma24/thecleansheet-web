@@ -17,6 +17,7 @@ import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
+import { findOwnerSupplied } from "@/lib/owner-supplied-inci";
 import type { InciAlternative } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
 import { upsertVerifiedProduct, slugify, canonicalizeBrand, brandNameVariants } from "@/lib/verified-store";
@@ -1404,6 +1405,12 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
         pageInci = second;
         listChanged = true;
       }
+    }
+    // Last resort, once the reader has named the product and no primary source gave a list (not Decoder, not a page, not the corrected-brand lookup above): a list the
+    // owner typed in from the product's own pack (src/data/inci/owner-supplied.ts). It is matched on the brand and the exact product name, and recorded as owner-supplied.
+    if (isValidProductReview(parsed) && !inci && !pageInci) {
+      const owned = findOwnerSupplied(parsed.brand, parsed.productName);
+      if (owned) { pageInci = owned; listChanged = true; }
     }
     if (listChanged && pageInci && isValidProductReview(parsed)) {
       const block = inciGroundTruthBlock({ productName: parsed.productName, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote });

@@ -754,3 +754,23 @@ describe("a Nykaa list is named as a retailer page (source label, 2026-11-01)", 
     expect(sentences(m).join(" ")).not.toMatch(/our own reading of the page/);
   });
 });
+
+describe("a list the owner typed in from the pack says so (src/data/inci/owner-supplied.ts)", () => {
+  const faq = (m: PillsPageModel) => m.faq.find((f) => f.q === "How recent is this analysis?")?.a;
+  const supplied = () =>
+    rv({ productName: "Gel Cream", category: "Moisturizer" }, makeInciEvidence("https://testco.com/products/gel-cream", BASE.join(", "), "2026-10-20T00:00:00.000Z", "Gel Cream", false, { trust: 3, origin: "owner-supplied" }));
+
+  it("is named as the pack, never as the brand's page or our own reading of a page", () => {
+    const review = supplied();
+    const out = decideReview(review, NOW);
+    expect(out.decision.basis.listSource).toBe("pack");
+    const m = page(review).model;
+    expect(faq(m)).toBe("Analysed on 20 Oct 2026 from the ingredient list printed on the product's pack, typed in by The Clean Sheet (testco.com shows the product). We re-check analyses older than six months.");
+    expect(sentences(m).join(" ")).not.toMatch(/our own reading of the page/);
+  });
+
+  it("keeps the list source-backed, so the ticks are drawn exactly as for a Nykaa or Decoder list", () => {
+    const m = page(supplied()).model;
+    expect(m.highlights.map((h) => h.label)).toEqual(expect.arrayContaining(["Fragrance free", "Paraben free"]));
+  });
+});

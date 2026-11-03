@@ -18,3 +18,10 @@ This policy improves retrieval; it does not guarantee a coloured rating or estab
 The generator embeds the current model prompt in `ANALYSER-REFERENCE.md`; its freshness test catches prompt changes. This page describes source acquisition in `src/lib/inci-fetch.ts`, `src/lib/brand-inci.ts` and `src/lib/product-review-engine.ts`.
 
 Corrective release (28 October): exact matching normalises accents and punctuation; an exact product match is not replaced by a nearby variant. Explicitly empty saved analyses are retried on search. When no list is retained, model claims of full INCI, source names, formula assessment and ingredient-based suitability are reconciled in both fresh storage and page rendering.
+
+Added 1 November 2026 (see the decision log entry of that date):
+
+- **A list the owner typed in from the pack** (`src/data/inci/owner-supplied.ts`, `src/lib/owner-supplied-inci.ts`) stands in only when Decoder, the brand's page and Nykaa found no list. The entry carries the list verbatim as printed, a brand-page or Decoder URL that shows the product, the date and where it was read; it is matched on brand and exact product name; it is recorded at capture trust 3 with origin `owner-supplied`. Never add a list from memory, a retailer or a model.
+- **A brand's own name for a product.** A brand-domain page whose title fails the name check is still read when the brand's Shopify product feed shows exactly one product that is clearly the one asked for (`src/lib/brand-catalogue.ts`). It must still carry a captured quote and a sane list.
+- **Not built:** accepting a retailer list when two retailers agree. It relaxes the 28 October rule and waits on a measurement.
+
