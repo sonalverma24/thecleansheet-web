@@ -93,11 +93,8 @@ export default function AdminDashboard() {
     setSeeding(true);
     setSeedResult(null);
     try {
-      const res = await fetch("/api/admin/seed", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "tcs-bootstrap-2026" }),
-      });
+      // No secret is sent: the server checks the signed-in session against its admin allowlist.
+      const res = await fetch("/api/admin/seed", { method: "POST" });
       const data = await res.json();
       const logLines = data.log?.length ? `\n${data.log.slice(0, 3).join("\n")}` : "";
       setSeedResult(
@@ -120,12 +117,9 @@ export default function AdminDashboard() {
     setSettingAdmin(true);
     setAdminMsg(null);
     try {
-      const res = await fetch("/api/admin/set-admin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "tcs-bootstrap-2026" }),
-      });
+      const res = await fetch("/api/admin/set-admin", { method: "POST" });
       const data = await res.json();
+      if (!res.ok) { setAdminMsg(data.error ?? "Failed"); return; }
       const msg  = data.results?.map((r: { email: string; status: string }) => `${r.email}: ${r.status}`).join(" · ");
       setAdminMsg(msg ?? "Done");
     } catch {
