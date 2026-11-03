@@ -41,6 +41,31 @@ describe("titleIdentifiesProduct", () => {
   });
 });
 
+describe("sanitizeInciList refuses a list of concentration claims", () => {
+  // 2026-11-03: WishCare's Nykaa panel gave "0.1% Retinal, Tetrapeptide, 3% Caffeine, Niacinamide & Ginseng Pdrn", the key actives, and a re-run took them for the whole ingredient list.
+  it("refuses the key actives a Nykaa panel gave for WishCare, so they are never taken for the INCI", () => {
+    const r = sanitizeInciList(["0.1% Retinal", "Tetrapeptide", "3% Caffeine", "Niacinamide & Ginseng Pdrn"]);
+    expect(r.ok).toBe(false);
+    expect(r.issues.filter((x) => x.startsWith("concentration claim"))).toHaveLength(2);
+    expect(r.list).not.toContain("0.1% Retinal");
+  });
+
+  it("refuses a full-length list too when most of its entries carry a concentration", () => {
+    expect(sanitizeInciList(["10% Niacinamide", "5% Panthenol", "2% Salicylic Acid", "1% Allantoin", "Aqua", "Glycerin"]).ok).toBe(false);
+  });
+
+  it("keeps every real INCI name that starts with a digit or has a number in it", () => {
+    const r = sanitizeInciList(["Aqua", "1,2-Hexanediol", "3-O-Ethyl Ascorbic Acid", "4-Methylbenzylidene Camphor", "2-Bromo-2-Nitropropane-1,3-Diol", "PEG-40 Hydrogenated Castor Oil", "C12-15 Alkyl Benzoate", "CI 77891"]);
+    expect(r.ok).toBe(true);
+    expect(r.issues).toEqual([]);
+    expect(r.list).toHaveLength(8);
+  });
+
+  it("tolerates one stray claim in a real list, as it tolerates one stray non-ingredient", () => {
+    expect(sanitizeInciList(["Aqua", "Glycerin", "Niacinamide", "Panthenol", "Tocopherol", "Phenoxyethanol", "Allantoin", "Xanthan Gum", "Sodium Hyaluronate", "Carbomer", "2% Ceramide"]).ok).toBe(true);
+  });
+});
+
 describe("sanitizeInciList", () => {
   it("passes a clean list through", () => {
     const r = sanitizeInciList(full);

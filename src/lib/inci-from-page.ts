@@ -490,6 +490,29 @@ export function extendFromBlocks(visible: InciExtraction | null, html: string): 
   return blocks && (containsRun(blocks.ingredients, visible.ingredients) || trimsEdges(blocks.ingredients, visible.ingredients)) ? blocks : visible;
 }
 
+/* ── A list printed one ingredient to a bullet ───────────────────── */
+
+/* A list the page itself labels as its ingredients, an element with "ingredient" in its id or class: <ul id="custom_ingredients">. */
+const LABELLED_LIST = /<(ul|ol)\b[^>]*\b(?:id|class)\s*=\s*"[^"]*ingredient[^"]*"[^>]*>([\s\S]*?)<\/\1>/gi;
+
+/** Lakme's product page prints its 40 ingredients as <li>Water</li><li>Paraffinum Liquidum</li>..., twice (a tab for each screen size), with no comma anywhere. The list reader
+    splits on commas, so it saw none. A bulleted list that the page labels as its ingredients is read item by item, and the items are put in the one form the rules above read
+    (joined with ", "; the quote is that text). It is taken only when it has five or more items, none of them holds a comma (a comma list in a bullet is read as text already),
+    and the rules accept EVERY item as an entry, so a list with something else among the ingredients is refused whole, never read in part. Lists the page does not label, and
+    bullets that carry only the key ingredients (under five), are never read this way. */
+export function extractInciFromListItems(rawHtml: string): InciExtraction | null {
+  const html = rawHtml.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
+  let best: InciExtraction | null = null;
+  for (const list of html.matchAll(LABELLED_LIST)) {
+    const items = [...list[2].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => stripTags(li[1])).filter(Boolean);
+    if (items.length < 5 || items.some((item) => item.includes(","))) continue;
+    const ex = extractInciWithQuote(items.join(", "));
+    const wanted = items.filter((item, i) => i === 0 || item.toLowerCase() !== items[i - 1].toLowerCase()).length; // the extractor drops a repeat of the entry before
+    if (ex && ex.ingredients.length === wanted && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
+  }
+  return best;
+}
+
 /* ── Lists the page ships in its own data ─────────────────────── */
 
 /* Names storefronts give the full ingredient text in their page data. Only a STRING value counts: the
@@ -663,8 +686,9 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
     // Then a last entry that the copy after the list ran on from is put back (completeLastEntry).
     const pageText = stripTags(html);
     const visible = completeLastEntry(startAtListLabel(extendFromBlocks(extractInciWithQuote(pageText), html)), pageText);
-    const embedded = extractEmbeddedInci(html, url);
-    const ex = embedded && (!visible || embedded.ingredients.length > visible.ingredients.length) ? embedded : visible;
+    // A list the page labels as its ingredients and prints one to a bullet, and the page's own data, each win only when they hold a longer list than the visible text.
+    let ex = visible;
+    for (const other of [extractInciFromListItems(html), extractEmbeddedInci(html, url)]) if (other && (!ex || other.ingredients.length > ex.ingredients.length)) ex = other;
     if (ex && ex.ingredients.length >= 5) {
       const meta = extractPageMeta(html);
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: meta.titles, siteName: meta.siteName };

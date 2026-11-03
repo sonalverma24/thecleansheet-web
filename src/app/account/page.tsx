@@ -72,11 +72,16 @@ export default function AccountPage() {
     setBootstrapping(true);
     setBootstrapMsg(null);
     try {
-      const res  = await fetch("/api/admin/set-admin", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ token: "tcs-bootstrap-2026" }),
-      });
+      // No secret is sent: the server checks the signed-in session against its admin allowlist.
+      const res  = await fetch("/api/admin/set-admin", { method: "POST" });
+      if (!res.ok) {
+        setBootstrapMsg(
+          res.status === 403
+            ? "This account isn't on the admin list."
+            : "Sign in again, then retry."
+        );
+        return;
+      }
       const data = await res.json();
       const msg  = data.results
         ?.map((r: { email: string; status: string }) => r.status)
