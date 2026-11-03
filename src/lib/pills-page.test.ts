@@ -598,6 +598,131 @@ describe("animal or plant derived: a chip only when verified, otherwise a gap (o
   });
 });
 
+describe("lines the page does not show under 'Who should be careful' or 'Worth knowing' (owner decisions, 2026-10-30)", () => {
+  const fit = (avoidIf: string[]) => ({ bestFor: ["Dry skin"], avoidIf }) as ProductReview["consumerSuitability"];
+  const cream = (avoidIf: string[], irritancyConcerns: string[] = []) =>
+    page(rv({ productName: "Barrier Cream", category: "Moisturizer", inciIngredients: [...BASE, "Squalane"], consumerSuitability: fit(avoidIf), formulaLogic: { ...rv({}).formulaLogic, irritancyConcerns } })).model;
+
+  it("never tells a shopper to be careful about expecting a 'clean' formula", () => {
+    const m = cream(["Sensitive to fragrance", "Expect a truly 'clean' formula", "You want a clean beauty product"]);
+    expect(m.fit.careful).toEqual(["Sensitive to fragrance"]);
+    expect(m.faq.find((f) => f.q === "Who should be careful with it?")?.a).not.toMatch(/clean/i);
+  });
+
+  it("drops a fungal-acne line, which nothing we hold supports, from the cautions and from 'Worth knowing'", () => {
+    const m = cream(["You are prone to fungal acne", "Very dry skin (may need richer cream)"], ["Contains Glyceryl Stearate, which some sources suggest may feed Malassezia (fungal acne).", "Can sting broken skin."]);
+    expect(m.fit.careful).toEqual(["Very dry skin (may need richer cream)"]);
+    const body = m.details?.[1].body.join(" ") ?? "";
+    expect(body).not.toMatch(/fungal|Malassezia/i);
+    expect(body).toMatch(/Can sting broken skin/);
+  });
+
+  it("keeps a line that merely contains the letters 'clean' (a cleanser, a clean feel)", () => {
+    expect(cream(["You want a squeaky-clean feel", "You need a dedicated cleanser for makeup"]).fit.careful).toEqual(["You want a squeaky-clean feel", "You need a dedicated cleanser for makeup"]);
+  });
+});
+
+describe("a decimal point does not cut a sentence (Re'equil Retinol 0.3% read as 3%)", () => {
+  it("keeps '0.3%' whole in the Formula logic one-liner", () => {
+    const note = "The formula is well-constructed for a retinol night cream, featuring 0.3% Retinol high in the INCI, supported by a bio-retinol complex. It includes emollients and humectants.";
+    const m = page(rv({ productName: "Retinol Night Cream", category: "Night Cream", inciIngredients: [...BASE, "Retinol"], formulaLogic: { ...rv({}).formulaLogic, note } })).model;
+    expect(m.details?.[1].oneLiner).toMatch(/featuring 0\.3% Retinol high in the INCI/);
+    expect(m.details?.[1].oneLiner).not.toMatch(/^3%/);
+  });
+});
+
+describe("cyclic silicones D5 and D6 are not a pregnancy flag (reference data fix, 2026-10-30)", () => {
+  const flags = (names: string[]) => page(rv({ productName: "Dynasty Cream", category: "Moisturizer", inciIngredients: [...BASE, ...names] })).product.pregnancyScreen?.flags.map((f) => f.ingredient) ?? [];
+
+  it("Cyclopentasiloxane and Cyclohexasiloxane raise no pregnancy flag", () => {
+    expect(flags(["Cyclopentasiloxane", "Cyclohexasiloxane"])).toEqual([]);
+  });
+
+  it("the flags that do rest on a source still show: D4 (toxic for reproduction) and retinol", () => {
+    expect(flags(["Cyclotetrasiloxane"])).toEqual(["Cyclotetrasiloxane"]);
+    expect(flags(["Retinol"])).toEqual(["Retinol"]);
+  });
+});
+
+describe("the templated pregnancy caution is gone, and every flag that stands gives its reason in one line (reference data audit and owner decision, 2026-11-02)", () => {
+  const screenOf = (names: string[]) => page(rv({ productName: "Daily Cream", category: "Moisturizer", inciIngredients: [...BASE, ...names] }));
+  const flags = (names: string[]) => screenOf(names).product.pregnancyScreen?.flags.map((f) => f.ingredient) ?? [];
+
+  it.each(["Methylparaben", "Ethylparaben"])("%s raises no pregnancy flag: the SCCS says the unborn foetus is better protected than a newborn, and it was not among the ingredients the owner chose to flag", (name) => {
+    expect(flags([name])).toEqual([]);
+  });
+
+  // Each of these has a primary source we read; the line says what the source says, including that the SCCS judged the ingredient safe at its limit.
+  // BHA is listed as "BHA": the INCI name "Butylated Hydroxyanisole" does not resolve to the row (no alias is signed off), so that spelling is not screened at all.
+  it.each([
+    ["Butylparaben", /SCCS\/1651\/23/, /Candidate List/],
+    ["BHA", /SCCS\/1682\/25/, /fetal malformations/],
+    ["Eucalyptol", /EMA\/HMPC\/307782\/2012/, /not been established/],
+    ["Benzophenone-3", /SCCS\/1625\/20/, /placental tissue/],
+    ["Propylparaben", /SCCS\/1623\/20/, /indications of endocrine effects/],
+    ["Benzophenone-4", /SCCS\/1660\/23/, /benzophenone UV-filter class/],
+    ["Ethylhexyl Methoxycinnamate", /SCCS\/1671\/24/, /endocrine-active/],
+    ["Homosalate", /SCCS\/1622\/20/, /not safe at the old 10% limit/],
+  ])("%s raises a flag worded as its source words it, with the source named", (name, source, wording) => {
+    const { product, model } = screenOf([name]);
+    const [flag, ...others] = product.pregnancyScreen!.flags;
+    expect(others).toEqual([]);
+    expect(flag.ingredient).toBe(name);
+    expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only: /);
+    expect(flag.restriction).toMatch(wording);
+    expect(flag.source).toMatch(source);
+    const chip = model.highlights.find((h) => /pregnan/i.test(h.label));
+    expect(chip).toMatchObject({ label: `Pregnancy ingredient flag: ${name}`, state: "no" });
+    expect(chip?.detail).toContain(flag.restriction);
+  });
+
+  // The data records no pregnancy-specific finding for these, so the line says why they are flagged and that no pregnancy finding is recorded.
+  it.each(["Formaldehyde", "Aminobenzoic Acid", "Disperse Blue 1", "Toluene-2,5-Diamine Sulfate", "Ammonium Persulfate", "Benzophenone-1", "Benzophenone-8"])(
+    "%s is flagged as a precaution and says that no pregnancy-specific finding is recorded", (name) => {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag.ingredient).toBe(name);
+      expect(flag.restriction).toMatch(/^Caution during pregnancy is precautionary only: /);
+      expect(flag.restriction).toMatch(/no pregnancy-specific finding is recorded\.$/);
+    });
+
+  it("Perillyl Alcohol is flagged, and the line says no pregnancy data were found", () => {
+    const [flag] = screenOf(["Perillyl Alcohol"]).product.pregnancyScreen!.flags;
+    expect(flag.restriction).toBe("Caution during pregnancy is precautionary only: we found no pregnancy safety data for this fragrance terpene alcohol.");
+  });
+
+  // These used to print as "Tretinoin: Yes". Each now gives its reason.
+  it.each(["Retinol Acetate", "Tretinoin", "Adapalene", "Tazarotene", "Chlorobutanol", "Thimerosal", "4-Methylbenzylidene Camphor", "Resorcinol", "Salicylic Acid", "Azadirachta Indica Seed Oil"])(
+    "%s is flagged with a one-line reason, never a bare 'Yes'", (name) => {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag.ingredient).toBe(name);
+      expect(flag.restriction).toMatch(/^Caution during pregnancy/);
+      expect(flag.restriction).not.toMatch(/^yes$/i);
+      expect(flag.restriction.length).toBeGreaterThan(60);
+    });
+
+  it("Neem seed oil is flagged even though its old text said no restriction applies; the old text no longer contradicts the chip", () => {
+    const [flag] = screenOf(["Azadirachta Indica Seed Oil"]).product.pregnancyScreen!.flags;
+    expect(flag.restriction).toMatch(/though neither is thought relevant to refined topical seed oil\.$/);
+    expect(flag.restriction).not.toMatch(/no restriction identified/);
+  });
+
+  it("every one-line reason is one sentence: nothing printed beside a chip runs on", () => {
+    const names = ["Butylparaben", "BHA", "Eucalyptol", "Benzophenone-3", "Propylparaben", "Perillyl Alcohol", "Benzophenone-4", "Ethylhexyl Methoxycinnamate", "Homosalate", "Formaldehyde", "Aminobenzoic Acid",
+      "Disperse Blue 1", "Toluene-2,5-Diamine Sulfate", "Ammonium Persulfate", "Benzophenone-1", "Benzophenone-8", "Retinol Acetate", "Tretinoin", "Adapalene", "Tazarotene", "Chlorobutanol", "Thimerosal",
+      "4-Methylbenzylidene Camphor", "Resorcinol", "Salicylic Acid", "Azadirachta Indica Seed Oil"];
+    for (const name of names) {
+      const [flag] = screenOf([name]).product.pregnancyScreen!.flags;
+      expect(flag?.ingredient, name).toBe(name);
+      expect(flag.restriction, name).not.toMatch(/\.\s+[A-Z]/);
+      expect(flag.restriction.length, name).toBeLessThanOrEqual(340);
+    }
+  });
+
+  it("the flags that rest on a pregnancy-specific source are untouched: retinol, Retinyl Palmitate, D4", () => {
+    expect(flags(["Retinol", "Retinyl Palmitate", "Cyclotetrasiloxane"])).toEqual(["Retinol", "Retinyl Palmitate", "Cyclotetrasiloxane"]);
+  });
+});
+
 describe("when sources disagree on the ingredient list, the page says so (owner decision, 2026-10-30)", () => {
   const faq = (m: PillsPageModel) => m.faq.find((f) => f.q === "How recent is this analysis?")?.a;
   const NYKAA_URL = "https://www.nykaa.com/test-product/p/123";

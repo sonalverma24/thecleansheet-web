@@ -1,7 +1,7 @@
 import type { ProductReview } from "./product-review-types";
 import { reviewInciList } from "./review-inci";
 
-export const MISSING_INCI_MESSAGE = "We could not verify a complete ingredient list from the brand website or INKEE Decoder. Ingredient-based conclusions are pending verification.";
+export const MISSING_INCI_MESSAGE = "We could not verify a complete ingredient list from the brand website, Nykaa or INKEE Decoder. Ingredient-based conclusions are pending verification.";
 
 /** The reader's prose cannot claim a full list when acquisition retained none.
  * Also used at render time so already-saved incomplete analyses stay consistent. */

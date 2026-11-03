@@ -24,6 +24,7 @@ import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/score
 import { buildAtAGlance } from "@/lib/at-a-glance";
 import { reviewInciList } from "@/lib/review-inci";
 import { ingredientConcerns, type IngredientConcern } from "@/lib/ingredient-concerns";
+import { withoutUnsupportedFitLines } from "@/lib/fit-claims";
 
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import { COMEDOGENIC, inciHas } from "@/data/analysis/ingredient-risk";
@@ -109,7 +110,8 @@ const cap = (t: string): string => (t ? t.charAt(0).toUpperCase() + t.slice(1) :
 const lead = (t: string | undefined | null): string => {
   const s = (t ?? "").trim();
   if (!s) return "";
-  const sentences = s.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) ?? [s];
+  // A full stop ends a sentence only when a space or the end follows it: "0.3% Retinol" must stay "0.3% Retinol", not become "3% Retinol".
+  const sentences = s.match(/(?:[^.!?]|[.!?](?=\S))+[.!?]*(?=\s|$)/g) ?? [s];
   let out = sentences[0].trim();
   if (sentences[1] && (out + " " + sentences[1].trim()).length <= 170) out = `${out} ${sentences[1].trim()}`;
   return out.length > 200 ? `${out.slice(0, 197).replace(/\s+\S*$/, "")}...` : out;
@@ -627,6 +629,7 @@ const priceLineOf = (review: ProductReview): string | null => {
 };
 
 export function buildPillsPage(review: ProductReview, product: ProductScorecard, now: string, out = decideReview(review, now), standing?: StandingView): PillsPageModel {
+  review = withoutUnsupportedFitLines(review);
   const d = out.decision;
   // The layout-only mode shows today's standing, so "is it a medicine" is today's answer (a stored Licensed Drug), not the decision core's.
   const medicine = standing ? standing.medicine : d.key === "medicinal-product";

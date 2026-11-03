@@ -210,6 +210,7 @@ BEST FOR / AVOID IF (consumerSuitability.bestFor and consumerSuitability.avoidIf
 - bestFor: who genuinely benefits (e.g. for a gentle cleanser: "Sensitive or reactive skin", "Daily morning cleanse", "Removing sweat and sunscreen").
 - avoidIf: a real, honest LIMITATION or trade-off of the product - a reason a specific shopper would be disappointed - NOT a vague safety warning. Think about what this product does NOT do well. For a gentle low-foam face wash, good avoidIf items are things like "You want a rich, foamy lather", "You wear heavy or waterproof makeup" (needs a dedicated remover), or "You want active treatment from a cleanser". For an exfoliating acid, "You have compromised or eczema-prone skin". For a fragranced product, "You react to fragrance".
 - Do NOT output boilerplate like "patch-test sensitive to new actives", "results vary", or "consult a dermatologist" unless it is genuinely the single most relevant caution for THIS product.
+- Never write an avoidIf line about fungal acne or Malassezia (we hold no sourced data on it), and never one about expecting a "clean" or "truly clean" formula (we do not define clean as an ingredient quality). The same goes for formulaLogic.irritancyConcerns. The site drops such lines.
 - If the product has no honest downside worth flagging, return an EMPTY avoidIf array rather than inventing one. An empty avoidIf is correct and expected for simple, well-formulated basics.
 
 INGREDIENT TRANSPARENCY SCORING SYSTEM:
