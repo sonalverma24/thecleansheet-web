@@ -848,6 +848,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: A navigation menu that says "ingredients" is never read as the ingredient list (fixes a regression from PR #69)
+- **Decided by:** not yet the owner. A regression of mine from #69 (2026-11-03), reported by another session that was re-running Be Minimalist's B5 moisturiser, and confirmed by me on the live page.
+- **Reason:** #69's bulleted-list reader takes any `<ul>`/`<ol>` whose id or class says "ingredient". Be Minimalist's header has `<ul id="SiteNavLabel-shop-by-ingredients-sidebar">`, a menu of ingredient categories (four of them on the page): "Back, Vitamin C, BHA / Salicylic Acid, Retinoid / Retinol, Niacinamide, UV Filters, Ceramide". It was read as the B5 page's ingredient list whenever the visible reading found none, and it also **replaced a real list that was shorter** (the reader wins when longer). A new analysis of that page on live main would have stored seven category names as ingredients.
+- **What it touched:** `src/lib/inci-from-page.ts` (`extractInciFromListItems`): a labelled list is now refused when (1) its own tag marks it as navigation (nav, menu, filter, facet, shop-by, dropdown, breadcrumb), (2) more than half of its items are links (an ingredient list is plain text), or (3) an item is a menu control (Back, Close, Menu, More, Next, Previous, View all, Shop all, See all, Show all). Lakme's real list (plain `<li>` text) is still read in full: 40 entries, Water first, CI 17200 last. A list that carries a link or two (a glossary) among plain items is still read; a list whose items are all linked is refused, which is a deliberate limit (precision over recall).
+- **Measured:** on the live Be Minimalist B5 page the reader now returns nothing from its four menus; the Lakme page still gives 40. Four of the new tests fail against main's reader and pass now, including a menu longer than the page's own visible list replacing it.
+- **Not changed:** no stored analysis is changed by this entry. The B5 row was written by the other session from the brand's own page (22 entries) before this could matter.
+- **Undo:** revert the commit, or remove the three `continue` guards in `extractInciFromListItems`.
+
 ### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
 - **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).
 - **Reason:** measured on the live pages. The product is pasted as `lakmeindia.com/products/lakme-peach-ceramide-moisturizer-with-hyaluronic-for-dry-skin-normal-skin-sensitive-skin-50g`, its old address; the page is titled "Lakme Peach Milk 2% Pro-Ceramide + Peptide Creme | Barrier Repair ...". For a pasted address the engine searches with a name worked out from the address and takes the brand from its first word. The title check refused the brand's page against that name, and the corrected-brand lookup (the one that uses the name the model read from the page) did not run, because the first word, "lakme", equals the brand the model named. The first lookup's list stood, and it came from a **Nykaa page for another product**, the Ultra Light Gel (26 entries starting "Water, Dimethicone, Glycerin..."), not the Creme's 40 ("Water, Paraffinum Liquidum..."). The re-run held that row on its changed name, so nothing wrong was written; the cause was found by comparing the lists.
@@ -1331,7 +1339,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
-| `src/lib/inci-from-page.ts` | `1a9065044dc19e8d62a1d9022c704043e125afa1f62a5c1d4841a0be016ba4d8` |
+| `src/lib/inci-from-page.ts` | `c87bd7c5122b87e570407659f98406f65700552577c4fbd58d157a76735a2c87` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
