@@ -20,6 +20,8 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { fetchPageMarkdown } from "@/lib/scrape";
+import { lookupIngredient } from "@/lib/ingredient-db";
+import { normaliseIngredient } from "@/lib/inci-normalise";
 
 export interface PageINCI {
   ingredients: string[];
@@ -635,6 +637,51 @@ export function startAtListLabel(ex: InciExtraction | null): InciExtraction | nu
   return { ingredients: [first, ...ex.ingredients.slice(at + 1)], quote: ex.quote.slice(inQuote.index + inQuote[0].length).trim() };
 }
 
+/** Whether a name is an ingredient the reference data holds: its exact normalised lookup (src/lib/ingredient-db.ts), or a water / fragrance synonym
+    the normaliser folds ("Water", "Eau", "Parfum", "Perfume"), which the data holds under another name or not at all. Nothing is guessed. */
+function isKnownIngredient(name: string): boolean {
+  if (lookupIngredient(name)) return true;
+  const { canonical } = normaliseIngredient(name);
+  return canonical === "Water" || canonical === "Fragrance" || !!lookupIngredient(canonical);
+}
+
+/** The most words a last entry may be read from, and so how far into the copy after a list the reader looks. */
+const CLOSING_ENTRY_WORDS = 5;
+
+/** The last entry of a list that page copy follows with no punctuation between them ("... Carbomer, Ethylhexylglycerin You might also like Salicylic Acid + LHA
+    2% Cleanser Acne"). The comma piece that holds it also holds the copy, is far too long to be an entry and is rejected whole, so the list comes back one entry
+    short, in the sentence rule's mirror image: extractInciWithQuote ends the list at the full stop of a last entry, this finds the one a stop does not mark.
+    Applied to a page read with the page text the list was read from, not to extractInciWithQuote, which must keep agreeing with the extractor it replaced.
+
+    The text right after the quote must be a comma and then words, and the first 1 to 5 of them (the longest that does) must be exactly an ingredient the reference
+    data holds, so a heading or a sentence is never taken for one. Further guards: the word after it must not be lower case (a sentence that happens to open on an
+    ingredient name: "Glycerin helps skin ..."), the entry must not repeat one already in the list, and it is printed the way the page prints it. One entry at most is
+    added, at the end: the list is never reordered or shortened, and no entry is invented. The quote is extended to cover it. Where the quote occurs more than once in
+    the page text, the first occurrence that is followed by such an entry is used. */
+export function completeLastEntry(ex: InciExtraction | null, pageText: string): InciExtraction | null {
+  if (!ex) return ex;
+  const text = pageText.replace(/\s+/g, " ");
+  const have = new Set(ex.ingredients.map((x) => x.toLowerCase()));
+  for (let at = text.indexOf(ex.quote); at >= 0; at = text.indexOf(ex.quote, at + 1)) {
+    const end = at + ex.quote.length;
+    const after = /^ ?, ?/.exec(text.slice(end));
+    if (!after) continue;
+    const start = end + after[0].length;
+    const words = [...text.slice(start, start + 200).matchAll(/\S+/g)].slice(0, CLOSING_ENTRY_WORDS + 1);
+    for (let n = Math.min(words.length, CLOSING_ENTRY_WORDS); n >= 1; n--) {
+      const last = words[n - 1];
+      const entryEnd = start + last.index + last[0].length;
+      const entry = text.slice(start, entryEnd);
+      if (entry.includes(",") || !looksLikeIngredient(entry) || !isKnownIngredient(entry)) continue;
+      if (/^[a-z]/.test(words[n]?.[0] ?? "")) continue;
+      const tidy = cleanTok(entry);
+      if (have.has(tidy.toLowerCase())) continue;
+      return { ingredients: [...ex.ingredients, tidy], quote: text.slice(at, entryEnd).trim() };
+    }
+  }
+  return ex;
+}
+
 /** Resolve a product page URL to its published INCI. Tries the raw HTML first
     (keeps accordion content the Jina reader collapses), then the keyless Jina
     reader as a fallback for bot-protected storefronts. Null if neither yields a
@@ -645,7 +692,9 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   if (html) {
     // The visible text first, with any entry a run-on from the copy before the list hid put back (the list read on its own, in its block), then started after a label glued to the copy;
     // the page's own data wins only when it holds a longer list (the markup shows the key ingredients, or a list cut short, and the popup shows the whole).
-    const visible = startAtListLabel(extendFromBlocks(extractInciWithQuote(stripTags(html)), html));
+    // Then a last entry that the copy after the list ran on from is put back (completeLastEntry).
+    const pageText = stripTags(html);
+    const visible = completeLastEntry(startAtListLabel(extendFromBlocks(extractInciWithQuote(pageText), html)), pageText);
     // A list the page labels as its ingredients and prints one to a bullet, and the page's own data, each win only when they hold a longer list than the visible text.
     let ex = visible;
     for (const other of [extractInciFromListItems(html), extractEmbeddedInci(html, url)]) if (other && (!ex || other.ingredients.length > ex.ingredients.length)) ex = other;
@@ -657,7 +706,7 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = startAtListLabel(extractInciWithQuote(md));
+    const ex = completeLastEntry(startAtListLabel(extractInciWithQuote(md)), md);
     if (ex && ex.ingredients.length >= 5) {
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
     }
