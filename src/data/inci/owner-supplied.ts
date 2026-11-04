@@ -22,4 +22,13 @@
  */
 import type { OwnerSuppliedEntry } from "@/lib/owner-supplied-inci";
 
-export const OWNER_SUPPLIED_INCI: OwnerSuppliedEntry[] = [];
+export const OWNER_SUPPLIED_INCI: OwnerSuppliedEntry[] = [
+  {
+    brands: ["Biotique"],
+    productNames: ["Biotique Morning Nectar Nourish & Hydrate Moisturizer"],
+    sourceUrl: "https://www.biotique.com/products/morning-nectar-nourish-hydrate-moisturizer",
+    quote: "Aloe Barbadensis Leaf Juice (Ghritkumari), Trigonella Foenum-Graecum Seed Extract (Methi), Honey (Madhu), Triticum Vulgare Germ Extract (Ankurit Gehun / Wheatgerm), Carthamus Tinctorius Extract (Kusumbhi), Prunus Amygdalus Dulcis Oil (Almond Oil), Arachis Hypogaea Oil (Peanut Oil), Aloe Barbadensis Leaf, Azadirachta Indica Leaf Extract (Neem Leaves), Curcuma Longa Root Powder (Wild Turmeric), Withania Somnifera Root Extract (Ashwagandha), Zingiber Officinale Root Extract (Ginger), Laminaria Digitata Extract (Seaweed), Lotion Base (q.s.)",
+    suppliedOn: "2026-11-04",
+    note: "Pasted by the owner in chat on 2026-11-04 as the product's ingredient list, in Biotique's own label style (Ayurvedic names in brackets); the source was not stated, and it was not read from a pack photo. Biotique's page for the product shows only three hero ingredients (Morning Nectar, Honey, Ashwagandha), so the page neither confirms nor contradicts it. Bullets were joined with commas; no word was changed.",
+  },
+];
