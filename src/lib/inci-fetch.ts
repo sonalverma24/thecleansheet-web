@@ -69,6 +69,24 @@ const markerScore = (text: string, ingredients: string[]): number => promisedAct
 const MIN_OVERLAP = 0.2;
 // Leading words that are not brands (so the "brand slot" heuristic skips them).
 const BRAND_SKIP = new Set(["the", "and", "for", "with", "new", "pro", "our"]);
+// Words that carry no product identity when two names are compared (as product-identity.ts treats them).
+const NAME_FILLER = new Set(["the", "and", "with", "for", "by", "of", "an", "new", "plus"]);
+
+/** Does a Decoder entry's name name the product asked for, and not a neighbouring variant? Yes when the entry carries at least 75% of the query's
+    words, or when the entry's whole name (three words or more) sits inside a longer retailer-style query. Otherwise the entry has a word the query
+    lacks while missing words the query has: another variant of the line. "Garnier Micellar Water Sensitive Skin" does not name "Garnier Skin Naturals
+    Micellar Oil-Infused Cleansing Water" (it lacks oil, infused, naturals, cleansing and adds sensitive), and taking its list put the pink bottle's
+    ingredients on the yellow bottle's page (2026-11-04). The same test as `pageTitleNamesProduct` in product-identity.ts, on this file's tokens (which
+    read "baume" as "balm" and "creme" as "cream"), and without that module's database-backed brand lookup. Page codes ("Pond&#39;s"), linking words
+    ("with", "and") and a plural "s" are ignored, so "Pond's Super Light Gel" and "Barrier Repair Face Moisturizer With Ceramides" still name their products. */
+export function decoderEntryNamesQuery(entryName: string, query: string): boolean {
+  const words = (s: string) => new Set(tokens(s.replace(/&#?[a-z0-9]+;/gi, "")).filter((t) => !NAME_FILLER.has(t)).map((t) => (t.length > 3 ? t.replace(/s$/, "") : t)));
+  const want = words(query);
+  const have = words(entryName);
+  if (!want.size || !have.size) return false;
+  const covered = [...want].filter((t) => have.has(t)).length / want.size;
+  return covered >= 0.75 || (have.size >= 3 && [...have].every((t) => want.has(t)));
+}
 
 /** Parse one INCIDecoder product page (Jina markdown) into its ingredient list. */
 export function parseProductPage(page: string, slug: string): INCIResult | null {
@@ -222,6 +240,10 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
     if (top.overlap < MIN_OVERLAP || !hasBrand) {
       return { chosen: null, distinct, ambiguous: false };
     }
+    // A neighbouring variant is not this product: no list beats the wrong product's list.
+    if (!decoderEntryNamesQuery(top.name, q)) {
+      return { chosen: null, distinct, ambiguous: false };
+    }
   }
   // Inspect the leading entry AND any near-equal rival, then let the ingredient
   // lists decide. A title match alone is not proof of identity: INCIDecoder is
@@ -236,6 +258,7 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
     if (exact || inspect.length >= 3) break;
     if (g === top) continue;
     if (top.overlap - g.overlap > 0.34) continue;
+    if (!decoderEntryNamesQuery(g.name, q)) continue;
     inspect.push({ name: g.name, slug: g.slugs[0], overlap: g.overlap });
   }
 

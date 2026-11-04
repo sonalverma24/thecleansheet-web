@@ -72,6 +72,9 @@ type FragranceInciState = "free" | "declared" | "essential-oil" | "aromatic-unkn
 function fragranceInciState(product: ProductScorecard): FragranceInciState {
   const complete = product.inciCompleteness?.status === "Full INCI on brand PDP" || product.inciCompleteness?.status === "Full INCI in reference database";
   if (!complete || product.ingredients.length === 0) return "unknown";
+  // The analysis's own text says the product is not fragrance free: no "Fragrance free" badge (src/lib/disputed-ticks.ts). The key is written out
+  // rather than imported: this file reaches a client component, and the claim-key helper would pull the ingredient data into the browser.
+  if (product.disputedTicks?.includes("fragrance free")) return "unknown";
   const names = product.ingredients.map((ingredient) => ingredient.name.toLowerCase());
   if (names.some((name) => /\b(?:parfum|perfume|fragrance|aroma)\b/.test(name))) return "declared";
   if (names.some((name) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(name))) return "essential-oil";

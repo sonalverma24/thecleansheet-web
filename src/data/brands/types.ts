@@ -97,6 +97,9 @@ export type ProductScorecard = {
   /** Source-backed screen of the disclosed INCI, never a product safety assurance. */
   pregnancyScreen?: PregnancyScreen;
   veganScreen?: VeganScreen;
+  /** Claim keys (see `claimKey`) that this analysis's own text says are contradicted, e.g. "fragrance free". The page never shows one of these as a tick:
+      a page must not tick what its own words dispute. Set by the review adapter; see `src/lib/disputed-ticks.ts`. */
+  disputedTicks?: string[];
   claimsCheck?: ClaimsCheckItem[];
   missingProof?: string[];
   cleanSheetNote?: string;

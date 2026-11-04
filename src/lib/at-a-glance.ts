@@ -6,15 +6,23 @@
    view imports this function instead of defining it. */
 
 import type { ProductScorecard } from "@/data/brands/types";
-import { DEFAULT_ONTOLOGY, ontologyTick, type Ontology } from "@/lib/claim-ontology";
+import { claimKey, DEFAULT_ONTOLOGY, ontologyTick, type Ontology } from "@/lib/claim-ontology";
 
 export type GlanceItem = { label: string; value: boolean };
+
+/** Whether a tick with this label is one the analysis's own text says is contradicted (`product.disputedTicks`, set by the review adapter from
+    src/lib/disputed-ticks.ts). Such a tick is never drawn: a page must not tick what its own words dispute. */
+export function isDisputedTick(label: string, disputed: readonly string[] | undefined): boolean {
+  return !!disputed?.length && disputed.includes(claimKey(label));
+}
 
 export type FragranceState = "clear" | "declared" | "essential-oil" | "aromatic-unknown" | "unknown";
 
 export function fragranceFromCompleteInci(product: ProductScorecard): FragranceState {
   const complete = product.inciCompleteness?.status === "Full INCI on brand PDP" || product.inciCompleteness?.status === "Full INCI in reference database";
   if (!complete || !product.ingredients.length) return "unknown";
+  // The analysis's own text says the product is not fragrance free: the list we hold cannot settle it the other way.
+  if (isDisputedTick("Fragrance free", product.disputedTicks)) return "unknown";
   const names = product.ingredients.map((i) => i.name.toLowerCase());
   if (names.some((n) => /\b(?:parfum|perfume|fragrance|aroma)\b/.test(n))) return "declared";
   if (names.some((n) => /\bessential\s+oil\b|\b(?:lavender|lavandula|rose|rosa|bergamot|citrus|rosemary|peppermint|eucalyptus|ylang ylang)\b.{0,35}\boil\b/i.test(n))) return "essential-oil";
@@ -80,7 +88,9 @@ export function buildAtAGlance(product: ProductScorecard, opts?: { ontology?: bo
     if (opts?.includeReefSafe !== false && reefSafe) items.push({ label: "Reef safe", value: true });
   }
 
-  return (opts?.ontology ? applyOntologyTicks(items, product) : items).slice(0, 8);
+  const decided = opts?.ontology ? applyOntologyTicks(items, product) : items;
+  // A tick the analysis's own text says is contradicted is not drawn (a cross stays: it agrees with the text).
+  return decided.filter((t) => !(t.value && isDisputedTick(t.label, product.disputedTicks))).slice(0, 8);
 }
 
 /* The /analyzed/[slug] page carried its own private copy of the ticks function, which
