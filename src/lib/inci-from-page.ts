@@ -218,10 +218,22 @@ function splitParts(text: string): Part[] {
    botanical ranks ("Vaccinum Sect. Cyanococcus", "Subsp.", "Ssp.", "Var.", "Spp.", "Sp.",
    "Cv.", "F."), colour index and strength wording ("Ci 60730/Ext. Violet 2", "Eq. To 15%
    Vitamin C"), "St. John's Wort", and the INCI name "Alcohol Denat.". A dotted abbreviation
-   such as "q.s." is recognised by its inner stop. */
+   such as "q.s." is recognised by its inner stop. "Vit." is how some brands print a vitamin ("Ascorbic Acid (Vit. C)", "Niacinamide (Vit. B3)"): read as the end of a
+   sentence it cut Prowl's list to "B3), Glycerin, ... Tocopherol (Vit" (2026-11-04). */
 const DOT_ABBREVIATIONS = new Set([
-  "sect", "subsp", "ssp", "spp", "sp", "var", "cv", "f", "ext", "eq", "denat", "st",
+  "sect", "subsp", "ssp", "spp", "sp", "var", "cv", "f", "ext", "eq", "denat", "st", "vit",
 ]);
+
+/* A panel of a brand's highlights ("Key Ingredients", "Hero Ingredients") is not the ingredient list: Omeo's shampoo page prints "Key Ingredients Arnica Montana Flower
+   Extract, Calendula ..., Lactic Acid" (7 botanicals, no water, no cleansing base) and it was published as the product's list (2026-11-04). A list the page introduces
+   with such a label is refused whole; a real list under its own "Ingredients" or "Full ingredients" label elsewhere on the page is still read, because the label NEAREST
+   the start of a list decides. */
+const INGREDIENT_LABEL_WORDS = /\b(?:(key|hero|star|top|main|featured|highlighted?|signature)\s+)?(?:full ingredients?|product ingredients?|ingredients?|inci|actives?)\b/gi;
+function introducedByHighlightLabel(window: string): boolean {
+  let last: RegExpExecArray | null = null;
+  for (const m of window.matchAll(INGREDIENT_LABEL_WORDS)) last = m;
+  return !!last && !!last[1];
+}
 
 /** Whether the text before a full stop ends in a word whose stop is part of the name: one of the
     abbreviations above, or a dotted form such as "q.s.". */
@@ -417,6 +429,7 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
   if (marketingHits / best.length >= 0.5) return null;
   if (cutAtStart(parts, bestFirst)) return null;
   const [from, to] = bestSpan as [number, number];
+  if (introducedByHighlightLabel(text.slice(Math.max(0, from - 80), from + (best[0]?.length ?? 0) + 2))) return null;
   // De-dupe consecutive repeats (some pages print the list twice back-to-back).
   return {
     ingredients: best.filter((x, i) => i === 0 || x.toLowerCase() !== best[i - 1].toLowerCase()),

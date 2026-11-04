@@ -27,6 +27,9 @@ const OWN_SHOP_HOSTS = new Map<string, readonly string[]>([
   ["hyphen", ["letshyphen.com"]],
   ["pilgrim", ["discoverpilgrim.com"]],
   ["plum", ["plumgoodness.com"]],
+  // prowl.life is Prowl by Tiger Shroff's own shop (the page the re-run read, 2026-11-04); the brand's long name never matches the domain by itself.
+  ["prowl", ["prowl.life"]],
+  ["prowlbytigershroff", ["prowl.life"]],
   ["dermaco", ["thedermaco.com"]],
   // WishCare sells on mywishcare.com (checked 2026-11-03: its store search lists the Cellular Reset 0.1% Retinal Shot): "mywishcare" does not start with "wishcare".
   // The `brands` table has no WishCare row to read the site from.
