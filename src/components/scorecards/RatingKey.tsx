@@ -35,7 +35,8 @@ export function RatingKey({ id = "rating-key" }: { id?: string }) {
                 <RatingDot marker={r.marker} size={9} decorative className="m-[2px]" />
                 <h3 className="text-[12px] font-bold leading-none text-[#121719]">{r.name}</h3>
               </div>
-              <p className="mt-1 text-[11px] leading-[1.4] text-[#4f585f]">{r.meaning}</p>
+              <p className="mt-1 text-[11.5px] font-semibold leading-[1.3] text-[#121719]">{r.title}</p>
+              <p className="mt-0.5 text-[11px] leading-[1.4] text-[#4f585f]">{r.meaning}</p>
             </li>
           );
         })}

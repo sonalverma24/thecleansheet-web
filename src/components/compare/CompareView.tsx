@@ -26,7 +26,7 @@ function PillChip({ f }: { f: CompareFacts }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-bold leading-none" style={{ background: c.soft, borderColor: c.line, color: c.ink }}>
       <RatingDot marker={f.pill.marker} size={9} decorative />
-      {f.pill.label}
+      {f.pill.title}
     </span>
   );
 }
@@ -106,7 +106,7 @@ function PickCard({ items, c }: { items: CompareFacts[]; c: Comparison }) {
                   <span className="mt-[5px]"><RatingDot marker={f.pill.marker} size={10} decorative /></span>
                   <p className={`text-[14px] leading-[1.5] ${SOFT}`}>
                     <Link href={f.href} className={`font-bold underline-offset-[3px] hover:underline ${INK}`}>{displayName(f)}</Link>
-                    {" "}<span className="text-[#6f6a66]">({f.pill.label}).</span> {o.text}
+                    {" "}<span className="text-[#6f6a66]">({f.pill.title}).</span> {o.text}
                   </p>
                 </li>
               ) : null;
