@@ -9,7 +9,8 @@ import { resolveBadges } from "@/data/badges/resolver";
 import { compareFactsOf } from "@/lib/compare-facts";
 import type { ProductReview } from "@/lib/product-review-types";
 import { buildPillsPage } from "./pills-page";
-import { disputedTicksOf } from "./disputed-ticks";
+import { disputedTicksOf, freeFromKeys } from "./disputed-ticks";
+import { claimKey } from "@/lib/claim-ontology";
 
 /* Live case, 2026-11-04: Garnier Skin Naturals Micellar Oil-Infused Cleansing Water ticked "Fragrance free" and "Alcohol free" (worked out from the list we hold)
    under a summary saying its fragrance-free claim is misleading and a concern saying the claim is contradicted. A page must not tick what its own words dispute. */
@@ -49,6 +50,47 @@ describe("which claims the analysis's own text disputes", () => {
     const base = rv({ inciIngredients: BASE });
     const review = { ...base, verdict: { ...base.verdict, biggestConcern: "'Fragrance free' is supported by the absence of contradictory evidence in the list." } };
     expect(disputedTicksOf(review)).toEqual([]);
+  });
+
+  it.each([
+    ["no alcohol, no perfume", ["alcohol free", "fragrance free"]],
+    ["perfume free", ["fragrance free"]],
+    ["free from parabens", ["paraben free"]],
+    ["0% alcohol", ["alcohol free"]],
+    ["no added fragrance", ["fragrance free"]],
+    ["sulphate and paraben free", ["paraben free", "sulfate free"]],
+    ["alcohol, paraben & silicone free", ["alcohol free", "paraben free", "silicone free"]],
+    ["alcohol free", ["alcohol free"]],
+    ["benzyl alcohol", []],
+    ["free from", []],
+    ["no white cast", ["white cast free"]],
+    ["free from harsh chemicals that strip the skin", []],
+  ])("a disputed claim worded '%s' covers %j", (claim, keys) => {
+    expect(freeFromKeys(claimKey(claim))).toEqual(keys);
+  });
+
+  it("the Garnier re-run's wording: 'no alcohol, no perfume' disputes Alcohol free and Fragrance free", () => {
+    const base = rv({ inciIngredients: BASE });
+    const review = { ...base, verdict: { ...base.verdict, biggestConcern: "A marketplace claim of 'no alcohol, no perfume' is directly contradicted by the ingredient list, which contains both, raising significant trust and ASCI concerns." } };
+    expect(disputedTicksOf(review)).toEqual(["alcohol free", "fragrance free", "no alcohol, no perfume"]);
+    const by = chips(review);
+    expect(by["Alcohol free"]).toBeUndefined();
+    expect(by["Fragrance free"]).toBeUndefined();
+    expect(by["Paraben free"]).toBe("yes");
+  });
+
+  it("a two-part claim disputed for one part covers that part only (Scalpe Pro, live): Paraben free, which the text supports, stays", () => {
+    const base = rv({ inciIngredients: BASE });
+    const issue = "Flipkart listings for the 100ml variant claim 'Sulphate/Paraben Free', which is directly contradicted by the presence of Sodium Lauryl Ether Sulphate in the INCI. The INCI does not list parabens, so 'paraben free' is supported, but 'sulphate free' is not.";
+    const review = { ...base, platformParity: { ...(base.platformParity ?? {}), issues: [issue] } as ProductReview["platformParity"] };
+    expect(disputedTicksOf(review)).toEqual(["sulfate free", "sulfate/paraben free"]);
+    expect(chips(review)["Paraben free"]).toBe("yes");
+  });
+
+  it("given the disputing sentence, a two-part claim covers the parts it names, or all when it says 'both'", () => {
+    expect(freeFromKeys("no alcohol, no perfume", "A marketplace claim of 'no alcohol, no perfume' is directly contradicted by the ingredient list, which contains both.")).toEqual(["alcohol free", "fragrance free"]);
+    expect(freeFromKeys("no alcohol, no perfume", "The 'no alcohol, no perfume' claim is contradicted: the list names Parfum.")).toEqual(["fragrance free"]);
+    expect(freeFromKeys("perfume free", "The 'perfume-free' claim is contradicted.")).toEqual(["fragrance free"]);
   });
 
   it("reads the fit lists too: they are on the page", () => {
