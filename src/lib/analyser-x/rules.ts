@@ -11,7 +11,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { ambitionOf, isUserPercentage, residualRisk, type Residual } from "./ladder";
-import { claimFlags } from "./claimflags";
+import { claimFlags, isFairnessName } from "./claimflags";
 import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
 import { drugNoticeOf } from "@/lib/drug-signals";
@@ -126,9 +126,14 @@ const blocks: Rule[] = [
   }),
   rule({
     id: "block.fairness", severity: "block", origin: "code", stratum: 20,
-    evaluate: (ctx, self) =>
-      claimFlags(claimValues(ctx), ctx.list.ingredients).fairness.map((t) =>
-        mk(self, { claim: t }, ctx.claims.filter((x) => x.value.text === t).map((x) => x.fact))),
+    evaluate: (ctx, self) => {
+      const out = claimFlags(claimValues(ctx), ctx.list.ingredients).fairness.map((t) =>
+        mk(self, { claim: t }, ctx.claims.filter((x) => x.value.text === t).map((x) => x.fact)));
+      // Where no verified claim says it but the product's own name does ("... Skin Whitening ..."), the name is the claim. Only when we know which product this is: a name
+      // typed into a search is not the product's own.
+      if (!out.length && !ctx.profile.identityFromTextOnly && isFairnessName(ctx.profile.name)) out.push(mk(self, { claim: ctx.profile.name }, []));
+      return out;
+    },
   }),
   rule({
     id: "block.pillars", severity: "block", origin: "code", needsReliableList: true, stratum: 20,

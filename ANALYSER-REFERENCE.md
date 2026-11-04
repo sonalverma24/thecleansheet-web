@@ -849,6 +849,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: No claim read from the brand's page means "not examined", never "no claims"; a product whose own name says "whitening" or "fairness" is a fairness block
+- **Decided by:** the owner, 2026-11-04 ("Yes, fix both"), after an audit of every live analysis (54) that replayed the rules on each stored row and read the colour each live page prints. The printed colour matched the rules on all 54; these two matched the rules and contradicted the page.
+- **Reason:** (1) Dot & Key Vitamin C+E Super Bright Gel Face Wash was Good choice with no claim read at all (the research log records 0 kept and 0 dropped), while its own page showed Claims evidence, Test transparency and Consumer clarity as Concern and scored 36 of 100. `claimsSourceRead` was set false only when claims had been dropped and none kept, so a model that returned nothing was read as "no claims", and "no claims" satisfies `support.claims_proportionate`. (2) Lotus Herbals Whiteglow Skin Whitening And Brighening Gel Creme was Buy with caution (32 of 100). `block.fairness` reads claim text only, and a claim needs a verified quote to block (4 of the 832 claims in the 54 are verified); none of its 18 claims says "whiten" (they say "brighter" and "lighter"), but its name does.
+- **What it touched:** `src/lib/analyser-x/adapter.ts`: `claimsSourceRead` is false whenever the research log records `claimsKept === 0`, dropped or not, so the existing `gap.claims_unreliable` applies and `support.claims_proportionate` is withheld. A row that never recorded `claimsKept` (older) is unchanged. This completes the 2026-11-02 entry above, which says a product whose brand page cannot be read "shows as claims not examined": an unreadable page makes the model return an empty list, which records 0 kept and 0 dropped, and only the dropped case had been handled. One existing test in `src/lib/claim-source.test.ts` asserted the opposite for 0 and 0; it now asserts the gap. `src/lib/analyser-x/claimflags.ts` and `rules.ts`: new `isFairnessName`; `block.fairness` also fires, once, when no verified claim does and the product name matches the same fairness wording as a claim. It skips oral care and nails ("whitening toothpaste"), a "non-whitening" name, and a name that is only what someone typed into a search (identity from text alone). Same sentence. Tests: `src/lib/analyser-x/no-claims-and-name-fairness.test.ts` (18; 7 fail on the old rules).
+- **Measured:** the 54 stored analyses replayed on the same snapshot with the old and the new rules: exactly two change. Dot & Key face wash Good choice to Not enough info; Lotus Whiteglow Buy with caution to Look elsewhere. Green 7 to 6, Yellow 34 to 33, Grey 13 to 14, Red 0 to 1. The other 52 are identical in colour, pill and reasons.
+- **Not changed:** an unverified fairness claim in the claim text alone is still not a block (`decision.test.ts`). Antinorm Dry Shampoo (Good choice while its page shows Claims evidence as Concern) is not changed; that disagreement between the decision's claim check and the page's Claims evidence score still awaits an owner decision. No stored analysis is touched: the colour is worked out when the page is shown, so both pages change when this is live, and the face wash needs a re-run before its claims are read.
+- **Undo:** revert the commit, or restore the old `claimsSourceRead` condition (`(claimsDropped ?? 0) > 0 && claimsKept === 0`) and remove the name branch in `block.fairness`.
+
 ### 2026-11-04: The evidence harness is ported (PR #9), and what the vision pass reads now reaches the model
 - **Decided by:** the owner, 2026-11-04 ("Port #9 as well"). PR #9 was a draft from 2026-10-22 that no longer merged: the generation loop in `runProductReview` had been rebuilt on main since.
 - **Reason:** #9 adds a deterministic evidence check that runs next to the analysis and never changes a public rating, and it fixes a timing fault: the vision pass that transcribes reports published as pictures ran inside the retry loop, after the prompt had been built, so the model never received what it read, and every retry added the same text again to the checks that read it.
@@ -1302,8 +1310,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `91c8023cbf84911f4dbd79e1d9e40cf66a56fa7b3b094b8e7aca2761b8ffbe98` |
 | `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
-| `src/lib/analyser-x/adapter.ts` | `8eeac5cc53080cc8a860a87de3f9b8e123a4c1f9473534187411a435bcc5ca91` |
-| `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
+| `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
+| `src/lib/analyser-x/claimflags.ts` | `536713ad6e3fd041f93e046162470d9c4146a06cca8459329cdfda6e60e11aae` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
 | `src/lib/analyser-x/copy.ts` | `1c8968ed917d2647bede349b13759b42ad57dcb8c4f47a4789d16c3906234db8` |
 | `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
@@ -1315,7 +1323,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
 | `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
-| `src/lib/analyser-x/rules.ts` | `86e01b889d32d3bcc74b5b7ea1aace012536ca5e1872e6d3a3aa3c808fb88098` |
+| `src/lib/analyser-x/rules.ts` | `b2cdca390a41b7e399200cacfc8e82450d9a605dc407f2f583ceebdfc78168ea` |
 | `src/lib/analyser-x/screen.ts` | `f1b38f1fb3471f7f24c9f7b2a2683e84f8f01f25d190b32e1c46b10e25f1b1c0` |
 | `src/lib/analyser-x/sections.ts` | `ed0bf952f885a0657a8f37880fadc1b50268e7d6b1884dc5576565ee21b99f32` |
 | `src/lib/analyser-x/tags.ts` | `6f6aa00598785f7c036c60996369d438f142e10d7005bfeaaa60bfd75167973b` |
