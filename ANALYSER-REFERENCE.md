@@ -848,6 +848,13 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: The Be Minimalist "Oat Extract 6%" cleanser row is retired as a duplicate of the "B12 + Oat Extract 6.5%" row
+- **Decided by:** the owner, on 2026-11-04, in chat. Offered three options for the row (update it to the current product and rename it, keep it as the older formula, or retire it as a duplicate), the owner answered "C": retire it.
+- **Reason:** the owner gave none beyond the choice. Measured: Be Minimalist updated `beminimalist.co/products/oat-extract-06-gentle-cleanser` in place, from "Oat Extract 6%" to "B12 + Oat Extract 6.5%" (it now prints 20 ingredients with Cyanocobalamin; INKEE's page for the old name lists 17 and no Cyanocobalamin). The product was stored twice, once under each name (`be-minimalist-minimalist-oat-extract-6-gentle-cleanser` and `be-minimalist-minimalist-b12-oat-extract-6-5-gentle-cleanser`), both read from that one page by the grey re-run.
+- **What it touched:** `src/lib/product-review-engine.ts`: the 6% row's slug is added to `RETRACTED_SLUGS`, so it is suppressed on every read path (the analysis page, listings, search, the catalogue, and the re-run, which skips retracted rows). The row itself is **left in the table**, as every earlier retraction is, so nothing is deleted. `src/lib/product-review-engine.retracted.test.ts` pins it (and that the B12 row is not retracted).
+- **Not changed:** nothing is hard-deleted. The old page address will answer not-found once this is live (no redirect is built). The B12 row still holds the 19-ingredient list the grey re-run wrote, missing the final ingredient, Trisodium Ethylenediamine Disuccinate, which the brand's page prints glued to the next heading; it is re-run separately.
+- **Undo:** remove the slug from `RETRACTED_SLUGS`; the row is intact, so its page comes back as it was.
+
 ### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
 - **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).
 - **Reason:** measured on the live pages. The product is pasted as `lakmeindia.com/products/lakme-peach-ceramide-moisturizer-with-hyaluronic-for-dry-skin-normal-skin-sensitive-skin-50g`, its old address; the page is titled "Lakme Peach Milk 2% Pro-Ceramide + Peptide Creme | Barrier Repair ...". For a pasted address the engine searches with a name worked out from the address and takes the brand from its first word. The title check refused the brand's page against that name, and the corrected-brand lookup (the one that uses the name the model read from the page) did not run, because the first word, "lakme", equals the brand the model named. The first lookup's list stood, and it came from a **Nykaa page for another product**, the Ultra Light Gel (26 entries starting "Water, Dimethicone, Glycerin..."), not the Creme's 40 ("Water, Paraffinum Liquidum..."). The re-run held that row on its changed name, so nothing wrong was written; the cause was found by comparing the lists.
@@ -1356,7 +1363,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `9ec29f6a83ed659d2ef193027d90a172a733df003e6e1c1a813168d4b9f0a410` |
+| `src/lib/product-review-engine.ts` | `2c8ff7f78457c42c219a1026cdef351fb9f9331ffcbf0485fee84a201b2fe0ea` |
 | `src/lib/product-review-types.ts` | `e0b8c9cb4b61897a308887e5b8693c680fbfff3c6c26c3df5c4cb583a485c641` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |

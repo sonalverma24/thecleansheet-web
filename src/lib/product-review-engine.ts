@@ -797,6 +797,12 @@ export const RETRACTED_SLUGS = new Set<string>([
   // clove, Geogard/Nipaguard; no glycerin). It made the brand's own "glycerin-free"
   // claim look false. Pending re-review.
   "nat-habit-nat-habit-multi-nut-shea-omega3-malai-body-butter-for-dry-skin-body-ac",
+  // Duplicate of the same product under its old name. Be Minimalist updated
+  // beminimalist.co/products/oat-extract-06-gentle-cleanser in place from "Oat Extract 6%" to
+  // "B12 + Oat Extract 6.5%", and the product is stored twice, once under each name. The
+  // "...-b12-oat-extract-6-5-gentle-cleanser" row (the brand's current name) is the keeper.
+  // Owner, 2026-11-04: retire the 6% row as a duplicate.
+  "be-minimalist-minimalist-oat-extract-6-gentle-cleanser",
 ]);
 
 /** The "unrated" answer for a review that turns out to be a nutraceutical or a prescription drug, or null for a cosmetic. */
