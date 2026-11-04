@@ -8,6 +8,15 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** no stored row changes by this entry. Omeo's wrong row and the Be Minimalist B12 row are corrected by re-runs, not by this code.
 - **Undo:** revert the commits; each of the five is independent.
 
+### 2026-11-04: The Be Minimalist "Oat Extract 6%" cleanser row is retired as a duplicate of the "B12 + Oat Extract 6.5%" row
+- **Decided by:** the owner, on 2026-11-04, in chat. Offered three options for the row (update it to the current product and rename it, keep it as the older formula, or retire it as a duplicate), the owner answered "C": retire it.
+- **Reason:** the owner gave none beyond the choice. Measured: Be Minimalist updated `beminimalist.co/products/oat-extract-06-gentle-cleanser` in place, from "Oat Extract 6%" to "B12 + Oat Extract 6.5%" (it now prints 20 ingredients with Cyanocobalamin; INKEE's page for the old name lists 17 and no Cyanocobalamin). The product was stored twice, once under each name (`be-minimalist-minimalist-oat-extract-6-gentle-cleanser` and `be-minimalist-minimalist-b12-oat-extract-6-5-gentle-cleanser`), both read from that one page by the grey re-run.
+- **What it touched:** `src/lib/product-review-engine.ts`: the 6% row's slug is added to `RETRACTED_SLUGS`, so it is suppressed on every read path (the analysis page, listings, search, the catalogue, and the re-run, which skips retracted rows). The row itself is **left in the table**, as every earlier retraction is, so nothing is deleted. `src/lib/product-review-engine.retracted.test.ts` pins it (and that the B12 row is not retracted).
+- **Also (2026-11-04, later):** the owner asked for the row to be deleted "from db and everywhere else". The list moved unchanged into `src/lib/retracted-slugs.ts` (re-exported by the engine) so that `/api/tile/<slug>` can honour it too: it answers 404 for a retracted slug and no longer serves the row's picture. The hard delete itself is a permanent production deletion; it is left to the owner to run (the statements are in the PR), after this is live.
+- **Not changed:** nothing is hard-deleted. The old page address will answer not-found once this is live (no redirect is built). The B12 row still holds the 19-ingredient list the grey re-run wrote, missing the final ingredient, Trisodium Ethylenediamine Disuccinate, which the brand's page prints glued to the next heading; it is re-run separately.
+- **Undo:** remove the slug from `RETRACTED_SLUGS`; the row is intact, so its page comes back as it was.
+
+
 ### 2026-11-04: The evidence harness is ported (PR #9), and what the vision pass reads now reaches the model
 - **Decided by:** the owner, 2026-11-04 ("Port #9 as well"). PR #9 was a draft from 2026-10-22 that no longer merged: the generation loop in `runProductReview` had been rebuilt on main since.
 - **Reason:** #9 adds a deterministic evidence check that runs next to the analysis and never changes a public rating, and it fixes a timing fault: the vision pass that transcribes reports published as pictures ran inside the retry loop, after the prompt had been built, so the model never received what it read, and every retry added the same text again to the checks that read it.
@@ -24,6 +33,7 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Measured:** on the live Be Minimalist B5 page the reader now returns nothing from its four menus; the Lakme page still gives 40. Four of the new tests fail against main's reader and pass now, including a menu longer than the page's own visible list replacing it.
 - **Not changed:** no stored analysis is changed by this entry. The B5 row was written by the other session from the brand's own page (22 entries) before this could matter.
 - **Undo:** revert the commit, or remove the three `continue` guards in `extractInciFromListItems`.
+
 
 ### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
 - **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).

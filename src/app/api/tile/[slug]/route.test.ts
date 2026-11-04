@@ -44,6 +44,13 @@ describe("GET /api/tile/<slug>", () => {
     expect(h.source).not.toHaveBeenCalled();
   });
 
+  it("answers 404 for a review pulled from the site, even though its row still has a picture", async () => {
+    h.row.mockResolvedValue({ data: { image_url: ORIGINAL }, error: null });
+    expect((await call("be-minimalist-minimalist-oat-extract-6-gentle-cleanser")).status).toBe(404);
+    expect(h.row).not.toHaveBeenCalled(); // not even looked up
+    expect(h.source).not.toHaveBeenCalled();
+  });
+
   it("sends the browser to the original picture when it cannot be fetched, so a tile is never blank because of this route", async () => {
     h.source.mockResolvedValue(null);
     const res = await call("foxtale-brightening-moisturiser");
