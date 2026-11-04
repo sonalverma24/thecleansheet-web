@@ -39,7 +39,7 @@ export default async function BrandPage({ params }: { params: Promise<{ brand: s
 
   return (
     <div className="min-h-screen bg-white text-[#282828]">
-      <div className="mx-auto max-w-[1150px] px-5 sm:px-8 lg:px-12 pt-8 pb-24">
+      <div className="mx-auto max-w-[1200px] px-5 sm:px-8 lg:px-12 pt-8 pb-24">
         <nav className="flex flex-wrap items-center gap-2 text-[13px] text-[#6c6865] mb-12" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-[#248179]">Home</Link>
           <span>/</span>

@@ -128,7 +128,7 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {shown.map((brand) => (
             <Link key={brand.slug} href={"/brands/" + brand.slug}
-              className="group flex h-full flex-col gap-4 rounded-2xl border border-[#e5dfd6] bg-white p-5 hover:border-[#248179] hover:shadow-lg hover:shadow-[#248179]/5 transition-all">
+              className="group flex h-full cursor-pointer flex-col gap-4 rounded-2xl border border-[#e5dfd6] bg-white p-5 hover:border-[#248179] hover:shadow-lg hover:shadow-[#248179]/5 md:hover:-translate-y-0.5 active:translate-y-0 active:bg-[#f7faf9] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#248179]">
               <div className="flex items-start gap-3">
                 <BrandLogo name={brand.name} logoUrl={brand.logoUrl} size={52} />
                 <div className="min-w-0 flex-1">
@@ -147,7 +147,7 @@ export default function BrandDirectoryClient({ brands }: { brands: BrandCardData
                 <Distribution counts={brand.counts} />
                 <div className="mt-4 pt-3 border-t border-[#eee9e4] flex items-center justify-between text-[13px]">
                   <span className="text-[#4a4a4a]">{productCountOf(brand)} {productCountOf(brand) === 1 ? "product" : "products"} · {brand.ratedCount} rated</span>
-                  <span className="font-medium text-[#248179]">Explore brand →</span>
+                  <span className="font-medium text-[#248179] group-hover:underline underline-offset-4">Explore brand <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">→</span></span>
                 </div>
               </div>
             </Link>

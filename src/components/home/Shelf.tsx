@@ -58,7 +58,7 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
       )}
 
       {shown.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-5 no-scrollbar -mx-5 px-5 pb-1 md:mx-0 md:px-0 md:pb-0 md:overflow-visible md:grid md:grid-cols-2 md:gap-5 lg:grid-cols-4">
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-5 no-scrollbar -mx-5 px-5 pb-1 md:mx-0 md:px-0 md:pb-0 md:overflow-visible md:grid md:grid-cols-3 md:gap-5 lg:grid-cols-4">
           {shown.map((p) => (
             <Link
               key={p.slug}
@@ -71,7 +71,7 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
                     src={tileImage(p.slug, p.image) ?? p.image}
                     alt={`${p.brand} ${p.name}`}
                     fill
-                    sizes="(min-width: 1024px) 280px, (min-width: 768px) 45vw, 236px"
+                    sizes="(min-width: 1024px) 280px, (min-width: 768px) 30vw, 236px"
                     unoptimized={isTileRoute(tileImage(p.slug, p.image))}
                     className="object-contain p-3"
                   />
