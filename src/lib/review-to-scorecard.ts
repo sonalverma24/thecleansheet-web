@@ -18,6 +18,7 @@ import { globalScreenFor } from "@/lib/global-screen";
 import { analysisWording } from "@/lib/analysis-wording";
 import { RETINOID_RE } from "@/lib/pregnancy-screen";
 import { isListReadWithoutQuote, isSourceBackedInci } from "@/lib/inci-source-backing";
+import { disputedTicksOf } from "@/lib/disputed-ticks";
 import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyIngredientFlag, PregnancyScreen, VeganScreen } from "@/data/brands/types";
 
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
@@ -272,6 +273,8 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
       : "Marketplace only" as const;
   const pregnancyScreen = buildPregnancyScreen(review, inci);
   const veganScreen = buildVeganScreen(inci, completeInci);
+  // A tick the analysis's own text disputes is never drawn (src/lib/disputed-ticks.ts).
+  const disputedTicks = disputedTicksOf(review);
 
   const product: ProductScorecard = {
     productName: review.productName,
@@ -294,6 +297,7 @@ export function reviewToScorecard(review: ProductReview, verdict: DerivedVerdict
     inciCompleteness: { status: completeInciStatus, flags: [] },
     pregnancyScreen,
     veganScreen,
+    ...(disputedTicks.length ? { disputedTicks } : {}),
     claimsCheck: claims.slice(0, 10).map((claim) => claimToCheckItem(claim, review, inci)),
     missingProof,
     cleanSheetNote: review.cleanSheetNote ? analysisWording(review.cleanSheetNote) : review.cleanSheetNote,

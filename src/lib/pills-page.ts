@@ -21,7 +21,7 @@
 import type { ProductReview } from "@/lib/product-review-types";
 import type { ProductScorecard, PregnancyScreen as ProductPregnancyScreen } from "@/data/brands/types";
 import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/scorecards/pill-palette";
-import { buildAtAGlance } from "@/lib/at-a-glance";
+import { buildAtAGlance, isDisputedTick } from "@/lib/at-a-glance";
 import { reviewInciList } from "@/lib/review-inci";
 import { ingredientConcerns, type IngredientConcern } from "@/lib/ingredient-concerns";
 import { withoutUnsupportedFitLines } from "@/lib/fit-claims";
@@ -355,7 +355,11 @@ export function verifiedChecks(product: ProductScorecard, inci: string[], preg?:
     if (handled.test(t.label)) continue;
     out.push({ label: t.label, state: t.value ? "yes" : "no" });
   }
-  return [...out.filter((h) => h.state === "yes"), ...out.filter((h) => h.state === "no")];
+  // A tick the analysis's own text says is contradicted is not drawn, and the FAQ does not answer from it (src/lib/disputed-ticks.ts).
+  const shown = out.map((h): Highlight => h.state === "yes" && isDisputedTick(h.label, product.disputedTicks)
+    ? { ...h, state: "unknown", detail: "Not shown: this analysis's own text says the claim is contradicted, so the page does not tick it." }
+    : h);
+  return [...shown.filter((h) => h.state === "yes"), ...shown.filter((h) => h.state === "no")];
 }
 
 /** At most GLANCE_MAX chips, shown ticks first and then crosses. When there are more checks than room, the crosses are kept before the ticks are:

@@ -880,6 +880,14 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** an unverified fairness claim in the claim text alone is still not a block (`decision.test.ts`). Antinorm Dry Shampoo (Good choice while its page shows Claims evidence as Concern) is not changed by this entry; the next entry, the same day, settles it. No stored analysis is touched: the colour is worked out when the page is shown, so both pages change when this is live, and the face wash needs a re-run before its claims are read.
 - **Undo:** revert the commit, or restore the old `claimsSourceRead` condition (`(claimsDropped ?? 0) > 0 && claimsKept === 0`) and remove the name branch in `block.fairness`.
 
+### 2026-11-04 (evening): A page never ticks what its own text disputes; INKEE Decoder may not stand in a neighbouring variant
+- **Decided by:** the owner, 2026-11-04, on the live Garnier Skin Naturals Micellar Oil-Infused Cleansing Water page: "Fragrance free claim is not right, then why fragrance free pill is showing in green, under at a glance? we need to fix the discrepancy.. our own page can't talk against each other. This needs to be fixed on top priority."
+- **Why it happened (measured):** the ticks are worked out by code from the ingredient list we hold; the summary, the biggest concern and "Who should be careful" are written by the model. For this row the list we hold is **another product's**: INKEE Decoder's "Garnier Micellar Water Sensitive Skin" (the pink bottle; 7 ingredients, no fragrance, no alcohol), taken because the name search accepts the closest entry by word overlap and the Oil-Infused product has no entry of its own. The model read a different list and wrote that the 'fragrance-free' and 'alcohol-free' claims are contradicted. The page showed both. The review verifier already detects this pair (`verifyClaimDisputes`) but only reports it; nothing on the page used it.
+- **What it touched:** (1) new `src/lib/disputed-ticks.ts`: the claims the analysis's own text says are contradicted, using the verifier's own detection (`proseDisputedClaims`: a quoted claim next to "contradict…", with its bound-negation rule) over the verifier's texts plus the fit lists. `src/lib/review-to-scorecard.ts` stores them on the product as `disputedTicks`. (2) Such a tick is not drawn anywhere ticks are drawn: `verifiedChecks` in `src/lib/pills-page.ts` (product page, its FAQ, listing cards, compare), `buildAtAGlance` and `fragranceFromCompleteInci` in `src/lib/at-a-glance.ts` (older scorecard page), and the "Fragrance free" badge in `src/data/badges/resolver.ts`. It is withheld, not turned into a cross: the cross would rest on the model's reading alone. A cross the text agrees with stays. Ratings and colours do not change. (3) `src/lib/inci-fetch.ts` (`resolveINCI`, new `decoderEntryNamesQuery`): a Decoder entry is taken by name only when it names the product asked for (75% of the query's words, or its whole name inside a longer retailer name), so a neighbouring variant gives no list rather than the wrong list. (4) `src/lib/verdict-parity.test.ts` pinned "a dispute never moves the ticks" (written 2026-10-26, when the verifier only reported); it now pins that the disputed tick is the only thing a dispute removes and that ratings never move.
+- **Measured on all 56 live analyses (anon-key snapshot, replayed through the page code before and after):** exactly one page changes, Garnier: the Fragrance free and Alcohol free ticks and the FAQ "Is it fragrance free?" answer go; Paraben free stays. The lookup rule, applied to the 25 live lists that came from INKEE Decoder, turns away only Garnier's (it first also turned away Pond's Super Light Gel, whose stored name is `Pond&#39;s`, and Dot & Key's Barrier Repair moisturiser, "With Ceramides"; page codes, linking words and plural "s" are now ignored, and both are pinned in the tests).
+- **Not changed:** the Garnier row itself. It still holds the pink bottle's list, so its ingredient section and its Paraben free tick describe the wrong product until it is re-run (now that the lookup refuses the pink bottle) or retracted; either is the owner's call. No other stored analysis is changed. Model-written text is not edited.
+- **Undo:** revert the commit. To keep the page rule but drop the lookup rule, remove the two `decoderEntryNamesQuery` checks in `resolveINCI`.
+
 ### 2026-11-04: The Be Minimalist "Oat Extract 6%" cleanser row is retired as a duplicate of the "B12 + Oat Extract 6.5%" row
 - **Decided by:** the owner, on 2026-11-04, in chat. Offered three options for the row (update it to the current product and rename it, keep it as the older formula, or retire it as a duplicate), the owner answered "C": retire it.
 - **Reason:** the owner gave none beyond the choice. Measured: Be Minimalist updated `beminimalist.co/products/oat-extract-06-gentle-cleanser` in place, from "Oat Extract 6%" to "B12 + Oat Extract 6.5%" (it now prints 20 ingredients with Cyanocobalamin; INKEE's page for the old name lists 17 and no Cyanocobalamin). The product was stored twice, once under each name (`be-minimalist-minimalist-oat-extract-6-gentle-cleanser` and `be-minimalist-minimalist-b12-oat-extract-6-5-gentle-cleanser`), both read from that one page by the grey re-run.
@@ -1380,7 +1388,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-catchall.ts` | `c83855004cb4603bb90c1ba15e195352ff073742968998d444802778fb8e7254` |
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
-| `src/lib/inci-fetch.ts` | `f0eacd30484ebc4eaa1f500a0f7a233426175c367f788c46b6764b792b24e4b7` |
+| `src/lib/inci-fetch.ts` | `585e71967242c14f31ced4c8cad2a35afe3dbac968503d758d8563e09684b361` |
 | `src/lib/inci-from-page.ts` | `1a9065044dc19e8d62a1d9022c704043e125afa1f62a5c1d4841a0be016ba4d8` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
@@ -1400,7 +1408,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `2d5b3e14ba6d1dce088752c5fcc6dadaff1b7fd77a73b02920714067531d097b` |
+| `src/lib/pills-page.ts` | `a710747269cb584a429ffcc2ebcf92fb23757dc65b1722d7d732c63129c1c902` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
@@ -1414,7 +1422,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `136cf48bb84c167a24c6d94277109711bb03df5b82a3a0b922a8e80c493d80a6` |
 | `src/lib/review-run.ts` | `fc35de89907c1b7bfac29cb6d748c6d0583b900ef4e11184b2779b6cd72f02f0` |
-| `src/lib/review-to-scorecard.ts` | `0152e2132464eb32588b90d03b09da076fb32101458ce360ba45f7d7e4e8c60a` |
+| `src/lib/review-to-scorecard.ts` | `dc462f5d1b0a995d6b3d91633fad94cbc68416d39f0649f7c42638a037e141eb` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
