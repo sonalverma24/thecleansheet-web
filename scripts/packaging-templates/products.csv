@@ -1,0 +1,2 @@
+id,familyId,name,capacityValue,capacityUnit,material,materialDetail,containerStyle,closure,shape,neckFinish,pumpOutputMl,childResistant,tamperEvident,pcrPercent,lengthMm,widthMm,heightMm
+# FAKE EXAMPLE (delete this row),glass-dropper-bottles,FAKE EXAMPLE 30 ml dropper bottle,30,ml,glass,Type III soda-lime,Boston round,Dropper with rubber bulb,Round,18/415,,no,yes,0,30,30,90

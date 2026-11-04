@@ -154,6 +154,7 @@ export default async function ProductsPage() {
           heading="All analysed products, grouped by brand"
           intro="Every product The Clean Sheet has analysed, listed by brand."
           groups={indexGroups}
+          gateLinks
         />
       )}
     </div>

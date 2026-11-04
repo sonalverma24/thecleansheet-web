@@ -52,6 +52,14 @@ describe("approved catalogue rerun", () => {
     expect(validateReplacement(r, review, "buy-with-caution", "buy-with-caution")).not.toContain("ingredient-list-shorter");
   });
 
+  it("accepts a list the owner typed in from the pack as source-backed, and holds it against a shorter replacement like any other quoted list", () => {
+    const supplied = { ...review, inciEvidence: makeInciEvidence("https://test.com/products/alpha-serum", "Aqua, Glycerin, Niacinamide, Panthenol", "2026-11-01", "Alpha Serum", false, { trust: 3, origin: "owner-supplied" }) };
+    expect(validateReplacement(row("one", "2026-07-01"), supplied, "buy-with-caution", "buy-with-caution")).not.toContain("primary-ingredient-source-missing");
+    const r = row("one", "2026-07-01");
+    r.result = { type: "product-review", review: { ...supplied, inciIngredients: [...supplied.inciIngredients!, "Tocopherol", "Citric Acid"] } };
+    expect(validateReplacement(r, supplied, "buy-with-caution", "buy-with-caution")).toContain("ingredient-list-shorter");
+  });
+
   it("confirms timestamps by instant, accepting Postgres timezone formatting and rejecting changed values", () => {
     expect(sameReviewTime("2026-10-28T07:41:38.370Z", "2026-10-28T07:41:38.37+00:00")).toBe(true);
     expect(sameReviewTime("2026-10-28T07:41:38.370Z", "2026-10-28T07:41:39.370Z")).toBe(false);

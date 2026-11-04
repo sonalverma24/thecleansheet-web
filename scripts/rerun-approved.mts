@@ -14,7 +14,7 @@ import type { ProductReview } from "@/lib/product-review-types";
 const argv = process.argv.slice(2);
 const flag = (k: string, fallback = "") => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] ?? fallback : fallback; };
 const baseline = "X1-approved-2026-10-28";
-const tag = "analyser-x1-approved-2026-10-28";
+const tag = "analyser-x1-approved-2026-10-29";
 const script = fileURLToPath(import.meta.url);
 const config = { ANALYSER_PILLS_PAGE: "true", ANALYSER_NEW_LAYOUT: "true", ANALYSER_INGREDIENT_ALIASES: "false", ANALYSER_PILLAR_STANDING: "false" };
 

@@ -22,6 +22,7 @@ const LINKS = {
   About: [
     { href: "/about",          label: "About"          },
     { href: "/for-brands",     label: "For Brands"     },
+    { href: "/directory",      label: "Sourcing Directory" },
     { href: "/contact",        label: "Contact"        },
     { href: "/privacy-policy", label: "Privacy Policy" },
     { href: "/terms-of-use",   label: "Terms of Use"   },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GitCompare, X } from "lucide-react";
 import { COMPARE_MAX } from "@/lib/compare-group";
 import { track } from "@/lib/analytics";
+import { isTileRoute, tileImage } from "@/lib/tile-image";
 
 /* The bar at the foot of /brands while products are picked for a comparison. It names the type being compared (the first product picked sets it) and says
    what to do next. "Compare" is a link to /compare, so the comparison has its own address. */
@@ -29,7 +30,7 @@ export function CompareTray({ items, type, onRemove, onClearAll }: {
             {items.map((p) => (
               <li key={p.id} className="relative flex-none">
                 <div className="relative h-11 w-11 overflow-hidden rounded-xl border border-[#e5dfd6] bg-white">
-                  {p.image ? <Image src={p.image} alt="" fill sizes="44px" className="object-contain p-1" /> : <span className="absolute inset-0 flex items-center justify-center text-base">🧴</span>}
+                  {p.image ? <Image src={tileImage(p.slug, p.image) ?? p.image} alt="" fill sizes="44px" unoptimized={isTileRoute(tileImage(p.slug, p.image))} className="object-contain p-1" /> : <span className="absolute inset-0 flex items-center justify-center text-base">🧴</span>}
                 </div>
                 <button
                   type="button"

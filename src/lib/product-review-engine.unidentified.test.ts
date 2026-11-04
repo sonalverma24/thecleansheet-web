@@ -139,7 +139,7 @@ describe("runProductReview: a typed product name", () => {
     ["no brand", { productName: "Glow Lab Night Cream", brand: "" }],
   ])("is returned but not saved when the model gives %s", async (_label, over) => {
     h.generate.mockResolvedValue(modelSays(over));
-    const out = await runProductReview(`night cream formula ${++typedQueries}`);
+    const out = await runProductReview(`Glow Lab Night Cream ${++typedQueries}`);
     expect(out.type).toBe("product-review");
     expect(savedReviews()).toEqual([]);
   });

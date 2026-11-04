@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { MESSAGES } from "@/lib/analyser-x/copy";
 import { REVIEW_ERROR_MESSAGE, REVIEW_STEPS } from "@/lib/review-run";
 import type { ReviewRunnerState } from "./useReviewRunner";
 import UnratedNotice from "./UnratedNotice";
 
-/* Progress, "which one did you mean?" and error states for useReviewRunner.
+/* Progress, "which one did you mean?", "which product?" (a brand or a kind of product was searched, so nothing was analysed) and error states for useReviewRunner.
    `tone` picks the colours: "light" for white pages, "dark" for the teal /brands hero. */
 
 const TONES = {
@@ -63,6 +65,29 @@ export default function ReviewRunStatus({
             </button>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (state.phase === "needs-product") {
+    return (
+      <div className="mt-4" role="status" aria-live="polite">
+        <p className="text-[15px] font-semibold" style={{ color: t.text }}>{MESSAGES.needsProduct(state.brand)}</p>
+        <p className="mt-1.5 text-[14px]" style={{ color: t.text }}>{MESSAGES.needsProductHint(state.brand)}</p>
+        {state.suggestions.length > 0 && (
+          <>
+            <p className="mt-4 text-[12px]" style={{ color: t.muted }}>{MESSAGES.needsProductPick(state.brand)}</p>
+            <ul className="mt-2 flex flex-col gap-2 max-w-xl">
+              {state.suggestions.map((p) => (
+                <li key={p.slug}>
+                  <Link href={`/analysis/${p.slug}`} className={`block rounded-xl border px-4 py-3 text-[14px] transition-colors ${t.option}`} style={{ color: t.text }}>
+                    {p.name} <span aria-hidden style={{ color: t.accent }}>→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </div>
     );
   }

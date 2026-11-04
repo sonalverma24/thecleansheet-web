@@ -21,8 +21,10 @@ import { getDirectoryIngredients, isPlaceholderIngredient } from "@/lib/ingredie
 import { getAllBrandSummaries, getBrandBySlug } from "@/data/brands";
 import { listReviewIndex } from "@/lib/product-review-engine";
 import { cataloguePathFor } from "@/lib/catalogue-dedupe";
+import { PACKAGING_CATALOGUE } from "@/data/packaging";
+import { isFamilyIndexable } from "@/lib/packaging-catalogue";
 
-export const SITEMAP_SECTIONS = ["pages", "editorial", "brands", "reviews", "ingredients"] as const;
+export const SITEMAP_SECTIONS = ["pages", "editorial", "brands", "reviews", "ingredients", "directory"] as const;
 export type SitemapSection = (typeof SITEMAP_SECTIONS)[number];
 
 export interface SitemapEntry {
@@ -96,6 +98,19 @@ export async function getSitemapEntries(section: SitemapSection): Promise<Sitema
       }
       return [...seen].map(([slug, lastModified]) => ({ url: absoluteUrl(`/ingredients/${slug}`), lastModified }));
     }
+
+    case "directory":
+      // The sourcing directory hubs always have content. A packaging family page
+      // is listed only once it carries a real supplier offering (until then it is
+      // noindex), and supplier pages exist only for published suppliers.
+      return [
+        { url: absoluteUrl("/directory") },
+        { url: absoluteUrl("/directory/packaging") },
+        ...PACKAGING_CATALOGUE.families
+          .filter((f) => isFamilyIndexable(PACKAGING_CATALOGUE, f.id))
+          .map((f) => ({ url: absoluteUrl(`/directory/packaging/${f.id}`) })),
+        ...PACKAGING_CATALOGUE.suppliers.map((s) => ({ url: absoluteUrl(`/directory/packaging/suppliers/${s.slug}`) })),
+      ];
   }
 }
 

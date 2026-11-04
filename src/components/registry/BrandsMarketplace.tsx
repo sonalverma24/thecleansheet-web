@@ -12,6 +12,7 @@ import { CompareTray } from "@/components/compare/CompareTray";
 import { CompareNotice } from "@/components/compare/CompareNotice";
 import { compareBlock, compareTypeOf } from "@/lib/compare-group";
 import { seedImageFor } from "@/lib/home-shelf";
+import { useSignInGate } from "@/components/auth/useSignInGate";
 import { NoResultsCard } from "@/components/scorecards/NoResultsCard";
 import FilterPanel from "./FilterPanel";
 import MarketCard, { productId } from "./MarketCard";
@@ -22,7 +23,12 @@ import MarketCard, { productId } from "./MarketCard";
    choices are kept in the URL so a filtered view can be shared.
 
    The first render is the unfiltered list, so the server HTML already carries the
-   first cards; a shared URL's choices are applied right after hydration. */
+   first cards; a shared URL's choices are applied right after hydration.
+
+   Looking at the list is open to everyone. Opening a product, comparing, searching, sorting and
+   filtering need a sign-in (useSignInGate): the popup comes up in place of the action. Taking a
+   choice away (clear, start again, the search's x) and "Show more" are always open, so nobody is
+   stuck behind a filter a shared link set. */
 
 const PAGE_SIZE = 24;
 
@@ -35,6 +41,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   const [comparingIds, setComparingIds] = useState<string[]>([]);
   // The message shown when a product cannot join the comparison. `group` is the /products product type of the products already picked, for the filter button.
   const [compareNotice, setCompareNotice] = useState<{ kind: "unfiled" | "full" | "type"; message: string; group: string | null } | null>(null);
+  const { guard, openLink } = useSignInGate();
 
   // A shared link's search, sort and filters, applied once after hydration.
   useEffect(() => {
@@ -52,24 +59,28 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`);
   }, []);
 
-  const changeQuery = (q: string) => {
+  const applyQuery = (q: string) => {
     setQuery(q);
     setVisible(PAGE_SIZE);
     writeUrl({ query: q, sort, filters });
   };
-  const changeSort = (s: SortKey) => {
-    setSort(s);
-    setVisible(PAGE_SIZE);
-    writeUrl({ query, sort: s, filters });
-  };
-  const toggleFilter = (key: FilterKey, value: string) => {
-    const has = filters[key].includes(value);
-    const next = { ...filters, [key]: has ? filters[key].filter((v) => v !== value) : [...filters[key], value] };
-    setFilters(next);
-    setVisible(PAGE_SIZE);
-    writeUrl({ query, sort, filters: next });
-    track("filter_changed", { group: key, value, on: !has });
-  };
+  // Typing needs a sign-in; the search box's x (applyQuery("")) does not.
+  const changeQuery = (q: string) => guard("search", () => applyQuery(q));
+  const changeSort = (s: SortKey) =>
+    guard("sort", () => {
+      setSort(s);
+      setVisible(PAGE_SIZE);
+      writeUrl({ query, sort: s, filters });
+    });
+  const toggleFilter = (key: FilterKey, value: string) =>
+    guard("filter", () => {
+      const has = filters[key].includes(value);
+      const next = { ...filters, [key]: has ? filters[key].filter((v) => v !== value) : [...filters[key], value] };
+      setFilters(next);
+      setVisible(PAGE_SIZE);
+      writeUrl({ query, sort, filters: next });
+      track("filter_changed", { group: key, value, on: !has });
+    });
   const clearFilters = () => {
     setFilters(EMPTY_FILTERS);
     setVisible(PAGE_SIZE);
@@ -115,7 +126,8 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
   const pickedTypes = comparingIds.map((id) => typeById.get(id) ?? null);
   const compareType = pickedTypes[0] ?? null;
   const blockFor = (id: string) => compareBlock({ picked: pickedTypes, alreadyIn: comparingIds.includes(id), candidateType: typeById.get(id) ?? null });
-  const toggleCompare = (id: string) => {
+  // Picking or dropping a product to compare needs a sign-in (useSignInGate): the popup comes up in place of the action.
+  const toggleCompare = (id: string) => guard("compare", () => {
     if (comparingIds.includes(id)) {
       setComparingIds(comparingIds.filter((i) => i !== id));
       setCompareNotice(null);
@@ -133,7 +145,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
     }
     setCompareNotice(null);
     setComparingIds([...comparingIds, id]);
-  };
+  });
   // "Show only Sunscreens": the Product type filter set to the type being compared, and the list brought back into view.
   const showOnlyGroup = (group: string) => {
     const next = { ...filters, category: [group] };
@@ -198,7 +210,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
               className="flex-1 min-w-0 border-0 outline-none text-[16px] md:text-[15px] text-[#282828] bg-transparent placeholder:text-[#b0a8a4] [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
-              <button type="button" onClick={() => changeQuery("")} aria-label="Clear search" className="text-[#4a4a4a] hover:text-[#282828] text-[20px] leading-none px-1">
+              <button type="button" onClick={() => applyQuery("")} aria-label="Clear search" className="text-[#4a4a4a] hover:text-[#282828] text-[20px] leading-none px-1">
                 ×
               </button>
             )}
@@ -213,7 +225,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setSheetOpen(true)}
+                onClick={() => guard("filter", () => setSheetOpen(true))}
                 className="lg:hidden inline-flex items-center gap-1.5 h-10 rounded-lg border border-[#282828] px-3.5 text-[14px] font-bold text-[#282828]"
               >
                 Filters{activeCount > 0 && <span className="inline-flex items-center justify-center min-w-[20px] h-5 rounded-full bg-[#248179] text-white text-[11px] px-1.5">{activeCount}</span>}
@@ -268,6 +280,7 @@ export default function BrandsMarketplace({ products }: { products: ProductScore
                     comparing={comparingIds.includes(productId(p))}
                     compareBlock={blockFor(productId(p))?.message ?? null}
                     onCompare={toggleCompare}
+                    onOpen={openLink}
                   />
                 ))}
               </div>

@@ -405,6 +405,47 @@ describe("Nykaa, INKEE Decoder and the brand site searched together", () => {
   });
 });
 
+describe("a brand that gives its product a name of its own", () => {
+  const brandUrl = "https://humussbeauty.com/products/sun-sational-spf-50-sunscreen";
+  const retailerTitle = "Humuss Beauty Sunscreen - SPF 50 PA+++ Lightweight D-Tan Sunscreen with Hyaluronic Acid, Vitamin - E | In-Vitro Tested";
+  const ownName = ["Sun-sational - SPF 50 Hyaluronic Acid Sunscreen"];
+  const page = (pageTitles: string[]) => ({ source: brandUrl, ingredients: ["Aqua", "Zinc Oxide", "Glycerin", "Sodium Hyaluronate", "Tocopheryl Acetate", "Xanthan Gum"], quote: "Aqua, Zinc Oxide, Glycerin, Sodium Hyaluronate, Tocopheryl Acetate, Xanthan Gum", pageTitles });
+
+  it("is refused on its title alone (the brand's line name is not in the retailer's title)", async () => {
+    const deps = { search: async () => [brandUrl], read: async () => page(ownName) };
+    expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, deps)).toBeNull();
+  });
+
+  it("is taken when the brand's catalogue shows the page is the one product that is clearly this one", async () => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    const deps = { search: async () => [brandUrl], read: async () => page(ownName), confirmInBrandCatalogue: confirm };
+    expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, deps)).toMatchObject({ source: brandUrl, origin: "brand-page", trust: 4 });
+    expect(confirm).toHaveBeenCalledWith(brandUrl, "Humuss Beauty", retailerTitle);
+  });
+
+  it("is refused when the catalogue does not confirm it", async () => {
+    const deps = { search: async () => [brandUrl], read: async () => page(ownName), confirmInBrandCatalogue: async () => false };
+    expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, deps)).toBeNull();
+  });
+
+  it("is still refused when the catalogue confirms a page that has no quoted, sane list", async () => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    for (const bad of [{ ...page(ownName), quote: "" }, { ...page(ownName), ingredients: ["Aqua"] }]) {
+      expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, { search: async () => [brandUrl], read: async () => bad, confirmInBrandCatalogue: confirm })).toBeNull();
+    }
+  });
+
+  it("is not asked when the title already names the product, and never for a Decoder page", async () => {
+    const confirm = vi.fn().mockResolvedValue(true);
+    expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, { search: async () => [brandUrl], read: async () => page([retailerTitle]), confirmInBrandCatalogue: confirm })).not.toBeNull();
+    expect(confirm).not.toHaveBeenCalled();
+    const decoder = "https://inkeedecoder.com/products/humuss-beauty-sun-sational";
+    vi.mocked(fetchIncidecoderProduct).mockResolvedValue({ status: "ok", result: { productName: "Sun-sational", slug: "humuss-beauty-sun-sational", ingredients: page(ownName).ingredients, tags: [], source: decoder, imageUrl: null, sourceQuote: page(ownName).quote, pageTitle: "Sun-sational | INKEE Decoder" } } as never);
+    expect(await findBrandInci(retailerTitle, "Humuss Beauty", undefined, { search: async () => [decoder], read: vi.fn(), confirmInBrandCatalogue: confirm })).toBeNull();
+    expect(confirm).not.toHaveBeenCalled();
+  });
+});
+
 /* 2026-11-03: Chemist at Play now sells on innovist.com (chemistatplay.in answers 301 to it). The brand-domain rule only knew
    domains that start with the brand's name, so the product page the search ranked first was discarded and the analysis went grey
    ("could not verify a complete ingredient list") although the page prints the full list. The `brands` table has no Chemist at

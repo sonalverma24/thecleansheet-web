@@ -5,6 +5,7 @@ import { ArrowRight, Check, Minus, X } from "lucide-react";
 import { RatingDot } from "@/components/scorecards/RatingDot";
 import { PILL_COLOURS } from "@/components/scorecards/pill-palette";
 import { dayText } from "@/lib/pills-page";
+import { isTileRoute, tileImage } from "@/lib/tile-image";
 import { ROW_IDS, displayName, type CompareCheck, type CompareFacts, type Comparison, type RowId } from "@/lib/compare-products";
 
 /* ────────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ function Pack({ f, size = 96 }: { f: CompareFacts; size?: number }) {
   return (
     <div className={`relative flex-none rounded-[12px] border ${LINE} bg-white`} style={{ width: size, height: size }}>
       {f.image ? (
-        <Image src={f.image} alt="" fill sizes={`${size}px`} className="object-contain p-2" />
+        <Image src={tileImage(f.slug, f.image) ?? f.image} alt="" fill sizes={`${size}px`} unoptimized={isTileRoute(tileImage(f.slug, f.image))} className="object-contain p-2" />
       ) : (
         <span className="absolute inset-0 flex items-center justify-center text-[10px] uppercase tracking-[0.12em] text-[#b0a8a4]">No photo</span>
       )}

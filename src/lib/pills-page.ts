@@ -614,7 +614,11 @@ function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: P
   const usedName = sourceName(review.inciEvidence?.sourceUrl ?? "");
   const otherName = (source: string): string => { const n = sourceName(source); return n === usedName ? `Another ${n} page` : n; };
   const otherNote = others.length ? ` ${joinAnd(others.map((a) => `${otherName(a.source)} (${a.count} ingredients)`))} ${others.length === 1 ? "lists" : "list"} a different ingredient list; this analysis used the most complete one.` : "";
-  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)} from ${sourceName(review.inciEvidence?.sourceUrl ?? review.dataSource?.inciSource ?? "")}.${otherNote} We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
+  // A list the owner typed in from the pack says so, and names the page that shows the product, instead of claiming the brand's page printed it.
+  const listFrom = review.inciEvidence?.origin === "owner-supplied"
+    ? `the ingredient list printed on the product's pack, typed in by The Clean Sheet (${usedName} shows the product)`
+    : sourceName(review.inciEvidence?.sourceUrl ?? review.dataSource?.inciSource ?? "");
+  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)} from ${listFrom}.${otherNote} We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
   return out;
 }
 
