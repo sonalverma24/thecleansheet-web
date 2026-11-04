@@ -31,9 +31,10 @@ describe("no claim was read from the brand's page", () => {
     expect(ids(none)).toEqual(ids(dropped));
   });
 
-  it("an older row that never recorded how many claims were kept is left as it was", () => {
+  it("an older row that never recorded how many claims were kept is not made a gap, and is not Green: it has no test to be Fair about", () => {
     const old = decideReview(rv({ claimMap: [], researchLog: log() }), NOW);
-    expect(old.decision.key).toBe("good-choice");
+    expect(ids(old)).not.toContain("gap.claims_unreliable");
+    expect(old.decision.key).toBe("buy-with-caution");
   });
 
   it("a product whose claims were read is unaffected", () => {

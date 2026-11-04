@@ -93,12 +93,13 @@ export function declaredStrength(productName: string, ingredient: string): numbe
 
 /** A limit we can compare with a product name: ONE number and no condition on where, on whom or how it is used. In the
     current database only 1 of the 44 EU-restricted rows is this simple; the rest read like "1% face max; 0.5% hands max",
-    where the limit depends on the product's use. Those stay unverifiable until the database holds structured conditions. */
+    where the limit depends on the product's use. Those stay unverifiable until the database holds structured conditions. A limit "as a preservative" is one of
+    those: salicylic acid's India row reads "preservative use up to 0.5%; cosmetic keratolytic use per CR 2020", and 0.5% is not the limit of a 2% exfoliant (2026-11-04). */
 export function limitIsSimple(text: string | undefined): boolean {
   const t = (text ?? "").trim();
   if (!t || /\//.test(t)) return false;
   if ((t.match(/\d+(?:\.\d+)?\s*%/g) ?? []).length !== 1) return false;
-  return !/\b(leave|rinse|face|facial|body|hair|nappy|baby|infant|eye|lip|oral|spray|aerosol|nail|professional|children|hands?|combined|mixture|single)\b/i.test(t);
+  return !/\b(leave|rinse|face|facial|body|hair|nappy|baby|infant|eye|lip|oral|spray|aerosol|nail|professional|children|hands?|combined|mixture|single|preserv\w*)\b/i.test(t);
 }
 
 export type Lookup = (name: string) => Ingredient | undefined;

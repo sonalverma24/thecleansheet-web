@@ -29,7 +29,7 @@ import { withoutUnsupportedFitLines } from "@/lib/fit-claims";
 import { cheatCodeFor } from "@/data/analysis/cheat-codes";
 import { COMEDOGENIC, inciHas } from "@/data/analysis/ingredient-risk";
 import {
-  ANALYSER_RELEASE, AUTHORITIES, GREEN_FROM, INGREDIENT_CAUTIONS, RED_UNDER, STALE_DAYS, benchmarkPanel, decideReview, reviewSections, safetyMarker, shortList, sourceName, testLevelOfClaims,
+  ANALYSER_RELEASE, AUTHORITIES, GREEN_FROM, INGREDIENT_CAUTIONS, NON_INGREDIENT_BLOCKS, RED_UNDER, STALE_DAYS, benchmarkPanel, decideReview, reviewSections, safetyMarker, shortList, sourceName, testLevelOfClaims,
   type Authority, type BenchmarkPanel, type Decision, type DecisionKey,
 } from "@/lib/analyser-x";
 
@@ -451,7 +451,7 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   const pillar = (re: RegExp) => product.pillars.find((p) => re.test(p.name))?.note ?? "";
 
   // 1. Ingredient safety: from the decision's own findings (analyser-x/sections.ts holds the rule, and the decision reads it too).
-  const safetyReasons = d.reasons.filter((r) => r.ruleId.startsWith("block.") || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "note.screen_partial" || r.ruleId === "support.safety_clear");
+  const safetyReasons = d.reasons.filter((r) => (r.ruleId.startsWith("block.") && !NON_INGREDIENT_BLOCKS.has(r.ruleId)) || INGREDIENT_CAUTIONS.has(r.ruleId) || r.ruleId === "note.screen_partial" || r.ruleId === "support.safety_clear");
   const safetyColour = safetyMarker({ key: d.key, settled, screenCoverage: d.basis.screenCoverage });
   const safety = safetyColour === null ? NOT_RATED : markerRow(safetyColour);
   // The row's words leave out the coverage gap ("N of M listed ingredients are not in our reference database"), as the Regulatory check does:

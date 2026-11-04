@@ -4,19 +4,21 @@ import { deriveVerdict } from "@/lib/product-review-engine";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { decideReview } from "@/lib/analyser-x";
 import { decide } from "@/lib/analyser-x/decision";
+import { meetsGreen } from "@/lib/analyser-x/sections";
 import { checkInvariants } from "@/lib/analyser-x/invariants";
 import { lint } from "@/lib/analyser-x/copy";
-import { NOW, claimOf, evidence, notAllGreen, rv } from "@/lib/analyser-x/test-helpers";
+import { BASE, NOW, claimOf, evidence, notAllGreen, rv } from "@/lib/analyser-x/test-helpers";
 import type { ProductReview } from "@/lib/product-review-types";
 import { buildPillsPage } from "./pills-page";
 
-/* Owner decision, 2026-10-30: when all five sections of the product page are green, the product is a Good choice, except for flags. The cautions the sections
+/* Owner decision, 2026-10-30 (the five rows were redefined on 2026-11-04, see five-rows.test.ts: Claims evidence is Strong from 70% and a Test transparency
+   of Fair is enough): when all five sections of the product page are green, the product is a Good choice, except for flags. The cautions the sections
    already measure (a claim without a test on this product; a formula that may not deliver) are not flags: they stay on the page, as a note and under Gaps,
    and no longer hold the product at Buy with caution. Every other caution is a flag and still does. The case that raised it: Cetaphil Moisturising Cream,
    five sections Strong, a clean ingredient screen, and a claim gap only. */
 
 const hero = claimOf({ text: "Brightens skin", types: ["appearance"], primaryType: "appearance", evidenceLevel: 6 });
-const weak = claimOf({ text: "Supports Dull Skin Recovery", types: ["concern"], primaryType: "concern", evidenceLevel: 2 });
+const weak = claimOf({ text: "Repairs dull skin in 4 weeks", types: ["concern"], primaryType: "concern", evidenceLevel: 2 });
 const veganNoProof = claimOf({ text: "cruelty-free and vegan", types: ["safety"], primaryType: "safety", evidenceLevel: 1 });
 const MANY_WEAK = [hero, weak, veganNoProof];
 
@@ -57,7 +59,7 @@ describe("all five sections green, and only a claim gap in the way", () => {
     const m = page(rv({ claimMap: MANY_WEAK }));
     expect(m.pill).toMatchObject({ key: "good-choice", marker: "green" });
     expect(m.details?.map((d) => d.rating.marker)).toEqual(["green", "green", "green", "green", "green"]);
-    expect(m.gaps.join(" ")).toContain("Supports Dull Skin Recovery");
+    expect(m.gaps.join(" ")).toContain("Repairs dull skin in 4 weeks");
     expect(m.take.notes.join(" ")).toContain("not backed by a test on this product");
   });
 
@@ -70,14 +72,14 @@ describe("all five sections green, and only a claim gap in the way", () => {
 
 describe("a flag still holds the product back, whatever the sections say", () => {
   it("SPF below 30 on a sunscreen stays Buy with caution", () => {
-    const review = rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen", claimMap: MANY_WEAK });
+    const review = rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen", inciIngredients: [...BASE, "Zinc Oxide"], claimMap: MANY_WEAK });
     const r = decideReview(review, NOW);
     expect(ids(r)).toContain("caution.spf_low");
     expect(r.decision.key).toBe("buy-with-caution");
   });
 
   it("the claim gap stays a caution when another caution sits beside it", () => {
-    const review = rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen", claimMap: MANY_WEAK });
+    const review = rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen", inciIngredients: [...BASE, "Zinc Oxide"], claimMap: MANY_WEAK });
     const r = decideReview(review, NOW);
     expect(r.settled.find((f) => f.ruleId === "caution.claim_gap")?.severity).toBe("caution");
   });
@@ -96,12 +98,14 @@ describe("it only applies when all five sections are green", () => {
     const cases: Partial<ProductReview>[] = [
       { scores: { ...base, formulaLogic: 10 } },        // Formula logic 67%: yellow
       { scores: { ...base, claimClarity: 9 } },         // Consumer clarity 60%: yellow
-      { scores: { ...base, claimEvidence: 10 } },       // Claims evidence 50%: yellow
+      { scores: { ...base, claimEvidence: 13 } },       // Claims evidence 65%: yellow (Strong is from 70%)
     ];
     for (const over of cases) expect(decideReview(rv({ claimMap: MANY_WEAK, ...over }), NOW).decision.key, JSON.stringify(over.scores)).toBe("buy-with-caution");
-    // Test transparency: no performance claim at level 5 or better, so that section is yellow.
+    // Test transparency: Fair is enough (2026-11-04), so a best test at level 4 no longer holds a product back; no proof at all (level 1) is weak and does.
     const noLab = [claimOf({ ...hero, evidenceLevel: 4 }), weak];
-    expect(decideReview(rv({ claimMap: noLab }), NOW).decision.key).toBe("buy-with-caution");
+    expect(decideReview(rv({ claimMap: noLab }), NOW).decision.key).toBe("good-choice");
+    const noProof = [claimOf({ ...hero, evidenceLevel: 1 }), claimOf({ ...weak, evidenceLevel: 1 })];
+    expect(decideReview(rv({ claimMap: noProof }), NOW).decision.key).toBe("buy-with-caution");
   });
 
   it("a list we cannot verify, a block or a gap decide exactly as before", () => {
@@ -130,8 +134,9 @@ describe("the page and the decision read the same section colours", () => {
       const rows = page(review).details?.map((d) => d.rating.marker) ?? [];
       const s = r.ctx.sections!;
       expect(rows.slice(1), `${formulaLogic}/${claimEvidence}/${claimClarity}`).toEqual([s.formula, s.claims, s.tests, s.clarity]);
-      // Good choice by the sections happens exactly when all five rows on the page are green.
-      expect(r.decision.reasons.some((x) => x.ruleId === "support.sections_green")).toBe(rows.length === 5 && rows.every((m) => m === "green"));
+      // Good choice by the sections happens exactly when the five rows on the page are the Green set (Test transparency may be Fair).
+      const [safety, formula, claims, tests, clarity] = rows;
+      expect(r.decision.reasons.some((x) => x.ruleId === "support.sections_green")).toBe(rows.length === 5 && meetsGreen({ safety, formula, claims, tests, clarity }));
     }
   });
 });

@@ -98,7 +98,7 @@ export const SAMPLE_EXAMPLE_MINERAL_SUNSCREEN: ProductReview = makeReview({
     pregnancyOrTeenNote: null,
   },
   indiaContext: "India's UV index stays high through most of the year, so a daily broad-spectrum sunscreen matters here more than the SPF number alone. A silicone gel base wears comfortably in heat and humidity.",
-  scores: { priceFairness: 7, claimClarity: 11, claimEvidence: 15, ingredientTransparency: 16, formulaLogic: 14, consumerSuitability: 8, platformConsistency: 9, total: 80, label: "Clean Sheet Strong" },
+  scores: { priceFairness: 7, claimClarity: 12, claimEvidence: 15, ingredientTransparency: 16, formulaLogic: 14, consumerSuitability: 8, platformConsistency: 9, total: 81, label: "Clean Sheet Strong" },
   claimSummary: { total: 4, byRisk: { low: 3, medium: 1, high: 0, veryHigh: 0, redFlag: 0 }, highestEvidenceLevel: 5, mostCommonType: "safety", asciConcernCount: 0, drugBoundaryCount: 0 },
   verdict: { bestThing: "A published SPF test and a short, fragrance-free mineral formula.", biggestConcern: "The cast on deeper skin tones.", claimRisk: "low", transparencyLevel: "strong", whoItMaySuit: "Oily and sensitive skin", whoShouldBeCareful: "Deep skin tones that dislike any cast", cleanSheetTakeaway: "A short, fragrance-free mineral sunscreen with a published SPF test." },
   claimMap: [
