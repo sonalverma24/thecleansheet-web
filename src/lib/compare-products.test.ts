@@ -7,11 +7,11 @@ import {
 const TITLES: Record<RowId, string> = { safety: "Ingredient safety", formula: "Formula logic", claims: "Claims evidence", tests: "Test transparency", clarity: "Consumer clarity" };
 const WORD = { green: "Strong", yellow: "Fair", red: "Concern" } as const;
 const PILL = {
-  good: { label: "Good choice", tone: "good", marker: "green" },
-  caution: { label: "Buy with caution", tone: "caution", marker: "yellow" },
-  look: { label: "Look elsewhere", tone: "look", marker: "red" },
-  info: { label: "Not enough info", tone: "info", marker: null },
-  med: { label: "Medicinal product", tone: "med", marker: null },
+  good: { label: "Green", title: "Meets our review criteria", tone: "good", marker: "green" },
+  caution: { label: "Yellow", title: "Further verification needed", tone: "caution", marker: "yellow" },
+  look: { label: "Red", title: "Does not meet review criteria", tone: "look", marker: "red" },
+  info: { label: "Grey", title: "Not yet assessed", tone: "info", marker: null },
+  med: { label: "Grey", title: "Not yet assessed", tone: "med", marker: null },
 } as const;
 
 /** Rows from one marker each, in the page's order: safety, formula, claims, tests, clarity. */
@@ -35,7 +35,7 @@ describe("the pick", () => {
     const p = pickFor([a, b]);
     expect(p.winner).toBe("b");
     expect(p.kind).toBe("pick");
-    expect(p.reasons[0]).toMatch(/Rated Good choice\. .*A is Buy with caution/);
+    expect(p.reasons[0]).toMatch(/Rated Green\. .*A is Yellow/);
   });
 
   it("then prefers the stronger ingredient safety row", () => {
@@ -102,7 +102,7 @@ describe("the pick", () => {
     const p = pickFor([pick, value]);
     expect(p.winner).toBe("pick");
     expect(p.value?.slug).toBe("value");
-    expect(p.value?.text).toContain("same Good choice rating");
+    expect(p.value?.text).toContain("same Green rating");
 
     // The cheaper one is rated lower: it is not "value", it is just cheaper, and its own line says so.
     const worse = mk("worse", { tone: "caution", price: priced(15) });
@@ -145,7 +145,7 @@ describe("the pick", () => {
     const p = pickFor([mk("a", { tone: "look" }), mk("b", { tone: "look" })]);
     expect(p.kind).toBe("none");
     expect(p.winner).toBeNull();
-    expect(p.summary).toContain("Look elsewhere");
+    expect(p.summary).toContain("Red: does not meet review criteria");
   });
 
   it("still picks the better of two Buy with caution products, and carries the confidence caveat", () => {

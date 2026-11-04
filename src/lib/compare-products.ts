@@ -45,7 +45,8 @@ export interface CompareFacts {
   brand: string;
   image: string | null;
   type: string;
-  pill: { label: string; tone: PillToneName; marker: Marker };
+  /** `label` is the rating colour ("Green"), `title` its words ("Meets our review criteria"): the same RATING_KEY the product page prints. */
+  pill: { label: string; title: string; tone: PillToneName; marker: Marker };
   confidence: "high" | "medium" | "low";
   /** The five rated rows; null for a medicine or a page we could not read. */
   rows: CompareRow[] | null;
@@ -285,13 +286,13 @@ export function pickFor(items: CompareFacts[]): ComparePick {
     return { ...empty, kind: "unrated", headline: "No pick yet", summary: "None of these could be rated: there is not enough reliable information, or they are medicines. Check back after the next analysis." };
   }
   if (rated[0].pill.tone === "look") {
-    return { ...empty, kind: "none", headline: "We would not pick any of these", summary: `Every product we could rate here is Look elsewhere. Browse the other ${items[0].type.toLowerCase()} we have analysed instead.`, others: rated.slice(1).map((o) => otherLine(rated[0], o)) };
+    return { ...empty, kind: "none", headline: "We would not pick any of these", summary: `Every product we could rate here is ${rated[0].pill.label}: ${rated[0].pill.title.toLowerCase()}. Browse the other ${items[0].type.toLowerCase()} we have analysed instead.`, others: rated.slice(1).map((o) => otherLine(rated[0], o)) };
   }
 
   const w = rated[0];
   const rest = rated.slice(1);
   const caveats: string[] = [];
-  if (w.pill.tone === "caution") caveats.push(`${displayName(w)} is rated ${w.pill.label}, so it is the better of these, not an all-clear. Its page lists the considerations.`);
+  if (w.pill.tone === "caution") caveats.push(`${displayName(w)} is rated ${w.pill.label} (${w.pill.title.toLowerCase()}), so it is the better of these, not an all-clear. Its page lists the considerations.`);
   if (w.confidence !== "high") caveats.push(`We have ${w.confidence} confidence in the analysis of ${displayName(w)}. Its page says what would raise it.`);
   if (left.length) caveats.push("Products without a rating were left out of the pick.");
 

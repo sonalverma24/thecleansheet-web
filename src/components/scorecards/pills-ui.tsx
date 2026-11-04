@@ -12,7 +12,7 @@ import { RatingDot } from "./RatingDot";
 import "./pills-badge.css";
 import "./pills-page.css";
 
-/** The take: one rating circle (green, yellow, red, or grey when we could not rate it), its colour's name and what that colour means, in the owner's words
+/** The take: one rating circle (green, yellow, red, or grey when we could not rate it), its colour's name, its title and what that colour means, in the owner's words
     (RATING_KEY). No pill name, no old standing and no confidence meter: the colour is the whole of the decision. A screen reader hears the colour once, from
     the circle. */
 export function PillTake({ marker, className }: { marker: MarkerName | null; className?: string }) {
@@ -26,6 +26,7 @@ export function PillTake({ marker, className }: { marker: MarkerName | null; cla
         <span className="cs-verdict__body">
           <span className="cs-verdict__eyebrow">The Clean Sheet rating</span>
           <span aria-hidden className="cs-verdict__name">{rating.name}</span>
+          <span className="cs-verdict__title">{rating.title}</span>
           <span className="cs-verdict__key">{rating.meaning}</span>
         </span>
       </div>

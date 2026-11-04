@@ -1344,7 +1344,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
 | `src/components/scorecards/ProductScorecardView.tsx` | `1e68db79e07c012e947cbe765093ae88910ddcd0b284800ac07611d8c7f7d49e` |
 | `src/components/scorecards/RatingDot.tsx` | `38db0a7ece065f964f9c9919171b5b3ae794e6c58dea91999136191301cd02d1` |
-| `src/components/scorecards/RatingKey.tsx` | `7b4066f9a080e9d74b2f6c1ca260c2848749bc9054fd4218f505a786c0832014` |
+| `src/components/scorecards/RatingKey.tsx` | `87649384182c57d6717668098a7b048b271cadd54b4d0cd58db28302c698d747` |
 | `src/components/scorecards/ReviewRunStatus.tsx` | `46b66877e0e849f0a3784c4400cf254e2fc37a48d63ac87bbf541b489a90440d` |
 | `src/components/scorecards/ScoreRing.tsx` | `70d2f9e5c4e91493297c33f2f1991e5ea79a8992d4ade6e11d90febc319eefe5` |
 | `src/components/scorecards/ScorecardBadge.tsx` | `ac3beafbed835890200c81e3d33fe0f6acf79436793e57cf774b1478771caade` |
@@ -1352,11 +1352,11 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
 | `src/components/scorecards/UnratedNotice.tsx` | `816f537890064c9b56dbd4ee0ab966748032b5f4da320600dea59cae2acdee5b` |
 | `src/components/scorecards/UnratedProductPage.tsx` | `2fb73b2b15ba35be2cdd5129c8d242bf7712fd0962029a724e5f5656265a5a73` |
-| `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
+| `src/components/scorecards/pill-palette.ts` | `69cf5cbc0ec15e03c47c436dcaae3333d4b06b948af54185536f3a3bf1eaa187` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
-| `src/components/scorecards/pills-badge.css` | `a9d9db5c86be719ca43270e6a7ff741ae9f2b36e4b53e5f0c59a234a2ccdc592` |
+| `src/components/scorecards/pills-badge.css` | `1b5ff00a5688c23f62e67333ae200052f9bcfa996c89130eb3a498c97a88d406` |
 | `src/components/scorecards/pills-page.css` | `2dc4a4f6d4059985581db18d9ac97c412c7723806df1436df4656fba4e8761f8` |
-| `src/components/scorecards/pills-ui.tsx` | `c2d9b7b062e2c571f1fb286fe6f0a3b87760b36cafb4ec8dc7b0aeb7d47beecc` |
+| `src/components/scorecards/pills-ui.tsx` | `7d0dffc2cc49eb497fe6a2ebc8aa33d42d8c46bfbcfc73bff5b41cfdd41b5ae3` |
 | `src/components/scorecards/useReviewRunner.ts` | `8107f398febc057c60678b9f9c53d7edc9f3a442e81d9223009c2b59ba8730b1` |
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
 | `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |

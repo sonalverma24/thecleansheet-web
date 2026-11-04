@@ -50,14 +50,15 @@ export const ratingName = (marker: MarkerName | null): "green" | "yellow" | "red
 /** The words beside a marker on a row of the detail (never the colour alone). */
 export const MARKER_WORD: Record<MarkerName, string> = { green: "Strong", yellow: "Fair", red: "Concern" };
 
-/** The key to the four ratings, in the owner's words (design shared 2026-10-29). The take card prints the name and meaning of its own colour; the Rating Key
-    card prints all four. Grey is the absence of a rating, never a verdict, and the key's footnote says so. */
-export interface RatingKeyEntry { key: "green" | "yellow" | "red" | "grey"; marker: MarkerName | null; name: string; meaning: string }
+/** The key to the four ratings, in the owner's words (wording approved 2026-11-04, replacing the 2026-10-29 design). Each rating has its colour's name, a
+    short title and one sentence. The take card prints all three for its own colour; the Rating Key card prints all four; the compare page uses the title.
+    Grey is the absence of a rating, never a verdict, and the key's footnote says so. */
+export interface RatingKeyEntry { key: "green" | "yellow" | "red" | "grey"; marker: MarkerName | null; name: string; title: string; meaning: string }
 export const RATING_KEY: readonly RatingKeyEntry[] = [
-  { key: "green", marker: "green", name: "Green", meaning: "Meets our standards with no major concerns." },
-  { key: "yellow", marker: "yellow", name: "Yellow", meaning: "Some concerns found. Review findings before purchase." },
-  { key: "red", marker: "red", name: "Red", meaning: "Major concerns identified. Not recommended." },
-  { key: "grey", marker: null, name: "Grey", meaning: "Not rated. We haven’t assigned a rating yet." },
+  { key: "green", marker: "green", name: "Green", title: "Meets our review criteria", meaning: "Available evidence supports the criteria assessed under The Clean Sheet Standard." },
+  { key: "yellow", marker: "yellow", name: "Yellow", title: "Further verification needed", meaning: "Some assessment criteria require additional evidence or clarification." },
+  { key: "red", marker: "red", name: "Red", title: "Does not meet review criteria", meaning: "One or more material criteria were not met based on the evidence reviewed. See assessment details." },
+  { key: "grey", marker: null, name: "Grey", title: "Not yet assessed", meaning: "We have not completed an assessment of this product." },
 ];
 export const ratingKeyOf = (marker: MarkerName | null): RatingKeyEntry => RATING_KEY.find((k) => k.key === ratingName(marker)) as RatingKeyEntry;
-export const RATING_KEY_FOOTNOTE = "Grey means we haven’t assigned a rating. It does not mean the product is unsafe.";
+export const RATING_KEY_FOOTNOTE = "Grey means we have not yet assessed this product. It does not mean the product is unsafe.";

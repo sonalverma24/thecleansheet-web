@@ -7,6 +7,7 @@ import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { unratedInputOf, unratedKindOf } from "@/lib/unrated-kind";
 import { seedImageFor } from "@/lib/home-shelf";
 import { compareSubjectOfReview, compareTypeOf } from "@/lib/compare-group";
+import { ratingKeyOf } from "@/components/scorecards/pill-palette";
 import { canonicalCheck, priceFacts, sunFactsOf, tidyLine, ROW_IDS, type CompareFacts } from "@/lib/compare-products";
 
 /* ────────────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ export function compareFactsOf(slug: string, result: ProductReviewResult | null)
     // The photo the /brands card shows: the clean pack shot kept for a seeded product, else the stored image.
     image: seedImageFor({ brand: review.brand ?? "", productName: review.productName }) ?? (product.image || null),
     type,
-    pill: { label: model.pill.label, tone: model.pill.tone, marker: model.pill.marker },
+    pill: { label: ratingKeyOf(model.pill.marker).name, title: ratingKeyOf(model.pill.marker).title, tone: model.pill.tone, marker: model.pill.marker },
     confidence: model.take.confidence.level,
     rows: model.details
       ? model.details.map((d, i) => ({ id: ROW_IDS[i], title: d.title, marker: d.rating.marker, word: d.rating.word, line: tidyLine(d.oneLiner) }))

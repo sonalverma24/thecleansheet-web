@@ -22,13 +22,13 @@ const draw = (review: ProductReview) => {
 
 describe("the owner's four-rating key", () => {
   it("is Green, Yellow, Red and Grey, in the owner's words", () => {
-    expect(RATING_KEY.map((r) => [r.name, r.meaning])).toEqual([
-      ["Green", "Meets our standards with no major concerns."],
-      ["Yellow", "Some concerns found. Review findings before purchase."],
-      ["Red", "Major concerns identified. Not recommended."],
-      ["Grey", "Not rated. We haven’t assigned a rating yet."],
+    expect(RATING_KEY.map((r) => [r.name, r.title, r.meaning])).toEqual([
+      ["Green", "Meets our review criteria", "Available evidence supports the criteria assessed under The Clean Sheet Standard."],
+      ["Yellow", "Further verification needed", "Some assessment criteria require additional evidence or clarification."],
+      ["Red", "Does not meet review criteria", "One or more material criteria were not met based on the evidence reviewed. See assessment details."],
+      ["Grey", "Not yet assessed", "We have not completed an assessment of this product."],
     ]);
-    expect(RATING_KEY_FOOTNOTE).toBe("Grey means we haven’t assigned a rating. It does not mean the product is unsafe.");
+    expect(RATING_KEY_FOOTNOTE).toBe("Grey means we have not yet assessed this product. It does not mean the product is unsafe.");
   });
 
   it("grey is the absence of a marker, not a fourth colour", () => {
