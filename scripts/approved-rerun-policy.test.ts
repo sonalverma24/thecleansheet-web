@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { makeReview } from "@/lib/review.fixtures";
 import { makeInciEvidence } from "@/lib/review-verifier";
-import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, type RerunRow } from "./approved-rerun-policy";
+import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, keepStoredImage, type RerunRow } from "./approved-rerun-policy";
 const review = makeReview({ productName: "Alpha Serum", brand: "Test", inciIngredients: ["Aqua", "Glycerin", "Niacinamide", "Panthenol"], researchLog: { grounded: true, webSearchQueries: ["test"], sourceUris: [], sourceTitles: [], recordedAt: "2026-10-28" } });
 review.inciEvidence = makeInciEvidence("https://inkeedecoder.com/products/test-alpha-serum", "Aqua, Glycerin, Niacinamide, Panthenol", "2026-10-28");
 const row = (slug: string, date: string | null): RerunRow => ({ product_slug: slug, product_name: "Alpha Serum", brand: "Test", reviewed_at: date, result: { type: "product-review", review }, rubric_rev: "r7", tier: "mostly-clean", image_url: null });
@@ -67,4 +67,36 @@ describe("approved catalogue rerun", () => {
     expect(sameReviewTime(null, null)).toBe(true);
   });
 
+});
+
+describe("a re-run keeps the tile picture", () => {
+  const withImage = (url: string | null, extra: Record<string, unknown> = {}): RerunRow => {
+    const r = makeReview({ productName: "Alpha Serum", brand: "Test" });
+    r.imageUrl = url; Object.assign(r, extra);
+    return { ...row("img", "2026-10-28"), image_url: url, result: { type: "product-review", review: r } };
+  };
+  it("puts the stored picture back over the one the fresh analysis found (the B12 cleanser: a Decoder photo had replaced the Nykaa one)", () => {
+    const fresh = makeReview({ productName: "Alpha Serum", brand: "Test" });
+    fresh.imageUrl = "https://incidecoder-content.storage.googleapis.com/x/front_photo.jpeg"; fresh.imageSource = "inci";
+    keepStoredImage(fresh, withImage("https://images-static.nykaa.com/old.jpg", { imageSource: "nykaa", imageConfidence: 0.9 }));
+    expect(fresh.imageUrl).toBe("https://images-static.nykaa.com/old.jpg");
+    expect(fresh.imageSource).toBe("nykaa");
+    expect(fresh.imageConfidence).toBe(0.9);
+  });
+  it("falls back to the row's image column, and keeps a lock", () => {
+    const fresh = makeReview({ productName: "Alpha Serum", brand: "Test" });
+    fresh.imageUrl = "https://new/photo.jpg";
+    const old = withImage(null); old.image_url = "https://col/pic.jpg";
+    keepStoredImage(fresh, old);
+    expect(fresh.imageUrl).toBe("https://col/pic.jpg");
+    const locked = makeReview({ productName: "Alpha Serum", brand: "Test" });
+    keepStoredImage(locked, withImage("https://pinned/pic.jpg", { imageLocked: true }));
+    expect(locked.imageLocked).toBe(true);
+  });
+  it("uses the fresh picture only where the page had none", () => {
+    const fresh = makeReview({ productName: "Alpha Serum", brand: "Test" });
+    fresh.imageUrl = "https://new/photo.jpg";
+    keepStoredImage(fresh, withImage(null));
+    expect(fresh.imageUrl).toBe("https://new/photo.jpg");
+  });
 });

@@ -20,6 +20,8 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { fetchPageMarkdown } from "@/lib/scrape";
+import { lookupIngredient } from "@/lib/ingredient-db";
+import { normaliseIngredient } from "@/lib/inci-normalise";
 
 export interface PageINCI {
   ingredients: string[];
@@ -216,10 +218,22 @@ function splitParts(text: string): Part[] {
    botanical ranks ("Vaccinum Sect. Cyanococcus", "Subsp.", "Ssp.", "Var.", "Spp.", "Sp.",
    "Cv.", "F."), colour index and strength wording ("Ci 60730/Ext. Violet 2", "Eq. To 15%
    Vitamin C"), "St. John's Wort", and the INCI name "Alcohol Denat.". A dotted abbreviation
-   such as "q.s." is recognised by its inner stop. */
+   such as "q.s." is recognised by its inner stop. "Vit." is how some brands print a vitamin ("Ascorbic Acid (Vit. C)", "Niacinamide (Vit. B3)"): read as the end of a
+   sentence it cut Prowl's list to "B3), Glycerin, ... Tocopherol (Vit" (2026-11-04). */
 const DOT_ABBREVIATIONS = new Set([
-  "sect", "subsp", "ssp", "spp", "sp", "var", "cv", "f", "ext", "eq", "denat", "st",
+  "sect", "subsp", "ssp", "spp", "sp", "var", "cv", "f", "ext", "eq", "denat", "st", "vit",
 ]);
+
+/* A panel of a brand's highlights ("Key Ingredients", "Hero Ingredients") is not the ingredient list: Omeo's shampoo page prints "Key Ingredients Arnica Montana Flower
+   Extract, Calendula ..., Lactic Acid" (7 botanicals, no water, no cleansing base) and it was published as the product's list (2026-11-04). A list the page introduces
+   with such a label is refused whole; a real list under its own "Ingredients" or "Full ingredients" label elsewhere on the page is still read, because the label NEAREST
+   the start of a list decides. */
+const INGREDIENT_LABEL_WORDS = /\b(?:(key|hero|star|top|main|featured|highlighted?|signature)\s+)?(?:full ingredients?|product ingredients?|ingredients?|inci|actives?)\b/gi;
+function introducedByHighlightLabel(window: string): boolean {
+  let last: RegExpExecArray | null = null;
+  for (const m of window.matchAll(INGREDIENT_LABEL_WORDS)) last = m;
+  return !!last && !!last[1];
+}
 
 /** Whether the text before a full stop ends in a word whose stop is part of the name: one of the
     abbreviations above, or a dotted form such as "q.s.". */
@@ -415,6 +429,7 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
   if (marketingHits / best.length >= 0.5) return null;
   if (cutAtStart(parts, bestFirst)) return null;
   const [from, to] = bestSpan as [number, number];
+  if (introducedByHighlightLabel(text.slice(Math.max(0, from - 80), from + (best[0]?.length ?? 0) + 2))) return null;
   // De-dupe consecutive repeats (some pages print the list twice back-to-back).
   return {
     ingredients: best.filter((x, i) => i === 0 || x.toLowerCase() !== best[i - 1].toLowerCase()),
@@ -493,17 +508,26 @@ export function extendFromBlocks(visible: InciExtraction | null, html: string): 
 /* A list the page itself labels as its ingredients, an element with "ingredient" in its id or class: <ul id="custom_ingredients">. */
 const LABELLED_LIST = /<(ul|ol)\b[^>]*\b(?:id|class)\s*=\s*"[^"]*ingredient[^"]*"[^>]*>([\s\S]*?)<\/\1>/gi;
 
+/* Menus and filters say "ingredient" too. Be Minimalist's header carries <ul id="SiteNavLabel-shop-by-ingredients-sidebar"> with "Back, Vitamin C, BHA / Salicylic Acid, Retinoid / Retinol,
+   Niacinamide, UV Filters, Ceramide" (and a second, "Capixyl, Maleic Acid, Peptide, Carnitine"), which the reader took for the product's ingredients (2026-11-04). Such a list is
+   refused when its own tag marks it as navigation, when most of its items are links (an ingredient list is plain text), or when an item is a menu control ("Back"). */
+const MENU_TAG = /nav|menu|filter|facet|shop-?by|dropdown|drop-down|breadcrumb/i;
+const MENU_CONTROL = /^(?:back|close|menu|more|next|previous|view all|shop all|see all|show all)$/i;
+
 /** Lakme's product page prints its 40 ingredients as <li>Water</li><li>Paraffinum Liquidum</li>..., twice (a tab for each screen size), with no comma anywhere. The list reader
     splits on commas, so it saw none. A bulleted list that the page labels as its ingredients is read item by item, and the items are put in the one form the rules above read
     (joined with ", "; the quote is that text). It is taken only when it has five or more items, none of them holds a comma (a comma list in a bullet is read as text already),
-    and the rules accept EVERY item as an entry, so a list with something else among the ingredients is refused whole, never read in part. Lists the page does not label, and
+    and the rules accept EVERY item as an entry, so a list with something else among the ingredients is refused whole, never read in part. A menu is never read (see MENU_TAG). Lists the page does not label, and
     bullets that carry only the key ingredients (under five), are never read this way. */
 export function extractInciFromListItems(rawHtml: string): InciExtraction | null {
   const html = rawHtml.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
   let best: InciExtraction | null = null;
   for (const list of html.matchAll(LABELLED_LIST)) {
-    const items = [...list[2].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => stripTags(li[1])).filter(Boolean);
-    if (items.length < 5 || items.some((item) => item.includes(","))) continue;
+    if (MENU_TAG.test(list[0].slice(0, list[0].indexOf(">") + 1))) continue; // the element's own tag marks it as a menu or a filter
+    const rawItems = [...list[2].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => li[1]);
+    const items = rawItems.map((li) => stripTags(li)).filter(Boolean);
+    if (items.length < 5 || items.some((item) => item.includes(",") || MENU_CONTROL.test(item))) continue;
+    if (rawItems.filter((li) => /<a\b[^>]*\bhref\s*=/i.test(li)).length * 2 > rawItems.length) continue; // mostly links: a menu, not a list
     const ex = extractInciWithQuote(items.join(", "));
     const wanted = items.filter((item, i) => i === 0 || item.toLowerCase() !== items[i - 1].toLowerCase()).length; // the extractor drops a repeat of the entry before
     if (ex && ex.ingredients.length === wanted && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
@@ -626,6 +650,137 @@ export function startAtListLabel(ex: InciExtraction | null): InciExtraction | nu
   return { ingredients: [first, ...ex.ingredients.slice(at + 1)], quote: ex.quote.slice(inQuote.index + inQuote[0].length).trim() };
 }
 
+/** Whether a name is an ingredient the reference data holds: its exact normalised lookup (src/lib/ingredient-db.ts), or a water / fragrance synonym
+    the normaliser folds ("Water", "Eau", "Parfum", "Perfume"), which the data holds under another name or not at all. Nothing is guessed. */
+function isKnownIngredient(name: string): boolean {
+  if (lookupIngredient(name)) return true;
+  const { canonical } = normaliseIngredient(name);
+  return canonical === "Water" || canonical === "Fragrance" || !!lookupIngredient(canonical);
+}
+
+/** The most words a last entry may be read from, and so how far into the copy after a list the reader looks. */
+const CLOSING_ENTRY_WORDS = 5;
+
+/** The last entry of a list that page copy follows with no punctuation between them ("... Carbomer, Ethylhexylglycerin You might also like Salicylic Acid + LHA
+    2% Cleanser Acne"). The comma piece that holds it also holds the copy, is far too long to be an entry and is rejected whole, so the list comes back one entry
+    short, in the sentence rule's mirror image: extractInciWithQuote ends the list at the full stop of a last entry, this finds the one a stop does not mark.
+    Applied to a page read with the page text the list was read from, not to extractInciWithQuote, which must keep agreeing with the extractor it replaced.
+
+    The text right after the quote must be a comma and then words, and the first 1 to 5 of them (the longest that does) must be exactly an ingredient the reference
+    data holds, so a heading or a sentence is never taken for one. Further guards: it is not half of an "(and)" blend, the word after it must not be lower case (a sentence that happens to open on an
+    ingredient name: "Glycerin helps skin ..."), the entry must not repeat one already in the list, and it is printed the way the page prints it. One entry at most is
+    added, at the end: the list is never reordered or shortened, and no entry is invented. The quote is extended to cover it. Where the quote occurs more than once in
+    the page text, the first occurrence that is followed by such an entry is used. */
+export function completeLastEntry(ex: InciExtraction | null, pageText: string): InciExtraction | null {
+  if (!ex) return ex;
+  const text = pageText.replace(/\s+/g, " ");
+  const have = new Set(ex.ingredients.map((x) => x.toLowerCase()));
+  for (let at = text.indexOf(ex.quote); at >= 0; at = text.indexOf(ex.quote, at + 1)) {
+    const end = at + ex.quote.length;
+    const after = /^ ?, ?/.exec(text.slice(end));
+    if (!after) continue;
+    const start = end + after[0].length;
+    const words = [...text.slice(start, start + 200).matchAll(/\S+/g)].slice(0, CLOSING_ENTRY_WORDS + 1);
+    for (let n = Math.min(words.length, CLOSING_ENTRY_WORDS); n >= 1; n--) {
+      const last = words[n - 1];
+      const entryEnd = start + last.index + last[0].length;
+      const entry = text.slice(start, entryEnd);
+      if (entry.includes(",") || !looksLikeIngredient(entry) || !isKnownIngredient(entry)) continue;
+      // "(and)" joins the parts of a blend ("Aqua (and) Butylene Glycol (and) Crambe ..."): half a blend is not an entry, and a name with "(and)" after it opens one.
+      if (/\(and\)/i.test(entry) || /^\(and\)/i.test(words[n]?.[0] ?? "")) continue;
+      if (/^[a-z]/.test(words[n]?.[0] ?? "")) continue;
+      const tidy = cleanTok(entry);
+      if (have.has(tidy.toLowerCase())) continue;
+      return { ingredients: [...ex.ingredients, tidy], quote: text.slice(at, entryEnd).trim() };
+    }
+  }
+  return ex;
+}
+
+/** Where the first full stop that ends a sentence is in a piece, or -1: after a letter, digit or closing bracket and before whitespace or the end, and not the stop of an
+    abbreviation ("Alcohol Denat.", "Vaccinum Sect. Cyanococcus"). Whatever follows it counts: a capital letter, or the "##" of a markdown heading. */
+function firstStopOf(piece: string): number {
+  for (const m of piece.matchAll(/(?<=[A-Za-z0-9)])\.(?=\s|$)/g)) if (!endsInAbbreviation(piece.slice(0, m.index))) return m.index;
+  return -1;
+}
+
+/** A blend written the INCI way, "A (and) B (and) C": the components, or null when the text is not one or a component could not be an entry. */
+function premixComponents(piece: string): string[] | null {
+  if (!/\(and\)/i.test(piece)) return null;
+  const parts = piece.split(/\s*\(and\)\s*/i).map((x) => x.trim());
+  return parts.length >= 2 && parts.every((x) => looksLikeIngredient(x) && !MARKETING_PHRASE_RE.test(x)) ? parts : null;
+}
+
+/** The most comma pieces read past the end of a list to finish it. */
+const PREMIX_REACH = 80;
+
+/** A list that a "(and)" blend cut short. Brands print a blend as one comma piece, "Aqua (and) Butylene Glycol (and) Crambe Maritima Leaf Extract": nine words, far
+    too long to be one entry, so the reader rejected it and the list ended at the blend, with every entry after it lost (WishCare's Retinal Shot: 19 of 38, the
+    retinal itself missing). Applied to a page read with the page text the list was read from, not to extractInciWithQuote.
+
+    Only when the text right after the quote is a comma and a blend whose components could each be an entry: then the pieces that follow are read on, a blend or a plain
+    entry at a time, until one is neither (page copy, a section header: the entry before a header, or before a sentence's full stop, still counts). From then on each blend is its
+    own components, in label order, throughout the list, and a name a blend repeats ("Aqua" opening a blend after Aqua opened the list) is named once. A list that no blend cut short
+    is returned as it was, so lists read correctly today do not change. The quote is extended to the last entry read. Nothing is invented: every entry is text of the page. */
+export function extendThroughPremixes(ex: InciExtraction | null, pageText: string): InciExtraction | null {
+  if (!ex) return ex;
+  const text = pageText.replace(/\s+/g, " ");
+  for (let at = text.indexOf(ex.quote); at >= 0; at = text.indexOf(ex.quote, at + 1)) {
+    let pos = at + ex.quote.length;
+    let end = pos;
+    const read: string[] = [];
+    let cut = false;
+    for (let piecesRead = 0; piecesRead < PREMIX_REACH; piecesRead++) {
+      const sep = /^ ?, ?/.exec(text.slice(pos));
+      if (!sep) break;
+      const start = pos + sep[0].length;
+      let stop = text.indexOf(",", start);
+      let piece = text.slice(start, stop < 0 ? text.length : stop);
+      while (LOCANT_FRAGMENT.test(piece.trim()) && stop >= 0) { // "1" + "2-Hexanediol": a comma inside a name
+        const next = text.indexOf(",", stop + 1);
+        piece = text.slice(start, next < 0 ? text.length : next);
+        stop = next;
+      }
+      // Does a section header or a sentence's full stop end the list inside this piece? If not, a blend or (once a blend has cut the list) a plain entry goes on with it.
+      const header = STOP.exec(piece);
+      const stopAt = firstStopOf(piece);
+      if (!header && stopAt < 0) {
+        const blend = premixComponents(piece);
+        const plain = !blend && cut && looksLikeIngredient(piece) && !MARKETING_PHRASE_RE.test(piece);
+        if (blend || plain) {
+          if (blend) cut = true;
+          read.push(...(blend ?? [cleanTok(piece)]));
+          end = start + piece.length;
+          if (stop < 0) break;
+          pos = stop;
+          continue;
+        }
+      }
+      // The list ends here: the entry before a header or a stop still counts ("Betaine How to use ...", "Betaine. ## Pairs well with ..."), as the extractor reads one.
+      // Never when no blend has cut the list: the entry is then the extractor's business, not this step's.
+      const cutAt = Math.min(header ? header.index : Infinity, stopAt >= 0 ? stopAt : Infinity);
+      const lastEnd = Number.isFinite(cutAt) ? piece.slice(0, cutAt).trimEnd().length : closingEntryEnd(piece);
+      const last = piece.slice(0, lastEnd).trim();
+      const entry = premixComponents(last) ?? (last && looksLikeIngredient(last) && !MARKETING_PHRASE_RE.test(last) ? [cleanTok(last)] : null);
+      if (cut && entry) { read.push(...entry); end = start + lastEnd; }
+      break;
+    }
+    if (!cut) continue;
+    const all: string[] = [];
+    const seen = new Set<string>();
+    for (const entry of [...ex.ingredients, ...read]) {
+      for (const part of premixComponents(entry) ?? [entry]) {
+        const key = part.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        all.push(cleanTok(part));
+      }
+    }
+    return { ingredients: all, quote: text.slice(at, end).trim() };
+  }
+  return ex;
+}
+
 /** Resolve a product page URL to its published INCI. Tries the raw HTML first
     (keeps accordion content the Jina reader collapses), then the keyless Jina
     reader as a fallback for bot-protected storefronts. Null if neither yields a
@@ -636,7 +791,9 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   if (html) {
     // The visible text first, with any entry a run-on from the copy before the list hid put back (the list read on its own, in its block), then started after a label glued to the copy;
     // the page's own data wins only when it holds a longer list (the markup shows the key ingredients, or a list cut short, and the popup shows the whole).
-    const visible = startAtListLabel(extendFromBlocks(extractInciWithQuote(stripTags(html)), html));
+    // Then a last entry that the copy after the list ran on from is put back (completeLastEntry).
+    const pageText = stripTags(html);
+    const visible = completeLastEntry(extendThroughPremixes(startAtListLabel(extendFromBlocks(extractInciWithQuote(pageText), html)), pageText), pageText);
     // A list the page labels as its ingredients and prints one to a bullet, and the page's own data, each win only when they hold a longer list than the visible text.
     let ex = visible;
     for (const other of [extractInciFromListItems(html), extractEmbeddedInci(html, url)]) if (other && (!ex || other.ingredients.length > ex.ingredients.length)) ex = other;
@@ -648,7 +805,7 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = startAtListLabel(extractInciWithQuote(md));
+    const ex = completeLastEntry(extendThroughPremixes(startAtListLabel(extractInciWithQuote(md)), md), md);
     if (ex && ex.ingredients.length >= 5) {
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
     }

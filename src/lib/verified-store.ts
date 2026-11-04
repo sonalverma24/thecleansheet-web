@@ -27,6 +27,7 @@ export function slugify(productName: string, brand: string): string {
    group when you discover a rebrand or a consistent alternate spelling. */
 const BRAND_ALIAS_GROUPS: string[][] = [
   ["Be Minimalist", "Minimalist"],
+  ["Plum", "Plum Goodness"], // one brand (owner, 2026-11-04: "always merge"); the model names it either way and the re-run held Plum's row as brand-changed
 ];
 
 /** Canonical display name for a brand, collapsing known aliases. Unknown brands

@@ -617,3 +617,25 @@ describe("a brand's own site is recognised from the owner's brands table", () =>
     }
   });
 });
+
+/* 2026-11-03: WishCare's own shop is mywishcare.com, which does not start with the brand's name, so the Cellular Reset 0.1% Retinal Shot's own page (37 entries, retinal
+   included) was never a brand page: the re-run took INKEE Decoder's list instead, against the owner's rule that the brand's page wins. */
+describe("WishCare's own shop on mywishcare.com counts as the brand's page", () => {
+  it("accepts a product page of mywishcare.com for WishCare, however the brand is spelled", () => {
+    for (const brand of ["WishCare", "Wishcare", "wish care", "WISHCARE"]) {
+      expect(isBrandIngredientUrl("https://www.mywishcare.com/products/retinal-retinol-serum", brand), brand).toBe(true);
+    }
+  });
+
+  it("only for WishCare, only its own site, never the home page, and no look-alike", () => {
+    expect(isBrandIngredientUrl("https://www.mywishcare.com/products/retinal-retinol-serum", "Plum")).toBe(false);
+    expect(isBrandIngredientUrl("https://www.mywishcare.com/", "WishCare")).toBe(false);
+    for (const u of [
+      "http://www.mywishcare.com/products/retinal-retinol-serum",
+      "https://www.mywishcare.com.evil.example/products/retinal-retinol-serum",
+      "https://mywishcare.evil.com/products/retinal-retinol-serum",
+      "https://www.nykaa.com/wishcare-cellular-reset-0-1percent-retinol-shot-serum/p/28675781",
+      "https://www.amazon.in/wishcare-retinal/dp/B0ABC",
+    ]) expect(isBrandIngredientUrl(u, "WishCare"), u).toBe(false);
+  });
+});

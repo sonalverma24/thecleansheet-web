@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { spawn, execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
-import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, type RerunRow } from "./approved-rerun-policy";
+import { newestFirst, rerunQuery, validateReplacement, sameReviewTime, keepStoredImage, type RerunRow } from "./approved-rerun-policy";
 import type { ProductReview } from "@/lib/product-review-types";
 
 const argv = process.argv.slice(2);
@@ -145,9 +145,7 @@ if (argv.includes("--child")) {
           }
           // A canonical slug can change wording. Identity was checked above; the URL is retained.
           fresh.productSlug = row.product_slug;
-          if (row.result.review?.imageLocked && row.result.review.imageUrl) {
-            fresh.imageUrl = row.result.review.imageUrl; fresh.imageLocked = true;
-          } else if (!fresh.imageUrl && row.image_url) fresh.imageUrl = row.image_url;
+          keepStoredImage(fresh, row); // the tile picture the page shows stays; see approved-rerun-policy.ts
           fresh.reviewedAt = new Date().toISOString();
           const replacement = { product_name: fresh.productName, brand: fresh.brand, tier: output.tier, image_url: fresh.imageUrl ?? null, result: { ...output.result, review: fresh, verdict: deriveVerdict(fresh) }, rubric_rev: "r7", reviewed_at: fresh.reviewedAt };
           let update = db.from("product_reviews").update(replacement).eq("product_slug", row.product_slug);

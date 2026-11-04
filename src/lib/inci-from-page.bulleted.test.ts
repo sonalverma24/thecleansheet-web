@@ -81,3 +81,37 @@ describe("what the bullet reading will not do", () => {
     expect((await fetchInciFromProductPage(URL))?.ingredients).toEqual(LIST.slice(0, 10)); // longer: the labelled list wins
   });
 });
+
+/* 2026-11-04: Be Minimalist's B5 moisturiser. Its header holds <ul id="SiteNavLabel-shop-by-ingredients-sidebar"> (a menu of ingredient categories) and the first version of the bullet reading
+   took it for the product's ingredients: "Back, Vitamin C, BHA / Salicylic Acid, Retinoid / Retinol, Niacinamide, UV Filters, Ceramide". The markup below is trimmed from the live page. */
+describe("a menu that says 'ingredients' is not an ingredient list", () => {
+  const link = (text: string) => `<li><a href="/collections/${text.toLowerCase().replace(/\W+/g, "-")}" class="site-nav__link">${text}</a></li>`;
+  const menu = `<div class="babymenu"><ul id="SiteNavLabel-shop-by-ingredients-classic">${["Vitamin C", "BHA / Salicylic Acid", "Retinoid / Retinol", "Niacinamide", "UV Filters", "Ceramide"].map(link).join("")}</ul></div>
+    <div class="babymenu"><ul id="SiteNavLabel-shop-by-ingredients-sidebar"><li><button class="site-nav__back">Back</button></li>${["Vitamin C", "BHA / Salicylic Acid", "Retinoid / Retinol", "Niacinamide", "UV Filters", "Ceramide"].map(link).join("")}</ul></div>`;
+  const real = "Water/Aqua, Glycerin, Niacinamide, Panthenol, Tocopherol";
+
+  it("reads nothing from the header menus of Be Minimalist's page", () => {
+    expect(extractInciFromListItems(page(menu))).toBeNull();
+  });
+
+  it("does not let a menu longer than the page's own visible list replace it", async () => {
+    serve(page(`<p>Ingredients: ${real}</p><h2>How to use</h2>` + menu));
+    expect((await fetchInciFromProductPage("https://beminimalist.co/products/vitamin-b5-10-moisturizer-30g"))?.ingredients).toEqual(real.split(", "));
+  });
+
+  it("refuses a list whose own tag marks it as navigation, filters or a dropdown, even with plain-text items", () => {
+    for (const id of ["main-nav-ingredients", "ingredients-menu", "filter-ingredients", "ingredient-facets", "shop-by-ingredients", "ingredients-dropdown"])
+      expect(extractInciFromListItems(page(`<ul id="${id}">${items(LIST.slice(0, 8))}</ul>`)), id).toBeNull();
+  });
+
+  it("refuses a list that holds a menu control among the items, or whose items are mostly links", () => {
+    expect(extractInciFromListItems(page(`<ul class="ingredients"><li>Back</li>${items(LIST.slice(0, 8))}</ul>`))).toBeNull();
+    const linked = LIST.slice(0, 8).map((x) => `<li><a href="/pages/glossary/${x}">${x}</a></li>`).join("");
+    expect(extractInciFromListItems(page(`<ul class="ingredients">${linked}</ul>`))).toBeNull();
+  });
+
+  it("still reads a real list that carries one glossary link among plain items", () => {
+    const some = LIST.slice(0, 8).map((x, i) => (i === 3 ? `<li><a href="/pages/glossary">${x}</a></li>` : `<li>${x}</li>`)).join("");
+    expect(extractInciFromListItems(page(`<ul class="ingredients">${some}</ul>`))?.ingredients).toEqual(LIST.slice(0, 8));
+  });
+});
