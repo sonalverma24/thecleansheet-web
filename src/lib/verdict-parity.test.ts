@@ -40,6 +40,16 @@ const withoutEvidenceTicks = (o: ReturnType<typeof observe>) => ({
   ticksAnalyzedPage: o.ticksAnalyzedPage.filter((t) => !EVIDENCE_TICKS.test(t)),
 });
 
+/** The dispute fixture's analysis text says its 'Alcohol-free' and 'Oil-free' claims are contradicted. Owner rule, 2026-11-04: a page must not tick what its
+    own words dispute (src/lib/disputed-ticks.ts), so with the dispute that tick is not drawn. Nothing else moves, and ratings never do. */
+const DISPUTED_TICK = /^(Alcohol free|Oil free):true$/;
+const withoutDisputedTicks = (o: ReturnType<typeof observe>) => ({
+  ...o,
+  ticksMain: o.ticksMain.filter((t) => !DISPUTED_TICK.test(t)),
+  ticksAnalyzedPage: o.ticksAnalyzedPage.filter((t) => !DISPUTED_TICK.test(t)),
+});
+const drawsDisputedTick = (o: ReturnType<typeof observe>) => [...o.ticksMain, ...o.ticksAnalyzedPage].some((t) => DISPUTED_TICK.test(t));
+
 const MATRIX = TARGETS.flatMap((target) =>
   [false, true].flatMap((catchAll) =>
     [false, true].map((noList) => ({ key: `${target} | catchAll=${catchAll} | list=${noList ? "absent" : "present"}`, target, catchAll, noList })),
@@ -64,19 +74,21 @@ describe("parity matrix: standing x catch-all x ingredient list", () => {
     expect(snapshot).toMatchSnapshot();
   });
 
-  it("today's ratings ignore evidence status and disputes entirely", () => {
+  it("today's ratings ignore evidence status and disputes entirely; a disputed tick is the only thing a dispute removes", () => {
     for (const m of MATRIX) {
-      const base = withoutEvidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList })));
+      const base = withoutDisputedTicks(withoutEvidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList }))));
       for (const evidence of ["anchored", "unverified"] as const) {
         for (const dispute of [false, true]) {
-          const variant = withoutEvidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList, evidence, dispute })));
-          expect(variant, `${m.key} evidence=${evidence} dispute=${dispute}`).toEqual(base);
+          const observed = observe(buildStanding(m.target, { catchAll: m.catchAll, noList: m.noList, evidence, dispute }));
+          expect(withoutDisputedTicks(withoutEvidenceTicks(observed)), `${m.key} evidence=${evidence} dispute=${dispute}`).toEqual(base);
+          // With no list the page replaces the model's verdict text (reconcileMissingIngredients), so the dispute is not on the page and nothing contradicts the tick.
+          if (dispute && !m.noList) expect(drawsDisputedTick(observed), `${m.key} evidence=${evidence}: the disputed tick is not drawn`).toBe(false);
         }
       }
     }
   });
 
-  it("fragrance ticks need a complete captured list: none without one, and a dispute never moves them", () => {
+  it("fragrance ticks need a complete captured list: none without one, and a dispute about other claims never moves them", () => {
     const evidenceTicks = (o: ReturnType<typeof observe>) => [...o.ticksMain, ...o.ticksAnalyzedPage].filter((t) => EVIDENCE_TICKS.test(t));
     const listed = MATRIX.filter((m) => !m.noList);
     expect(listed.every((m) => evidenceTicks(observe(buildStanding(m.target, { catchAll: m.catchAll, evidence: "anchored" }))).length > 0), "an anchored list earns the fragrance ticks").toBe(true);
@@ -85,7 +97,7 @@ describe("parity matrix: standing x catch-all x ingredient list", () => {
       expect(evidenceTicks(observe(buildStanding(m.target, opts))), `${m.key} evidence=none`).toEqual([]);
       expect(evidenceTicks(observe(buildStanding(m.target, { ...opts, evidence: "unverified" }))), `${m.key} evidence=unverified`).toEqual([]);
       for (const evidence of ["anchored", "unverified"] as const) {
-        expect(observe(buildStanding(m.target, { ...opts, evidence, dispute: true })), `${m.key} evidence=${evidence}`).toEqual(observe(buildStanding(m.target, { ...opts, evidence })));
+        expect(withoutDisputedTicks(observe(buildStanding(m.target, { ...opts, evidence, dispute: true }))), `${m.key} evidence=${evidence}`).toEqual(withoutDisputedTicks(observe(buildStanding(m.target, { ...opts, evidence }))));
       }
     }
   });
