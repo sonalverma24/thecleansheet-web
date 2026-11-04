@@ -8,6 +8,7 @@
    The write happens on the server under the service-role client; the admin only
    supplies the slug + URL from the browser. */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { invalidateReviewCache } from "@/lib/product-review-engine";
@@ -168,6 +169,8 @@ export async function POST(req: NextRequest) {
     const { error: delErr } = await db.from("product_reviews").delete().eq("product_slug", slug);
     if (delErr) return NextResponse.json({ error: delErr.message }, { status: 500 });
     invalidateReviewCache(slug);
+    // Take it off every page now (product page, listings, home shelf), not at the next redeploy.
+    revalidatePath("/", "layout");
     return NextResponse.json({ ok: true, action, slug });
   }
 

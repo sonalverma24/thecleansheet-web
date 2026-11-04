@@ -6,6 +6,7 @@ import {
   Award, AlertTriangle, BookOpen,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { T } from "@/components/site-copy/SiteCopy";
 
 export const metadata = {
   title: "Our Methodology, How We Score Beauty Products",
@@ -41,14 +42,10 @@ function Hero() {
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-medium text-ink-950 tracking-tight leading-tight mb-8">
               Science-backed.
               <br />
-              <span className="text-gradient-teal">Publicly documented.</span>
+              <span className="text-gradient-teal"><T k="methodology.publicly-documented">Publicly documented.</T></span>
             </h1>
             <p className="text-xl text-ink-600 leading-relaxed max-w-xl">
-              The Clean Sheet evaluation is based on established international safety
-              science, EU SCCS opinions, CIR assessments, IFRA standards, ISO testing
-              standards, and India&apos;s Cosmetics Rules 2020. We don&apos;t invent our own
-              safety thresholds. We apply the best available evidence from recognised
-              regulatory and scientific bodies.
+              <T k="methodology.the-clean-sheet-evaluation-is">The Clean Sheet evaluation is based on established international safety science, EU SCCS opinions, CIR assessments, IFRA standards, ISO testing standards, and India&apos;s Cosmetics Rules 2020. We don&apos;t invent our own safety thresholds. We apply the best available evidence from recognised regulatory and scientific bodies.</T>
             </p>
           </div>
 
@@ -81,9 +78,9 @@ function Hero() {
                 </div>
               ))}
               <div className="mt-6 pt-5 border-t border-ink-100 flex items-center justify-between">
-                <span className="text-xs text-ink-400">Layer 1: Legal Compliance</span>
+                <span className="text-xs text-ink-400"><T k="methodology.layer-1-legal-compliance">Layer 1: Legal Compliance</T></span>
                 <span className="text-xs font-medium text-coral-600 bg-coral-50 border border-coral-100 px-3 py-1 rounded-full">
-                  PASS / FAIL GATE
+                  <T k="methodology.pass-fail-gate">PASS / FAIL GATE</T>
                 </span>
               </div>
             </div>
@@ -103,12 +100,10 @@ function DecisionFlow() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-medium text-ink-950 tracking-tight mb-3">
-            How a score is produced.
+            <T k="methodology.how-a-score-is-produced">How a score is produced.</T>
           </h2>
           <p className="text-ink-600 text-lg max-w-2xl mx-auto">
-            Every product follows the same path. Layer 1 is a gate, fail it and the
-            evaluation stops. Pass it, and Layers 2-5 are scored to produce the final
-            certification decision.
+            <T k="methodology.every-product-follows-the-same">Every product follows the same path. Layer 1 is a gate, fail it and the evaluation stops. Pass it, and Layers 2-5 are scored to produce the final certification decision.</T>
           </p>
         </div>
 
@@ -139,9 +134,9 @@ function DecisionFlow() {
         {/* Total */}
         <div className="mt-8 text-center">
           <div className="inline-flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-2xl px-6 py-3">
-            <span className="text-ink-600 text-sm">Total possible score:</span>
+            <span className="text-ink-600 text-sm"><T k="methodology.total-possible-score">Total possible score:</T></span>
             <span className="text-2xl font-medium text-teal-700">100</span>
-            <span className="text-ink-400 text-sm">points</span>
+            <span className="text-ink-400 text-sm"><T k="methodology.points">points</T></span>
           </div>
         </div>
       </div>
@@ -283,11 +278,10 @@ function FiveLayers() {
             <BookOpen size={14} /> The Five Layers
           </div>
           <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight mb-4">
-            What we evaluate.
+            <T k="methodology.what-we-evaluate">What we evaluate.</T>
           </h2>
           <p className="text-ink-600 text-lg max-w-2xl mx-auto">
-            Every product is evaluated across five structured layers, each benchmarked
-            against internationally recognised standards.
+            <T k="methodology.every-product-is-evaluated-across">Every product is evaluated across five structured layers, each benchmarked against internationally recognised standards.</T>
           </p>
         </div>
 
@@ -430,10 +424,10 @@ function Tiers() {
             <Award size={14} /> Certification Tiers
           </div>
           <h2 className="text-4xl lg:text-5xl font-medium tracking-tight mb-4" style={{ color: "#ffffff" }}>
-            Products earn their tier.
+            <T k="methodology.products-earn-their-tier">Products earn their tier.</T>
           </h2>
           <p className="text-teal-300 text-lg max-w-lg mx-auto">
-            The score determines the tier. The tier reflects the real safety and transparency of the formulation.
+            <T k="methodology.the-score-determines-the-tier">The score determines the tier. The tier reflects the real safety and transparency of the formulation.</T>
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -461,18 +455,14 @@ function WhoEvaluates() {
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           <div>
             <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight mb-6">
-              Who evaluates.
+              <T k="methodology.who-evaluates">Who evaluates.</T>
             </h2>
             <div className="space-y-4 text-ink-600 text-lg leading-relaxed">
               <p>
-                Our evaluations are conducted by an independent panel of cosmetic scientists,
-                toxicologists, and dermatologists. Panel members have no commercial relationship
-                with brands applying for certification.
+                <T k="methodology.our-evaluations-are-conducted-by">Our evaluations are conducted by an independent panel of cosmetic scientists, toxicologists, and dermatologists. Panel members have no commercial relationship with brands applying for certification.</T>
               </p>
               <p>
-                Conflicts of interest are declared and managed. Panel members are named on
-                our website as they are appointed, because transparency about who evaluates
-                is part of what makes the standard credible.
+                <T k="methodology.conflicts-of-interest-are-declared">Conflicts of interest are declared and managed. Panel members are named on our website as they are appointed, because transparency about who evaluates is part of what makes the standard credible.</T>
               </p>
             </div>
           </div>
@@ -482,10 +472,10 @@ function WhoEvaluates() {
             <div className="bg-white rounded-3xl border border-teal-100 p-7 shadow-sm">
               <h3 className="flex items-center gap-2 font-medium text-ink-950 text-lg mb-5">
                 <FileText size={18} className="text-teal-600" />
-                What we publish
+                <T k="methodology.what-we-publish">What we publish</T>
               </h3>
               <p className="text-ink-600 text-sm leading-relaxed mb-5">
-                For every certified product, we publish:
+                <T k="methodology.for-every-certified-product-we">For every certified product, we publish:</T>
               </p>
               <div className="space-y-2.5">
                 {[
@@ -504,8 +494,7 @@ function WhoEvaluates() {
                 ))}
               </div>
               <p className="text-xs text-ink-400 mt-5 pt-4 border-t border-ink-100">
-                We do not publish formula concentrations, supplier information, or any other
-                commercially sensitive information from the brand&apos;s dossier.
+                <T k="methodology.we-do-not-publish-formula">We do not publish formula concentrations, supplier information, or any other commercially sensitive information from the brand&apos;s dossier.</T>
               </p>
             </div>
           </div>
@@ -538,11 +527,10 @@ function StandardsReferenced() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <h2 className="text-3xl lg:text-4xl font-medium text-ink-950 tracking-tight mb-3">
-            Standards we reference.
+            <T k="methodology.standards-we-reference">Standards we reference.</T>
           </h2>
           <p className="text-ink-600 text-lg max-w-2xl mx-auto">
-            Our evaluation framework is anchored to the world&apos;s leading regulatory and
-            scientific bodies. We don&apos;t create our own thresholds, we apply theirs.
+            <T k="methodology.our-evaluation-framework-is-anchored">Our evaluation framework is anchored to the world&apos;s leading regulatory and scientific bodies. We don&apos;t create our own thresholds, we apply theirs.</T>
           </p>
         </div>
 
@@ -570,11 +558,10 @@ function CTA() {
     <section className="py-20 lg:py-28 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <h2 className="text-4xl lg:text-5xl font-medium text-ink-950 tracking-tight mb-5">
-          Ready to prove your product?
+          <T k="methodology.ready-to-prove-your-product">Ready to prove your product?</T>
         </h2>
         <p className="text-ink-600 text-lg mb-10 max-w-xl mx-auto">
-          Brands that certify with The Clean Sheet are showing their work. The methodology
-          is public. The standard is real. The proof is permanent.
+          <T k="methodology.brands-that-certify-with-the">Brands that certify with The Clean Sheet are showing their work. The methodology is public. The standard is real. The proof is permanent.</T>
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
@@ -588,7 +575,7 @@ function CTA() {
             href="/brands"
             className="flex items-center gap-2 text-ink-700 hover:text-ink-950 font-medium text-base transition-colors"
           >
-            Or try the analyser, free →
+            <T k="methodology.or-try-the-analyser-free">Or try the analyser, free →</T>
           </Link>
         </div>
       </div>

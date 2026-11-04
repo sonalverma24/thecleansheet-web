@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/motion/Motion";
 import { WHATSAPP_COMMUNITY_URL } from "@/lib/site-links";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* Three doors into the site. On a phone they are compact rows (a small picture, a
    one-line promise and an arrow), as in the mobile design; from tablet up they are
@@ -38,7 +39,7 @@ const CARD =
 export default function ThreeWays() {
   return (
     <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pb-12 sm:pb-28 flex flex-col gap-3 md:gap-6">
-      <span className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#4a4a4a]">THREE WAYS WE HELP YOU BUY BETTER</span>
+      <span className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#4a4a4a]"><T k="home.ways.eyebrow">THREE WAYS WE HELP YOU BUY BETTER</T></span>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3">
         {WAYS.map((w, i) => {
           const body = (
@@ -53,12 +54,12 @@ export default function ThreeWays() {
                 />
               </div>
               <div className="flex-1 min-w-0 flex flex-col gap-1 md:p-6 md:gap-2.5">
-                <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#248179]">{w.n} · {w.eyebrow}</span>
-                <span className="font-display font-light text-[21px] md:text-[28px] leading-[1.1] tracking-[-0.01em] text-[#282828]">{w.title}</span>
-                <span className="md:hidden text-[12px] leading-[1.45] text-[#4a4a4a]">{w.short}</span>
-                <span className="hidden md:block text-[14px] leading-[1.6] text-[#4a4a4a] flex-1">{w.desc}</span>
+                <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#248179]">{w.n} · <T k={`home.ways.${w.n}.eyebrow`}>{w.eyebrow}</T></span>
+                <span className="font-display font-light text-[21px] md:text-[28px] leading-[1.1] tracking-[-0.01em] text-[#282828]"><T k={`home.ways.${w.n}.title`}>{w.title}</T></span>
+                <span className="md:hidden text-[12px] leading-[1.45] text-[#4a4a4a]"><T k={`home.ways.${w.n}.short`}>{w.short}</T></span>
+                <span className="hidden md:block text-[14px] leading-[1.6] text-[#4a4a4a] flex-1"><T k={`home.ways.${w.n}.desc`}>{w.desc}</T></span>
                 <span className="hidden md:flex justify-between pt-3.5 border-t border-[#e5dfd6] text-[13px] font-bold text-[#248179]">
-                  <span>{w.cta}</span>
+                  <span><T k={`home.ways.${w.n}.cta`}>{w.cta}</T></span>
                   <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
                 </span>
               </div>

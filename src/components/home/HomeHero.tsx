@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { HeroReveal } from "@/components/motion/Motion";
 import HeroSearch from "./HeroSearch";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* Hero: the promise, a search that runs the review in place, and the flatlay.
    Phone layout follows the mobile design: stacked, a swipeable row of popular
@@ -19,27 +20,26 @@ export default function HomeHero({ popular }: { popular: { label: string; href: 
       <div className="flex flex-col gap-5 md:gap-7">
         <HeroReveal>
           <p className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179] uppercase">
-            Evidence led personal care &amp; beauty
+            <T k="home.hero.eyebrow">Evidence led personal care & beauty</T>
           </p>
         </HeroReveal>
         <HeroReveal delay={0.05}>
           <h1 className="font-display font-light text-[clamp(46px,5.2vw,74px)] leading-none tracking-[-0.025em] text-[#282828] text-balance">
-            Before you buy,
+            <T k="home.hero.title1">Before you buy,</T>
             <br />
-            <span className="text-[#248179]">see the proof.</span>
+            <span className="text-[#248179]"><T k="home.hero.title2">see the proof.</T></span>
           </h1>
         </HeroReveal>
         <HeroReveal delay={0.1}>
           <p className="text-[16px] md:text-[18px] leading-[1.55] md:leading-[1.6] text-[#4a4a4a] max-w-[500px] text-pretty">
-            Find out what a skincare product claims, what the evidence actually supports, and whether it meets an
-            independent standard. Less guesswork. Better buying decisions.
+            <T k="home.hero.lead">Find out what a skincare product claims, what the evidence actually supports, and whether it meets an independent standard. Less guesswork. Better buying decisions.</T>
           </p>
         </HeroReveal>
         <HeroReveal delay={0.15}>
           <HeroSearch />
           {popular.length > 0 && (
             <div className="mt-3 md:mt-4 flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap md:items-center md:gap-x-4 md:gap-y-1 text-[13px] text-[#4a4a4a]">
-              <span className="hidden md:inline">Popular checks:</span>
+              <span className="hidden md:inline"><T k="home.hero.popular">Popular checks:</T></span>
               {popular.map((p) => (
                 <Link
                   key={p.href}
@@ -52,7 +52,7 @@ export default function HomeHero({ popular }: { popular: { label: string; href: 
             </div>
           )}
           <p className="mt-4 text-[13px] leading-[1.5] text-[#4a4a4a] max-w-[520px]">
-            *Independent certification is separate from the web evidence checked through the analyser tool.
+            <T k="home.hero.footnote">*Independent certification is separate from the web evidence checked through the analyser tool.</T>
           </p>
         </HeroReveal>
       </div>
@@ -71,22 +71,22 @@ export default function HomeHero({ popular }: { popular: { label: string; href: 
           </div>
           <div className="hidden lg:flex absolute top-6 -right-3 w-[220px] bg-white rounded-[14px] p-[18px] shadow-[0_2px_4px_rgba(40,40,40,0.08),0_18px_40px_rgba(40,40,40,0.10)] flex-col gap-2.5">
             <span className="self-start bg-[#e3f1ef] text-[#248179] text-[10px] font-bold tracking-[0.12em] px-2.5 py-1 rounded-full">
-              ✓ PROOF PREVIEW
+              <T k="home.hero.card.badge">✓ PROOF PREVIEW</T>
             </span>
-            <span className="font-display font-light text-[24px] leading-[1.1] text-[#282828]">Clarity, not just claims.</span>
+            <span className="font-display font-light text-[24px] leading-[1.1] text-[#282828]"><T k="home.hero.card.title">Clarity, not just claims.</T></span>
             <span className="text-[12px] text-[#4a4a4a] leading-[1.5]">
-              Every claim on the pack, checked against what was actually tested.
+              <T k="home.hero.card.text">Every claim on the pack, checked against what was actually tested.</T>
             </span>
           </div>
           <div className="absolute inset-x-3 bottom-3 lg:inset-x-auto lg:-left-3 lg:bottom-0 lg:w-[280px] bg-white rounded-[14px] px-4 py-3.5 lg:px-5 lg:py-[18px] shadow-[0_2px_4px_rgba(40,40,40,0.08),0_18px_40px_rgba(40,40,40,0.10)] text-[13px] text-[#282828]">
-            <div className="hidden lg:block font-bold pb-2.5 border-b border-[#e5dfd6]">What shoppers can see</div>
+            <div className="hidden lg:block font-bold pb-2.5 border-b border-[#e5dfd6]"><T k="home.hero.shoppers.title">What shoppers can see</T></div>
             {CHECKS.map(([label, value], i) => (
               <div
                 key={label}
                 className={`flex justify-between gap-3 py-[7px] lg:pt-[9px] lg:pb-0 ${i < CHECKS.length - 1 ? "border-b border-[#e5dfd6] lg:pb-[9px]" : ""} ${i === 0 ? "pt-0 lg:pt-[9px]" : ""} ${i === CHECKS.length - 1 ? "pb-0" : ""}`}
               >
-                <span>{label}</span>
-                <span className="text-[#248179] font-bold whitespace-nowrap">{value}</span>
+                <span><T k={`home.hero.shoppers.${i + 1}.label`}>{label}</T></span>
+                <span className="text-[#248179] font-bold whitespace-nowrap"><T k={`home.hero.shoppers.${i + 1}.value`}>{value}</T></span>
               </div>
             ))}
           </div>

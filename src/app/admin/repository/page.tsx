@@ -26,8 +26,8 @@ export default async function RepositoryAdminPage() {
           Review repository
         </h1>
         <p className="text-sm text-[#b0a8a4] mb-6">
-          Fix a missing/wrong product image, or remove a review. Changes hit the live site
-          (a redeploy clears all caches immediately).
+          Edit what an analysis says and its colour, fix a missing or wrong product image, or remove an analysis.
+          Changes go live straight away.
         </p>
         <RepositoryAdminClient />
       </div>
