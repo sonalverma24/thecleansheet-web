@@ -849,6 +849,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: The Be Minimalist "Oat Extract 6%" cleanser row is retired as a duplicate of the "B12 + Oat Extract 6.5%" row
+- **Decided by:** the owner, on 2026-11-04, in chat. Offered three options for the row (update it to the current product and rename it, keep it as the older formula, or retire it as a duplicate), the owner answered "C": retire it.
+- **Reason:** the owner gave none beyond the choice. Measured: Be Minimalist updated `beminimalist.co/products/oat-extract-06-gentle-cleanser` in place, from "Oat Extract 6%" to "B12 + Oat Extract 6.5%" (it now prints 20 ingredients with Cyanocobalamin; INKEE's page for the old name lists 17 and no Cyanocobalamin). The product was stored twice, once under each name (`be-minimalist-minimalist-oat-extract-6-gentle-cleanser` and `be-minimalist-minimalist-b12-oat-extract-6-5-gentle-cleanser`), both read from that one page by the grey re-run.
+- **What it touched:** `src/lib/product-review-engine.ts`: the 6% row's slug is added to `RETRACTED_SLUGS`, so it is suppressed on every read path (the analysis page, listings, search, the catalogue, and the re-run, which skips retracted rows). The row itself is **left in the table**, as every earlier retraction is, so nothing is deleted. `src/lib/product-review-engine.retracted.test.ts` pins it (and that the B12 row is not retracted).
+- **Also (2026-11-04, later):** the owner asked for the row to be deleted "from db and everywhere else". The list moved unchanged into `src/lib/retracted-slugs.ts` (re-exported by the engine) so that `/api/tile/<slug>` can honour it too: it answers 404 for a retracted slug and no longer serves the row's picture. The hard delete itself is a permanent production deletion; it is left to the owner to run (the statements are in the PR), after this is live.
+- **Not changed:** nothing is hard-deleted. The old page address will answer not-found once this is live (no redirect is built). The B12 row still holds the 19-ingredient list the grey re-run wrote, missing the final ingredient, Trisodium Ethylenediamine Disuccinate, which the brand's page prints glued to the next heading; it is re-run separately.
+- **Undo:** remove the slug from `RETRACTED_SLUGS`; the row is intact, so its page comes back as it was.
+
 ### 2026-11-04: The evidence harness is ported (PR #9), and what the vision pass reads now reaches the model
 - **Decided by:** the owner, 2026-11-04 ("Port #9 as well"). PR #9 was a draft from 2026-10-22 that no longer merged: the generation loop in `runProductReview` had been rebuilt on main since.
 - **Reason:** #9 adds a deterministic evidence check that runs next to the analysis and never changes a public rating, and it fixes a timing fault: the vision pass that transcribes reports published as pictures ran inside the retry loop, after the prompt had been built, so the model never received what it read, and every retry added the same text again to the checks that read it.
@@ -857,6 +865,7 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Not changed:** no rating, colour, claim or stored analysis is changed by the harness; its decision says `human_review_required` and carries no certification. With the flag off no audit is made.
 - **Known limit:** the audit captures only the INKEE Decoder list and the pasted page's text. It does not yet capture a brand-page, Nykaa or owner-supplied list, which main can now publish, so with the flag on it can report the list as not anchored when the published list came from one of those. Left as #9 wrote it; extending the captures is a separate decision.
 - **Undo:** revert the merge commit. To keep the harness but undo the model-input change, put `evidenceBlock += await imageEvidenceBlock(q, labelRead);` back inside the `for (const p of prompts)` loop and drop `${evidenceBlock}` from the name-search prompt.
+
 
 ### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
 - **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).
@@ -1366,7 +1375,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `aa63d06fc17ecbeb56dd84a02b77b81c0d5f4bf8d69fa357a48d8fd2412a43d0` |
+| `src/lib/product-review-engine.ts` | `b528b4384334ce0429766c81f2b1400486505f3cd66d218d19cdbf00604b419f` |
 | `src/lib/product-review-types.ts` | `ee39f13543c2e05e5d164912ec7f6f31ce9fe00ba6582ec3073c2975db481bbe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
