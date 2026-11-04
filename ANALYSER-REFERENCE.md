@@ -23,6 +23,7 @@ Each behaviour that changes what a shopper sees has its own flag, read from the 
 
 | Environment variable | What it does |
 |---|---|
+| `ANALYSER_EVIDENCE_HARNESS_SHADOW` | Evidence harness observations only. Does not change public standings. |
 | `ANALYSER_ONTOLOGY_TICKS` | 5a. At a glance ticks read the claim ontology instead of the substring logic. Needs reviewed aliases first. |
 | `ANALYSER_SUPPRESS_DISPUTED_TICKS` | 5b. Suppress a disputed tick and show "This claim is being checked." (not built yet) |
 | `ANALYSER_UNDER_REVIEW_ENDORSEMENT` | 5c. A Good Standing review with an unresolved dispute shows Provisional (not built yet) |
@@ -848,6 +849,15 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: The evidence harness is ported (PR #9), and what the vision pass reads now reaches the model
+- **Decided by:** the owner, 2026-11-04 ("Port #9 as well"). PR #9 was a draft from 2026-10-22 that no longer merged: the generation loop in `runProductReview` had been rebuilt on main since.
+- **Reason:** #9 adds a deterministic evidence check that runs next to the analysis and never changes a public rating, and it fixes a timing fault: the vision pass that transcribes reports published as pictures ran inside the retry loop, after the prompt had been built, so the model never received what it read, and every retry added the same text again to the checks that read it.
+- **What it touched:** (1) new `src/lib/neurosymbolic/harness.ts` (`validateProposal`, `evaluateEvidence`, `runEvidenceHarness`) with its tests, and `docs/NEUROSYMBOLIC-ANALYSER.md`. (2) `src/lib/analyser-flags.ts`: flag `ANALYSER_EVIDENCE_HARNESS_SHADOW`, OFF unless set. (3) `src/lib/product-review-engine.ts`: `imageEvidenceBlock(q, labelRead)` now runs once before the prompts are built, and the name-search prompt carries it as the address prompt already did (**this changes what the model is sent, with the flag off**); with the flag ON a reply that fails `validateProposal` is retried and then answered as an error, and after the scores are settled the review gets an `evidenceAudit` (decision plus the captures it was judged on); whatever `evidenceAudit` the model wrote is always deleted. (4) `src/lib/product-review-types.ts`: the optional `evidenceAudit` field.
+- **Kept from main while porting:** the vision pass still receives `labelRead`, which is how the Drug Facts / Rx label text reaches the non-cosmetic check; #9 as written called it with the query alone and would have dropped that. A test now fails if it is dropped.
+- **Not changed:** no rating, colour, claim or stored analysis is changed by the harness; its decision says `human_review_required` and carries no certification. With the flag off no audit is made.
+- **Known limit:** the audit captures only the INKEE Decoder list and the pasted page's text. It does not yet capture a brand-page, Nykaa or owner-supplied list, which main can now publish, so with the flag on it can report the list as not anchored when the published list came from one of those. Left as #9 wrote it; extending the captures is a separate decision.
+- **Undo:** revert the merge commit. To keep the harness but undo the model-input change, put `evidenceBlock += await imageEvidenceBlock(q, labelRead);` back inside the `for (const p of prompts)` loop and drop `${evidenceBlock}` from the name-search prompt.
+
 ### 2026-11-03 (late): A pasted address always gets the corrected lookup, so a brand page whose title differs from its address is read
 - **Decided by:** not yet the owner. Found by me while re-running Lakme's Peach Milk Creme after PR #69 (the owner's question: why its ingredients were not found).
 - **Reason:** measured on the live pages. The product is pasted as `lakmeindia.com/products/lakme-peach-ceramide-moisturizer-with-hyaluronic-for-dry-skin-normal-skin-sensitive-skin-50g`, its old address; the page is titled "Lakme Peach Milk 2% Pro-Ceramide + Peptide Creme | Barrier Repair ...". For a pasted address the engine searches with a name worked out from the address and takes the brand from its first word. The title check refused the brand's page against that name, and the corrected-brand lookup (the one that uses the name the model read from the page) did not run, because the first word, "lakme", equals the brand the model named. The first lookup's list stood, and it came from a **Nykaa page for another product**, the Ultra Light Gel (26 entries starting "Water, Dimethicone, Glycerin..."), not the Creme's 40 ("Water, Paraffinum Liquidum..."). The re-run held that row on its changed name, so nothing wrong was written; the cause was found by comparing the lists.
@@ -1290,7 +1300,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/index.ts` | `c74f427f9b8fdb9dad017a24324fa6c7d0947f0f908ab6eeb7aff02bb296a602` |
 | `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
-| `src/lib/analyser-flags.ts` | `e30d68764914e89fb99cfbeef7bf3ebe342f020c6b9500a13af700571dfe5a06` |
+| `src/lib/analyser-flags.ts` | `91c8023cbf84911f4dbd79e1d9e40cf66a56fa7b3b094b8e7aca2761b8ffbe98` |
 | `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
 | `src/lib/analyser-x/adapter.ts` | `8eeac5cc53080cc8a860a87de3f9b8e123a4c1f9473534187411a435bcc5ca91` |
 | `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
@@ -1356,8 +1366,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `9ec29f6a83ed659d2ef193027d90a172a733df003e6e1c1a813168d4b9f0a410` |
-| `src/lib/product-review-types.ts` | `e0b8c9cb4b61897a308887e5b8693c680fbfff3c6c26c3df5c4cb583a485c641` |
+| `src/lib/product-review-engine.ts` | `aa63d06fc17ecbeb56dd84a02b77b81c0d5f4bf8d69fa357a48d8fd2412a43d0` |
+| `src/lib/product-review-types.ts` | `ee39f13543c2e05e5d164912ec7f6f31ce9fe00ba6582ec3073c2975db481bbe` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |

@@ -9,6 +9,7 @@
 import { createHash } from "node:crypto";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
+import { evaluateEvidence, validateProposal, type Capture } from "@/lib/neurosymbolic/harness";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -1397,9 +1398,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     ? `\n\nPRODUCT PAGE CONTENT (scraped from the URL the user provided - treat as the primary source of the product's claims):\n${pageExcerpt}`
     : "";
 
+  // Collected once, before the prompts are built. Reports published as GRAPHICS (no alt text, no text layer) are invisible to the text scrape; a vision pass transcribes
+  // them so they count as evidence. It used to run inside the retry loop, after the prompt was built, so the model never received what it read, and every retry
+  // appended the same text again to the checks below. It also fills `labelRead` (Drug Facts, Rx), which the non-cosmetic check reads.
+  evidenceBlock += await imageEvidenceBlock(q, labelRead);
   const userPrompt = isURL(q)
     ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}${anchor}\nAlso search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${pageBlock}${evidenceBlock}${inciBlock}`
-    : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
+    : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${evidenceBlock}${inciBlock}`;
 
   // Up to 3 attempts: the model occasionally returns malformed or truncated JSON.
   const prompts = [
@@ -1410,9 +1415,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   let parsed: Record<string, unknown> | null = null;
   let grounding: GroundingRecord | null = null; // the research behind the attempt kept below
   for (const p of prompts) {
-      // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
-      // the text scrape; a vision pass transcribes them so they count as evidence.
-      evidenceBlock += await imageEvidenceBlock(q, labelRead);
     const primaryBlock = pageInci ? inciGroundTruthBlock({ productName: pageName ?? ingredientQuery, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }) : "";
     let suffix = primaryBlock;
     let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
@@ -1460,11 +1462,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       const next = parseJSON(retry.text);
       if (isValidProductReview(next) && retry.groundingMetadata !== null) { parsed = next; grounding = retry.groundingMetadata; }
     }
-    if (isValidProductReview(parsed)) break;
+    if (isValidProductReview(parsed) && (!isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow) || validateProposal(parsed))) break;
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
+  if (isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow) && !validateProposal(parsed)) return { type: "error" };
 
   let review = parsed as ProductReview;
+  // Model output may not supply a previously approved audit.
+  delete review.evidenceAudit;
   review.researchLog = researchLogFrom(grounding, new Date().toISOString());
 
   /* Collapse historical brand names to one canonical identity BEFORE the slug is
@@ -1654,6 +1659,27 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // reach the approval bar. Runs after markClaimCorroboration so the ceiling
   // ignores claims the corroboration guardrail rejected.
   review.scores = reconcileReviewScores(review).scores;
+
+  if (isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow)) {
+    const capturedAt = review.reviewedAt!;
+    const captures: Capture[] = [];
+    if (inci?.sourceQuote) captures.push({
+      id: "inci", url: inci.source, text: inci.sourceQuote, retrievedAt: capturedAt,
+      // Full identity and ordered list validation occurs inside the harness.
+      identity: "matched",
+      formula: { kind: "incidecoder", url: inci.source,
+        titles: inci.pageTitle ? [inci.pageTitle] : [], brandNames: inci.pageBrand ? [inci.pageBrand] : [],
+        brandRule: "equal", ingredients: inci.ingredients, quote: inci.sourceQuote,
+        quoteComplete: !inci.sourceQuoteTruncated },
+    });
+    if (isURL(q) && pageExcerpt) captures.push({ id: "product-page", url: q,
+      text: pageExcerpt, retrievedAt: capturedAt, identity: "unresolved" });
+    // No freshness default: this is a policy decision, not a model guess.
+    const rawAge = process.env.ANALYSER_CAPTURE_MAX_AGE_MS;
+    const decision = evaluateEvidence({ review, captures, now: capturedAt,
+      ...(rawAge ? { maxCaptureAgeMs: Number(rawAge) } : {}) });
+    review.evidenceAudit = { decision, captures };
+  }
 
   const verdict = deriveVerdict(review);
 
