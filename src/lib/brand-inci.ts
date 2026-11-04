@@ -28,6 +28,9 @@ const OWN_SHOP_HOSTS = new Map<string, readonly string[]>([
   ["pilgrim", ["discoverpilgrim.com"]],
   ["plum", ["plumgoodness.com"]],
   ["dermaco", ["thedermaco.com"]],
+  // WishCare sells on mywishcare.com (checked 2026-11-03: its store search lists the Cellular Reset 0.1% Retinal Shot): "mywishcare" does not start with "wishcare".
+  // The `brands` table has no WishCare row to read the site from.
+  ["wishcare", ["mywishcare.com"]],
 ]);
 
 /** Conservative discovery filter: unknown domain spellings stay unverified. */
