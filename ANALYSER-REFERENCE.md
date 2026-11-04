@@ -849,6 +849,14 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04 (evening): A list that cannot be the whole list of a water-based product is held grey, never written
+- **Decided by:** the owner, on 2026-11-04, in chat. Asked what a list that fails a sanity check should do (hold it grey, or write it flagged as partial), the owner answered "grey".
+- **Reason:** in the owner's words above. Measured: the grey re-run of 2026-11-04 wrote Omeo's shampoo with the seven entries of a "Key Ingredients" line (Arnica, Calendula, Thuja, Neem, Ginger, Propanediol Caprylate, Lactic Acid) as its ingredient list, rated Buy with caution; the page prints no other list. Be Minimalist's "Shop by ingredient" menu and WishCare's four key actives would have been written the same way. Each passed every rule that looks at the text.
+- **What it touched:** `src/lib/inci-plausibility.ts` (new, `listPlausibleFor`): a product whose name is a water-based kind (shampoo, conditioner, cleanser, face or body wash, moisturiser, cream, lotion, sunscreen, toner, mist, essence, gel) needs at least one entry that is water, aqua, eau, a juice or a hydrosol. Never applied to a product whose name says oil, balm, butter, stick, powder, bar, solid, serum (hair serums are water-free silicones), scrub, soap, lip or dry shampoo, or to a fat-based formula (the first entry is a butter, oil or wax, or at least 40% of the entries are: Juicy Chemistry's under-eye cream is butters, oils and wax with no water). It is part of `listOk` in `findBrandInci`, so a failing list is not a candidate from any source (brand page, Decoder, Nykaa, the catalogue rescue, or a list the engine already held) and the analysis is saved with the gap shown, as for any product with no primary list; and a new check in the re-run's validation (`implausible-ingredient-list`).
+- **Measured:** run over all 44 stored lists it refuses none (Antinorm's water-free dry shampoo passes); it refuses the real Omeo row written on 2026-11-04 (backed up before the restore). A first version that treated every "cream" as water-based wrongly refused Juicy Chemistry's real anhydrous cream (found by an existing test), which is why the fat-based exemption exists. Test lists generated as "Ingredient A0, A1..." had no water, so they now start with Aqua.
+- **Not changed:** no stored analysis. The rule is narrow on purpose: it does not catch a wrong list that has water (another product's list, a truncated list); the audit script and the reader fixes are for those.
+- **Undo:** revert the commit, or make `listPlausibleFor` return ok.
+
 ### 2026-11-04 (evening): A page never ticks what its own text disputes; INKEE Decoder may not stand in a neighbouring variant
 - **Decided by:** the owner, 2026-11-04, on the live Garnier Skin Naturals Micellar Oil-Infused Cleansing Water page: "Fragrance free claim is not right, then why fragrance free pill is showing in green, under at a glance? we need to fix the discrepancy.. our own page can't talk against each other. This needs to be fixed on top priority."
 - **Why it happened (measured):** the ticks are worked out by code from the ingredient list we hold; the summary, the biggest concern and "Who should be careful" are written by the model. For this row the list we hold is **another product's**: INKEE Decoder's "Garnier Micellar Water Sensitive Skin" (the pink bottle; 7 ingredients, no fragrance, no alcohol), taken because the name search accepts the closest entry by word overlap and the Oil-Infused product has no entry of its own. The model read a different list and wrote that the 'fragrance-free' and 'alcohol-free' claims are contradicted. The page showed both. The review verifier already detects this pair (`verifyClaimDisputes`) but only reports it; nothing on the page used it.
@@ -1343,7 +1351,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `0138ba4c3b1d9092a75ff2890805ee52f2d6ed5068391d66448971b72d86c298` |
+| `src/lib/brand-inci.ts` | `9781b577e24a2465c0c9e2265b7d515657cc89205f6447c2ae05e70a126d5093` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1361,6 +1369,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-from-page.ts` | `1a9065044dc19e8d62a1d9022c704043e125afa1f62a5c1d4841a0be016ba4d8` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
+| `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
 | `src/lib/inci-reanchor.ts` | `7759104be520335e9c78dc8d3a4d7295e2e30283d8e81a7d03cc13346334d13a` |
 | `src/lib/inci-source-backing.ts` | `e0bc705232b25ed24714d6f0012e7271dc2c0d8fc2cefed707602d4b3d8d8814` |
 | `src/lib/ingredient-canonical.ts` | `41ebe06c48c4c7e6c141019247acf2f45abd4060d4ea8c3fd030f9824b8404e9` |

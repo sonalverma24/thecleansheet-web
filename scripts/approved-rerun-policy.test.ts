@@ -31,6 +31,12 @@ describe("approved catalogue rerun", () => {
     expect(validateReplacement(r, from("https://test.in/products/alpha-serum", "brand-page"), "buy-with-caution", "buy-with-caution")).not.toContain("ingredient-list-shorter");
     expect(validateReplacement(r, from("https://inkeedecoder.com/products/test-alpha-serum", "decoder"), "buy-with-caution", "buy-with-caution")).toContain("ingredient-list-shorter");
   });
+  it("holds a replacement whose list cannot be the whole list of a water-based product (Omeo's key actives, 2026-11-04) and accepts it with water", () => {
+    const list = (items: string[]) => ({ ...review, productName: "Alpha Shampoo", inciIngredients: items, inciEvidence: makeInciEvidence("https://inkeedecoder.com/products/test-alpha-serum", items.join(", "), "2026-11-04") });
+    const actives = ["Arnica Montana Flower Extract", "Calendula Officinalis Flower Extract", "Thuja Occidentalis Leaf Oil", "Propanediol Caprylate", "Lactic Acid"];
+    expect(validateReplacement(row("a", "2026-07-01"), list(actives), "not-enough-info", "buy-with-caution")).toContain("implausible-ingredient-list");
+    expect(validateReplacement(row("a", "2026-07-01"), list(["Aqua", ...actives]), "not-enough-info", "buy-with-caution")).not.toContain("implausible-ingredient-list");
+  });
   it("rejects wrong products and model-only ingredients before writing", () => {
     const bad = { ...review, brand: "Other", productName: "Beta Shampoo", inciEvidence: undefined };
     expect(validateReplacement(row("one", "2026-07-01"), bad, "buy-with-caution", "not-enough-info")).toEqual(expect.arrayContaining(["brand-changed", "product-identity-changed", "primary-ingredient-source-missing", "decision-lost"]));
