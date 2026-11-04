@@ -414,6 +414,31 @@ describe("legitimate INCI text with full stops is not cut", () => {
    earlier "Ingredients" word makes the label capture too long is a different defect, covered at
    the end of this file. */
 
+describe("a formula code after the last entry ends the list and keeps that entry (Garnier, 2026-11-04)", () => {
+  // Garnier's own page for Micellar Oil-Infused Cleansing Water, as printed: the list was read as 22 entries, without the fragrance.
+  const GARNIER = "AQUA / WATER, CYCLOPENTASILOXANE, ISOHEXADECANE, ARGANIA SPINOSA OIL / ARGANIA SPINOSA KERNEL OIL, BENZYL ALCOHOL, BENZYL SALICYLATE, BUTYL METHOXYDIBENZOYLMETHANE, CI 60725 / VIOLET 2, DECYL GLUCOSIDE, DIPOTASSIUM PHOSPHATE, DISODIUM EDTA, ETHYLHEXYL METHOXYCINNAMATE, ETHYLHEXYL SALICYLATE, GERANIOL, HAEMATOCOCCUS PLUVIALIS / HAEMATOCOCCUS PLUVIALIS EXTRACT, HEXYLENE GLYCOL, LIMONENE, LINALOOL, PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE, POLYAMINOPROPYL BIGUANIDE, POTASSIUM PHOSPHATE, SODIUM CHLORIDE, PARFUM / FRAGRANCE";
+  const entries = GARNIER.split(", ").map((x) => x.replace(/\s*\/\s*/g, "/"));
+
+  it.each([
+    ["page copy after the code", `Ingredients: ${GARNIER}. (F.I.L. B176670/1) The Garnier oil-infused micellar water thoroughly cleanses your face while nourishing it with the goodness of argan oil.`],
+    ["the code closing the page", `Ingredients: ${GARNIER}. (F.I.L. B176670/1)`],
+    ["a square-bracketed code with a number sign", `Ingredients: ${GARNIER}. [F.I.L. N° D233311/1] Discover more`],
+    ["a code with no stop before it", `Ingredients: ${GARNIER} (F.I.L. B176670/1)`],
+  ])("%s", (_name, page) => {
+    const ex = extractInciWithQuote(page)!;
+    expect(ex.ingredients).toHaveLength(23);
+    expect(ex.ingredients).toEqual(entries);
+    expect(ex.ingredients.at(-1)).toBe("PARFUM/FRAGRANCE");
+    expect(ex.quote).toBe(GARNIER);
+    expect(page).toContain(ex.quote);
+  });
+
+  it("only a formula code does this: any other bracket after a stop still ends nothing", () => {
+    const page = `Ingredients: ${GARNIER}. (Packaging may vary) Discover more about the range and how to use it every day.`;
+    expect(extractInciWithQuote(page)!.ingredients).toEqual(entries.slice(0, -1));
+  });
+});
+
 describe("a list's last entry printed with a full stop is kept", () => {
   const body = list("Aqua, Glycerin, Niacinamide, Cetearyl Alcohol, Phenoxyethanol, Sodium Hyaluronate");
   const closed = (last: string, tail: string, label = "Ingredients: ") => {

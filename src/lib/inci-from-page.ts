@@ -254,13 +254,29 @@ function splitSentences(p: Part): Part[] {
   return spans.map(([a, b]) => ({ text: p.text.slice(a, b), map: p.map.slice(a, b) }));
 }
 
+/* L'Oréal-group pages (Garnier, L'Oréal Paris, Maybelline, La Roche-Posay, CeraVe) print the formula's laboratory code in brackets right
+   after the list: "... Sodium Chloride, Parfum / Fragrance. (F.I.L. B176670/1)". The code ends the list and is not an entry. A stop before
+   a bracket is no sentence end (sentenceSpans wants a capital letter after it), so the piece holding the last entry was rejected whole
+   and the list lost that entry: Garnier Micellar Oil-Infused Cleansing Water, 2026-11-04, read 22 of 23, the fragrance itself missing.
+   Where the code closes the page the piece passed as one entry instead, with the code glued on ("Parfum/Fragrance. (F.I.L. B176670/1)").
+   Both paths now end the entry, and the list, at the code. */
+const FORMULA_CODE_RE = /\s*[([]\s*F\.\s?I\.\s?L\.[^()[\]]{0,40}[)\]]/i;
+
 /** Where the last entry of a list ends inside text the entry rules reject whole, or 0 when the
     text holds none. Such text is a list's last entry printed with a full stop and followed by a
     sentence or a section header ("Citric Acid, Phenoxyethanol. How to Use ..."), or closing the
     page. The entry is the text before the first sentence end, or all of the text but a final
     stop. A final stop that belongs to an abbreviation ("Alcohol Denat.", "Aqua q.s.") stays in
-    the entry. The entry must still pass looksLikeIngredient, so prose is not taken for one. */
+    the entry. The entry must still pass looksLikeIngredient, so prose is not taken for one. A
+    formula code after the entry ends it as a stop would (FORMULA_CODE_RE). */
 function closingEntryEnd(t: string): number {
+  const code = FORMULA_CODE_RE.exec(t);
+  if (code && code.index > 0) {
+    const head = t.slice(0, code.index);
+    const end = closingEntryEnd(head);
+    if (end > 0) return end;
+    return looksLikeIngredient(head) ? head.trimEnd().length : 0;
+  }
   const spans = sentenceSpans(t);
   if (spans.length > 1) {
     const end = spans[0][1];
@@ -350,8 +366,15 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
      run still wins, so prose never rides along with a list). A sentence after a stop that
      carries an "Ingredients" label starts at the ingredient after the label. Only entries
      accepted whole are looked at here; a piece the rules reject is rejected as before, apart
-     from the last entry it may close the run with (pushClosing). */
+     from the last entry it may close the run with (pushClosing). A formula code in the entry
+     (FORMULA_CODE_RE) ends both the entry and the run. */
   const pushEntry = (p: Part, from: number, to: number) => {
+    if ((FORMULA_CODE_RE.exec(p.text.slice(from, to))?.index ?? 0) > 0) {
+      const end = closingEntryEnd(p.text.slice(from, to));
+      if (end > 0) push(cleanTok(p.text.slice(from, from + end)), spanOf(p, from, from + end));
+      flush();
+      return;
+    }
     const whole: Part = { text: p.text.slice(from, to), map: p.map.slice(from, to) };
     const sentences = splitSentences(whole);
     if (sentences.length === 1) {
