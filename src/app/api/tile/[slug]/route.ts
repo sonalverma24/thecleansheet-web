@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { RETRACTED_SLUGS } from "@/lib/retracted-slugs";
 import { fetchTileSource, processTile } from "@/lib/tile-processing";
 
 /* GET /api/tile/<slug>?v=<fingerprint>: the product tile picture for a stored analysis, cleaned up (src/lib/tile-image.ts says why).
@@ -16,6 +17,7 @@ const KEEP = "public, max-age=31536000, s-maxage=31536000, immutable";
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!SLUG_RE.test(slug)) return new NextResponse(null, { status: 404 });
+  if (RETRACTED_SLUGS.has(slug)) return new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=60" } }); // pulled from the site: no picture either
 
   let source: string | null = null;
   try {

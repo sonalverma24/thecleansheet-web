@@ -14,7 +14,7 @@ const h = vi.hoisted(() => {
     },
     apply: () => chain,
   });
-  return { upserts, chain, generate: vi.fn(), findReviewImage: vi.fn(), brandInci: vi.fn(), state };
+  return { upserts, chain, generate: vi.fn(), findReviewImage: vi.fn(), brandInci: vi.fn(), imageEvidence: vi.fn(), state };
 });
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: () => h.chain }));
@@ -28,7 +28,7 @@ vi.mock("@/lib/product-image", () => ({
   resolveProductImage: async () => null, searchProductImage: async () => null, findProductImageKeyless: async () => null, findProductReviewImage: (...args: unknown[]) => h.findReviewImage(...args), isLiveImage: async () => false,
 }));
 vi.mock("@/lib/brand-inci", async (orig) => ({ ...(await orig<typeof import("@/lib/brand-inci")>()), findBrandInci: (...args: unknown[]) => h.brandInci(...args) }));
-vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: async () => "" }));
+vi.mock("@/lib/evidence-images", () => ({ imageEvidenceBlock: (...args: unknown[]) => h.imageEvidence(...args) }));
 vi.mock("@/lib/ingredient-directory", () => ({ addDiscoveredNames: async () => undefined }));
 vi.mock("@/lib/verified-store", async (orig) => ({ ...(await orig<typeof import("@/lib/verified-store")>()), upsertVerifiedProduct: async () => undefined }));
 vi.mock("next/cache", () => ({ revalidatePath: () => undefined }));
@@ -51,6 +51,9 @@ beforeEach(() => {
   h.findReviewImage.mockReset();
   h.generate.mockReset();
   h.brandInci.mockReset().mockResolvedValue(null);
+  h.imageEvidence.mockReset().mockResolvedValue("");
+  delete process.env.ANALYSER_EVIDENCE_HARNESS_SHADOW;
+  delete process.env.ANALYSER_CAPTURE_MAX_AGE_MS;
 });
 
 describe("runProductReview: researchLog", () => {
@@ -242,5 +245,41 @@ describe("withinMs: the bound that stops a retry from costing the shopper an ans
       expect(await quick).toBe("ok");
       expect(vi.getTimerCount()).toBe(0); // cleared once the work won the race
     } finally { vi.useRealTimers(); }
+  });
+});
+
+
+describe("evidence harness integration", () => {
+  it("records an uncertainty audit and replaces model-authored audit fields", async () => {
+    process.env.ANALYSER_EVIDENCE_HARNESS_SHADOW = "true";
+    const proposal = makeReview({ productName: "Shadow Evidence Cleanser", brand: "Harness Test" });
+    h.generate.mockResolvedValue({ text: JSON.stringify({ ...proposal, evidenceAudit: { decision: { endorsement: "approved" } } }), groundingMetadata: null });
+    const out = await runProductReview("Shadow Evidence Cleanser");
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
+    expect(out.review.evidenceAudit?.decision.endorsement).toBe("human_review_required");
+    expect(out.review.evidenceAudit?.decision.reasons).toContain("INCI_NOT_ANCHORED");
+    expect((h.upserts[0].result as typeof out).review.evidenceAudit).toEqual(out.review.evidenceAudit);
+  });
+  it("with the flag off (the default) makes no audit, and still removes one the model wrote", async () => {
+    const proposal = makeReview({ productName: "Flag Off Cleanser", brand: "Harness Test" });
+    h.generate.mockResolvedValue({ text: JSON.stringify({ ...proposal, evidenceAudit: { decision: { endorsement: "approved" } } }), groundingMetadata: SEARCHED });
+    const out = await runProductReview("Flag Off Cleanser");
+    expect(out.type).toBe("product-review");
+    if (out.type !== "product-review") return;
+    expect(out.review.evidenceAudit).toBeUndefined();
+    const saved = h.upserts.find((row) => "result" in row)?.result as { review: { evidenceAudit?: unknown } } | undefined;
+    expect(saved).toBeDefined();
+    expect(saved?.review.evidenceAudit).toBeUndefined(); // nor in what was stored
+  });
+  it("passes image transcription into prompts once, including retries", async () => {
+    h.imageEvidence.mockResolvedValue("\nIMAGE TRANSCRIPTION: synthetic report text");
+    h.generate.mockResolvedValueOnce({ text: "bad json", groundingMetadata: null })
+      .mockResolvedValueOnce({ text: asModelText("Image Evidence Cleanser"), groundingMetadata: SEARCHED }); // grounded, so no second (grounding) retry is asked for
+    await runProductReview("Image Evidence Cleanser");
+    expect(h.imageEvidence).toHaveBeenCalledTimes(1);
+    // The vision pass also reads the label artwork (Drug Facts, Rx) into the object it is handed; the non-cosmetic check reads that.
+    expect(h.imageEvidence.mock.calls[0][1]).toBeTypeOf("object");
+    for (const call of h.generate.mock.calls) expect(call[1]).toContain("IMAGE TRANSCRIPTION: synthetic report text");
   });
 });

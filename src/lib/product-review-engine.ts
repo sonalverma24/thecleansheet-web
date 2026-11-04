@@ -9,6 +9,7 @@
 import { createHash } from "node:crypto";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
+import { evaluateEvidence, validateProposal, type Capture } from "@/lib/neurosymbolic/harness";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
 import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from "@/lib/gemini";
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
@@ -760,50 +761,8 @@ export const ACCEPTED_RUBRIC_REVS: readonly string[] = [RUBRIC_REV, PILLAR_RUBRI
 export const activeRubricRev = (): string => (isFlagOn(ANALYSER_FLAGS.pillarStanding) ? PILLAR_RUBRIC_REV : RUBRIC_REV);
 export const isAcceptedRubricRev = (rev: unknown): boolean => typeof rev === "string" && ACCEPTED_RUBRIC_REVS.includes(rev);
 
-/* Reviews pulled from the site. Suppressed on every read path (getStored,
-   listings, catalogue); the stored row is left intact so it can be restored or
-   hard-deleted later. Used for known-wrong source data pending re-review, and for
-   removing duplicates (e.g. a second review of the same product created because
-   the product couldn't be resolved to a canonical slug - see runProductReview). */
-export const RETRACTED_SLUGS = new Set<string>([
-  "la-roche-posay-cicaplast-balm",
-  "moxie-curly-hair-shampoo", // duplicate Moxie shampoo review (AI-generated imagery); other Moxie review kept
-  // Duplicate of the same product under the old brand name "Minimalist" (the
-  // company rebranded to "Be Minimalist"). The brand-PDP scrape flagged two
-  // drug-boundary claims ("treats dandruff & itching", "eliminates ...fungus")
-  // so it derived Not Recommended, while the INCIDecoder-sourced "Be Minimalist"
-  // row never saw those claims and derived Approved. Same INCI, same product.
-  // The "be-minimalist-..." row (real image + INCI source) is the keeper.
-  "minimalist-cph-complex-oligopeptide-0-8-anti-dandruff-serum",
-  // Duplicate Kay Beauty Hydra Creme Lipstick (doubled brand prefix in the slug). The
-  // other row is the keeper: it cites its INCIDecoder source URL, a consistent
-  // Rs.799 brand/Nykaa price, and a rating not drawn from a single shade.
-  "kay-beauty-kay-beauty-hydra-creme-lipstick",
-  // Cetaphil Facial Cleanser: a composite of three different products. Ingredients
-  // are a user-uploaded INCIDecoder entry for a non-Indian formula (Parfum,
-  // Methylparaben, SLES); the claims are cetaphil.in Gentle Skin Cleanser copy; the
-  // "Fragrance-free" flag was "corroborated" by a Nykaa search page (see
-  // marketplaceListingCorpus). Cetaphil India lists no product by this name, so
-  // there is no verified formula to review. Not a duplicate of the Gentle Skin
-  // Cleanser review, so no redirect.
-  "cetaphil-facial-cleanser",
-  // Da Membrane Daily Brightening Face Toner: the brand page makes no "Fragrance Free"
-  // claim (its only "fragrance" is the ingredient in its own INCI), so the Not
-  // Recommended verdict rested on a claim the model invented and the corroboration
-  // check "found" in the ingredient list itself. Pending re-review.
-  "da-membrane-da-membrane-daily-brightening-face-toner-with-niacinamide-and-cica-1",
-  // Nat Habit Multi Nut Shea Omega3 Malai: the stored INCI (60+ botanicals plus Glycerin,
-  // Phenoxyethanol) is not the brand's list (raw milk, shea, walnut, almond, coconut,
-  // clove, Geogard/Nipaguard; no glycerin). It made the brand's own "glycerin-free"
-  // claim look false. Pending re-review.
-  "nat-habit-nat-habit-multi-nut-shea-omega3-malai-body-butter-for-dry-skin-body-ac",
-  // Duplicate of the same product under its old name. Be Minimalist updated
-  // beminimalist.co/products/oat-extract-06-gentle-cleanser in place from "Oat Extract 6%" to
-  // "B12 + Oat Extract 6.5%", and the product is stored twice, once under each name. The
-  // "...-b12-oat-extract-6-5-gentle-cleanser" row (the brand's current name) is the keeper.
-  // Owner, 2026-11-04: retire the 6% row as a duplicate.
-  "be-minimalist-minimalist-oat-extract-6-gentle-cleanser",
-]);
+import { RETRACTED_SLUGS } from "@/lib/retracted-slugs";
+export { RETRACTED_SLUGS }; // the list itself is in retracted-slugs.ts
 
 /** The "unrated" answer for a review that turns out to be a nutraceutical or a prescription drug, or null for a cosmetic. */
 function unratedResultOf(
@@ -1403,9 +1362,13 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     ? `\n\nPRODUCT PAGE CONTENT (scraped from the URL the user provided - treat as the primary source of the product's claims):\n${pageExcerpt}`
     : "";
 
+  // Collected once, before the prompts are built. Reports published as GRAPHICS (no alt text, no text layer) are invisible to the text scrape; a vision pass transcribes
+  // them so they count as evidence. It used to run inside the retry loop, after the prompt was built, so the model never received what it read, and every retry
+  // appended the same text again to the checks below. It also fills `labelRead` (Drug Facts, Rx), which the non-cosmetic check reads.
+  evidenceBlock += await imageEvidenceBlock(q, labelRead);
   const userPrompt = isURL(q)
     ? `Produce a full Clean Sheet Product Review for the product at this URL: ${q}${anchor}\nAlso search Nykaa, Amazon.in, Flipkart and the brand site for its price, claims, and ingredient list.${pageBlock}${evidenceBlock}${inciBlock}`
-    : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${inciBlock}`;
+    : `Produce a full Clean Sheet Product Review for this product: ${q}${anchor}\nSearch its official page and Nykaa, Amazon.in, Flipkart and quick-commerce listings for price, claims, and the ingredient list.${evidenceBlock}${inciBlock}`;
 
   // Up to 3 attempts: the model occasionally returns malformed or truncated JSON.
   const prompts = [
@@ -1416,9 +1379,6 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   let parsed: Record<string, unknown> | null = null;
   let grounding: GroundingRecord | null = null; // the research behind the attempt kept below
   for (const p of prompts) {
-      // Reports published as GRAPHICS (no alt text, no text layer) are invisible to
-      // the text scrape; a vision pass transcribes them so they count as evidence.
-      evidenceBlock += await imageEvidenceBlock(q, labelRead);
     const primaryBlock = pageInci ? inciGroundTruthBlock({ productName: pageName ?? ingredientQuery, slug: "", ingredients: pageInci.ingredients, tags: [], source: pageInci.source, imageUrl: null, sourceQuote: pageInci.quote }) : "";
     let suffix = primaryBlock;
     let gen = await generateResilientWithMeta(PRODUCT_REVIEW_SYSTEM_PROMPT, `${p}${suffix}`);
@@ -1466,11 +1426,14 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
       const next = parseJSON(retry.text);
       if (isValidProductReview(next) && retry.groundingMetadata !== null) { parsed = next; grounding = retry.groundingMetadata; }
     }
-    if (isValidProductReview(parsed)) break;
+    if (isValidProductReview(parsed) && (!isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow) || validateProposal(parsed))) break;
   }
   if (!isValidProductReview(parsed)) return { type: "error" };
+  if (isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow) && !validateProposal(parsed)) return { type: "error" };
 
   let review = parsed as ProductReview;
+  // Model output may not supply a previously approved audit.
+  delete review.evidenceAudit;
   review.researchLog = researchLogFrom(grounding, new Date().toISOString());
 
   /* Collapse historical brand names to one canonical identity BEFORE the slug is
@@ -1660,6 +1623,27 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // reach the approval bar. Runs after markClaimCorroboration so the ceiling
   // ignores claims the corroboration guardrail rejected.
   review.scores = reconcileReviewScores(review).scores;
+
+  if (isFlagOn(ANALYSER_FLAGS.evidenceHarnessShadow)) {
+    const capturedAt = review.reviewedAt!;
+    const captures: Capture[] = [];
+    if (inci?.sourceQuote) captures.push({
+      id: "inci", url: inci.source, text: inci.sourceQuote, retrievedAt: capturedAt,
+      // Full identity and ordered list validation occurs inside the harness.
+      identity: "matched",
+      formula: { kind: "incidecoder", url: inci.source,
+        titles: inci.pageTitle ? [inci.pageTitle] : [], brandNames: inci.pageBrand ? [inci.pageBrand] : [],
+        brandRule: "equal", ingredients: inci.ingredients, quote: inci.sourceQuote,
+        quoteComplete: !inci.sourceQuoteTruncated },
+    });
+    if (isURL(q) && pageExcerpt) captures.push({ id: "product-page", url: q,
+      text: pageExcerpt, retrievedAt: capturedAt, identity: "unresolved" });
+    // No freshness default: this is a policy decision, not a model guess.
+    const rawAge = process.env.ANALYSER_CAPTURE_MAX_AGE_MS;
+    const decision = evaluateEvidence({ review, captures, now: capturedAt,
+      ...(rawAge ? { maxCaptureAgeMs: Number(rawAge) } : {}) });
+    review.evidenceAudit = { decision, captures };
+  }
 
   const verdict = deriveVerdict(review);
 
