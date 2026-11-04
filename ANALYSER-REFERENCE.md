@@ -1405,7 +1405,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `585e71967242c14f31ced4c8cad2a35afe3dbac968503d758d8563e09684b361` |
-| `src/lib/inci-from-page.ts` | `1a9065044dc19e8d62a1d9022c704043e125afa1f62a5c1d4841a0be016ba4d8` |
+| `src/lib/inci-from-page.ts` | `788d1d43fa8d3a45daf09444cad272e90c8fdfb2a00eb07f5ebc57cfb7f79428` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
