@@ -63,12 +63,16 @@ describe("list reliability", () => {
     const full = decideReview(rv({ inciIngredients: BASE }), NOW);
     const many = [...BASE, ...Array.from({ length: 12 }, (_, i) => `Zorbaflux ${i + 1}`)];
     const part = decideReview(rv({ inciIngredients: many }), NOW);
-    expect(part.decision.key).toBe(full.decision.key);
+    // 2026-11-04: Green needs the Ingredient safety row Strong, and that row is Fair once under half the list was checked (sections.ts). So coverage under half now keeps a
+    // product from Green, and says so (caution.rows); it still never makes a gap, and from half up the pill is unchanged (next test).
+    expect(full.decision.key).toBe("good-choice");
+    expect(part.decision.key).toBe("buy-with-caution");
+    expect(part.decision.reasons.find((x) => x.ruleId === "caution.rows")?.text).toBe("Not every area of our checks is Strong yet: Ingredient safety.");
     expect(part.decision.confidence).toBe("low"); // under half the list was checked
     expect(ids(part)).toContain("note.screen_partial");
     expect(ids(part)).not.toContain("caution.screen_partial");
     expect(ids(part)).not.toContain("gap.screen_incomplete");
-    expect(part.settled.filter((f) => f.severity === "gap" || f.severity === "caution").map((f) => f.ruleId)).toEqual(
+    expect(part.settled.filter((f) => f.severity === "gap" || (f.severity === "caution" && f.ruleId !== "caution.rows")).map((f) => f.ruleId)).toEqual(
       full.settled.filter((f) => f.severity === "gap" || f.severity === "caution").map((f) => f.ruleId),
     );
   });
@@ -83,8 +87,9 @@ describe("list reliability", () => {
 
 describe("thresholds sit where the spec says", () => {
   it("SPF 30 is enough; SPF 29 is not", () => {
-    expect(ids(decideReview(rv({ productName: "Daily Sunscreen SPF 30", category: "Sunscreen" }), NOW))).not.toContain("caution.spf_low");
-    expect(ids(decideReview(rv({ productName: "Daily Sunscreen SPF 29", category: "Sunscreen" }), NOW))).toContain("caution.spf_low");
+    const withFilter = [...BASE, "Zinc Oxide"];
+    expect(ids(decideReview(rv({ productName: "Daily Sunscreen SPF 30", category: "Sunscreen", inciIngredients: withFilter }), NOW))).not.toContain("caution.spf_low");
+    expect(ids(decideReview(rv({ productName: "Daily Sunscreen SPF 29", category: "Sunscreen", inciIngredients: withFilter }), NOW))).toContain("caution.spf_low");
   });
 
   it("the 'evidence last checked' note appears after 180 days, not on the 180th, and never changes the pill", () => {

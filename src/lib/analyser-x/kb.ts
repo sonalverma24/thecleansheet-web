@@ -77,6 +77,24 @@ export const SENSITIVE_RE = /\b(sensitive|gentle|dermatolog\w*|hypoallergenic|re
    authorities are shown on the page and, here, can raise a caution. Owner decision X19. */
 export const BLOCKING_AUTHORITIES = ["EU", "IN"] as const;
 
+/* ── Ingredients that make a page Red on their own (owner decision, 2026-11-04) ───────────────
+   "Hormone disruptors, carcinogenic ingredients, banned percentages, banned ingredients." The ban and the over-limit percentage come from the benchmark
+   (the EU and India block, see above). The other two are listed here by name, because the reference database's flags are wider than what the owner chose:
+   its endocrine flag also covers the silicones D5 and D6 (flagged mostly for persisting in water, so they stay a caution), the parabens, homosalate and
+   several benzophenones, and its CMR flag covers reproductive toxicity and a monomer residue in polyacrylamide. Extending either list is a rule change. */
+
+/** Endocrine-flagged ingredients that are a Red: octinoxate, oxybenzone, BHA and D4. Matched on the name the database holds. */
+export const HORMONE_DISRUPTORS_RED: readonly RegExp[] = [
+  /methoxycinnamate|octinoxate/i,
+  /benzophenone-3|oxybenzone/i,
+  /\bbha\b|butylated hydroxyanisole/i,
+  /cyclotetrasiloxane|\bd4\b/i,
+];
+
+/** A carcinogen is an ingredient whose own IARC group, as the database holds it, is Group 1 (carcinogenic to humans) or Group 2A (probably carcinogenic).
+    The match is anchored to the start of the field: polyacrylamide's field names Group 2A for its monomer residue and says the polymer itself is not classified. */
+export const CARCINOGEN_IARC_RE = /^\s*group\s*(?:1|2a)\b/i;
+
 /* ── How the same product type is regulated elsewhere ─────────────
    STARTER TABLE, from the regulators' own pages (see Part 16 of the specification). Every row is `reviewed: false` until
    a regulatory reviewer signs it. A row only produces a NOTE: it never changes the buying decision. */

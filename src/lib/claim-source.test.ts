@@ -81,9 +81,12 @@ describe("a product whose brand page gave no claims reads 'claims not examined',
     expect(ruleIds(rv({ claimMap: [], researchLog: log(0, 4) }))).toContain("gap.claims_unreliable");
   });
 
-  it("does not when some were kept, when none were dropped, or on an analysis made before the rule", () => {
+  it("also when none were kept and none dropped: with no readable brand page the model returns an empty list, which records exactly that (2026-11-04)", () => {
+    expect(ruleIds(rv({ claimMap: [], researchLog: log(0, 0) }))).toContain("gap.claims_unreliable");
+  });
+
+  it("does not when some were kept, or on an analysis made before the rule", () => {
     expect(ruleIds(rv({ claimMap: [], researchLog: log(2, 4) }))).not.toContain("gap.claims_unreliable");
-    expect(ruleIds(rv({ claimMap: [], researchLog: log(0, 0) }))).not.toContain("gap.claims_unreliable");
     expect(ruleIds(rv({ claimMap: [] }))).not.toContain("gap.claims_unreliable");
   });
 });

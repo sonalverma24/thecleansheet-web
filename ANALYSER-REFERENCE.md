@@ -61,15 +61,21 @@ Analyser Version X1 · the decision
    the list is not reliable: an apparent problem in an unverified list is something to
    verify, never something to publish.
 
-   Then the sections are consulted (owner decision, 2026-10-30): when all five sections of
-   the product page are green and the only cautions are ones those sections already measure
-   (a claim without a test on this product; a formula that may not deliver), the product is
-   a Good choice, and those cautions stay on the page as notes and under Gaps. Every other
-   caution is a flag and still holds a product at Buy with caution.
+   Then the five rows of the product page are consulted (owner decisions, 2026-10-30 and
+   2026-11-04). Green is Ingredient safety, Formula logic, Claims evidence (from 70%) and
+   Consumer clarity Strong, and Test transparency Fair or Strong. When they are, and the only
+   cautions are ones those rows already measure (a claim without a test on this product; a
+   formula that may not deliver), the product is a Good choice, and those cautions stay on
+   the page as notes and under Gaps. Every other caution is a flag and still holds a product
+   at Buy with caution. Nothing wrong but a row short of Strong is Buy with caution too, and
+   says which row. Red also comes from the rows: two weak rows, or a hormone disruptor, a
+   carcinogen, a banned strength, or a sunscreen with no UV filter (rules.ts).
 ~~~~
 
 Good choice needs all of these supports: `support.list_verified`, `support.safety_clear`, `support.claims_proportionate`. Without them the decision is Not enough info (`gap.support_insufficient`).
-The third, `support.claims_proportionate`, can be replaced by `support.sections_green` (owner decision, 2026-10-30): all five sections of the product page are green (Ingredient safety, Formula logic, Claims evidence, Test transparency, Consumer clarity; `src/lib/analyser-x/sections.ts`), and the only cautions are ones those sections already measure, a claim without a test on this product (`caution.claim_gap`) or a formula that may not deliver (`caution.formula`). Those two then ride along as notes and are listed under Gaps. Any other caution is a flag and still decides Buy with caution.
+Green is the five rows of the product page (owner decisions, 2026-10-30 and 2026-11-04; `src/lib/analyser-x/sections.ts`): Ingredient safety, Formula logic, Claims evidence and Consumer clarity are Strong, and Test transparency is Fair or Strong. A row is Strong from 75% (Claims evidence from 70%) and weak (Concern) under 45%; Test transparency is weak only when the product shows no proof at all.
+The third core support, `support.claims_proportionate`, can then be replaced by `support.sections_green`, and the only cautions allowed are ones those rows already measure, a claim without a test on this product (`caution.claim_gap`) or a formula that may not deliver (`caution.formula`). Those two ride along as notes and are listed under Gaps. Any other caution is a flag and still decides Buy with caution. When nothing is wrong but a row is short of that, the decision is Buy with caution and names the row (`caution.rows`).
+Red also comes from the rows and the ingredients: two weak rows (`block.rows`); a hormone disruptor the owner named (`block.endocrine`: octinoxate, oxybenzone, BHA, D4); an ingredient the database places in IARC Group 1 or 2A (`block.carcinogen`); a strength the product states above a plain EU or India limit (`block.over_limit`); and a sunscreen with an SPF in its name whose list shows no UV filter (`block.no_uv_filter`). A claim that only "helps with" or "supports" needs no test of its own when the formula supports it; one that promises a change ("repairs", "treats", "heals") does.
 
 ## 5. Reasons
 
@@ -94,6 +100,11 @@ block.prohibited: (p) => `${s(p.ingredient)} is prohibited in cosmetics${p.where
 block.contradicted: (p) => `The product says “${s(p.claim)}”, but its ingredient list includes ${s(p.ingredient)} (${from(p) || "from the product page"}).`
 block.fairness: () => "The product makes a skin-whitening or fairness claim, which India's advertising code treats as misleading."
 block.pillars: (p) => `Two areas of our checks fall short: ${s(p.pillarA)} and ${s(p.pillarB)}. Details are below.`
+block.endocrine: (p) => `${s(p.ingredient)} is flagged as a hormone disruptor. Found in the ingredient list read ${from(p) || "from the product page"}.`
+block.carcinogen: (p) => `${s(p.ingredient)} is classed as a known or probable human carcinogen. Found in the ingredient list read ${from(p) || "from the product page"}.`
+block.over_limit: (p) => `${s(p.ingredient)} is stated at ${s(p.declared)}%, above the ${s(p.limit)}% limit set by ${s(p.authority)}.`
+block.no_uv_filter: (p) => `This is sold as an SPF ${s(p.spf)} sunscreen, but its ingredient list shows no UV filter.`
+block.rows: (p) => `Two areas of our checks are weak: ${s(p.rowA)} and ${s(p.rowB)}. Details are below.`
 gap.no_list: (p) => (p.__acq ? "We could not read the ingredient list when we analysed this. We are checking again." : "We could not find a full ingredient list for this product, so we cannot complete our safety check.")
 gap.list_unreliable: () => "The only ingredient list we found is not from a source we can verify."
 gap.formula_conflict: () => "Two sources list different ingredients for this product. We are checking which is current."
@@ -110,6 +121,7 @@ caution.claim_gap: (p) => Number(p.count) > 1
 caution.free_from_unverified: (p) => Number(p.count) > 1
 caution.boundary: () => "Some wording goes further than a cosmetic can say in India. Treat it as a cosmetic benefit, not a treatment."
 caution.formula: () => "The formula may not deliver everything the claims promise."
+caution.rows: (p) => `Not every area of our checks is Strong yet: ${s(p.rows)}.`
 caution.spf_low: (p) => `SPF ${s(p.spf)} is below the SPF 30 that The Clean Sheet treats as the minimum for daily outdoor use in India.`
 caution.benchmark_gap: (p) =>
 support.list_verified: (p) => `The ingredient list was read ${from(p) || "from a source we can verify"} and matches the product name.`
@@ -849,6 +861,25 @@ Written by a person, newest first. It records what was decided about the analyse
 Entry format: **date, what was decided.** Reason (in the owner's words where we have them). What it touched. How to undo it.
 Add an entry whenever the owner decides something about what the analyser says or what the site shows, or when content is removed. Newest first.
 
+### 2026-11-04: The new logic: the five rows of the page decide Green, Yellow and Red; "helps with" claims need no test of their own
+- **Decided by:** the owner, 2026-11-04, in chat ("New Logic"), then three answers to my questions the same day: Red is a bad ingredient or two weak rows; "hormone disruptors" means the human-health ones (octinoxate, oxybenzone, BHA, D4), with D5 and D6 left as a caution; Claims evidence is Strong from 70%.
+- **The owner's words:** "Green: Ingredient Safety - Strong. Formula Logic - Strong. Claims evidence - Don't count (helps with/can support/supports for proof requirement if ingredients support the claim, for treats, heals, repairs, actual change claims.. we need proof, ok?) - Claims evidence - 70% good. Test Transparency - Fair. Clarity - Strong. Red: Ingredients - hormone disruptors, carcinogenic ingredients, banned %s, banned ingredients. Formula logic - weak, e.g. sunscreen not having UV filters listed. Claims evidence - weak. Test transparency - weak. Clarity - fair to weak. Everything in between is Yellow. Grey is not rated: drug, full info not available, tools, supplements, not cosmetics."
+- **Reason:** the audit the same morning found pages whose colour the rules gave and whose own rows contradicted it (Antinorm Dry Shampoo: Good choice beside Claims evidence as Concern and Ingredient safety as Fair). The colour now follows the rows the page prints, so the two cannot disagree.
+- **What it touched:** (1) `sections.ts`: Claims evidence is Strong from 70% (`CLAIMS_GREEN_FROM`; the other percentage rows stay at 75%), and `meetsGreen`, `rowsShortOfGreen`, `weakRows` read the five rows together. (2) `decision.ts`: Good choice needs the Green set whichever support it rests on; with nothing wrong but a row short, the decision is Buy with caution and `caution.rows` says which rows. Test transparency of Fair is enough. (3) `rules.ts` and `kb.ts`: new blocks `block.endocrine` (octinoxate, oxybenzone, BHA, D4: `HORMONE_DISRUPTORS_RED`), `block.carcinogen` (the database's own IARC group is 1 or 2A, anchored to the start of the field: only formaldehyde today, and it is already prohibited so it is one block), `block.over_limit` (a strength the product states above an EU or India limit), `block.no_uv_filter` (an SPF in the name and no UV filter in a reliable list) and `block.rows` (two or more weak rows). (4) `ladder.ts`, `rules.ts`: a claim that only "helps with / can support / supports" (`isHedgedClaim`) needs no test of its own when the formula supports it (the `support.formula_sound` test); "repairs", "treats", "heals" and any clinical figure still do. (5) `regulatory.ts`: a limit "as a preservative" is no longer read as a plain limit, because salicylic acid's India row would otherwise make every 2% exfoliant a banned strength. (6) `copy.ts`, `tags.ts`, `invariants.ts` (I5, I8, new I9), `pills-page.ts`. Tests: `five-rows.test.ts`, and existing tests for the old Green rule rewritten. The showcase sample sunscreen's Consumer clarity went from 11 to 12 of 15 so that it stays the example of a Good choice.
+- **How the unclear parts were read (each is a one-line change):** "weak" is Concern, under 45%, and Consumer clarity counts as weak only when it is weak, not when it is Fair. Test transparency is weak only when a product shows no proof at all (level 1). Two weak rows rest on the analysis's own Formula, Claims and Clarity scores, which are the model's numbers; the owner chose that knowingly. With no claim read at all, the two-weak-rows rule is off (nothing to rate). Flags that are not rows (SPF below 30, wording beyond what a cosmetic can say, an unchecked "free from" claim beside its entry, a list from a retailer page only) still hold a page at Yellow; they never made it Red and are not mentioned in the owner's list. The Ingredient safety row is Strong only when at least half the list was checked, so below half a page cannot be Green: this overrides decision X42 ("coverage never changes the pill") for Green only, and the page says why.
+- **Not on the Red list yet (still a Yellow caution):** methyl-, ethyl-, propyl- and butylparaben, homosalate, benzophenone-1, -4, -5 and -8, 4-methylbenzylidene camphor, resorcinol, chlorobutanol, triclosan, and the silicones D5 and D6. Adding one is a line in `HORMONE_DISRUPTORS_RED`.
+- **Measured:** the 54 stored analyses replayed with the old and the new rules on the same snapshot: Green 7 to 6, Yellow 34 to 27, Grey 13 to 14, Red 0 to 7; ten pages move and 44 do not. Green to Grey: Dot & Key Vitamin C+E face wash (no claim read; the entry above). Green to Yellow: Antinorm. Yellow to Green: SKIN1004 Centella ampoule (Claims evidence 70%, Test transparency Fair). Yellow to Red: Aravi sunscreen and Dot & Key Watermelon sunscreen (benzophenone-3), Re'equil Retinol (BHA), Cetaphil Daily Facial Moisturizer (cyclotetrasiloxane), Lotus Whiteglow (the name says "Skin Whitening"; the entry above), Brinton Acmist (Claims evidence and Consumer clarity weak) and Omeo anti-dandruff shampoo (Formula logic and Claims evidence weak). Of the 27 Yellows, 21 have Consumer clarity below Strong.
+- **Not changed:** what is Grey (a medicine, no or unverified ingredient list, an unreadable page, an unconfirmed product, claims not read). Tools and supplements are not rated where the unrated-page rule already covers them; the separate "tools" branch is not in this change. No stored analysis is touched: the colour is worked out when the page is shown, so all ten pages change when this is live.
+- **Undo:** revert the commit. To drop one Red, delete its rule in `rules.ts`; to change the hormone list, edit `HORMONE_DISRUPTORS_RED`; to put Claims evidence back at 75%, set `CLAIMS_GREEN_FROM` to 75.
+
+### 2026-11-04: No claim read from the brand's page means "not examined", never "no claims"; a product whose own name says "whitening" or "fairness" is a fairness block
+- **Decided by:** the owner, 2026-11-04 ("Yes, fix both"), after an audit of every live analysis (54) that replayed the rules on each stored row and read the colour each live page prints. The printed colour matched the rules on all 54; these two matched the rules and contradicted the page.
+- **Reason:** (1) Dot & Key Vitamin C+E Super Bright Gel Face Wash was Good choice with no claim read at all (the research log records 0 kept and 0 dropped), while its own page showed Claims evidence, Test transparency and Consumer clarity as Concern and scored 36 of 100. `claimsSourceRead` was set false only when claims had been dropped and none kept, so a model that returned nothing was read as "no claims", and "no claims" satisfies `support.claims_proportionate`. (2) Lotus Herbals Whiteglow Skin Whitening And Brighening Gel Creme was Buy with caution (32 of 100). `block.fairness` reads claim text only, and a claim needs a verified quote to block (4 of the 832 claims in the 54 are verified); none of its 18 claims says "whiten" (they say "brighter" and "lighter"), but its name does.
+- **What it touched:** `src/lib/analyser-x/adapter.ts`: `claimsSourceRead` is false whenever the research log records `claimsKept === 0`, dropped or not, so the existing `gap.claims_unreliable` applies and `support.claims_proportionate` is withheld. A row that never recorded `claimsKept` (older) is unchanged. This completes the 2026-11-02 entry above, which says a product whose brand page cannot be read "shows as claims not examined": an unreadable page makes the model return an empty list, which records 0 kept and 0 dropped, and only the dropped case had been handled. One existing test in `src/lib/claim-source.test.ts` asserted the opposite for 0 and 0; it now asserts the gap. `src/lib/analyser-x/claimflags.ts` and `rules.ts`: new `isFairnessName`; `block.fairness` also fires, once, when no verified claim does and the product name matches the same fairness wording as a claim. It skips oral care and nails ("whitening toothpaste"), a "non-whitening" name, and a name that is only what someone typed into a search (identity from text alone). Same sentence. Tests: `src/lib/analyser-x/no-claims-and-name-fairness.test.ts` (18; 7 fail on the old rules).
+- **Measured:** the 54 stored analyses replayed on the same snapshot with the old and the new rules: exactly two change. Dot & Key face wash Good choice to Not enough info; Lotus Whiteglow Buy with caution to Look elsewhere. Green 7 to 6, Yellow 34 to 33, Grey 13 to 14, Red 0 to 1. The other 52 are identical in colour, pill and reasons.
+- **Not changed:** an unverified fairness claim in the claim text alone is still not a block (`decision.test.ts`). Antinorm Dry Shampoo (Good choice while its page shows Claims evidence as Concern) is not changed by this entry; the next entry, the same day, settles it. No stored analysis is touched: the colour is worked out when the page is shown, so both pages change when this is live, and the face wash needs a re-run before its claims are read.
+- **Undo:** revert the commit, or restore the old `claimsSourceRead` condition (`(claimsDropped ?? 0) > 0 && claimsKept === 0`) and remove the name branch in `block.fairness`.
+
 ### 2026-11-04 (evening): A list that cannot be the whole list of a water-based product is held grey, never written
 - **Decided by:** the owner, on 2026-11-04, in chat. Asked what a list that fails a sanity check should do (hold it grey, or write it flagged as partial), the owner answered "grey".
 - **Reason:** in the owner's words above. Measured: the grey re-run of 2026-11-04 wrote Omeo's shampoo with the seven entries of a "Key Ingredients" line (Arnica, Calendula, Thuja, Neem, Ginger, Propanediol Caprylate, Lactic Acid) as its ingredient list, rated Buy with caution; the page prints no other list. Be Minimalist's "Shop by ingredient" menu and WishCare's four key actives would have been written the same way. Each passed every rule that looks at the text.
@@ -890,6 +921,14 @@ Add an entry whenever the owner decides something about what the analyser says o
 - **Measured:** with the page's real name as the query, the brand's page wins with 40 entries (Water first), ahead of the Nykaa Gel list. The new test in `product-review-engine.sources.test.ts` fails against the previous engine ("called 1 time, expected 2") and passes now.
 - **Not changed:** no stored analysis is changed by this entry. The Lakme row is still grey. Its fresh analysis is held by the re-run for `product-identity-changed` (stored name "Peach Creme Moisturiser, Ceramide & Peptide, ..." against the brand's "Peach Milk 2% Pro-Ceramide + Peptide Creme"), so applying it needs the owner's approval of the name change, as for Be Minimalist.
 - **Undo:** revert the commit, or restore the `parsed.brand.toLowerCase() !== brandHint.toLowerCase()` condition alone.
+
+### 2026-11-03 (latest): Tools, appliances and accessories are not analysed
+- **Decided by:** the owner, on 2026-11-03, in chat, after the analysis of Skince's Volumizer Hot Air Brush and Bombae's 2-in-1 Heat Protectant came up in the grey list: "Anything that's not personal care and beauty - cosmetic.. needs to be rejected from analysing - like heat prtectent tools, air brush etc."
+- **Reason:** in the owner's words above. A tool has no formula, so there is no ingredient list to read and nothing to screen; the stored analysis of the hot air brush (written 2026-10-30) was Grey with no list and nine "Brand Website" claims about drying and volume.
+- **What it touched:** `src/lib/unrated-kind.ts`: a fourth kind, `"tool"`, beside nutraceutical, prescription drug and drug. It goes through the same gate as those, so a new search for a tool answers "This is a tool, not a cosmetic" and is never stored, and a stored analysis of a tool leaves its page, the lists, the sitemap and the stats. A product is a tool when its category does not resolve to a cosmetic type in the closed category list (the category the model gave decides when there is one) AND either (a) that category holds a generic word (appliance, device, gadget, tool, accessory) or a specific tool phrase (hair dryer, hot air brush, flat iron, straightener, curling iron, trimmer, shaver, razor, epilator, face roller, gua sha, massager, makeup brush, brush set, beauty blender, comb, tweezers, nail clipper, scrunchie ...), or (b) the NAME holds a specific tool phrase and no word for a cosmetic format (serum, spray, cream, shampoo, powder ...). So "Heat Protectant for Flat Irons and Hair Dryers" and "Smoothing Serum for Straighteners" stay rated. `src/components/scorecards/UnratedNotice.tsx` (the notice copy; nothing to sign up for) and `src/lib/review-run.ts` (the search box accepts the new kind). 10 new tests in `unrated-kind.test.ts`.
+- **Measured:** over the 51 stored analyses on 2026-11-03 (name and category): one is a tool, Skince Volumizer Hot Air Brush; the other 50 are unchanged, including Bombae's 2-in-1 Heat Protectant, whose category is "Hair Serum / Heat Protectant", a cosmetic. (Its grey is a different fault: the re-run could not identify the product from its bundle page.)
+- **Not changed:** no row was deleted or edited. The Skince row stays in the table and is hidden by the same rule as the others, so undoing the rule brings it back. Products that are not personal care at all (a household cleaner, a food) are still turned away by the engine's existing out-of-scope check, when the model calls them that. Oral-care devices and other non-beauty gadgets are not listed by name. The rule leans toward "rated": a tool whose category the model wrote as a cosmetic type, or a name with a format word, is still analysed. The new rule is checked only after a product is identified, as for nutraceuticals: a search for a tool still spends the model call that identifies it.
+- **Undo:** revert the commit, or remove `"tool"` from `unratedKindOf` (the two other edits are harmless without it).
 
 ### 2026-11-03 (night, second entry): A list whose entries carry a concentration is refused as the ingredient list
 - **Decided by:** not yet the owner. Found by me while checking what the grey re-run (run 3) wrote on 2026-11-03.
@@ -1308,7 +1347,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/ScorecardBadge.tsx` | `ac3beafbed835890200c81e3d33fe0f6acf79436793e57cf774b1478771caade` |
 | `src/components/scorecards/ScorecardTabs.tsx` | `5f642c36c562ec2c69545f91a116ecd5b620f1ffa2e3019048a5e4cb6566c72e` |
 | `src/components/scorecards/TileChip.tsx` | `c02fe5b385ba58945bf45f1c973584b2c2138b132ad2ed53080e98ca1beac821` |
-| `src/components/scorecards/UnratedNotice.tsx` | `e37cfac4ab9b9c55085cfabc16e72ce91004e9cf967eedcfad7ef4dbf1fc7b41` |
+| `src/components/scorecards/UnratedNotice.tsx` | `816f537890064c9b56dbd4ee0ab966748032b5f4da320600dea59cae2acdee5b` |
 | `src/components/scorecards/UnratedProductPage.tsx` | `2fb73b2b15ba35be2cdd5129c8d242bf7712fd0962029a724e5f5656265a5a73` |
 | `src/components/scorecards/pill-palette.ts` | `3f5d4ac105c7a2030033dc248c0df45680f16a3195a882337b0a6309c95f550f` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
@@ -1326,24 +1365,24 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/analyser-flags.ts` | `91c8023cbf84911f4dbd79e1d9e40cf66a56fa7b3b094b8e7aca2761b8ffbe98` |
-| `src/lib/analyser-reference.ts` | `0bc7c45a1b12d0bcad694a16c147c01064e8e069af37838d8be0865782eb68c8` |
-| `src/lib/analyser-x/adapter.ts` | `8eeac5cc53080cc8a860a87de3f9b8e123a4c1f9473534187411a435bcc5ca91` |
-| `src/lib/analyser-x/claimflags.ts` | `bbd45bbc584599c679c5caaea06d3b815dc97cd9009b73a896c194d66afd5f92` |
+| `src/lib/analyser-reference.ts` | `1185b319e3a18f6dd284bfd18ec28ad6d1e1b2e9a5627d0ba62d685a086a79f9` |
+| `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
+| `src/lib/analyser-x/claimflags.ts` | `536713ad6e3fd041f93e046162470d9c4146a06cca8459329cdfda6e60e11aae` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `1c8968ed917d2647bede349b13759b42ad57dcb8c4f47a4789d16c3906234db8` |
-| `src/lib/analyser-x/decision.ts` | `9c14136e12bb08816afdfa124e1cb803c42266e935a9fc71097a9018531b6e97` |
+| `src/lib/analyser-x/copy.ts` | `07bdcc7c128aef359956cbda8ebbadbd8a905e79f4d94560d30530e9cc16f0a1` |
+| `src/lib/analyser-x/decision.ts` | `23a031d652e25c9b6a55f7bf500b67e9a43874cd8b6a790eba34e679f072e759` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
-| `src/lib/analyser-x/index.ts` | `9d5bcb0e3d6f924da02435031d81419e1120747c99af745f49f85ab30b41783d` |
-| `src/lib/analyser-x/invariants.ts` | `0a5734c7383f629d214b1a505ae5cba6dff7bddab88e52f5fd7e21dd8259194a` |
-| `src/lib/analyser-x/kb.ts` | `83b8b67415017755c0946f60e5ef35be719b824f140491170dd1da3a0283fe9c` |
-| `src/lib/analyser-x/ladder.ts` | `592fda191f0c6781fc8558d27cc047ee103f755a2f0467e706ec5479eaaab0a1` |
+| `src/lib/analyser-x/index.ts` | `ab086d1edb4166ab59529e260582fd8f6de82dc71e70514e9469b8b2678676e1` |
+| `src/lib/analyser-x/invariants.ts` | `399020aae190fcc34fbda9809355f8d36d84e45763daadb2d6b5f7a5165f591d` |
+| `src/lib/analyser-x/kb.ts` | `3c25a4f5069125390ab223148102a26a71b241d2bf008d76d230ff42cdb6d781` |
+| `src/lib/analyser-x/ladder.ts` | `41c174eb941998dedebaaa5b3f3b6286834f8363a87874d115b0e786e7b54116` |
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
-| `src/lib/analyser-x/regulatory.ts` | `4e006566a4038a218476bde4424d7f7ce165ae1258230cc3be26b2f25c5726b8` |
-| `src/lib/analyser-x/rules.ts` | `86e01b889d32d3bcc74b5b7ea1aace012536ca5e1872e6d3a3aa3c808fb88098` |
+| `src/lib/analyser-x/regulatory.ts` | `fb0ac5ba051ea18a81cd9444ffe201c89152d157c8efec1f2d68f8c202a198cf` |
+| `src/lib/analyser-x/rules.ts` | `01e80f3020a1e5c3582cca0cdfea91e4d202a79695b05353c04b44de5ce70e43` |
 | `src/lib/analyser-x/screen.ts` | `f1b38f1fb3471f7f24c9f7b2a2683e84f8f01f25d190b32e1c46b10e25f1b1c0` |
-| `src/lib/analyser-x/sections.ts` | `ed0bf952f885a0657a8f37880fadc1b50268e7d6b1884dc5576565ee21b99f32` |
-| `src/lib/analyser-x/tags.ts` | `6f6aa00598785f7c036c60996369d438f142e10d7005bfeaaa60bfd75167973b` |
+| `src/lib/analyser-x/sections.ts` | `9d2d9c6fe399e54ef4f33083ebcb7d2d83826500632ee46fa7220e9dd73836fa` |
+| `src/lib/analyser-x/tags.ts` | `a40748e88e7f6647347e428d26c71972bc416a5b53925c881b83338101dd00ae` |
 | `src/lib/analyser-x/test-helpers.ts` | `17da8d36981283a224627f933602aa341d14e77510b9440f6134067bd40f011a` |
 | `src/lib/analyser-x/types.ts` | `16753986af9231b18fe0037a18b9444be733149606dbc9e2db3b4aa4e160ab7a` |
 | `src/lib/analyser-x/verifier.ts` | `2aba0b3ec3b2b08f3ca4990e77c895802a63166bd2c8c84251c4ede6cd989c7c` |
@@ -1386,7 +1425,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
-| `src/lib/pills-page.ts` | `a44c23ec87a477e0348b0c3ea09d7fca2fda02662954a5664c9dff095ca7b7db` |
+| `src/lib/pills-page.ts` | `a710747269cb584a429ffcc2ebcf92fb23757dc65b1722d7d732c63129c1c902` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
@@ -1399,7 +1438,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
 | `src/lib/review-ingredient-state.ts` | `136cf48bb84c167a24c6d94277109711bb03df5b82a3a0b922a8e80c493d80a6` |
-| `src/lib/review-run.ts` | `fc35de89907c1b7bfac29cb6d748c6d0583b900ef4e11184b2779b6cd72f02f0` |
+| `src/lib/review-run.ts` | `9c8faab13a03ba941cbbf97a7aba1157b7d95c19b1920e5a99729e2a28c3f13e` |
 | `src/lib/review-to-scorecard.ts` | `dc462f5d1b0a995d6b3d91633fad94cbc68416d39f0649f7c42638a037e141eb` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
 | `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
@@ -1407,6 +1446,6 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
 | `src/lib/scrape.ts` | `14ff3a9ebd3168117388fc305321926545f9a3ad2c186a0e8ddb5ecd659f192c` |
 | `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
-| `src/lib/unrated-kind.ts` | `425eb9ce2e45b4c57c2765165af9b909e3d334bc6e77bf0d6108e4ff53afaa74` |
+| `src/lib/unrated-kind.ts` | `2c9eda296422616f443c2c94301a3d632fe4b8fa34d4b910a674bd2ffeb86a95` |
 | `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |
 | `src/lib/web-shopper-checks.ts` | `648e8b518771d73ca288d79b2c32452f9bdd942587927cd2a5540258b5fd5ec5` |

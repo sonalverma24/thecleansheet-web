@@ -3,7 +3,7 @@ import { buildStanding } from "@/lib/review.fixtures";
 import { makeInciEvidence } from "@/lib/review-verifier";
 import { decideReview } from "./adapter";
 import { checkInvariants } from "./invariants";
-import { BASE, NOW, REVIEWED, claimOf, evidence, rv } from "./test-helpers";
+import { BASE, NOW, REVIEWED, claimOf, evidence, notAllGreen, rv } from "./test-helpers";
 
 const ids = (r: ReturnType<typeof decideReview>) => r.decision.reasons.map((x) => x.ruleId);
 
@@ -16,13 +16,15 @@ describe("the five pills: worked examples", () => {
     expect(checkInvariants(r.decision, r.settled, r.ctx)).toEqual([]);
   });
 
-  it("Good choice: a product that makes no claims at all, with a verified clean list", () => {
+  it("Buy with caution: a product with no claim read has no test to be Fair about, so it is not Green (2026-11-04)", () => {
     const r = decideReview(rv({ claimMap: [] }), NOW);
-    expect(r.decision.key).toBe("good-choice");
+    expect(r.decision.key).toBe("buy-with-caution");
+    expect(r.decision.reasons.find((x) => x.ruleId === "caution.rows")?.text).toBe("Not every area of our checks is Strong yet: Test transparency.");
   });
 
   it("Buy with caution: the main claim rests on borrowed research", () => {
-    const r = decideReview(rv({ claimMap: [claimOf({ text: "Reduces pores in 4 weeks", types: ["time-bound"], primaryType: "time-bound", evidenceLevel: 2 })] }), NOW);
+    // notAllGreen: a level 2 claim caps the Claims evidence row well below Strong, as it does on a stored analysis.
+    const r = decideReview(rv({ claimMap: [claimOf({ text: "Reduces pores in 4 weeks", types: ["time-bound"], primaryType: "time-bound", evidenceLevel: 2 })], ...notAllGreen() }), NOW);
     expect(r.decision.key).toBe("buy-with-caution");
     expect(ids(r)).toContain("caution.claim_gap");
   });
@@ -112,7 +114,7 @@ describe("the five pills: worked examples", () => {
   });
 
   it("Buy with caution: SPF 20", () => {
-    const r = decideReview(rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen" }), NOW);
+    const r = decideReview(rv({ productName: "Daily Sunscreen SPF 20", category: "Sunscreen", inciIngredients: [...BASE, "Zinc Oxide"] }), NOW);
     expect(ids(r)).toContain("caution.spf_low");
     expect(r.decision.key).toBe("buy-with-caution");
   });

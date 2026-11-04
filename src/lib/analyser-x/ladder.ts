@@ -106,6 +106,12 @@ export const isUserPercentage = (text: string): boolean => USER_PERCENT_RE.test(
 const PERFORMANCE_RE = /\b(fades?|reduces?|repairs?|treats?|clears?|controls?|prevents?|minimi[sz]es?|lightens?|tightens?|strengthens?)\b|\b(?:protects?|shields?|defends?|guards?)\b[^.;]{0,40}\b(?:against|from)\b|\bprotection (?:against|from)\b|dark spots?|acne|pigmentation|wrinkles?|hair fall|dandruff|pores?/i;
 const COSMETIC_RE = /\b(glow|radian\w*|smooth\w*|soft\w*|hydrat\w*|brighten\w*|plump\w*|firm\w*|shine|shiny|supple)\b/i;
 
+/** "Helps with ...", "can support ...", "supports ...": wording that does not promise a change, only that the product contributes to one. It needs no test of its own
+    when the formula supports it (owner decision, 2026-11-04); "treats", "heals", "repairs" and the like promise the change and do. A clinical figure ("clinically
+    proven to help", "40% reduction") is a promise whatever the verb. */
+const HEDGE_RE = /\b(?:helps?|helping|can help|may help|can support|may support|supports?|supporting|aids?|assists?|contributes? to|promotes?)\b/i;
+export const isHedgedClaim = (text: string): boolean => HEDGE_RE.test(text) && !CLINICAL_RE.test(text);
+
 /** How much proof the wording needs. The strongest tier that matches wins. */
 export function ambitionOf(text: string, primaryType: string): Ambition {
   if (CLINICAL_RE.test(text)) return "clinical";

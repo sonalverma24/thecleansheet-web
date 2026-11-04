@@ -18,6 +18,9 @@ const clip = (v: unknown): string => { const t = word(v, "a claim"); return t.le
 const TAG: Record<string, (p: P) => string> = {
   "block.prohibited": () => "Prohibited in cosmetics",
   "block.contradicted": (p) => `Contradicts “${clip(p.claim)}”`,
+  "block.endocrine": () => "Hormone disruptor",
+  "block.carcinogen": () => "Known or probable carcinogen",
+  "block.over_limit": (p) => `Over the ${word(p.authority, "regulator's")} limit`,
   "caution.soft_adverse": (p) => word(p.label, "Flagged by our screen"),
   "caution.audience": (p) => `Caution for ${word(p.audience, "some")} use`,
   "caution.catch_all": () => "Unnamed entry",

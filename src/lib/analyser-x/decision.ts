@@ -9,11 +9,15 @@
    the list is not reliable: an apparent problem in an unverified list is something to
    verify, never something to publish.
 
-   Then the sections are consulted (owner decision, 2026-10-30): when all five sections of
-   the product page are green and the only cautions are ones those sections already measure
-   (a claim without a test on this product; a formula that may not deliver), the product is
-   a Good choice, and those cautions stay on the page as notes and under Gaps. Every other
-   caution is a flag and still holds a product at Buy with caution.
+   Then the five rows of the product page are consulted (owner decisions, 2026-10-30 and
+   2026-11-04). Green is Ingredient safety, Formula logic, Claims evidence (from 70%) and
+   Consumer clarity Strong, and Test transparency Fair or Strong. When they are, and the only
+   cautions are ones those rows already measure (a claim without a test on this product; a
+   formula that may not deliver), the product is a Good choice, and those cautions stay on
+   the page as notes and under Gaps. Every other caution is a flag and still holds a product
+   at Buy with caution. Nothing wrong but a row short of Strong is Buy with caution too, and
+   says which row. Red also comes from the rows: two weak rows, or a hormone disruptor, a
+   carcinogen, a banned strength, or a sunscreen with no UV filter (rules.ts).
 ──────────────────────────────────────────────────────────────── */
 
 import { evaluate } from "./rules";
@@ -21,7 +25,7 @@ import { MIN_SCREEN_COVERAGE } from "./kb";
 import { AUTHORITIES } from "./regulatory";
 import { PILLS, render } from "./copy";
 import { NAME_SEP, tagOf } from "./tags";
-import { safetyMarker } from "./sections";
+import { meetsGreen, rowsShortOfGreen, safetyMarker, type Rows } from "./sections";
 import type { BenchmarkValue, Decision, DecisionKey, DecisionReason, Finding, RuleContext } from "./types";
 import { ANALYSER_METHOD_VERSION } from "./version";
 
@@ -42,6 +46,16 @@ export function settle(findings: Finding[], ctx: RuleContext): Finding[] {
   return out;
 }
 
+/** The five rows of the page, as the decision reads them. Null for a context built without sections. */
+function rowsOf(settled: Finding[], ctx: RuleContext): Rows | null {
+  const sec = ctx.sections;
+  if (!sec) return null;
+  const safety = safetyMarker({ key: "buy-with-caution", settled: new Set(settled.map((f) => f.ruleId)), screenCoverage: ctx.screen?.coverage ?? 0 });
+  return { safety, formula: sec.formula, claims: sec.claims, tests: sec.tests, clarity: sec.clarity };
+}
+
+const joinAnd = (xs: string[]): string => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
 /** Cautions the five sections already measure: a claim without a test on this product (Claims evidence and Test transparency) and a formula that may
     not deliver what the claims promise (Formula logic). Every other caution is a flag the sections do not measure. */
 const SECTION_COVERED = new Set(["caution.claim_gap", "caution.formula"]);
@@ -57,8 +71,8 @@ export function agreeWithSections(settled: Finding[], ctx: RuleContext): Finding
   if (settled.some((f) => f.severity === "medicinal" || f.severity === "gap" || (f.severity === "block" && f.origin === "code"))) return settled;
   const have = new Set(settled.filter((f) => f.severity === "support").map((f) => f.ruleId));
   if (!have.has("support.list_verified") || !have.has("support.safety_clear")) return settled;
-  const safety = safetyMarker({ key: "buy-with-caution", settled: new Set(settled.map((f) => f.ruleId)), screenCoverage: ctx.screen?.coverage ?? 0 });
-  if (![safety, sections.formula, sections.claims, sections.tests, sections.clarity].every((m) => m === "green")) return settled;
+  const rows = rowsOf(settled, ctx);
+  if (!rows || !meetsGreen(rows)) return settled;
   return [
     ...settled.map((f) => (f.severity === "caution" ? { ...f, severity: "note" as const } : f)),
     { ruleId: "support.sections_green", severity: "support", origin: "code", needsReliableList: true, params: {}, derivedFrom: [] },
@@ -138,6 +152,7 @@ export function decide(ctx: RuleContext): DecideOutput {
 
   let key: DecisionKey;
   let driving: Finding[];
+  let rowsFinding: Finding | null = null;
   if (medicinal.length) { key = "medicinal-product"; driving = medicinal; }
   else if (blocks.length) { key = "look-elsewhere"; driving = shown(blocks); }
   else if (gaps.length) { key = "not-enough-info"; driving = shownGaps(gaps); }
@@ -147,7 +162,18 @@ export function decide(ctx: RuleContext): DecideOutput {
     // sections green: see agreeWithSections). A formula that is known to be sound adds a fourth; an unknown formula does not stop it.
     const have = new Set(supports.map((s) => s.ruleId));
     const core = ["support.list_verified", "support.safety_clear", "support.claims_proportionate"];
-    if (core.every((id) => have.has(id) || (id === "support.claims_proportionate" && have.has("support.sections_green")))) { key = "good-choice"; driving = [...supports].sort((a, b) => SUPPORT_ORDER.indexOf(a.ruleId) - SUPPORT_ORDER.indexOf(b.ruleId)); }
+    if (core.every((id) => have.has(id) || (id === "support.claims_proportionate" && have.has("support.sections_green")))) {
+      // Green is the five rows (owner decision, 2026-11-04): Ingredient safety, Formula logic, Claims evidence and Consumer clarity Strong, Test transparency Fair or
+      // Strong. With nothing wrong found and a row short of that, the page is Buy with caution and says which rows. A context built without sections skips this.
+      const rows = rowsOf(settled, ctx);
+      if (rows && !meetsGreen(rows)) {
+        key = "buy-with-caution";
+        rowsFinding = { ruleId: "caution.rows", severity: "caution", origin: "code", needsReliableList: false, params: { rows: joinAnd(rowsShortOfGreen(rows)) }, derivedFrom: [] };
+        driving = [rowsFinding];
+      } else {
+        key = "good-choice"; driving = [...supports].sort((a, b) => SUPPORT_ORDER.indexOf(a.ruleId) - SUPPORT_ORDER.indexOf(b.ruleId));
+      }
+    }
     else {
       key = "not-enough-info";
       driving = [{ ruleId: "gap.support_insufficient", severity: "gap", origin: "code", needsReliableList: false, params: {}, derivedFrom: [], gapKind: "disclosure" }];
@@ -185,5 +211,5 @@ export function decide(ctx: RuleContext): DecideOutput {
     },
     version: ANALYSER_METHOD_VERSION,
   };
-  return { decision, findings, settled };
+  return { decision, findings, settled: rowsFinding ? [...settled, rowsFinding] : settled };
 }

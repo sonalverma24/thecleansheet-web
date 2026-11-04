@@ -98,7 +98,9 @@ describe("caution.free_from_unverified", () => {
   });
 
   it("does nothing when the list does not contain what the claim excludes: a true claim stays Good choice", () => {
-    const r = decideReview(rv({ claimMap: [unchecked("Paraben-free"), unchecked("Sulfate-free"), unchecked("Synthetic fragrance-free")] }), NOW);
+    // The level 4 claim keeps Test transparency at Fair or better: free-from claims alone carry no test (level 1).
+    const tested = claimOf({ text: "Visibly evens skin tone", types: ["appearance"], primaryType: "appearance", evidenceLevel: 4 });
+    const r = decideReview(rv({ claimMap: [tested, unchecked("Paraben-free"), unchecked("Sulfate-free"), unchecked("Synthetic fragrance-free")] }), NOW);
     expect(r.decision.key).toBe("good-choice");
     expect(r.findings.map((f) => f.ruleId)).not.toContain("caution.free_from_unverified");
   });

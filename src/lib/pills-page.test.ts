@@ -5,7 +5,7 @@ import { deriveVerdict } from "@/lib/product-review-engine";
 import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { decideReview } from "@/lib/analyser-x";
 import { lint } from "@/lib/analyser-x/copy";
-import { BASE, claimOf, evidence, rv } from "@/lib/analyser-x/test-helpers";
+import { BASE, claimOf, evidence, notAllGreen, rv } from "@/lib/analyser-x/test-helpers";
 import { reviewInciList } from "@/lib/review-inci";
 import { makeInciEvidence } from "@/lib/review-verifier";
 import type { ClaimsCheckItem } from "@/data/brands/types";
@@ -54,7 +54,7 @@ describe("a Good choice", () => {
   it("block 8: five numbered rows, each wearing one of the three colour markers", () => {
     expect(m.details?.map((d) => [d.n, d.title, d.rating.marker, d.rating.word])).toEqual([
       ["01", "Ingredient safety", "green", "Strong"], ["02", "Formula logic", "green", "Strong"], ["03", "Claims evidence", "green", "Strong"],
-      ["04", "Test transparency", "green", "Strong"], ["05", "Consumer clarity", "yellow", "Fair"],
+      ["04", "Test transparency", "green", "Strong"], ["05", "Consumer clarity", "green", "Strong"],
     ]);
     expect(m.details?.[1].oneLiner).toBe("Anhydrous silicone gel. The right vehicle for a mineral filter.");
     expect(m.details?.[4].oneLiner).toBe("Clear overall, with 1 gap in guidance: usage warnings.");
@@ -80,7 +80,7 @@ describe("a Good choice", () => {
 
 describe("the other pills", () => {
   it("Buy with caution: a claim gap is the headline and what would strengthen it", () => {
-    const review = rv({ productName: "Brightening Serum", category: "Serum", claimMap: [claimOf({ text: "Fades dark spots in 4 weeks", types: ["concern"], primaryType: "concern", evidenceLevel: 2, corroborated: true })] });
+    const review = rv({ productName: "Brightening Serum", category: "Serum", claimMap: [claimOf({ text: "Fades dark spots in 4 weeks", types: ["concern"], primaryType: "concern", evidenceLevel: 2, corroborated: true })], ...notAllGreen() });
     const { model: m } = page(review);
     expect(m.pill.tone).toBe("caution");
     expect(m.take.recommendation).toBe("Buy with caution: it may be worth buying, but read the points below first.");
