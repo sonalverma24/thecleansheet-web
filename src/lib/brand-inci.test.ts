@@ -268,7 +268,8 @@ describe("Nykaa, INKEE Decoder and the brand site searched together", () => {
   const nykaaUrl = "https://www.nykaa.com/lotus-herbals-whiteglow-skin-whitening-brightening-gel-creme-spf-25-pa/p/10787966";
   const lotusDecoderUrl = "https://inkeedecoder.com/products/lotus-herbals-whiteglow-skin-whitening-and-brighening-gel-creme";
   const lotusQuery = "Lotus Herbals Whiteglow Skin Whitening Brightening Gel Creme Spf 25 Pa";
-  const names = (n: number, from = "A") => Array.from({ length: n }, (_, i) => `Ingredient ${from}${i}`);
+  // Generated lists start with Aqua, as every real water-based list does (the plausibility check refuses a water-based product's list with no water); the rest is filler to give each list its length.
+  const names = (n: number, from = "A") => Array.from({ length: n }, (_, i) => (i === 0 ? "Aqua" : `Ingredient ${from}${i}`));
   const decoderOlder = { source: lotusDecoderUrl, ingredients: names(29, "D"), quote: names(29, "D").join(", "), pageTitles: ["Lotus Herbals Whiteglow Skin Whitening Brightening Gel Creme"], trust: 3 as const, origin: "decoder" as const };
   const nykaaCurrent = { source: nykaaUrl, ingredients: names(30, "N"), quote: names(30, "N").join(", "), pageTitles: ["Lotus Herbals WhiteGlow Skin Whitening & Brightening Gel Cream SPF 25 PA+++|With Niacinamide"], siteName: "Nykaa", trust: 3 as const, origin: "nykaa" as const };
   const deps = (over: Record<string, unknown> = {}) => ({
@@ -615,5 +616,26 @@ describe("a brand's own site is recognised from the owner's brands table", () =>
       expect(isBrandIngredientUrl(url, "Plix"), `${brand} site for another brand`).toBe(false);
       expect(isBrandIngredientUrl(url.replace("https://", "https://evil."), brand), `${brand} look-alike`).toBe(false);
     }
+  });
+});
+
+/* 2026-11-04 (owner rule: a list that is not possible for the product is held grey, never written). Omeo's shampoo page printed only "Key Ingredients Arnica Montana Flower Extract, ...,
+   Lactic Acid" and a re-run wrote those seven as its ingredient list. */
+describe("a list that cannot be the whole list of a water-based product is not taken", () => {
+  const url = "https://omeocare.com/products/omeo-anti-dandruff-shampoo";
+  const query = "Omeo Anti Dandruff Shampoo with Neem, Ginger & Thuja";
+  const actives = ["Arnica Montana Flower Extract", "Calendula Officinalis Flower Extract", "Thuja Occidentalis Leaf Oil", "Melia Azadirachta Leaf (Neem) Extract", "Zingiber Officinale (Ginger) Root Extract", "Propanediol Caprylate", "Lactic Acid"];
+  const page = (ingredients: string[]) => ({ source: url, ingredients, quote: ingredients.join(", "), pageTitles: ["Omeo Anti Dandruff Shampoo with Neem, Ginger & Thuja"], siteName: null });
+
+  it("holds the key-actives line back (no water in a shampoo's list), whichever source it comes from", async () => {
+    expect(await findBrandInci(query, "Omeo", url, { search: async () => [], read: async () => page(actives) })).toBeNull();
+    expect(await findBrandInci(query, "Omeo", undefined, { search: async () => [], read: vi.fn() }, [{ ...page(actives), origin: "decoder" as const, trust: 3 as const }])).toBeNull();
+  });
+
+  it("takes the same page when its list holds water, and a water-free product's list as before", async () => {
+    expect(await findBrandInci(query, "Omeo", url, { search: async () => [], read: async () => page(["Aqua", ...actives]) })).toMatchObject({ source: url, ingredients: ["Aqua", ...actives] });
+    const dry = ["Zea Mays (Corn) Starch", "Bentonite", "Oryza Sativa (Rice) Starch", "Magnesium Aluminum Silicate", "Kaolin Powder"];
+    const antinorm = "https://antinorm.co/products/high-dry";
+    expect(await findBrandInci("Antinorm High & Dry Dry Shampoo + Refill", "Antinorm", antinorm, { search: async () => [], read: async () => ({ source: antinorm, ingredients: dry, quote: dry.join(", "), pageTitles: ["High & Dry"], siteName: null }) })).toMatchObject({ ingredients: dry });
   });
 });

@@ -9,6 +9,7 @@ import { inciSimilarity, nameTokens, pageTitleNamesProduct, sanitizeInciList } f
 import { isNykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
 import { catalogueConfirmsPage } from "./brand-catalogue";
 import { brandNameVariants } from "./verified-store";
+import { listPlausibleFor } from "./inci-plausibility";
 
 const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
@@ -248,7 +249,8 @@ const SAME_FORMULA = 0.85;
 export async function findBrandInci(query: string, brand: string, suppliedUrl?: string, deps: Dependencies = defaultBrandInciDeps, known: PageINCI[] = []): Promise<PageINCI | null> {
   const tried = new Set<string>();
   const readDecoder = deps.readDecoder ?? readDecoderPage;
-  const listOk = (page: PageINCI | null): page is PageINCI => !!page?.quote?.trim() && sanitizeInciList(page.ingredients).ok;
+  // A list must also be possible for this product (owner rule, 2026-11-04: a list that is not is held grey, never written): a water-based product's list holds water.
+  const listOk = (page: PageINCI | null): page is PageINCI => !!page?.quote?.trim() && sanitizeInciList(page.ingredients).ok && listPlausibleFor(page.ingredients, query).ok;
   const usable = (page: PageINCI | null): page is PageINCI =>
     listOk(page) && (!!page.pageTitles?.some((title) => pageTitleNamesProduct(title, brand, query)) || shortNameOnOwnPage(page.source, page.pageTitles, brand, query));
 
@@ -293,7 +295,7 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     return alternatives.length ? { ...best.page, alternatives } : best.page;
   };
 
-  const knownReads: Read[] = known.filter((k) => !!k.quote?.trim() && sanitizeInciList(k.ingredients).ok).map((page) => ({ page, supplied: false }));
+  const knownReads: Read[] = known.filter((k) => !!k.quote?.trim() && sanitizeInciList(k.ingredients).ok && listPlausibleFor(k.ingredients, query).ok).map((page) => ({ page, supplied: false }));
   for (const k of known) tried.add(k.source);
 
   let discovered: string[] = [];

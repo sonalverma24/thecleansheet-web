@@ -2,6 +2,7 @@ import type { ProductReview } from "@/lib/product-review-types";
 import { brandKey, isSameProduct, titleIdentifiesProduct, sanitizeInciList } from "@/lib/product-identity";
 import { isSourceBackedInci } from "@/lib/inci-source-backing";
 import { isPrimaryIngredientUrl } from "@/lib/brand-inci";
+import { listPlausibleFor } from "@/lib/inci-plausibility";
 
 export interface RerunRow {
   product_slug: string; product_name: string; brand: string;
@@ -47,6 +48,7 @@ export function validateReplacement(old: RerunRow, fresh: ProductReview, oldPill
   const url = fresh.inciEvidence?.sourceUrl ?? "";
   if (!isPrimaryIngredientUrl(url, fresh.brand)) errors.push("ingredient-source-not-primary");
   if (!sanitizeInciList(list).ok) errors.push("invalid-ingredient-list");
+  if (!listPlausibleFor(list, fresh.productName).ok) errors.push("implausible-ingredient-list"); // a water-based product whose list has no water is not its whole list
   const priorCount = before?.inciIngredients?.length ?? 0;
   // A shorter list from the brand's own page is the brand's word on what the product holds now (the stored one may be another source's older or other version): not held for its length.
   if (priorCount && before && isSourceBackedInci(before, before.inciIngredients ?? []) && list.length < Math.ceil(priorCount * 0.9) && fresh.inciEvidence?.origin !== "brand-page") errors.push("ingredient-list-shorter");
