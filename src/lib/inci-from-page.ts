@@ -493,17 +493,26 @@ export function extendFromBlocks(visible: InciExtraction | null, html: string): 
 /* A list the page itself labels as its ingredients, an element with "ingredient" in its id or class: <ul id="custom_ingredients">. */
 const LABELLED_LIST = /<(ul|ol)\b[^>]*\b(?:id|class)\s*=\s*"[^"]*ingredient[^"]*"[^>]*>([\s\S]*?)<\/\1>/gi;
 
+/* Menus and filters say "ingredient" too. Be Minimalist's header carries <ul id="SiteNavLabel-shop-by-ingredients-sidebar"> with "Back, Vitamin C, BHA / Salicylic Acid, Retinoid / Retinol,
+   Niacinamide, UV Filters, Ceramide" (and a second, "Capixyl, Maleic Acid, Peptide, Carnitine"), which the reader took for the product's ingredients (2026-11-04). Such a list is
+   refused when its own tag marks it as navigation, when most of its items are links (an ingredient list is plain text), or when an item is a menu control ("Back"). */
+const MENU_TAG = /nav|menu|filter|facet|shop-?by|dropdown|drop-down|breadcrumb/i;
+const MENU_CONTROL = /^(?:back|close|menu|more|next|previous|view all|shop all|see all|show all)$/i;
+
 /** Lakme's product page prints its 40 ingredients as <li>Water</li><li>Paraffinum Liquidum</li>..., twice (a tab for each screen size), with no comma anywhere. The list reader
     splits on commas, so it saw none. A bulleted list that the page labels as its ingredients is read item by item, and the items are put in the one form the rules above read
     (joined with ", "; the quote is that text). It is taken only when it has five or more items, none of them holds a comma (a comma list in a bullet is read as text already),
-    and the rules accept EVERY item as an entry, so a list with something else among the ingredients is refused whole, never read in part. Lists the page does not label, and
+    and the rules accept EVERY item as an entry, so a list with something else among the ingredients is refused whole, never read in part. A menu is never read (see MENU_TAG). Lists the page does not label, and
     bullets that carry only the key ingredients (under five), are never read this way. */
 export function extractInciFromListItems(rawHtml: string): InciExtraction | null {
   const html = rawHtml.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
   let best: InciExtraction | null = null;
   for (const list of html.matchAll(LABELLED_LIST)) {
-    const items = [...list[2].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => stripTags(li[1])).filter(Boolean);
-    if (items.length < 5 || items.some((item) => item.includes(","))) continue;
+    if (MENU_TAG.test(list[0].slice(0, list[0].indexOf(">") + 1))) continue; // the element's own tag marks it as a menu or a filter
+    const rawItems = [...list[2].matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((li) => li[1]);
+    const items = rawItems.map((li) => stripTags(li)).filter(Boolean);
+    if (items.length < 5 || items.some((item) => item.includes(",") || MENU_CONTROL.test(item))) continue;
+    if (rawItems.filter((li) => /<a\b[^>]*\bhref\s*=/i.test(li)).length * 2 > rawItems.length) continue; // mostly links: a menu, not a list
     const ex = extractInciWithQuote(items.join(", "));
     const wanted = items.filter((item, i) => i === 0 || item.toLowerCase() !== items[i - 1].toLowerCase()).length; // the extractor drops a repeat of the entry before
     if (ex && ex.ingredients.length === wanted && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
