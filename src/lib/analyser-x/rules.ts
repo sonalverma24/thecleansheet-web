@@ -10,11 +10,14 @@
    Strata run in order: medicinal, block, gap, caution, support, note.
 ──────────────────────────────────────────────────────────────── */
 
-import { ambitionOf, isUserPercentage, residualRisk, type Residual } from "./ladder";
-import { claimFlags } from "./claimflags";
-import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, DRUG_ACTIVES, FRAMEWORK_NOTES, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
+import { ambitionOf, isHedgedClaim, isUserPercentage, residualRisk, type Residual } from "./ladder";
+import { claimFlags, isFairnessName } from "./claimflags";
+import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, CARCINOGEN_IARC_RE, DRUG_ACTIVES, FRAMEWORK_NOTES, HORMONE_DISRUPTORS_RED, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
 import { drugNoticeOf } from "@/lib/drug-signals";
+import { lookupIngredient, rowLooksValid } from "@/lib/ingredient-db";
+import { UV_FILTERS, inciHas } from "@/data/analysis/ingredient-risk";
+import { weakRows } from "./sections";
 import { NAME_SEP } from "./tags";
 import type { ClaimValue, Finding, Rule, RuleContext, Severity } from "./types";
 
@@ -52,11 +55,19 @@ export function drugActivesIn(inci: string[], productName: string): string[] {
 
 /** A claim that needs proof on the finished product: performance or clinical wording that is not puffery. A "% of users" figure does not: it is a gap note
     (note.user_percentage) and never moves the pill, whether the claim_gap caution or the claims_proportionate support is being asked. */
-export function needsProof(c: ClaimValue): boolean {
+export function needsProof(c: ClaimValue, formulaSupports: boolean = false): boolean {
   if (c.emotional || c.corroborated === false || isUserPercentage(c.text)) return false;
+  // "Helps with / supports" wording needs no test of its own when the ingredients support it; "repairs / treats / heals" do (owner decision, 2026-11-04).
+  if (formulaSupports && isHedgedClaim(c.text)) return false;
   const a = ambitionOf(c.text, c.primaryType);
   return a === "performance" || a === "clinical";
 }
+
+/** Whether the formula supports what the claims say: the same test as support.formula_sound. Unknown formula points do not. */
+export const formulaSupportsClaims = (ctx: RuleContext): boolean => {
+  const p = ctx.profile.formulaPoints;
+  return p !== null && p >= 8 && !(ctx.profile.overreach && p < 11);
+};
 
 export const residualOf = (c: ClaimValue): Residual => residualRisk(ambitionOf(c.text, c.primaryType), c.evidenceLevel);
 
@@ -126,9 +137,67 @@ const blocks: Rule[] = [
   }),
   rule({
     id: "block.fairness", severity: "block", origin: "code", stratum: 20,
+    evaluate: (ctx, self) => {
+      const out = claimFlags(claimValues(ctx), ctx.list.ingredients).fairness.map((t) =>
+        mk(self, { claim: t }, ctx.claims.filter((x) => x.value.text === t).map((x) => x.fact)));
+      // Where no verified claim says it but the product's own name does ("... Skin Whitening ..."), the name is the claim. Only when we know which product this is: a name
+      // typed into a search is not the product's own.
+      if (!out.length && !ctx.profile.identityFromTextOnly && isFairnessName(ctx.profile.name)) out.push(mk(self, { claim: ctx.profile.name }, []));
+      return out;
+    },
+  }),
+  rule({
+    // A hormone disruptor the owner named (kb.ts: HORMONE_DISRUPTORS_RED). Legal at a permitted level, and still a Red (owner decision, 2026-11-04).
+    id: "block.endocrine", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
     evaluate: (ctx, self) =>
-      claimFlags(claimValues(ctx), ctx.list.ingredients).fairness.map((t) =>
-        mk(self, { claim: t }, ctx.claims.filter((x) => x.value.text === t).map((x) => x.fact))),
+      (ctx.screen?.endocrine ?? [])
+        .filter((e) => HORMONE_DISRUPTORS_RED.some((re) => re.test(e.name)))
+        .map((e) => mk(self, { ingredient: e.name, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx))),
+  }),
+  rule({
+    // An ingredient the database itself places in IARC Group 1 or 2A (kb.ts: CARCINOGEN_IARC_RE).
+    id: "block.carcinogen", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
+    // An ingredient already named as prohibited is that block, not a second one.
+    evaluate: (ctx, self) =>
+      ctx.list.ingredients
+        .filter((n) => !(ctx.screen?.prohibited ?? []).some((p) => p.name.toLowerCase() === n.toLowerCase()))
+        .filter((n) => { const r = lookupIngredient(n); return !!r && rowLooksValid(r) && CARCINOGEN_IARC_RE.test(r.IARC_Group || ""); })
+        .map((n) => mk(self, { ingredient: n, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx))),
+  }),
+  rule({
+    // A strength the product itself states above a limit the EU or India sets: a banned percentage. Another regulator's limit stays a caution (caution.benchmark_gap).
+    id: "block.over_limit", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
+    evaluate: (ctx, self) => {
+      const b = ctx.benchmark;
+      if (!b) return [];
+      const out: Finding[] = [];
+      for (const a of BLOCKING_AUTHORITIES) {
+        for (const e of b.authorities[a].exceeded) {
+          out.push(mk(self, { ingredient: e.name, limit: e.limit, declared: e.declared, authority: AUTHORITY_SHORT[a], source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx)));
+        }
+      }
+      return out;
+    },
+  }),
+  rule({
+    // A sunscreen is sold on its SPF, which comes from UV filters. A list with none is a formula that cannot deliver the one thing it is for. Only when the name states an SPF.
+    id: "block.no_uv_filter", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
+    evaluate: (ctx, self) =>
+      ctx.profile.isSunscreen && ctx.profile.spf !== null && ctx.list.ingredients.length >= 3 && inciHas(ctx.list.ingredients.join(" | "), UV_FILTERS).length === 0
+        ? [mk(self, { spf: ctx.profile.spf, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx))]
+        : [],
+  }),
+  rule({
+    // Two or more of the five rows are weak (Concern). The Formula, Claims and Clarity rows are the analysis's own scores, so this rests on them; the owner chose that on 2026-11-04.
+    // One weak row alone is Yellow. Ingredient safety is not counted here: a weak Ingredient safety row is already one of the blocks above.
+    id: "block.rows", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
+    evaluate: (ctx, self) => {
+      const s = ctx.sections;
+      // With no claim at all there is nothing to rate, not a weak result: the Claims and Test rows are empty, and that is a gap in what was read (gap.claims_unreliable), not two failures.
+      if (!s || !ctx.claims.length) return [];
+      const weak = weakRows({ safety: null, formula: s.formula, claims: s.claims, tests: s.tests, clarity: s.clarity });
+      return weak.length >= 2 ? [mk(self, { rowA: weak[0], rowB: weak[1] }, fact(ctx))] : [];
+    },
   }),
   rule({
     id: "block.pillars", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
@@ -221,7 +290,8 @@ const cautions: Rule[] = [
   rule({
     id: "caution.claim_gap", severity: "caution", origin: "model", stratum: 40,
     evaluate: (ctx, self) => {
-      const short = ctx.claims.filter((c) => needsProof(c.value) && residualOf(c.value) !== "low");
+      const supports = formulaSupportsClaims(ctx);
+      const short = ctx.claims.filter((c) => needsProof(c.value, supports) && residualOf(c.value) !== "low");
       if (!short.length) return [];
       // The widest gap leads, whatever order the claims were listed in; among equals the first listed wins.
       const worst = short.reduce((a, b) => (RESIDUAL_RANK[residualOf(b.value)] > RESIDUAL_RANK[residualOf(a.value)] ? b : a));
@@ -312,7 +382,7 @@ const supports: Rule[] = [
       const cs = claimValues(ctx);
       const share = cs.length ? cs.filter((c) => c.corroborated !== false).length / cs.length : 1;
       if (ctx.acquisition?.pageFetched === false || ctx.acquisition?.claimsSourceRead === false || (cs.length >= 2 && share < 0.5)) return [];
-      const needing = ctx.claims.filter((c) => needsProof(c.value));
+      const needing = ctx.claims.filter((c) => needsProof(c.value, formulaSupportsClaims(ctx)));
       const ok = needing.every((c) => residualOf(c.value) === "low");
       return ok ? [mk(self, { checked: needing.length }, needing.map((c) => c.fact))] : [];
     },
@@ -350,7 +420,8 @@ const notes: Rule[] = [
   }),
   rule({
     id: "note.endocrine", severity: "note", origin: "code", needsReliableList: true, stratum: 60,
-    evaluate: (ctx, self) => (ctx.screen?.endocrine ?? []).map((e) => mk(self, { ingredient: e.name, note: e.note }, fact(ctx))),
+    // An ingredient that is already a Red (block.endocrine) is not repeated here as "legal at its permitted level".
+    evaluate: (ctx, self) => (ctx.screen?.endocrine ?? []).filter((e) => !HORMONE_DISRUPTORS_RED.some((re) => re.test(e.name))).map((e) => mk(self, { ingredient: e.name, note: e.note }, fact(ctx))),
   }),
   rule({
     // Age never makes a product a worse buying choice; it makes the evidence older. We say when it was last checked.

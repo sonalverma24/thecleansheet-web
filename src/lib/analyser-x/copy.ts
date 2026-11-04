@@ -59,6 +59,11 @@ const T: Record<string, (p: P) => string> = {
   "block.contradicted": (p) => `The product says “${s(p.claim)}”, but its ingredient list includes ${s(p.ingredient)} (${from(p) || "from the product page"}).`,
   "block.fairness": () => "The product makes a skin-whitening or fairness claim, which India's advertising code treats as misleading.",
   "block.pillars": (p) => `Two areas of our checks fall short: ${s(p.pillarA)} and ${s(p.pillarB)}. Details are below.`,
+  "block.endocrine": (p) => `${s(p.ingredient)} is flagged as a hormone disruptor. Found in the ingredient list read ${from(p) || "from the product page"}.`,
+  "block.carcinogen": (p) => `${s(p.ingredient)} is classed as a known or probable human carcinogen. Found in the ingredient list read ${from(p) || "from the product page"}.`,
+  "block.over_limit": (p) => `${s(p.ingredient)} is stated at ${s(p.declared)}%, above the ${s(p.limit)}% limit set by ${s(p.authority)}.`,
+  "block.no_uv_filter": (p) => `This is sold as an SPF ${s(p.spf)} sunscreen, but its ingredient list shows no UV filter.`,
+  "block.rows": (p) => `Two areas of our checks are weak: ${s(p.rowA)} and ${s(p.rowB)}. Details are below.`,
 
   "gap.no_list": (p) => (p.__acq ? "We could not read the ingredient list when we analysed this. We are checking again." : "We could not find a full ingredient list for this product, so we cannot complete our safety check."),
   "gap.list_unreliable": () => "The only ingredient list we found is not from a source we can verify.",
@@ -83,6 +88,7 @@ const T: Record<string, (p: P) => string> = {
     : `The claim “${s(p.claim)}” is unchecked, and the ingredient list shows ${s(p.ingredient)}. Check it against the pack before you rely on it.`,
   "caution.boundary": () => "Some wording goes further than a cosmetic can say in India. Treat it as a cosmetic benefit, not a treatment.",
   "caution.formula": () => "The formula may not deliver everything the claims promise.",
+  "caution.rows": (p) => `Not every area of our checks is Strong yet: ${s(p.rows)}.`,
   "caution.list_trust_2": () => "The ingredient list comes from a retailer page only, so check it against the pack.",
   "caution.spf_low": (p) => `SPF ${s(p.spf)} is below the SPF 30 that The Clean Sheet treats as the minimum for daily outdoor use in India.`,
   "caution.benchmark_gap": (p) =>

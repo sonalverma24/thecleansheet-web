@@ -38,6 +38,13 @@ export function contradictions(claimText: string, inci: string[]): Contradiction
 
 export const isFairnessClaim = (t: string): boolean => FAIRNESS_RE.test(t);
 
+/** "Whitening" on a tube of toothpaste is about teeth, not skin; the name test below leaves oral care and nails alone. */
+const NOT_SKIN_RE = /\b(?:teeth|tooth|toothpaste|toothbrush|dental|oral|mouth(?:wash)?|nails?)\b/i;
+
+/** The product's own name is a claim too, and the first one a shopper reads ("... Skin Whitening And Brighening Gel Creme"). A claim extracted from a page needs
+    a verified quote before it can block, because the model that extracted it can be wrong; the name is how the product identifies itself, so it does not. */
+export const isFairnessName = (name: string): boolean => isFairnessClaim(name) && !NOT_SKIN_RE.test(name);
+
 export interface ClaimFlags {
   contradicted: Contradiction[];
   /** A "free-from" claim nobody has checked against its source (corroborated unknown) that the product's own list appears to contradict. It can only
