@@ -90,6 +90,82 @@ describe("a drug that is not marked as prescription", () => {
   });
 });
 
+describe("a tool, an appliance or an accessory", () => {
+  it("is named by the model's category: Skince's Volumizer Hot Air Brush, stored 2026-10-30", () => {
+    expect(kind("Volumizer Hot Air Brush", "Hot Air Brush / Hair Styling Appliance")).toBe("tool");
+    expect(unratedKindOf(unratedInputOf({ productName: "Volumizer Hot Air Brush", category: "Hot Air Brush / Hair Styling Appliance" }))).toBe("tool");
+  });
+
+  it("is named by a generic word in the category: appliance, device, gadget, tool, accessory", () => {
+    for (const category of ["Hair Styling Tool", "Beauty Device", "Skincare Tools", "Personal Care Appliance", "Hair Accessory", "Grooming Gadget"]) {
+      expect(kind("Pro 2200", category), category).toBe("tool");
+    }
+  });
+
+  it("is named by a tool phrase in the name when the category does not say", () => {
+    for (const name of ["Pro Hair Dryer 2200W", "Ceramic Flat Iron", "Ionic Hair Straightener", "Volumizer Hot Air Brush", "Beard Trimmer", "Rose Quartz Face Roller", "Jade Gua Sha", "12 Piece Makeup Brush Set",
+      "Beauty Blender Sponge", "Detangling Hair Brush", "Wide Tooth Comb", "Eyelash Curler", "Facial Cleansing Brush", "Derma Roller 0.5mm", "Stainless Steel Tweezers", "5 Blade Razor"]) {
+      expect(kind(name), name).toBe("tool");
+    }
+  });
+
+  it("is named by a tool phrase in the category", () => {
+    for (const category of ["Makeup Brush", "Hair Dryer", "Hair Straightener", "Face Massager", "Epilator", "Nail Clipper", "LED Light Therapy Mask"]) expect(kind("Pro", category), category).toBe("tool");
+  });
+
+  it("leans toward rated: with no category, a name the category list reads as a cosmetic is not called a tool (LED Face Mask reads as a mask); the category decides when there is one", () => {
+    expect(kind("LED Face Mask")).toBeNull();
+    expect(kind("LED Face Mask", "Beauty Device")).toBe("tool");
+  });
+
+  it("is not a cosmetic named after a tool it protects against or works with", () => {
+    for (const [name, category] of [
+      ["2-in-1 Heat Protectant", "Hair Serum / Heat Protectant"],
+      ["Heat Protectant for Flat Irons and Hair Dryers", "Heat Protectant Spray"],
+      ["Smoothing Serum for Straighteners", "Hair Serum"],
+      ["Brush On Mascara", "Mascara"],
+      ["Brush-on SPF 50 Powder Sunscreen", "Sunscreen"],
+      ["Shaving Cream for Razor Burn", "Shaving Cream"],
+      ["Razor Bump Relief Lotion", ""],
+      ["Comb Through Conditioner", "Conditioner"],
+      ["Blow Dry Cream", ""],
+      ["Hair Clip In Volume Powder", ""],
+      ["Microneedle Patch for Dark Spots", "Pimple Patch"],
+      ["Hair Mask", "Hair Mask"],
+      ["Sheet Mask", "Sheet Mask"],
+      ["Curl Defining Cream", "Hair Cream"],
+      ["Tweezerman After Care Gel", ""],
+      ["Brow Gel", "Brow Gel"],
+      ["Lip Brush Primer", "Lip Primer"],
+      ["High & Dry Everyday Dry Shampoo", "Dry Shampoo"],
+      ["Straightening Serum", "Hair Serum"],
+    ] as const) {
+      expect(kind(name, category), `${name} / ${category}`).toBeNull();
+    }
+  });
+
+  it("is not named by a generic word in the NAME alone", () => {
+    expect(kind("Device Free Skin Cream", "")).toBeNull();
+    expect(kind("The Tool Kit Face Wash", "Face Wash")).toBeNull();
+    expect(kind("Hair Accessory Care Oil", "")).toBeNull();
+  });
+
+  it("is not named when the category is a cosmetic type, whatever the name holds", () => {
+    expect(kind("Heated Straightener Cream", "Hair Straightening Cream")).toBeNull();
+    expect(kind("Pro Hair Dryer Shampoo", "Shampoo")).toBeNull();
+  });
+
+  it("a nutraceutical or a drug is still that, not a tool", () => {
+    expect(kind("Hair Gummies Device", "Oral Supplement / Beauty Drink Mix")).toBe("nutraceutical");
+    expect(kind("Hair Dryer Rx", "Prescription Required")).toBe("prescription-drug");
+  });
+
+  it("is not rated: no review, no place in a list", () => {
+    expect(isRated({ productName: "Volumizer Hot Air Brush", category: "Hot Air Brush / Hair Styling Appliance" })).toBe(false);
+    expect(isRated({ productName: "2-in-1 Heat Protectant", category: "Hair Serum / Heat Protectant" })).toBe(true);
+  });
+});
+
 describe("the static catalogue", () => {
   it("has nothing we would stop rating", () => {
     const hits = ALL_BRANDS.flatMap((b) => b.products.filter((p) => unratedKindOf({ productName: p.productName, category: p.category })).map((p) => `${b.slug}/${p.slug}`));

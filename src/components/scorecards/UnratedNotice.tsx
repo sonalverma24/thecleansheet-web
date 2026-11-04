@@ -8,11 +8,12 @@ import { track } from "@/lib/analytics";
 /* ────────────────────────────────────────────────────────────────
    THE CLEAN SHEET™ · The notice for a product we do not rate
 
-   A nutraceutical or a drug gets no review and no rating. Where its review would be (the product's own page, or the search box that just analysed
+   A nutraceutical, a drug or a tool gets no review and no rating. Where its review would be (the product's own page, or the search box that just analysed
    it) this notice is shown instead, as a popup:
      nutraceutical     "We can't rate nutraceuticals yet", with an email box: we write when we can.
      prescription-drug "This is a prescription drug", and nothing to sign up for: we do not plan to rate those.
      drug              "This is a drug, not a cosmetic" (a Drug Facts label, or a drug-only maker), and nothing to sign up for.
+     tool              "This is a tool, not a cosmetic" (an appliance, a device or an accessory), and nothing to sign up for: we do not plan to rate those.
 
    mode "popup": a dialog until it is closed.  mode "page": a dialog that opens with the page, and when it is closed leaves the same words in the page, so a closed
    popup does not leave an empty page behind.
@@ -35,6 +36,11 @@ export const UNRATED_COPY: Record<UnratedKind, { title: string; body: (name: str
   drug: {
     title: "This is a drug, not a cosmetic",
     body: (name) => `${name} is sold as a drug, not a cosmetic, so we don't rate it. Ask your doctor or pharmacist if you have questions about using it.`,
+  },
+  // An appliance, a device or an accessory (a hair dryer, a hot air brush, a makeup brush): nothing goes on the skin or hair, so there is no formula to analyse.
+  tool: {
+    title: "This is a tool, not a cosmetic",
+    body: (name) => `${name} is a tool, an appliance or an accessory, not a cosmetic, so we don't rate it. The Clean Sheet analyses what goes on your skin and hair, not what you use to style or apply it.`,
   },
 };
 

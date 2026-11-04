@@ -58,7 +58,7 @@ export function interpretReviewResponse(status: number, data: unknown, query: st
     const suggestions = (Array.isArray(d.suggestions) ? d.suggestions : []).flatMap((x) => (typeof x?.name === "string" && typeof x?.slug === "string" && x.name && x.slug ? [{ name: x.name, slug: x.slug }] : []));
     return { kind: "needs-product", query: d.query ?? query, brand: typeof d.brand === "string" && d.brand ? d.brand : null, suggestions };
   }
-  if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug" || d.kind === "drug") && d.productName) {
+  if (d.type === "unrated" && (d.kind === "nutraceutical" || d.kind === "prescription-drug" || d.kind === "drug" || d.kind === "tool") && d.productName) {
     return { kind: "unrated", unrated: d.kind, productName: d.productName, brand: d.brand ?? "" };
   }
   if (d.type === "out_of_scope") return { kind: "error", error: "scope" };
