@@ -93,6 +93,12 @@ describe("completeLastEntry: adds nothing it is not sure of", () => {
     same(", Glycerin You might also like Salicylic Acid + LHA 2% Cleanser Acne, Breakouts");
   });
 
+  it("half of an '(and)' blend is not an entry: the name before '(and)', or a name with it", () => {
+    same(", Aqua (and) Butylene Glycol (and) Crambe Maritima Leaf Extract, Sodium DNA (and) Panax Ginseng Root Extract and more of the formula");
+    same(", Sodium Benzoate (and) Potassium Sorbate You might also like Salicylic Acid + LHA 2% Cleanser Acne, Breakouts");
+    same(", Phenoxyethanol (and) Ethylhexylglycerin You might also like Salicylic Acid + LHA 2% Cleanser Acne, Breakouts");
+  });
+
   it("no comma after the list: nothing to add, even when an ingredient name opens the next sentence", () => {
     same(". Glycerin You might also like Salicylic Acid + LHA 2% Cleanser Acne, Breakouts");
   });
