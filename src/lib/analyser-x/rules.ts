@@ -12,7 +12,7 @@
 
 import { ambitionOf, isHedgedClaim, isUserPercentage, residualRisk, type Residual } from "./ladder";
 import { claimFlags, isFairnessName } from "./claimflags";
-import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, CARCINOGEN_IARC_RE, DRUG_ACTIVES, FRAMEWORK_NOTES, HORMONE_DISRUPTORS_RED, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
+import { AUDIENCE_RULES, BLOCKING_AUTHORITIES, CARCINOGEN_IARC_RE, DRUG_ACTIVES, FRAMEWORK_NOTES, HORMONE_DISRUPTORS_RED, MARINE_HARM_RED, MEDICINAL_FAMILIES, REGISTER_NAMES, REGULATOR_HOST, SPF_MINIMUM, STALE_DAYS } from "./kb";
 import { AUTHORITIES, AUTHORITY_SHORT, shortList } from "./regulatory";
 import { drugNoticeOf } from "@/lib/drug-signals";
 import { lookupIngredient, rowLooksValid } from "@/lib/ingredient-db";
@@ -153,6 +153,18 @@ const blocks: Rule[] = [
       (ctx.screen?.endocrine ?? [])
         .filter((e) => HORMONE_DISRUPTORS_RED.some((re) => re.test(e.name)))
         .map((e) => mk(self, { ingredient: e.name, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx))),
+  }),
+  rule({
+    // Octinoxate: a Red for harm to marine life (kb.ts: MARINE_HARM_RED). Matched on the list itself, not on the database's endocrine flag, which it no longer
+    // carries (owner decision, 2026-11-04: never call it a hormone disruptor).
+    id: "block.marine", severity: "block", origin: "code", needsReliableList: true, stratum: 20,
+    evaluate: (ctx, self) => {
+      const seen = new Set<string>();
+      return ctx.list.ingredients
+        .map((n) => { const r = lookupIngredient(n); return r && rowLooksValid(r) ? (r.INCI_Name || n) : n; })
+        .filter((n) => MARINE_HARM_RED.some((re) => re.test(n)) && !seen.has(n.toLowerCase()) && !!seen.add(n.toLowerCase()))
+        .map((n) => mk(self, { ingredient: n, source: ctx.list.url, capturedAt: ctx.list.capturedAt }, fact(ctx)));
+    },
   }),
   rule({
     // An ingredient the database itself places in IARC Group 1 or 2A (kb.ts: CARCINOGEN_IARC_RE).

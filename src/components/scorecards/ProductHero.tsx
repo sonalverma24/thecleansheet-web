@@ -368,11 +368,8 @@ export function getOneThingToKnow(product: ProductScorecard): OneThingToKnow | n
   if (s.includes("oxybenzone") || s.includes("benzophenone-3")) {
     return { text: "Contains Oxybenzone (Benzophenone-3), flagged for potential hormonal disruption in systemic absorption studies.", type: "caution" };
   }
-  if (s.includes("octinoxate") && (s.includes("hormonal") || s.includes("leave-on") || s.includes("lip"))) {
-    return { text: "Contains Octinoxate, which has raised hormonal disruption concerns in absorption studies, particularly relevant for lip products or leave-on formulas.", type: "caution" };
-  }
   if (s.includes("octinoxate")) {
-    return { text: "Contains Octinoxate. This UV filter is under regulatory review in several markets for potential hormonal disruption signals.", type: "caution" };
+    return { text: "Contains Octinoxate, a UV filter linked to harm to marine life, including coral reefs.", type: "caution" };
   }
   if (s.includes("homosalate")) {
     return { text: "Contains Homosalate, categorised as FDA Category III (insufficient safety data for daily use).", type: "caution" };
@@ -673,7 +670,8 @@ function getQuickDecision(product: ProductScorecard): QuickDecision {
       if (b.includes("transcutol") || b.includes("penetration enhancer")) { cautionIf.push("You are using prescription actives alongside"); break; }
       if (b.includes("spf") && b.includes("not verified")) { cautionIf.push("Relying on this for UV protection"); break; }
       if (b.includes("denatured alcohol") || b.includes("alcohol denat")) { cautionIf.push("Your skin is dry or barrier-compromised"); break; }
-      if (b.includes("oxybenzone") || b.includes("octinoxate") || b.includes("homosalate")) { cautionIf.push("You prefer hormone-safe UV filters"); break; }
+      if (b.includes("octinoxate")) { cautionIf.push("You prefer reef-safe UV filters"); break; }
+      if (b.includes("oxybenzone") || b.includes("homosalate")) { cautionIf.push("You prefer hormone-safe UV filters"); break; }
       if (b.includes("whey") && b.includes("vegan")) { cautionIf.push("You are purchasing based on the vegan claim"); break; }
     }
   }

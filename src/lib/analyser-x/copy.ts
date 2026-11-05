@@ -60,6 +60,7 @@ const T: Record<string, (p: P) => string> = {
   "block.fairness": () => "The product makes a skin-whitening or fairness claim, which India's advertising code treats as misleading.",
   "block.pillars": (p) => `Two areas of our checks fall short: ${s(p.pillarA)} and ${s(p.pillarB)}. Details are below.`,
   "block.endocrine": (p) => `${s(p.ingredient)} is flagged as a hormone disruptor. Found in the ingredient list read ${from(p) || "from the product page"}.`,
+  "block.marine": (p) => `${s(p.ingredient)}${/octinoxate/i.test(String(p.ingredient ?? "")) ? "" : " (octinoxate)"} is a UV filter linked to harm to marine life, including coral reefs. Found in the ingredient list read ${from(p) || "from the product page"}.`,
   "block.carcinogen": (p) => `${s(p.ingredient)} is classed as a known or probable human carcinogen. Found in the ingredient list read ${from(p) || "from the product page"}.`,
   "block.over_limit": (p) => `${s(p.ingredient)} is stated at ${s(p.declared)}%, above the ${s(p.limit)}% limit set by ${s(p.authority)}.`,
   "block.no_uv_filter": (p) => `This is sold as an SPF ${s(p.spf)} sunscreen, but its ingredient list shows no UV filter.`,
