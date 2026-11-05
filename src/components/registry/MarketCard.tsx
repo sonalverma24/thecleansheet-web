@@ -38,7 +38,7 @@ const GLANCE_TONE = {
 /** On a card, "Pregnancy ingredient flags: Homosalate and Benzophenone-3" reads as "Pregnancy ingredient flags": the names would be cut off mid-word, and the page lists them. */
 export const cardGlanceText = (label: string): string => label.replace(/^(Pregnancy (?:caution|ingredient flags?)): .+$/, "$1");
 
-function GlanceRow({ items }: { items: NonNullable<ProductScorecard["glance"]> }) {
+export function GlanceRow({ items }: { items: NonNullable<ProductScorecard["glance"]> }) {
   return (
     <ul aria-label="At a glance" className="flex flex-wrap content-start gap-x-1 gap-y-1 overflow-hidden h-[22px] md:h-[48px]">
       {items.map((g) => {
