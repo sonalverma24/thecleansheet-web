@@ -2,6 +2,7 @@ import type { ProductScorecard } from "@/data/brands/types";
 import { resolveTier } from "@/components/scorecards/pillar-ui";
 import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
 import { HOME_PICK_SLUGS, HOME_SHELF_MAX } from "@/data/home-picks";
+import { getDisplayPrice } from "@/lib/product-card-helpers";
 
 /* ────────────────────────────────────────────────────────────────
    HOME SHELF · the product cards on the home page.
@@ -65,6 +66,10 @@ export interface ShelfCard {
   /** The rating circle: green, yellow, red, or null for grey (not rated). No label. */
   marker: "green" | "yellow" | "red" | null;
   note: string;
+  /** The ticks the /products card shows (stored reviews only), or null. */
+  glance: NonNullable<ProductScorecard["glance"]> | null;
+  /** The price as the /products card shows it ("₹599"), or null when unknown. */
+  price: string | null;
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -109,6 +114,8 @@ export function shelfNote(summary: string | undefined): string {
 function toCard(tile: ProductScorecard, seedKey: string | null, category: string, image: string | null): ShelfCard {
   // A card of a stored review shows the circle its page shows; a product with no stored review shows the circle of its standing.
   const marker = tile.pill ? tile.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: tile.reviewTier, score: tile.score })];
+  // Same price text as the /products card: the rupee sign, not "Rs.".
+  const price = getDisplayPrice(tile).replace(/Rs\.?\s*/gi, "₹");
   return {
     seedKey,
     slug: tile.slug,
@@ -119,6 +126,8 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
     image,
     marker,
     note: shelfNote(tile.summary),
+    glance: tile.pill && tile.glance?.length ? tile.glance : null,
+    price: price === "Price unavailable" ? null : price,
   };
 }
 
