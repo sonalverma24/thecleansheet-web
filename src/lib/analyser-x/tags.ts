@@ -19,6 +19,7 @@ const TAG: Record<string, (p: P) => string> = {
   "block.prohibited": () => "Prohibited in cosmetics",
   "block.contradicted": (p) => `Contradicts “${clip(p.claim)}”`,
   "block.endocrine": () => "Hormone disruptor",
+  "block.marine": () => "Harms marine life",
   "block.carcinogen": () => "Known or probable carcinogen",
   "block.over_limit": (p) => `Over the ${word(p.authority, "regulator's")} limit`,
   "caution.soft_adverse": (p) => word(p.label, "Flagged by our screen"),
