@@ -155,19 +155,25 @@ const BOTANICAL_INCI = /^[A-Za-z]{3,} [A-Za-z]{3,}(?: [A-Za-z]{3,})? \([A-Za-z][
 const MARKETING_PHRASE_RE =
   /\b(free|resistant|protection|enriched|tested|proven|clinically|dermatologically|hours?|finish|non[\s-]?comedogenic|hypoallergenic|broad[\s-]spectrum|all skin types|suitable for)\b/i;
 
+/* A strength printed after an entry: the actives block of a US-style label, "Octinoxate 6.7%, Titanium Dioxide 1.6%". The entry is the name; the strength
+   is dropped from it (the quote keeps it). */
+const TRAILING_STRENGTH_RE = /\s*\d+(?:[.,]\d+)?\s*%$/;
+
 function looksLikeIngredient(t: string): boolean {
-  const s = t.trim();
+  const s = t.trim().replace(TRAILING_STRENGTH_RE, "");
   if (s.length < 2 || s.length > 70) return false;
   if (!/[a-z]/i.test(s)) return false; // must carry letters (drops "36", "007")
   if (/[.!?;:]$/.test(s)) return false; // sentence fragment, not an INCI item
   if ((s.match(/\s+/g) || []).length > 7) return false; // too many words for one item
   if (/https?:|@|www\.|\bpvt\b|\bltd\b|road|marg|compound|©|®™?/i.test(s)) return false;
-  // Letters, digits, spaces and INCI punctuation only.
-  return /^[A-Za-z0-9][A-Za-z0-9 ,\-\/().'’+&*]*$/.test(s);
+  // Letters, digits, spaces and INCI punctuation only. A backslash separates the names of one entry in several languages on Estée Lauder-group pages (Bobbi
+  // Brown, Clinique, MAC: "Water\\Aqua\\Eau", "Honey Extract\\Mel\\Extrait De Miel"); without it those entries were rejected and the list was cut at them
+  // (Bobbi Brown Weightless Skin Foundation SPF 15, 2026-11-04: read 20 of 36, from the entry after the honey, with no water and no UV filter).
+  return /^[A-Za-z0-9][A-Za-z0-9 ,\-\/\\().'’+&*]*$/.test(s);
 }
 
 const cleanTok = (s: string): string =>
-  s.replace(/\s+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s*-\s*/g, "-").trim();
+  s.replace(TRAILING_STRENGTH_RE, "").replace(/\\/g, "/").replace(/\s+/g, " ").replace(/\s*\/\s*/g, "/").replace(/\s*-\s*/g, "-").trim();
 
 /** The accepted list together with the raw text it was read from. */
 export interface InciExtraction {
@@ -302,6 +308,14 @@ function labelledEntryStart(text: string): number {
   return -1;
 }
 
+/** Where an active with its strength ends when it is glued to a following "Ingredients" label ("Titanium Dioxide 1.6%Ingredients: Water"), or -1. */
+function gluedActive(text: string): number {
+  const m = /\d(?:[.,]\d+)?\s*%\s*(?=(?:(?:inactive|other)\s+)?ingredients?\b)/i.exec(text);
+  if (!m) return -1;
+  const end = m.index + m[0].trimEnd().length;
+  return looksLikeIngredient(text.slice(0, end)) ? end : -1;
+}
+
 /* A gap: an empty piece (a doubled comma), or a piece with digits and a dash and no letters that the locant
    rule could not re-join ("3–0" with an en dash). Plain numbers ("36", "400072") are not a gap, and neither
    is a "+/-" separator, a bullet or a trailing comma. */
@@ -425,9 +439,19 @@ export function extractInciWithQuote(text: string): InciExtraction | null {
     // Rejected token: a last entry printed with a full stop closes the run. If it ends
     // with an "Ingredients:" label, begin the next run at the trailing ingredient (so a
     // leading "Water" glued to the label survives).
+    const at = labelledEntryStart(p.text);
+    // The actives of a US-style label, then the rest under a second label, printed with no break between them: "Ingredients: Octinoxate 6.7%, Titanium
+    // Dioxide 1.6%Ingredients: Water\\Aqua\\Eau, ...". The last active, with its strength, is glued to the second label. Both blocks are one formula, so the
+    // run goes on through the label instead of starting again (which lost the UV filters). Only an entry that states a strength counts, so copy before a
+    // label is never taken for an active.
+    const glued = at >= 0 && cur.length ? gluedActive(p.text) : -1;
+    if (glued > 0) {
+      pushEntry(p, 0, glued);
+      pushEntry(p, at, p.text.length);
+      continue;
+    }
     pushClosing(p, p.text.length);
     flush();
-    const at = labelledEntryStart(p.text);
     if (at >= 0) pushEntry(p, at, p.text.length);
   }
   flush();
