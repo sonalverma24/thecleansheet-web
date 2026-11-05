@@ -57,10 +57,10 @@ describe("a new analysis reaches every place that shows analyses", () => {
     }
   });
 
-  it("is added to the home page, newest first, up to five, until the owner picks", () => {
+  it("is added to the home page, newest first among its colour (2 Green, 3 Yellow), until the owner picks", () => {
     expect(buildShelf(AFTER, { picks: [] })[0].slug).toBe("new-1");
     const many = [NEW, ...Array.from({ length: 8 }, (_, i) => product({ slug: `x-${i}`, brand: "B", productName: `P${i}` }))];
-    expect(buildShelf(many, { picks: [] }).map((c) => c.slug)).toEqual(["new-1", "x-0", "x-1", "x-2", "x-3"]);
+    expect(buildShelf(many, { picks: [] }).map((c) => c.slug)).toEqual(["new-1", "x-0"]);
   });
 
   it("stays off the home page when the owner has picked other products, and joins it when picked", () => {

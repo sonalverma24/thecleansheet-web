@@ -112,8 +112,7 @@ export function shelfNote(summary: string | undefined): string {
 }
 
 function toCard(tile: ProductScorecard, seedKey: string | null, category: string, image: string | null): ShelfCard {
-  // A card of a stored review shows the circle its page shows; a product with no stored review shows the circle of its standing.
-  const marker = tile.pill ? tile.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: tile.reviewTier, score: tile.score })];
+  const marker = markerOf(tile);
   // Same price text as the /products card: the rupee sign, not "Rs.".
   const price = getDisplayPrice(tile).replace(/Rs\.?\s*/gi, "₹");
   return {
@@ -133,14 +132,25 @@ function toCard(tile: ProductScorecard, seedKey: string | null, category: string
 
 const seedKeyFor = (tile: Pick<ProductScorecard, "brand" | "productName">): string | null => SHELF_SEEDS.find((seed) => matchSeed(seed, tile))?.key ?? null;
 
+/** The rating circle a tile shows: the circle of its stored page, or of its standing when it has none. Null is grey (not rated). */
+const markerOf = (tile: ProductScorecard): ShelfCard["marker"] =>
+  tile.pill ? tile.pill.marker : MARKER_OF_TIER[resolveTier({ reviewTier: tile.reviewTier, score: tile.score })];
+
+/** Owner rule (2026-11-05): with no picks, the home page shows the newest 2 Green, then the newest 3 Yellow. Never a Grey or a Red one. */
+export const HOME_SHELF_MIX = { green: 2, yellow: 3 } as const;
+
 /** `tiles` are stored analyses, newest first (listRepositoryCatalogueProducts). The shelf is the owner's picks, in the order given, when any of them exist,
-    otherwise the newest analyses; never more than `max` and never a product twice. A picked slug with no analysis is skipped. */
-export function buildShelf(tiles: ProductScorecard[], opts: { picks?: readonly string[]; max?: number } = {}): ShelfCard[] {
+    otherwise the newest Green ones then the newest Yellow ones (HOME_SHELF_MIX), never Grey or Red; never more than `max` and never a product twice.
+    A picked slug with no analysis is skipped. */
+export function buildShelf(tiles: ProductScorecard[], opts: { picks?: readonly string[]; max?: number; mix?: { green: number; yellow: number } } = {}): ShelfCard[] {
   const max = opts.max ?? HOME_SHELF_MAX;
   const picks = opts.picks ?? HOME_PICK_SLUGS;
+  const mix = opts.mix ?? HOME_SHELF_MIX;
   const bySlug = new Map(tiles.map((t) => [t.slug, t]));
   const picked = [...new Set(picks)].flatMap((slug) => { const t = bySlug.get(slug); return t ? [t] : []; });
-  const chosen = (picked.length ? picked : tiles).slice(0, max);
+  const unique = [...new Map(tiles.map((t) => [t.slug, t])).values()];
+  const newest = (marker: "green" | "yellow", count: number) => unique.filter((t) => markerOf(t) === marker).slice(0, count);
+  const chosen = (picked.length ? picked : [...newest("green", mix.green), ...newest("yellow", mix.yellow)]).slice(0, max);
   return chosen.map((tile) => toCard(tile, seedKeyFor(tile), categoryFor(tile) ?? OTHER, seedImageFor(tile) ?? (tile.image || null)));
 }
 
