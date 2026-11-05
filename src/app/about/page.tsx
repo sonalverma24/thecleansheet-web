@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Reveal, Stagger, Item, TitleReveal } from "@/components/motion/Motion";
 import { AccreditationLine } from "@/components/standard/Disclosures";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* ────────────────────────────────────────────────────────────────
    ABOUT · who we are, why we exist, our principles, the founder,
@@ -39,17 +40,14 @@ export default function AboutPage() {
       {/* Hero · who we are */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pt-8 md:pt-12 pb-10 md:pb-14">
         <Reveal>
-          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}>About</p>
+          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}><T k="about.about">About</T></p>
         </Reveal>
         <h1 className="font-display mt-6 text-[44px] md:text-[64px] leading-[1.05] tracking-[-0.02em] max-w-3xl" style={{ ...DISPLAY_LIGHT, color: INK }}>
           <TitleReveal lines={["Evidence over", "marketing."]} />
         </h1>
         <Reveal delay={0.3}>
           <p className="mt-8 text-[18px] leading-[1.7] max-w-2xl" style={{ color: WARM }}>
-            The Clean Sheet is building independent evidence infrastructure for beauty and personal
-            care. We publish a standard, we analyse products against the evidence, and we certify the
-            ones that prove their claims, so a shopper can see what is really behind a product,
-            not just how it is marketed.
+            <T k="about.the-clean-sheet-is-building">The Clean Sheet is building independent evidence infrastructure for beauty and personal care. We publish a standard, we analyse products against the evidence, and we certify the ones that prove their claims, so a shopper can see what is really behind a product, not just how it is marketed.</T>
           </p>
         </Reveal>
       </section>
@@ -58,20 +56,16 @@ export default function AboutPage() {
       <section style={{ background: INK }}>
         <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-12 md:py-16">
           <Reveal>
-            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: "#80d5cc" }}>Why we exist</p>
+            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: "#80d5cc" }}><T k="about.why-we-exist">Why we exist</T></p>
             <h2 className="font-display mt-6 text-3xl md:text-5xl leading-tight max-w-2xl" style={{ ...DISPLAY_LIGHT, color: CREAM }}>
-              A wide gap between claims and proof.
+              <T k="about.a-wide-gap-between-claims">A wide gap between claims and proof.</T>
             </h2>
             <div className="mt-6 flex flex-col gap-5 text-[16px] leading-[1.75] max-w-2xl" style={{ color: "#c9c6c4" }}>
               <p>
-                Beauty marketing moves faster than its evidence. Terms like &ldquo;clinically proven&rdquo;,
-                &ldquo;dermatologist tested&rdquo;, &ldquo;natural&rdquo; and &ldquo;clean&rdquo; are used freely, with little that
-                a shopper can check for themselves.
+                <T k="about.beauty-marketing-moves-faster-than">Beauty marketing moves faster than its evidence. Terms like &ldquo;clinically proven&rdquo;, &ldquo;dermatologist tested&rdquo;, &ldquo;natural&rdquo; and &ldquo;clean&rdquo; are used freely, with little that a shopper can check for themselves.</T>
               </p>
               <p>
-                We close that gap with a published standard and public evidence, so the question
-                stops being &ldquo;what does the label say&rdquo; and becomes &ldquo;what can the product actually
-                show&rdquo;.
+                <T k="about.we-close-that-gap-with">We close that gap with a published standard and public evidence, so the question stops being &ldquo;what does the label say&rdquo; and becomes &ldquo;what can the product actually show&rdquo;.</T>
               </p>
             </div>
           </Reveal>
@@ -81,9 +75,9 @@ export default function AboutPage() {
       {/* Principles */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 py-12 md:py-16">
         <Reveal>
-          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: CORAL }}>Our approach</p>
+          <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: CORAL }}><T k="about.our-approach">Our approach</T></p>
           <h2 className="font-display mt-6 text-3xl md:text-5xl leading-tight max-w-2xl" style={{ ...DISPLAY_LIGHT, color: INK }}>
-            The principles we hold to.
+            <T k="about.the-principles-we-hold-to">The principles we hold to.</T>
           </h2>
         </Reveal>
         <Stagger className="mt-12 grid md:grid-cols-2 gap-x-12 gap-y-8" gap={0.06}>
@@ -91,8 +85,8 @@ export default function AboutPage() {
             <Item key={p.t} className="flex gap-5 pt-5" style={{ borderTop: `1px solid ${HAIR}` }}>
               <span className="font-display text-[18px] flex-shrink-0" style={{ color: TEAL }}>{String(i + 1).padStart(2, "0")}</span>
               <div>
-                <h3 className="font-display text-[19px] leading-tight" style={{ ...DISPLAY_LIGHT, color: INK }}>{p.t}</h3>
-                <p className="mt-1.5 text-[14px] leading-[1.65]" style={{ color: WARM }}>{p.b}</p>
+                <h3 className="font-display text-[19px] leading-tight" style={{ ...DISPLAY_LIGHT, color: INK }}><T k={`about.principle.${i + 1}.title`}>{p.t}</T></h3>
+                <p className="mt-1.5 text-[14px] leading-[1.65]" style={{ color: WARM }}><T k={`about.principle.${i + 1}.text`}>{p.b}</T></p>
               </div>
             </Item>
           ))}
@@ -103,7 +97,7 @@ export default function AboutPage() {
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-20 md:pb-28">
         <div className="grid lg:grid-cols-[1fr_1.3fr] gap-x-16 gap-y-8 items-start">
           <Reveal>
-            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}>Founder</p>
+            <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: TEAL }}><T k="about.founder">Founder</T></p>
             <div className="mt-5 flex items-center gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -114,7 +108,7 @@ export default function AboutPage() {
               />
               <div>
                 <h2 className="font-display text-2xl md:text-3xl leading-tight" style={{ ...DISPLAY_LIGHT, color: INK }}>
-                  Sonal Verma
+                  <T k="about.sonal-verma">Sonal Verma</T>
                 </h2>
                 <a
                   href="https://www.linkedin.com/in/sonalverma24/"
@@ -131,15 +125,10 @@ export default function AboutPage() {
           <Reveal delay={0.15}>
             <div className="flex flex-col gap-4 text-[16px] leading-[1.75]" style={{ color: WARM }}>
               <p>
-                The Clean Sheet was founded by Sonal Verma. She started it because the gap between
-                what beauty products claim and what they can actually show had become impossible to
-                ignore, and because shoppers deserve a straightforward way to see the evidence for
-                themselves.
+                <T k="about.the-clean-sheet-was-founded">The Clean Sheet was founded by Sonal Verma. She started it because the gap between what beauty products claim and what they can actually show had become impossible to ignore, and because shoppers deserve a straightforward way to see the evidence for themselves.</T>
               </p>
               <p>
-                The Clean Sheet is built on published standards and outside expertise, rather than
-                on any one person&apos;s authority. Where specialist judgement is needed, it comes
-                from qualified assessors and named sources, not from opinion.
+                <T k="about.the-clean-sheet-is-built">The Clean Sheet is built on published standards and outside expertise, rather than on any one person&apos;s authority. Where specialist judgement is needed, it comes from qualified assessors and named sources, not from opinion.</T>
               </p>
             </div>
           </Reveal>
@@ -151,35 +140,28 @@ export default function AboutPage() {
         <div className="grid lg:grid-cols-2 gap-x-20 gap-y-14 items-start">
           <Reveal>
             <p className="text-[12px] uppercase" style={{ letterSpacing: "0.14em", color: CORAL }}>
-              Credibility
+              <T k="about.credibility">Credibility</T>
             </p>
             <h2 className="font-display mt-6 text-[32px] md:text-[40px] leading-[1.15]" style={{ ...DISPLAY_LIGHT, color: INK }}>
-              Our independent panel.
+              <T k="about.our-independent-panel">Our independent panel.</T>
             </h2>
             <div className="mt-6 flex flex-col gap-4 text-[16px] leading-[1.75] max-w-lg" style={{ color: WARM }}>
               <p>
-                The Clean Sheet evaluations are checked by an independent panel of experts,
-                including cosmetic scientists, toxicologists, and dermatologists.
+                <T k="about.the-clean-sheet-evaluations-are">The Clean Sheet evaluations are checked by an independent panel of experts, including cosmetic scientists, toxicologists, and dermatologists.</T>
               </p>
               <p>
-                We deliberately keep the panel confidential. Anonymity shields each
-                evaluation from lobbying, brand pressure and personal bias, so a verdict
-                rests on the evidence and nothing else.
+                <T k="about.we-deliberately-keep-the-panel">We deliberately keep the panel confidential. Anonymity shields each evaluation from lobbying, brand pressure and personal bias, so a verdict rests on the evidence and nothing else.</T>
               </p>
               <p>
-                No panel member holds a commercial relationship with the brands under
-                assessment. Conflicts of interest are declared and managed, and evaluators
-                never deal with a brand directly.
+                <T k="about.no-panel-member-holds-a">No panel member holds a commercial relationship with the brands under assessment. Conflicts of interest are declared and managed, and evaluators never deal with a brand directly.</T>
               </p>
             </div>
           </Reveal>
           <Reveal delay={0.15}>
             <div className="pt-6" style={{ borderTop: `1px solid ${INK}` }}>
-              <h3 className="font-display text-[24px] pb-4" style={{ color: INK }}>Want to be on the panel?</h3>
+              <h3 className="font-display text-[24px] pb-4" style={{ color: INK }}><T k="about.want-to-be-on-the">Want to be on the panel?</T></h3>
               <p className="text-[15px] leading-[1.7] max-w-md pb-6" style={{ color: WARM }}>
-                If you are a cosmetic scientist, toxicologist, or dermatologist who wants to
-                make a difference, we&apos;d love to hear from you. The composition of our panel
-                is taken seriously.
+                <T k="about.if-you-are-a-cosmetic">If you are a cosmetic scientist, toxicologist, or dermatologist who wants to make a difference, we&apos;d love to hear from you. The composition of our panel is taken seriously.</T>
               </p>
               <div className="flex flex-col gap-3 pb-8">
                 {[
@@ -208,7 +190,7 @@ export default function AboutPage() {
       {/* Accreditation status */}
       <section className="max-w-[1200px] mx-auto px-4 md:px-16 pb-20 md:pb-28">
         <Reveal>
-          <p className="text-[12px] uppercase pb-3" style={{ letterSpacing: "0.14em", color: TEAL }}>Accreditation status</p>
+          <p className="text-[12px] uppercase pb-3" style={{ letterSpacing: "0.14em", color: TEAL }}><T k="about.accreditation-status">Accreditation status</T></p>
           <div className="rounded-2xl p-6" style={{ border: `1px solid ${HAIR}`, maxWidth: "48rem" }}>
             <AccreditationLine />
           </div>
@@ -220,10 +202,10 @@ export default function AboutPage() {
         <div className="max-w-[1200px] mx-auto px-4 md:px-16 py-12 md:py-16">
           <Reveal>
             <h2 className="font-display text-3xl md:text-4xl leading-tight" style={{ ...DISPLAY_LIGHT, color: CREAM }}>
-              Get in touch.
+              <T k="about.get-in-touch">Get in touch.</T>
             </h2>
             <p className="mt-4 text-[16px] leading-[1.7] max-w-lg" style={{ color: "rgba(252,249,248,0.85)" }}>
-              Questions, corrections, or a product you want us to look at. We read everything.
+              <T k="about.questions-corrections-or-a-product">Questions, corrections, or a product you want us to look at. We read everything.</T>
             </p>
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-4">
               <a href="mailto:hello@thecleansheet.in" className="inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-[15px] transition-opacity hover:opacity-90" style={{ background: CREAM, color: INK }}>

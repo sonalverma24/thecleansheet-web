@@ -6,6 +6,7 @@ import { reviewToScorecard } from "@/lib/review-to-scorecard";
 import { buildPillsPage, type PillTone, type StandingView } from "@/lib/pills-page";
 import { decideReview, type DecisionKey } from "@/lib/analyser-x";
 import { TIER_STYLES } from "@/components/scorecards/pillar-ui";
+import { withColour, withTextEdits } from "@/lib/admin-analysis-edits";
 
 /** Today's standing as the layout-only mode shows it: the old label, the tone of its colour, and whether it is a stored Licensed Drug. */
 export function standingViewOf(tier: DerivedVerdict["tier"]): StandingView {
@@ -17,7 +18,10 @@ export function standingViewOf(tier: DerivedVerdict["tier"]): StandingView {
 export function pillsFor(review: ProductReview, verdict: DerivedVerdict, now: string = new Date().toISOString(), standing?: StandingView) {
   review = reconcileMissingIngredients(review);
   const mapped = reviewToScorecard(review, verdict);
-  return { ...mapped, model: buildPillsPage(review, mapped.product, now, decideReview(review, now), standing) };
+  // An admin's colour and wording (review.adminEdits, set at /admin/repository/<slug>) replace the rules' colour and the machine wording.
+  const edits = review.adminEdits;
+  const model = buildPillsPage(review, mapped.product, now, withColour(decideReview(review, now), edits?.colour), standing);
+  return { ...mapped, model: withTextEdits(model, edits?.text) };
 }
 
 /** The layout-only view of a stored review: the new layout, today's standing. */

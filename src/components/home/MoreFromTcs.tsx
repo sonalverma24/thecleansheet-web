@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* The four pages that no longer sit in the desktop top nav. Every one is one
    click from the home page, on mobile too. */
@@ -21,10 +22,10 @@ export default function MoreFromTcs() {
             href={l.href}
             className="group bg-white p-6 flex flex-col gap-2 transition-colors hover:bg-[#e3f1ef]"
           >
-            <span className="text-[11px] font-bold tracking-[0.18em] text-[#248179]">{l.eyebrow}</span>
-            <span className="font-display font-light text-[22px] leading-[1.15] text-[#282828]">{l.title}</span>
+            <span className="text-[11px] font-bold tracking-[0.18em] text-[#248179]"><T k={`home.more.${l.href.slice(1)}.eyebrow`}>{l.eyebrow}</T></span>
+            <span className="font-display font-light text-[22px] leading-[1.15] text-[#282828]"><T k={`home.more.${l.href.slice(1)}.title`}>{l.title}</T></span>
             <span className="flex justify-between items-center text-[13px] text-[#4a4a4a]">
-              {l.note}
+              <T k={`home.more.${l.href.slice(1)}.note`}>{l.note}</T>
               <span aria-hidden className="font-bold text-[#248179] transition-transform group-hover:translate-x-0.5">→</span>
             </span>
           </Link>

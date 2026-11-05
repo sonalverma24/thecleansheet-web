@@ -252,6 +252,12 @@ export function RepositoryAdminClient() {
                   </button>
                 )}
                 <a
+                  href={`/admin/repository/${encodeURIComponent(r.product_slug)}`}
+                  className="rounded-lg bg-[#248179] text-white text-xs px-3 py-1.5"
+                >
+                  Edit text &amp; colour
+                </a>
+                <a
                   href={`/analysis/${r.product_slug}`}
                   target="_blank"
                   rel="noreferrer"

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/motion/Motion";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* "How the analyser reads a claim". The card on the right is a SAMPLE: the pack
    image is a pre-blurred file (the original never ships) and no brand is named
@@ -18,26 +19,25 @@ export default function ClaimSample() {
     <section className="max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12 pb-14 sm:pb-[120px] grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
       <Reveal>
         <div className="flex flex-col gap-4 md:gap-[22px]">
-          <span className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179]">HOW THE ANALYSER READS A CLAIM</span>
+          <span className="text-[10px] md:text-[12px] font-bold tracking-[0.18em] text-[#248179]"><T k="home.claim.eyebrow">HOW THE ANALYSER READS A CLAIM</T></span>
           <h2 className="font-display font-light text-[clamp(36px,4.6vw,60px)] leading-[1.02] tracking-[-0.02em] text-[#282828]">
-            A lab report is a start.
+            <T k="home.claim.title1">A lab report is a start.</T>
             <br />
-            <span className="text-[#248179]">Not the whole story.</span>
+            <span className="text-[#248179]"><T k="home.claim.title2">Not the whole story.</T></span>
           </h2>
           <p className="text-[16px] leading-[1.6] text-[#4a4a4a] max-w-[480px]">
-            Brands may already invest in legitimate testing. Our role is to independently assess the evidence, explain its
-            limits, and translate the result into something you can actually use.
+            <T k="home.claim.lead">Brands may already invest in legitimate testing. Our role is to independently assess the evidence, explain its limits, and translate the result into something you can actually use.</T>
           </p>
           <ul className="flex flex-col max-w-[480px]">
-            {QUESTIONS.map((q) => (
+            {QUESTIONS.map((q, i) => (
               <li key={q} className="flex gap-3.5 py-[13px] border-b border-[#e5dfd6] text-[14px] text-[#282828]">
                 <span aria-hidden className="text-[#248179]">✓</span>
-                {q}
+                <T k={`home.claim.question.${i + 1}`}>{q}</T>
               </li>
             ))}
           </ul>
           <Link href="/standard" className="self-start text-[14px] font-bold text-[#248179] hover:underline underline-offset-[3px]">
-            See how we assess evidence
+            <T k="home.claim.link">See how we assess evidence</T>
           </Link>
         </div>
       </Reveal>
