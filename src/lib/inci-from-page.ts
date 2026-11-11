@@ -193,10 +193,15 @@ interface Part { text: string; map: number[] }
    after a hyphen), so it is never an entry itself, and it is re-joined to the piece after it. */
 const LOCANT_FRAGMENT = /^[0-9]+(?:-[0-9A-Za-z])*$/;
 
+/* What separates one entry from the next. A comma, or a middle dot: some brands print the list as "WATER· SODIUM LAUROYL SARCOSINATE· …" with no comma
+   anywhere (3TENX, 2026-11-11), and read on commas alone the whole list was one piece, so no list was found and the analysis stayed grey. No INCI name holds a
+   middle dot. Both are one character, so the offsets below stay exact. */
+const SEPARATOR = /[,·]/;
+
 function splitParts(text: string): Part[] {
   const pieces: { t: string; start: number; comma: number }[] = [];
   let pos = 0;
-  for (const piece of text.split(",")) {
+  for (const piece of text.split(SEPARATOR)) {
     const lead = piece.length - piece.trimStart().length;
     pieces.push({ t: piece.trim(), start: pos + lead, comma: pos + piece.length });
     pos += piece.length + 1;
@@ -494,8 +499,11 @@ const BLOCK_TAG = /<\/?(?:address|article|aside|blockquote|br|dd|details|dialog|
 export function extractInciFromBlocks(rawHtml: string): InciExtraction | null {
   const html = flattenRichTextDumps(rawHtml).replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
   let best: InciExtraction | null = null;
-  for (const chunk of html.split(BLOCK_TAG)) {
-    if ((chunk.match(/,/g)?.length ?? 0) < 4) continue; // five entries need four commas
+  // Each block as the tags cut it, and again with its line breaks kept inside it: a list printed over several <br> lines (3TENX, 2026-11-11) is in no single
+  // block when every <br> is a boundary, so the next block's title stayed glued to its last entry ("METHYLISOTHIAZOLINONE Legal Information").
+  const chunks = [...html.split(BLOCK_TAG), ...html.replace(/<br\b[^>]*>/gi, "\n").split(BLOCK_TAG)];
+  for (const chunk of chunks) {
+    if ((chunk.match(/[,·]/g)?.length ?? 0) < 4) continue; // five entries need four separators
     const ex = extractInciWithQuote(stripTags(chunk));
     if (ex && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
   }
@@ -530,9 +538,33 @@ function trimsEdges(blocks: string[], base: string[]): boolean {
     order with more entries (the page copy swallowed some), or when it is the same list with the text glued to its first and last entries taken off. It never
     replaces, reorders or shortens a list otherwise, and never supplies a list the visible reading refused (a list cut in two by a gap, or none). */
 export function extendFromBlocks(visible: InciExtraction | null, html: string): InciExtraction | null {
+  return refineFrom(visible, extractInciFromBlocks(html));
+}
+
+function refineFrom(visible: InciExtraction | null, blocks: InciExtraction | null): InciExtraction | null {
   if (!visible) return null;
-  const blocks = extractInciFromBlocks(html);
   return blocks && (containsRun(blocks.ingredients, visible.ingredients) || trimsEdges(blocks.ingredients, visible.ingredients)) ? blocks : visible;
+}
+
+/* A blank line or a heading line: where one paragraph of a reader's markdown ends and the next begins. */
+const PARAGRAPH_BREAK = /\n[ \t]*\n|\n(?=[ \t]*#{1,6}\s)/;
+
+/** The markdown counterpart of extractInciFromBlocks, for a page read through the Jina reader (a store that refuses a plain fetch). The longest list found inside one
+    paragraph. 3TENX (2026-11-11) prints "Full Ingredients List", a blank line, then the list, then a "### Legal Information" heading: read as one text, the label
+    swallowed Water and the heading swallowed Methylisothiazolinone, and a shampoo list with no water is refused. Read on its own, the paragraph holds the list and nothing else. */
+export function extractInciFromParagraphs(markdown: string): InciExtraction | null {
+  let best: InciExtraction | null = null;
+  for (const chunk of markdown.split(PARAGRAPH_BREAK)) {
+    if ((chunk.match(/[,·]/g)?.length ?? 0) < 4) continue;
+    const ex = extractInciWithQuote(chunk);
+    if (ex && (!best || ex.ingredients.length > best.ingredients.length)) best = ex;
+  }
+  return best;
+}
+
+/** The list read from the whole markdown, put right by the list read in its own paragraph, on the same terms as extendFromBlocks. */
+export function extendFromParagraphs(visible: InciExtraction | null, markdown: string): InciExtraction | null {
+  return refineFrom(visible, extractInciFromParagraphs(markdown));
 }
 
 /* ── A list printed one ingredient to a bullet ───────────────────── */
@@ -664,6 +696,12 @@ const GLUED_LABEL = /\b(?:full\s+)?ingredients?(?:\s+list)?\s*:?\s+/i;
     entries before it are page copy. Applied to a page read, not to extractInciWithQuote, which must keep agreeing with the extractor it replaced. */
 export function startAtListLabel(ex: InciExtraction | null): InciExtraction | null {
   if (!ex) return ex;
+  // "Full Ingredients List WATER· ...": the reader takes "Ingredients" as the label and leaves its last word on the first entry ("List WATER", 3TENX 2026-11-11).
+  // No INCI name begins with the word "List", so it is taken off when what follows is an ingredient.
+  const leftover = /^list\s+/i.exec(ex.ingredients[0] ?? "");
+  if (leftover && looksLikeIngredient(ex.ingredients[0].slice(leftover[0].length)) && /^list\s+/i.test(ex.quote)) {
+    return { ingredients: [ex.ingredients[0].slice(leftover[0].length), ...ex.ingredients.slice(1)], quote: ex.quote.replace(/^list\s+/i, "") };
+  }
   const at = ex.ingredients.slice(0, 3).findIndex((x) => GLUED_LABEL.test(x));
   if (at < 0) return ex;
   const inItem = GLUED_LABEL.exec(ex.ingredients[at])!;
@@ -695,7 +733,7 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = startAtListLabel(extractInciWithQuote(md));
+    const ex = startAtListLabel(extendFromParagraphs(extractInciWithQuote(md), md));
     if (ex && ex.ingredients.length >= 5) {
       return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
     }
