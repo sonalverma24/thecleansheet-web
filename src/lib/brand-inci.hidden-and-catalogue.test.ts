@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { brandsOwnName, findBrandInci } from "./brand-inci";
+import { brandsOwnName, findBrandInci, titleNamesBrand } from "./brand-inci";
 import { catalogueProductUrl } from "./brand-catalogue";
 import { fetchInciFromRenderedPage, INGREDIENT_TAB_ACTIONS, readMarkdownList, unescapeMarkdown } from "./inci-from-page";
 import { validateReplacement, type RerunRow } from "../../scripts/approved-rerun-policy";
@@ -145,5 +145,23 @@ describe("a browser read never makes the lookup overrun", () => {
       await run;
       expect(readRendered).not.toHaveBeenCalled();
     } finally { vi.useRealTimers(); }
+  });
+});
+
+describe("a retailer page for another brand's product is never taken", () => {
+  const nykaa = "https://www.nykaa.com/rivona-naturals-3-in-1-honey-oat-hair-milk-leave-in-conditioner-heat-protectant-anti-frizz/p/22292380";
+  const rivona = { source: nykaa, ingredients: ["Aqua", "Honey", "Oat Milk", "Snow Mushroom", "Pea Protein", "Shea Butter"], quote: "Aqua, Honey, Oat Milk, Snow Mushroom, Pea Protein, Shea Butter", pageTitles: ["Rivona Naturals 3 In 1 Honey & Oat Hair Milk Leave-In Conditioner + Heat Protectant + Anti-Frizz"], origin: "nykaa" as const, trust: 3 as const };
+  it("refuses a Nykaa page whose title has the product's words but another brand (Bombae's 2-in-1 Heat Protectant, 2026-11-12)", async () => {
+    expect(await findBrandInci("2-in-1 Heat Protectant", "Bombae", undefined, { search: async () => [], read: async () => null, searchNykaa: async () => [nykaa], readNykaa: async () => rivona })).toBeNull();
+  });
+  it("still takes the brand's own Nykaa page", async () => {
+    const own = { ...rivona, pageTitles: ["Bombae 2-in-1 Heat Protectant"] };
+    expect(await findBrandInci("Bombae 2-in-1 Heat Protectant", "Bombae", undefined, { search: async () => [], read: async () => null, searchNykaa: async () => [nykaa], readNykaa: async () => own })).toMatchObject({ source: nykaa });
+  });
+  it("reads the brand in a title however it is written", () => {
+    expect(titleNamesBrand("Pond&#39;s Super Light Gel", "Ponds")).toBe(true);
+    expect(titleNamesBrand("Dot and key Watermelon Cooling Icy Gel Moisturizer", "Dot & Key")).toBe(true);
+    expect(titleNamesBrand("Estee Lauder Double Wear", "Estée Lauder")).toBe(true);
+    expect(titleNamesBrand("Rivona Naturals 3 In 1 Heat Protectant", "Bombae")).toBe(false);
   });
 });

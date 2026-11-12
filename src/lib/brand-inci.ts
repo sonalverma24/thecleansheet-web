@@ -55,6 +55,15 @@ export function isBrandIngredientUrl(raw: string, brand: string): boolean {
   } catch { return false; }
 }
 
+/** Whether a page's title names the brand. A retailer or reference page lists every brand's products, so one whose title names the product's words but not its brand
+ *  is another brand's product (a search for Bombae's "2-in-1 Heat Protectant" reached Rivona Naturals' "3 In 1 ... Heat Protectant" on Nykaa, 2026-11-12). Entities,
+ *  apostrophes and "&" written as "and" do not count as a difference ("Pond&#39;s", "Dot and key"). */
+export function titleNamesBrand(title: string, brand: string): boolean {
+  const forms = (t: string) => { const plain = t.replace(/&#\d+;|&[a-z]+;/gi, ""); return [compact(plain), compact(plain.replace(/&/g, " and "))]; };
+  const have = forms(title);
+  return brandNameVariants(brand).some((name) => forms(name).some((b) => b.length >= 2 && have.some((h) => h.includes(b))));
+}
+
 /** Words that name a kind of product, not a product: a page called "Face Wash" or "Hair Oil" could be any of a brand's. */
 const KIND_WORDS = new Set([
   "face", "wash", "cleanser", "serum", "cream", "gel", "lotion", "oil", "moisturizer", "moisturiser", "sunscreen", "shampoo", "conditioner", "mask", "toner", "mist", "balm",
@@ -323,7 +332,8 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     const kept = await Promise.all(reads.map(async (r): Promise<Read[]> => {
       // A brand's own page whose title does not name the product is still taken when the brand's catalogue shows it is the one product that is clearly this one.
       // That page then names the product as the brand does (owner rule, 2026-11-12: take the brand's name), so it is marked `identity: "brand-catalogue"`.
-      const titled = usable(r.page);
+      // A Decoder or Nykaa page must also name the brand in its title; the brand's own site is the brand already.
+      const titled = usable(r.page) && (r.origin === "brand-page" || !!r.page.pageTitles?.some((t) => titleNamesBrand(t, brand)));
       const catalogued = !titled && r.origin === "brand-page" && listOk(r.page) && !!deps.confirmInBrandCatalogue && (await within(deps.confirmInBrandCatalogue(r.url, brand, query), CATALOGUE_CAP_MS)) === true;
       return (titled || catalogued) && r.page
         ? [{ page: { ...r.page, origin: r.page.origin ?? r.origin, trust: r.page.trust ?? (r.origin === "brand-page" ? 4 as const : 3 as const), ...(catalogued ? { identity: "brand-catalogue" as const } : {}) }, supplied: r.url === suppliedUrl }]
