@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Loader2, RotateCcw, TriangleAlert } from "lucide-react";
 import { COLOUR_CHOICES, EDITABLE_FIELDS, type AdminAnalysisEdits } from "@/lib/admin-analysis-edits";
 import type { DecisionKey } from "@/lib/analyser-x";
+import { IngredientsPanel } from "./IngredientsPanel";
 
 type Loaded = {
   slug: string;
@@ -15,6 +16,10 @@ type Loaded = {
   original: Record<string, string | string[]>;
   hasCheatCode: boolean;
   edits: AdminAnalysisEdits | null;
+  ingredients: string[];
+  listSource: string | null;
+  listSourceUrl: string | null;
+  productPageUrl: string | null;
 };
 
 const asText = (v: string | string[] | undefined) => (Array.isArray(v) ? v.join("\n") : v ?? "");
@@ -34,11 +39,13 @@ export function AnalysisEditor({ slug }: { slug: string }) {
     setDrafts(Object.fromEntries(EDITABLE_FIELDS.map((f) => [f.id, asText(d.edits?.text?.[f.id] ?? d.original[f.id])])));
   };
 
-  useEffect(() => {
+  const load = () => {
     fetch(`/api/admin/analysis?slug=${encodeURIComponent(slug)}`, { cache: "no-store" })
       .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d.error ?? `Error ${r.status}`); fill(d); })
       .catch((e: Error) => setError(e.message));
-  }, [slug]);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, [slug]);
 
   const post = async (body: object, kind: "save" | "clear") => {
     setBusy(kind); setError(null); setSaved(null);
@@ -85,8 +92,11 @@ export function AnalysisEditor({ slug }: { slug: string }) {
 
       <div className="rounded-xl border border-[#D97706]/30 bg-[#fff8eb] p-3 text-[13px] text-[#6b4a0f] flex gap-2">
         <TriangleAlert size={16} className="flex-none mt-0.5" />
-        <span>Edits replace what the analysis wrote. If this product is re-analysed, the new analysis replaces these edits, so note anything you want to keep.</span>
+        <span>Edits replace what the analysis wrote. If this product is re-analysed (including with Re-analyse below), the new analysis replaces these edits, so note anything you want to keep.</span>
       </div>
+
+      <IngredientsPanel slug={data.slug} ingredients={data.ingredients} listSource={data.listSource} listSourceUrl={data.listSourceUrl}
+        productPageUrl={data.productPageUrl} onPublished={load} />
 
       <section className="rounded-2xl border border-[#b0a8a4]/20 bg-white p-5">
         <h2 className="text-[15px] font-bold text-[#282828]">Rating colour</h2>

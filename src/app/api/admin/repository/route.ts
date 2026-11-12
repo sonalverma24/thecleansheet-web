@@ -46,7 +46,8 @@ export async function GET() {
       "product_slug, product_name, brand, image_url, reviewed_at, " +
       "image_source:result->review->>imageSource, " +
       "image_confidence:result->review->>imageConfidence, " +
-      "image_locked:result->review->>imageLocked",
+      "image_locked:result->review->>imageLocked, " +
+      "first_ingredient:result->review->inciIngredients->>0",
     )
     .order("reviewed_at", { ascending: false })
     .limit(400);

@@ -12,6 +12,7 @@ type Row = {
   image_source: string | null;
   image_confidence: string | null;
   image_locked: string | null;
+  first_ingredient?: string | null;
 };
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -52,6 +53,7 @@ export function RepositoryAdminClient() {
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [onlyMissing, setOnlyMissing] = useState(false);
+  const [onlyNoInci, setOnlyNoInci] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export function RepositoryAdminClient() {
     const t = q.trim().toLowerCase();
     return rows.filter((r) => {
       if (onlyMissing && r.image_url) return false;
+      if (onlyNoInci && r.first_ingredient) return false;
       if (!t) return true;
       return (
         (r.product_name ?? "").toLowerCase().includes(t) ||
@@ -78,9 +81,10 @@ export function RepositoryAdminClient() {
         r.product_slug.toLowerCase().includes(t)
       );
     });
-  }, [rows, q, onlyMissing]);
+  }, [rows, q, onlyMissing, onlyNoInci]);
 
   const missingCount = rows.filter((r) => !r.image_url).length;
+  const noInciCount = rows.filter((r) => !r.first_ingredient).length;
 
   async function saveImage(slug: string) {
     const imageUrl = (drafts[slug] ?? "").trim();
@@ -193,6 +197,10 @@ export function RepositoryAdminClient() {
           <input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing(e.target.checked)} />
           Missing image only ({missingCount})
         </label>
+        <label className="flex items-center gap-2 text-xs text-[#282828]">
+          <input type="checkbox" checked={onlyNoInci} onChange={(e) => setOnlyNoInci(e.target.checked)} />
+          No ingredients only ({noInciCount})
+        </label>
         <span className="text-xs text-[#b0a8a4]">{filtered.length} shown</span>
       </div>
 
@@ -217,6 +225,10 @@ export function RepositoryAdminClient() {
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm text-[#282828] truncate">{r.product_name ?? "(untitled)"}</span>
                 <ProvenanceBadge row={r} />
+                {!r.first_ingredient && (
+                  <a href={`/admin/repository/${encodeURIComponent(r.product_slug)}#ingredients`}
+                    className="flex-none rounded-full bg-[#fd6158]/10 text-[#c23d35] text-[10px] font-bold px-2 py-0.5">NO INGREDIENTS · add</a>
+                )}
               </div>
               <div className="text-[11px] text-[#b0a8a4] font-mono truncate">{r.brand ?? "—"} · {r.product_slug}</div>
               <div className="mt-2 flex flex-wrap items-center gap-2">

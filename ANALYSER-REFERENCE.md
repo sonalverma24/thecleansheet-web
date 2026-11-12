@@ -1435,7 +1435,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `b528b4384334ce0429766c81f2b1400486505f3cd66d218d19cdbf00604b419f` |
+| `src/lib/product-review-engine.ts` | `49e2a3a15f5786b67ea2fed621358f34cfab211618482092e8fdeb18474c53c6` |
 | `src/lib/product-review-types.ts` | `8a2f9a0a072d548e9f47f7dacb7b1da682ffa82aecd11fa148d27aa37816ad82` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |

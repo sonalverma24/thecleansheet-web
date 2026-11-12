@@ -57,6 +57,6 @@ describe("admin edits on a real stored analysis", () => {
     expect(after.decision.key).toBe(target);
     expect(after.take.summary).toBe("Admin wrote this.");
     expect(after.take.reason).toBe(before.take.reason);
-    expect(listingPill(edited, verdict)!.pill.key).toBe(target);
+    expect(listingPill(edited, verdict)?.pill?.key).toBe(target);
   });
 });

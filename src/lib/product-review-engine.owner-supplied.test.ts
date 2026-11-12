@@ -92,3 +92,40 @@ describe("runProductReview: a list typed in from the pack", () => {
     expect(h.generate).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("runProductReview: an admin re-analysis (fresh, with a typed list, not saved)", () => {
+  const typed = {
+    ingredients: ["Aqua", "Glycerin", "Niacinamide", "Panthenol", "Allantoin", "Phenoxyethanol"],
+    source: "https://testco.com/products/calm-gel",
+    quote: "Aqua, Glycerin, Niacinamide, Panthenol, Allantoin, Phenoxyethanol",
+    pageTitles: ["Calm Gel"], siteName: "The Clean Sheet", trust: 3 as const, origin: "owner-supplied" as const,
+  };
+
+  it("uses the typed list for a product with no data-file entry, and writes nothing", async () => {
+    h.generate.mockResolvedValue(modelReply("Calm Gel"));
+    const out = await runProductReview("Test Co Calm Gel", { fresh: true, save: false, ownerList: typed });
+    if (out.type !== "product-review") throw new Error("expected a review");
+    expect(out.review.inciIngredients).toEqual(typed.ingredients);
+    expect(out.review.inciEvidence?.origin).toBe("owner-supplied");
+    expect(h.upserts).toHaveLength(0);
+  });
+
+  it("runs again even though an analysis is stored", async () => {
+    h.state.stored = { type: "product-review", review: makeReview({ productName: "Calm Gel", brand: "Test Co", inciIngredients: ["Aqua"] }), verdict: {} };
+    h.generate.mockResolvedValue(modelReply("Calm Gel"));
+    await runProductReview("Test Co Calm Gel");
+    expect(h.generate).not.toHaveBeenCalled(); // a shopper search is served the stored analysis
+    h.upserts.length = 0;
+    await runProductReview("Test Co Calm Gel", { fresh: true, save: false, ownerList: typed });
+    expect(h.generate).toHaveBeenCalled();
+    expect(h.upserts).toHaveLength(0);
+  });
+
+  it("still prefers a primary source over the typed list", async () => {
+    h.brandInci.mockResolvedValue({ ingredients: ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"], quote: "Aqua, Glycerin, Panthenol, Tocopherol, Niacinamide", source: "https://testco.com/products/calm-gel-2", pageTitles: ["Calm Gel"], trust: 4, origin: "brand-page" });
+    h.generate.mockResolvedValue(modelReply("Calm Gel"));
+    const out = await runProductReview("Test Co Calm Gel", { fresh: true, save: false, ownerList: typed });
+    if (out.type !== "product-review") throw new Error("expected a review");
+    expect(out.review.inciEvidence?.origin).toBe("brand-page");
+  });
+});

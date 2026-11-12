@@ -47,6 +47,10 @@ export async function GET(req: NextRequest) {
     productName: got.review.productName,
     brand: got.review.brand,
     reviewedAt: got.review.reviewedAt ?? null,
+    ingredients: got.review.inciIngredients ?? [],
+    listSource: got.review.inciEvidence?.origin ?? null,
+    listSourceUrl: got.review.inciEvidence?.sourceUrl ?? null,
+    productPageUrl: got.review.productPageUrl ?? null,
     ...view,
     edits: got.review.adminEdits ?? null,
   });
