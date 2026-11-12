@@ -19,7 +19,7 @@
    a <script>, so it is read too (extractEmbeddedInci), under tighter rules.
 ──────────────────────────────────────────────────────────────── */
 
-import { fetchPageMarkdown } from "@/lib/scrape";
+import { fetchPageMarkdown, fetchRenderedPage, type RenderAction } from "@/lib/scrape";
 
 export interface PageINCI {
   ingredients: string[];
@@ -38,6 +38,9 @@ export interface PageINCI {
   origin?: InciOrigin;
   /** Other sources read for the same product whose list differs from this one, so a choice between sources is never silent. */
   alternatives?: InciAlternative[];
+  /** How the page was known to be this product when its title did not say so: the brand's own catalogue has exactly one product that is clearly this one, and
+      this is its page. The product then takes the brand's own name for it (owner rule, 2026-11-12). Absent when the page's title names the product. */
+  identity?: "brand-catalogue";
 }
 
 export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "owner-supplied";
@@ -733,10 +736,50 @@ export async function fetchInciFromProductPage(url: string): Promise<PageINCI | 
   // Fallback: the Jina reader (handles pages a plain fetch is blocked from).
   const md = await fetchPageMarkdown(url);
   if (md) {
-    const ex = startAtListLabel(extendFromParagraphs(extractInciWithQuote(md), md));
-    if (ex && ex.ingredients.length >= 5) {
-      return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
-    }
+    const ex = readMarkdownList(md);
+    if (ex) return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: extractMarkdownTitles(md), siteName: null };
   }
   return null;
+}
+
+/** Markdown escapes a reader adds in front of plain characters: "Water\\Aqua\\Eau" is the page's "Water\Aqua\Eau", "\[+/- Mica" its "[+/- Mica". The list is read,
+    and quoted, as the page prints it. */
+export const unescapeMarkdown = (md: string): string => md.replace(/\\([\\[\]()*_#>~`|.+-])/g, "$1");
+
+/** The list in a page read as markdown (the Jina reader's text, or a rendered page's), with the text it was read from, or null when it holds no list of five or more. */
+export function readMarkdownList(markdown: string): InciExtraction | null {
+  const md = unescapeMarkdown(markdown);
+  const ex = startAtListLabel(extendFromParagraphs(extractInciWithQuote(md), md));
+  return ex && ex.ingredients.length >= 5 ? ex : null;
+}
+
+/** Open a page's ingredient panel: every element whose own text is just "Ingredients", "Full Ingredients", "Ingredient List" or "Full Ingredient List" (with or without
+    a colon) is clicked, through the button, tab, summary or toggle that holds it. A link to another page is never followed (a site menu's "Ingredients" page is not
+    this product's list); only a link within the page ("#ingredients") is. One script, so it runs in one step. */
+export const INGREDIENT_TAB_SCRIPT = `(function(){
+  var re=/^\\s*(?:full\\s+)?ingredients?(?:\\s+list)?\\s*:?\\s*[+\\-]?\\s*$/i;
+  var own=function(e){return re.test(e.textContent||'')&&![].some.call(e.children,function(c){return re.test(c.textContent||'')});};
+  var els=[].slice.call(document.querySelectorAll('body *')).filter(own).slice(0,8);var n=0;
+  els.forEach(function(e){
+    var t=e.closest('button,summary,[role=tab],[role=button],[aria-controls],[aria-expanded],[data-toggle],[data-bs-toggle],label,a')||e;
+    if(t.tagName==='A'){var h=t.getAttribute('href')||'';if(h&&h.charAt(0)!=='#'&&h.indexOf('javascript:')!==0)return;}
+    try{t.scrollIntoView({block:'center'});t.click();n++;}catch(x){}
+  });
+  return n;})()`;
+export const INGREDIENT_TAB_ACTIONS: RenderAction[] = [
+  { type: "wait", milliseconds: 2000 }, { type: "executeJavascript", script: INGREDIENT_TAB_SCRIPT }, { type: "wait", milliseconds: 1500 },
+];
+/** How long a brand page may take to render with its tab opened. */
+export const RENDERED_READ_MS = 20_000;
+
+/** A brand page whose list is behind a click: the page is opened in a browser, its "Ingredients" tab or accordion clicked, and the opened text read. Used only after the
+    plain read found no list (Estée Lauder prints its list only in an "Ingredients" panel that loads when clicked: no plain or reader fetch sees it, 2026-11-12). Every
+    check a list must pass still applies; this only lets the reader see text the page shows a shopper. Null when the page cannot be rendered or holds no list. */
+export async function fetchInciFromRenderedPage(url: string, render: typeof fetchRenderedPage = fetchRenderedPage): Promise<PageINCI | null> {
+  const page = await render(url, INGREDIENT_TAB_ACTIONS, RENDERED_READ_MS);
+  if (!page) return null;
+  const ex = readMarkdownList(page.markdown);
+  if (!ex) return null;
+  const titles = [...new Set([...(page.title ? [tidy(page.title)] : []), ...extractMarkdownTitles(page.markdown)].filter(Boolean))];
+  return { ingredients: ex.ingredients, source: url, quote: ex.quote, pageTitles: titles, siteName: null };
 }

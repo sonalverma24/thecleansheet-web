@@ -1395,7 +1395,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `9781b577e24a2465c0c9e2265b7d515657cc89205f6447c2ae05e70a126d5093` |
+| `src/lib/brand-inci.ts` | `93928c807f3834f7f0e7809d2c38dc4317c9de88b18dda2ca66768a88311c6ed` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1410,7 +1410,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `585e71967242c14f31ced4c8cad2a35afe3dbac968503d758d8563e09684b361` |
-| `src/lib/inci-from-page.ts` | `cf5e7464581352b1fb15236a4600a9d656d04abf7435681e4d0bbf4e5b5180e7` |
+| `src/lib/inci-from-page.ts` | `c49ddd13ecd33b0ef1818fcdddbfcd49ea91e8d38718e7dca549e41d82a21e80` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
@@ -1436,8 +1436,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `49e2a3a15f5786b67ea2fed621358f34cfab211618482092e8fdeb18474c53c6` |
-| `src/lib/product-review-types.ts` | `8a2f9a0a072d548e9f47f7dacb7b1da682ffa82aecd11fa148d27aa37816ad82` |
+| `src/lib/product-review-engine.ts` | `b1f31cb5501ca7fff316d9d3bc3327c33a238aea9fe8bdb4896c17078f91bb08` |
+| `src/lib/product-review-types.ts` | `b92865e19bc08544b28f8a4272642b1940c524a3e4eef0daba55952d63324d8c` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
@@ -1446,7 +1446,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-run.ts` | `9c8faab13a03ba941cbbf97a7aba1157b7d95c19b1920e5a99729e2a28c3f13e` |
 | `src/lib/review-to-scorecard.ts` | `dc462f5d1b0a995d6b3d91633fad94cbc68416d39f0649f7c42638a037e141eb` |
 | `src/lib/review-verifier.fixtures.ts` | `33502127d9928cc7e1d952e6af1c3e66a4e583b34ef68cfd61f9a9a6ca1bf0ba` |
-| `src/lib/review-verifier.ts` | `c6ef8e4517597306a379db26ac9370f27890aed9cb26d347e1a3762cae2be863` |
+| `src/lib/review-verifier.ts` | `35fa0b60f42802ffbe0fe300df6c21304a6c7e550bd788006641868cb954720b` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
 | `src/lib/scrape.ts` | `14ff3a9ebd3168117388fc305321926545f9a3ad2c186a0e8ddb5ecd659f192c` |

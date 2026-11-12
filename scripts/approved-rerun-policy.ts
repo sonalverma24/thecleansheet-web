@@ -42,7 +42,10 @@ export function validateReplacement(old: RerunRow, fresh: ProductReview, oldPill
   } catch { /* No saved product URL. */ }
   const sameUrlIdentity = !!urlIdentity && titleIdentifiesProduct(fresh.productName, fresh.brand, urlIdentity) && titleIdentifiesProduct(urlIdentity, fresh.brand, fresh.productName);
   const sameSource = !!before?.inciSourceUrl && before.inciSourceUrl === fresh.inciEvidence?.sourceUrl;
-  if (!isSameProduct(a, b) && !sameUrlIdentity && !sameSource && !(titleIdentifiesProduct(fresh.productName, oldBrand, oldName) && titleIdentifiesProduct(oldName, fresh.brand, fresh.productName))) errors.push("product-identity-changed");
+  // The brand's own catalogue identified the page the fresh list came from: the product now carries the brand's name for it (owner rule, 2026-11-12), so a new name is
+  // expected, not a sign of another product.
+  const brandCatalogue = fresh.inciEvidence?.identity === "brand-catalogue" && fresh.inciEvidence.origin === "brand-page";
+  if (!brandCatalogue && !isSameProduct(a, b) && !sameUrlIdentity && !sameSource && !(titleIdentifiesProduct(fresh.productName, oldBrand, oldName) && titleIdentifiesProduct(oldName, fresh.brand, fresh.productName))) errors.push("product-identity-changed");
   const list = fresh.inciIngredients ?? [];
   if (!isSourceBackedInci(fresh, list)) errors.push("primary-ingredient-source-missing");
   const url = fresh.inciEvidence?.sourceUrl ?? "";

@@ -104,3 +104,13 @@ describe("searching for the product's Nykaa page", () => {
     expect(await searchNykaaPages("x")).toEqual([]);
   });
 });
+
+describe("a Nykaa panel that prints names in several languages and a shade range (Estée Lauder, 2026-11-12)", () => {
+  // As the renderer returns it: each backslash escaped again, and the shade range's "may contain" brackets escaped.
+  const panel = "### Description\n### Ingredients\n### How To Use\n\nIngredients: Water\\\\\\Aqua\\\\\\Eau, Methyl Trimethicone, Dimethicone, Niacinamide, Glycerin, Potassium Sorbate, \\[+/- Mica, Titanium Dioxide (Ci 77891), Iron Oxides (Ci 77499)\\]\n\n## Ratings";
+  it("reads one entry per name, written with '/', with the panel's own label and the brackets off", () => {
+    const read = extractNykaaInci(panel);
+    expect(read?.ingredients).toEqual(["Water/Aqua/Eau", "Methyl Trimethicone", "Dimethicone", "Niacinamide", "Glycerin", "Potassium Sorbate", "Mica", "Titanium Dioxide (Ci 77891)", "Iron Oxides (Ci 77499)"]);
+    expect(read?.quote).toMatch(/^Water/);
+  });
+});

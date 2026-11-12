@@ -41,6 +41,11 @@ const LABEL = /full\s+ingredients?\s+list\s*:?\s*/i;
 /** Markdown escapes and emphasis that the renderer adds around plain text. */
 const plain = (t: string): string => t.replace(/\\([|*_[\]()#>~`-])/g, "$1").replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
 
+/** One entry as a name: a name printed in several languages ("Water\\Aqua\\Eau", escaped once more by the renderer) is one entry, written with "/" as the other readers
+    write it, and a shade range's "may contain" brackets ("[+/- Mica", "Iron Oxides (Ci 77499)]") are not part of a name (Estée Lauder on Nykaa, 2026-11-12). */
+const entry = (t: string): string =>
+  t.trim().replace(/\\+/g, "/").replace(/^\[\s*(?:\+\s*\/\s*-|may contain:?)\s*/i, "").replace(/^\+\s*\/\s*-\s*/, "").replace(/\](?=\s*\.?$)/, "").replace(/\s+/g, " ").trim();
+
 /** The ingredient list in the opened "Ingredients" panel of a rendered Nykaa page, with the text it was read from, or null.
     The panel follows the three tab headings. It is either the list alone or, for some brands, a "Key Ingredients" blurb and then "Full Ingredient List:".
     When the tab did not open, the panel is the product description: prose, which does not pass as a list. */
@@ -54,10 +59,11 @@ export function extractNykaaInci(markdown: string): { ingredients: string[]; quo
   for (; i < lines.length && !PANEL_END.test(lines[i].trim()) && panel.join("\n").length < 6000; i++) panel.push(lines[i]);
   const text = panel.join("\n");
   const labelled = LABEL.exec(text);
-  const body = plain(labelled ? text.slice(labelled.index + labelled[0].length).split(/\n\s*\n/)[0] : text.split(/\n\s*\n/)[0]);
+  // A panel that opens with its own "Ingredients:" label: the list starts after it (it would otherwise be glued to the first entry, "Ingredients: Water").
+  const body = plain(labelled ? text.slice(labelled.index + labelled[0].length).split(/\n\s*\n/)[0] : text.split(/\n\s*\n/)[0]).replace(/^(?:ingredients?|inci)\s*:\s*/i, "");
   if (!body.includes(",")) return null;
   const quote = body.replace(/\.$/, "").trim();
-  const raw = quote.split(",").map((t) => t.trim()).filter(Boolean);
+  const raw = quote.split(",").map(entry).filter(Boolean);
   const checked = sanitizeInciList(raw);
   // A list is short items, not sentences: prose that happens to contain commas (the description) is refused.
   const proseLike = raw.filter((t) => t.split(/\s+/).length > 9).length > raw.length * 0.1;

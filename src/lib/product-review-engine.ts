@@ -17,7 +17,7 @@ import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
-import { defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
+import { brandsOwnName, defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
 import { findOwnerSupplied } from "@/lib/owner-supplied-inci";
 import type { InciAlternative } from "@/lib/inci-from-page";
 import { reviewInciList } from "@/lib/review-inci";
@@ -1451,6 +1451,10 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
      product twice under two names. */
   review.brand = canonicalizeBrand(review.brand);
 
+  /* The brand's own catalogue identified the page the list came from, under a name of the brand's own (owner rule, 2026-11-12: take the brand's name). The product is
+     called what the brand calls it, so its name and its list come from the same page. */
+  if (pageInci?.identity === "brand-catalogue") review.productName = brandsOwnName(pageInci.pageTitles, review.brand) ?? review.productName;
+
   /* Only the claims on the brand's own website are checked (owner rule, 2026-11-02). The prompt asks for that; this is the backstop for a label that cites only a
      retailer, a reseller or a reviewer. The counts go into the research log so a product whose brand page gave no claims reads "claims not examined", not "no claims". */
   review = withBrandWebsiteClaimsOnly(review).review;
@@ -1588,7 +1592,7 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
      source quotes. Tags and source-backed checks read this envelope. */
   if (review.inciIngredients?.length) {
     review.inciEvidence = pageInci
-      ? makeInciEvidence(pageInci.source, pageInci.quote, review.reviewedAt ?? new Date().toISOString(), pageInci.pageTitles?.[0] ?? pageName ?? undefined, false, { trust: pageInci.trust, origin: pageInci.origin, alternatives: pageInci.alternatives })
+      ? makeInciEvidence(pageInci.source, pageInci.quote, review.reviewedAt ?? new Date().toISOString(), pageInci.pageTitles?.[0] ?? pageName ?? undefined, false, { trust: pageInci.trust, origin: pageInci.origin, alternatives: pageInci.alternatives, identity: pageInci.identity })
       : makeInciEvidence(inci?.source, inci?.sourceQuote, review.reviewedAt ?? new Date().toISOString(), inci?.productName, inci?.sourceQuoteTruncated === true, { origin: "decoder", alternatives: inciAlternatives });
   }
 

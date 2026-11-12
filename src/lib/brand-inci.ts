@@ -1,13 +1,13 @@
 /** Deterministic fallback for retailer/name inputs. Search discovers pages; a matching product page on a recognisable brand domain, an INKEE/INCI Decoder
  * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
  * checks is read; the brand's own page wins whenever one passes (owner rule, 2026-11-03), otherwise the most complete list wins, and the other lists are recorded so the choice is visible. Other retailers (Amazon, Flipkart...) never supply it. */
-import { fetchInciFromProductPage, type InciAlternative, type PageINCI } from "./inci-from-page";
+import { fetchInciFromProductPage, fetchInciFromRenderedPage, type InciAlternative, type PageINCI } from "./inci-from-page";
 import { fetchIncidecoderProduct, incidecoderProductSlug } from "./inci-fetch";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchPageMarkdown } from "./scrape";
 import { inciSimilarity, nameTokens, pageTitleNamesProduct, sanitizeInciList } from "./product-identity";
 import { isNykaaProductUrl, readNykaaPage, searchNykaaPages } from "./nykaa-inci";
-import { catalogueConfirmsPage } from "./brand-catalogue";
+import { catalogueConfirmsPage, catalogueProductUrl } from "./brand-catalogue";
 import { brandNameVariants } from "./verified-store";
 import { listPlausibleFor } from "./inci-plausibility";
 
@@ -73,6 +73,25 @@ export function shortNameOnOwnPage(source: string, titles: string[] | undefined,
   });
 }
 
+/** The product's name as the brand's own page gives it: the page's title without the shop's name ("Super Glow Moisturizer With Niacinamide & Vitamin C | Foxtale" is
+ *  "Foxtale Super Glow Moisturizer With Niacinamide & Vitamin C"), with the brand in front. Null when the page gave no title that is more than the brand. */
+export function brandsOwnName(titles: string[] | undefined, brand: string): string | null {
+  const bare = compact(brand);
+  for (const title of titles ?? []) {
+    // The shop's name is a part of its own, after "|", "–" or "—" (or a last " - "); a part that is only the brand, or a shop label ("Official Store"), is dropped.
+    const isShop = (p: string) => compact(p) === bare || brandNameVariants(brand).some((v) => compact(p) === compact(v)) || /^(?:official\s+(?:store|site|website)|online\s+store|shop)$/i.test(p);
+    const parts = title.split(/\s+[|–—]\s+/).map((p) => p.trim()).filter(Boolean).map((p) => {
+      const tail = /\s+-\s+([^-]+)$/.exec(p);
+      return tail && isShop(tail[1].trim()) ? p.slice(0, tail.index) : p;
+    });
+    const name = parts.filter((p) => !isShop(p))[0];
+    if (!name || name.length < 3) continue;
+    const titled = name.replace(/\s+/g, " ");
+    return brandNameVariants(brand).some((b) => compact(titled).startsWith(compact(b))) ? titled : `${brand} ${titled}`;
+  }
+  return null;
+}
+
 /** Whether a list read from `url` came from a primary source: an INKEE Decoder product page, the brand's own product page, or a Nykaa product page. The checks that
  *  decide whether a stored or replacement analysis is source-backed (review-checks.ts, the re-run policy) share this one definition. Nykaa has been a source since
  *  2026-10-30 (a Nykaa list is captured at trust 3, like Decoder); the re-run policy did not know it and held every replacement whose only list came from there. */
@@ -132,6 +151,11 @@ export interface Dependencies {
   /** Whether the brand's own catalogue shows this page to be the product asked for, when the page's title does not say so (a brand that gives its product a name of its own).
    *  Optional: without it only the title check applies. See src/lib/brand-catalogue.ts. */
   confirmInBrandCatalogue?: (pageUrl: string, brand: string, query: string) => Promise<boolean>;
+  /** A brand page read in a browser with its "Ingredients" tab clicked open, for a page whose plain read found no list. Optional: without it a list behind a click is not seen. */
+  readRendered?: (url: string) => Promise<PageINCI | null>;
+  /** The product's page found in the brand's own catalogue, from any page of the brand's site, when the catalogue has exactly one product that is clearly this one.
+   *  Optional. See src/lib/brand-catalogue.ts. */
+  findInCatalogue?: (siteUrl: string, brand: string, query: string) => Promise<string | null>;
 }
 
 /** Read a Decoder product page with the parser the engine already uses. A quote that was cut short is refused:
@@ -194,7 +218,7 @@ export async function askModelForProductPage(query: string): Promise<string[]> {
 }
 
 /** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, Nykaa pages, then the grounded model. */
-export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage };
+export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage, readRendered: (url) => fetchInciFromRenderedPage(url), findInCatalogue: catalogueProductUrl };
 
 /** Wrap a lookup's dependencies so every URL it was shown (search results and the model's proposals) is remembered in `seen`.
  *  A search typed as a name can only guess the brand from the first word the shopper wrote, and a brand page such as
@@ -226,6 +250,12 @@ interface Read { page: PageINCI; supplied: boolean }
 /** The longest each kind of read may take. A Nykaa page is rendered in a browser (15 to 40 s, and now and then more), so it is capped: a read that overruns counts as
     no list from that source, and the others' lists are used, instead of the whole lookup waiting on it. */
 export const READ_CAP_MS = { decoder: 15_000, "brand-page": 20_000, nykaa: 30_000 } as const;
+/** A brand page whose plain read found no list may then be rendered with its tab opened, at most this many a lookup (each render is a paid call). A render takes 15 to
+    20 s, so it starts only while this much of the lookup's time is left (the engine stops waiting for the whole lookup at 40 s, and a lookup that overruns loses every
+    list it found, Nykaa's included); it may use the time left up to RENDER_BUDGET_MS from the lookup's start. */
+const MAX_RENDERED = 2;
+const RENDER_MIN_MS = 14_000;
+const RENDER_BUDGET_MS = 36_000;
 /** The most the brand-catalogue identity check may take (it reads one to three pages of the store's product feed). */
 const CATALOGUE_CAP_MS = 15_000;
 const within = <T>(work: Promise<T>, ms: number): Promise<T | null> => {
@@ -254,6 +284,25 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
   const usable = (page: PageINCI | null): page is PageINCI =>
     listOk(page) && (!!page.pageTitles?.some((title) => pageTitleNamesProduct(title, brand, query)) || shortNameOnOwnPage(page.source, page.pageTitles, brand, query));
 
+  // A brand page whose plain read found no list is opened in a browser with its "Ingredients" tab clicked, when its address names the product (two or more of the
+  // product's words in its last segment, so another product of the brand found by the same search is not rendered for nothing), at most MAX_RENDERED a lookup.
+  let renders = 0;
+  const deadline = Date.now() + RENDER_BUDGET_MS;
+  const wantWords = nameTokens(query, brand);
+  const addressNamesProduct = (url: string): boolean => {
+    try {
+      const last = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() ?? "").replace(/\.html?$/i, "").replace(/[-_]+/g, " ");
+      return [...nameTokens(last, brand)].filter((w) => wantWords.has(w)).length >= 2;
+    } catch { return false; }
+  };
+  const readBrandPage = async (url: string, rendered = addressNamesProduct(url)): Promise<PageINCI | null> => {
+    const plain = await within(deps.read(url), READ_CAP_MS["brand-page"]);
+    const left = deadline - Date.now();
+    if (plain || !deps.readRendered || !rendered || renders >= MAX_RENDERED || left < RENDER_MIN_MS) return plain;
+    renders++;
+    return within(deps.readRendered(url), left);
+  };
+
   const readAll = async (candidates: string[]): Promise<Read[]> => {
     const fresh = [...new Set(candidates)].filter((u) => !tried.has(u));
     const decoderUrls = fresh.filter((u) => incidecoderProductSlug(u)).slice(0, 2);
@@ -262,15 +311,16 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     for (const u of [...decoderUrls, ...brandUrls, ...nykaaUrls]) tried.add(u);
     const reads = await Promise.all([
       ...decoderUrls.map(async (url) => ({ url, page: await within(readDecoder(url), READ_CAP_MS.decoder), origin: "decoder" as const })),
-      ...brandUrls.map(async (url) => ({ url, page: await within(deps.read(url), READ_CAP_MS["brand-page"]), origin: "brand-page" as const })),
+      ...brandUrls.map(async (url) => ({ url, page: await readBrandPage(url), origin: "brand-page" as const })),
       ...nykaaUrls.map(async (url) => ({ url, page: await within(deps.readNykaa!(url), READ_CAP_MS.nykaa), origin: "nykaa" as const })),
     ]);
     const kept = await Promise.all(reads.map(async (r): Promise<Read[]> => {
       // A brand's own page whose title does not name the product is still taken when the brand's catalogue shows it is the one product that is clearly this one.
-      const named = usable(r.page)
-        || (r.origin === "brand-page" && listOk(r.page) && !!deps.confirmInBrandCatalogue && (await within(deps.confirmInBrandCatalogue(r.url, brand, query), CATALOGUE_CAP_MS)) === true);
-      return named && r.page
-        ? [{ page: { ...r.page, origin: r.page.origin ?? r.origin, trust: r.page.trust ?? (r.origin === "brand-page" ? 4 as const : 3 as const) }, supplied: r.url === suppliedUrl }]
+      // That page then names the product as the brand does (owner rule, 2026-11-12: take the brand's name), so it is marked `identity: "brand-catalogue"`.
+      const titled = usable(r.page);
+      const catalogued = !titled && r.origin === "brand-page" && listOk(r.page) && !!deps.confirmInBrandCatalogue && (await within(deps.confirmInBrandCatalogue(r.url, brand, query), CATALOGUE_CAP_MS)) === true;
+      return (titled || catalogued) && r.page
+        ? [{ page: { ...r.page, origin: r.page.origin ?? r.origin, trust: r.page.trust ?? (r.origin === "brand-page" ? 4 as const : 3 as const), ...(catalogued ? { identity: "brand-catalogue" as const } : {}) }, supplied: r.url === suppliedUrl }]
         : [];
     }));
     return kept.flat();
@@ -306,11 +356,32 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     ]);
     discovered = [...general, ...nykaa];
   } catch { /* No source is safer than a failed analysis. */ }
-  const found = choose([...knownReads, ...(await readAll([...(suppliedUrl ? [suppliedUrl] : []), ...discovered]))]);
-  if (found || !deps.askModel) return found;
+  const first = [...(suppliedUrl ? [suppliedUrl] : []), ...discovered];
+  const found = choose([...knownReads, ...(await readAll(first))]);
+  if (found) return found;
+
+  // No list yet, but the search reached the brand's own site: the brand's catalogue may hold the product under a name of its own (a retailer's "Brightening
+  // Moisturiser with Vitamin C & Niacinamide" is the brand's "Super Glow Moisturizer"), which no search for the retailer's name finds. When the catalogue has exactly
+  // one product that is clearly this one, its page is read; the catalogue is what identifies it, so the brand's name is used (`identity: "brand-catalogue"`).
+  const fromCatalogue = await readFromCatalogue(first);
+  if (fromCatalogue) return choose([...knownReads, fromCatalogue]);
+  if (!deps.askModel) return null;
 
   // Nothing found so far gave a list: ask the web-grounded model where the page is, then read that page ourselves.
   let asked: string[] = [];
   try { asked = await deps.askModel(query); } catch { /* The model is a last resort, never a reason to fail. */ }
   return choose(await readAll(asked));
+
+  async function readFromCatalogue(urls: string[]): Promise<Read | null> {
+    if (!deps.findInCatalogue) return null;
+    const sites = [...new Map(urls.filter((u) => isBrandIngredientUrl(u, brand)).map((u) => [new URL(u).origin, u])).values()].slice(0, 2);
+    for (const site of sites) {
+      const url = await within(deps.findInCatalogue(site, brand, query), CATALOGUE_CAP_MS);
+      if (!url || tried.has(url) || !isBrandIngredientUrl(url, brand)) continue;
+      tried.add(url);
+      const page = await readBrandPage(url, true);
+      if (listOk(page)) return { page: { ...page, origin: "brand-page", trust: page.trust ?? 4, identity: "brand-catalogue" }, supplied: false };
+    }
+    return null;
+  }
 }
