@@ -123,7 +123,7 @@ describe("the brand's catalogue finds and names a product the brand names differ
 
   it("a re-run accepts the brand's name for a list the catalogue identified, and still holds another product's", () => {
     const old = makeReview({ productName: "Brightening Moisturiser with Vitamin C & Niacinamide", brand: "Foxtale" });
-    const row: RerunRow = { product_slug: "foxtale-brightening", product_name: old.productName, brand: "Foxtale", reviewed_at: "2026-11-01", result: { type: "product-review", review: old }, rubric_rev: "r7", tier: null, image_url: null };
+    const row: RerunRow = { product_slug: "foxtale-brightening", product_name: old.productName, brand: "Foxtale", reviewed_at: "2026-11-01", result: { type: "product-review", review: old }, rubric_rev: "r7", tier: "can-do-better", image_url: null };
     const fresh = makeReview({ productName: "Foxtale Super Glow Moisturizer With Niacinamide & Vitamin C", brand: "Foxtale", inciIngredients: FOX_LIST.ingredients, researchLog: { grounded: true, webSearchQueries: ["x"], sourceUris: [], sourceTitles: [], recordedAt: "2026-11-12" } });
     fresh.inciEvidence = makeInciEvidence(FOX_PAGE, FOX_LIST.quote, "2026-11-12", undefined, false, { trust: 4, origin: "brand-page", identity: "brand-catalogue" });
     expect(validateReplacement(row, fresh, "not-enough-info", "buy-with-caution")).not.toContain("product-identity-changed");
