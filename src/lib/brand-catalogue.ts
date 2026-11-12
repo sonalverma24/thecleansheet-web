@@ -78,6 +78,18 @@ const handleOf = (pageUrl: string): string | null => {
   try { return /\/products\/([^/?#]+)/.exec(new URL(pageUrl).pathname)?.[1]?.toLowerCase() ?? null; } catch { return null; }
 };
 
+/** The page of the one product in the brand's catalogue that is clearly `productName`, found from any page of the brand's site, or null when the catalogue cannot be read
+    in full, has no such product, or has more than one that could be it. For a product the brand names differently from the shopper or retailer, which no search for
+    that name finds. */
+export async function catalogueProductUrl(siteUrl: string, brand: string, productName: string, load: (url: string) => Promise<CatalogueProduct[] | null> = fetchShopifyCatalogue): Promise<string | null> {
+  let origin: string;
+  try { origin = new URL(siteUrl).origin; } catch { return null; }
+  const products = await load(siteUrl);
+  if (!products?.length) return null;
+  const handle = uniqueCatalogueHandle(products, brand, productName);
+  return handle ? `${origin}/products/${encodeURIComponent(handle)}` : null;
+}
+
 /** True when the brand's own catalogue has exactly one product that is clearly `productName` and `pageUrl` is that product's page. */
 export async function catalogueConfirmsPage(pageUrl: string, brand: string, productName: string, load: (url: string) => Promise<CatalogueProduct[] | null> = fetchShopifyCatalogue): Promise<boolean> {
   const handle = handleOf(pageUrl);
