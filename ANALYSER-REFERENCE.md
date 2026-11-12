@@ -1368,6 +1368,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/index.ts` | `c74f427f9b8fdb9dad017a24324fa6c7d0947f0f908ab6eeb7aff02bb296a602` |
 | `src/data/taxonomy/schema.ts` | `fb804439e53cbe98a42070e409a5ea60d6e09f646b111bbe435de8c98c3cfd61` |
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
+| `src/lib/admin-analysis-edits.ts` | `93549f033715794c628336a4e3739e15f6407661b4835c432327c97f3fde7fa0` |
 | `src/lib/analyser-flags.ts` | `91c8023cbf84911f4dbd79e1d9e40cf66a56fa7b3b094b8e7aca2761b8ffbe98` |
 | `src/lib/analyser-reference.ts` | `3ba8343ccb37917a78040e734b206518b07db59671941e30f0ff9fc3c1b29b77` |
 | `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
@@ -1428,15 +1429,15 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
-| `src/lib/pills-for-review.ts` | `8fa01b7a41a92ecd4708d60b614926d94d12f218a6528405be6556aa3c625ed0` |
+| `src/lib/pills-for-review.ts` | `dd87802f4da85b7a4660575250530a4107b378ea8c8ba03448cfef0ba28e9861` |
 | `src/lib/pills-page.ts` | `8468ed9f38bff8e83e99ed9128d23a9e7cc5aa369007bd2b8cd38f751dd2927f` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `b528b4384334ce0429766c81f2b1400486505f3cd66d218d19cdbf00604b419f` |
-| `src/lib/product-review-types.ts` | `ee39f13543c2e05e5d164912ec7f6f31ce9fe00ba6582ec3073c2975db481bbe` |
+| `src/lib/product-review-engine.ts` | `49e2a3a15f5786b67ea2fed621358f34cfab211618482092e8fdeb18474c53c6` |
+| `src/lib/product-review-types.ts` | `8a2f9a0a072d548e9f47f7dacb7b1da682ffa82aecd11fa148d27aa37816ad82` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |

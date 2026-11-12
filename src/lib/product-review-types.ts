@@ -213,6 +213,8 @@ export interface ResearchLog {
 export type ProductImageSource = "inci" | "page" | "amazon" | "nykaa" | "cse" | "search" | "manual";
 
 export interface ProductReview {
+  /** An admin's colour and wording overrides (admin-analysis-edits.ts). A re-run replaces the stored review, and these with it. */
+  adminEdits?: import("./admin-analysis-edits").AdminAnalysisEdits;
   /** Server-authored shadow audit, never evidence supplied by the model. */
   evidenceAudit?: { decision: import("./neurosymbolic/harness").Assurance; captures: import("./neurosymbolic/harness").Capture[] };
   type: "product-review";

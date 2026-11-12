@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Package, Star, Users, BarChart3, Plus, Upload,
   Database, Shield, ChevronRight, CheckCircle,
-  AlertTriangle, Clock, Eye, EyeOff, Loader2,
+  AlertTriangle, Clock, Eye, EyeOff, Loader2, Edit3,
 } from "lucide-react";
 
 type Stats = {
@@ -206,6 +206,8 @@ export default function AdminDashboard() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
+              { href: "/admin/repository",   icon: Database, label: "Analyses",             sub: "Edit text and colour, fix images, remove" },
+              { href: "/admin/copy",         icon: Edit3,    label: "Site wording",         sub: "Edit any line on the site, or reset it" },
               { href: "/admin/products/new", icon: Plus,     label: "Add product",         sub: "Create a new product manually"       },
               { href: "/admin/products",     icon: Package,  label: "Manage products",      sub: "Edit, approve, publish or unpublish" },
               { href: "/admin/reviews",      icon: Star,     label: "Moderate reviews",     sub: "Approve or reject user reviews"      },

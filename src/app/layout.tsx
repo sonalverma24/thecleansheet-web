@@ -6,6 +6,8 @@ import SiteChrome from "@/components/layout/SiteChrome";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import AcquisitionTracker from "@/components/AcquisitionTracker";
 import { Analytics } from "@vercel/analytics/next";
+import { SiteCopyProvider } from "@/components/site-copy/SiteCopy";
+import { getSiteCopy } from "@/lib/site-copy";
 
 /* Playfair Display, fallback for Cooper BT if browser hasn't loaded
    the self-hosted font yet (flash prevention). Cooper BT woff2 files
@@ -82,9 +84,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const siteCopy = await getSiteCopy();
   return (
     <html lang="en-IN" className={`${playfair.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-screen flex flex-col antialiased">
@@ -191,7 +194,9 @@ export default function RootLayout({
         />
         <AcquisitionTracker />
         <AuthProvider>
-          <SiteChrome>{children}</SiteChrome>
+          <SiteCopyProvider initial={siteCopy}>
+            <SiteChrome>{children}</SiteChrome>
+          </SiteCopyProvider>
         </AuthProvider>
         <Analytics />
       </body>

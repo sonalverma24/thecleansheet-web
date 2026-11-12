@@ -4,6 +4,7 @@ import { TriangleAlert } from "lucide-react";
 import EducationHero from "@/components/education/EducationHero";
 import { Reveal } from "@/components/motion/Motion";
 import { BLOG_POSTS } from "@/lib/blog-posts";
+import { T } from "@/components/site-copy/SiteCopy";
 
 /* Education: the real Education hero (shared with /education), then the latest
    blog reads with their thumbnails. */
@@ -18,9 +19,9 @@ export default function EducationSection() {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <h3 className="font-display font-light text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.01em] text-white">Latest reads</h3>
+            <h3 className="font-display font-light text-[28px] sm:text-[34px] leading-[1.1] tracking-[-0.01em] text-white"><T k="home.reads.title">Latest reads</T></h3>
             <Link href="/blog" className="text-[14px] text-white/80 hover:text-white underline underline-offset-[3px] transition-colors">
-              All articles
+              <T k="home.reads.all">All articles</T>
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-5 no-scrollbar -mx-5 px-5 md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 md:gap-5 lg:grid-cols-3">

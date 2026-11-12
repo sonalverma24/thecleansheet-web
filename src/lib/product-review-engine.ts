@@ -1223,21 +1223,31 @@ function decoderAsPage(inci: INCIResult): import("@/lib/inci-from-page").PageINC
   return { ingredients: inci.ingredients, source: inci.source, quote: inci.sourceQuoteTruncated ? undefined : inci.sourceQuote, pageTitles: [inci.pageTitle ?? inci.productName], siteName: "INKEE Decoder", trust: 3, origin: "decoder" };
 }
 
-export async function runProductReview(query: string): Promise<ProductReviewResult> {
+/** How an admin re-analyses one stored product (/api/admin/reanalyse): `fresh` ignores the stored analysis and the brand-only ask, `ownerList` is an ingredient
+    list the admin typed from the pack (used, like an owner-supplied entry, only when no primary source gives one), and `save: false` returns the result without
+    writing or remembering anything, so the caller checks it and writes it to the product's own row. Shopper searches pass none of these. */
+export interface RunOptions {
+  fresh?: boolean;
+  ownerList?: import("@/lib/inci-from-page").PageINCI;
+  save?: boolean;
+}
+
+export async function runProductReview(query: string, opts: RunOptions = {}): Promise<ProductReviewResult> {
   const startedAt = Date.now();
   const q = query.trim();
   if (!q) return { type: "error" };
+  const save = opts.save !== false;
 
   // A search that is only a brand ("Cetaphil") or a kind of product ("Sunscreen") asks which product, before anything is looked up, analysed or saved: left to the model it
   // names a product of its own ("M .Y Sunscreen"), and that was saved and listed. The exception is a search that is exactly the name of a product we hold.
-  if (!isURL(q) && !looksLikeInciList(q)) {
+  if (!opts.fresh && !isURL(q) && !looksLikeInciList(q)) {
     const held = await getBrandCatalogue();
     const names = queryNamesNoProduct(q, knownBrandNames(held));
     if (names && !namesStoredProduct(q, held.rows)) return needsProductResult(names, q, held);
   }
 
   // The same pasted list (or typed text) asked again within minutes: it was analysed but not saved, so it is not in the repository to be found there.
-  if (!isURL(q)) {
+  if (!opts.fresh && !isURL(q)) {
     const unsaved = getUnsaved(q);
     if (unsaved) return servedAsStored(withFreshVerdict(unsaved));
   }
@@ -1301,7 +1311,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
 
   // ── Repository: same product ⇒ same stored review ──
   const slug = inci?.slug ?? slugify(isURL(q) ? (pageName ?? q) : q, "");
-  const stored = await getReusableStored(slug);
+  const stored = opts.fresh ? null : await getReusableStored(slug);
   if (stored) {
     // A nutraceutical or a prescription drug stored before we drew the line: answer "unrated" now, with no image retry and nothing written back.
     const notACosmeticYet = stored.type === "product-review" ? unratedResultOf(stored.review) : null;
@@ -1408,7 +1418,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     // Last resort, once the reader has named the product and no primary source gave a list (not Decoder, not a page, not the corrected-brand lookup above): a list the
     // owner typed in from the product's own pack (src/data/inci/owner-supplied.ts). It is matched on the brand and the exact product name, and recorded as owner-supplied.
     if (isValidProductReview(parsed) && !inci && !pageInci) {
-      const owned = findOwnerSupplied(parsed.brand, parsed.productName);
+      const owned = opts.ownerList ?? findOwnerSupplied(parsed.brand, parsed.productName);
       if (owned) { pageInci = owned; listChanged = true; }
     }
     if (listChanged && pageInci && isValidProductReview(parsed)) {
@@ -1460,7 +1470,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
     if (names) {
       if (isURL(q)) return { type: "unidentified" };
       const ask = await needsProductResult(names, q);
-      rememberUnsaved(q, ask);
+      if (save) rememberUnsaved(q, ask);
       return ask;
     }
   }
@@ -1652,7 +1662,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   if (isURL(q) && !productIdentified) return { type: "unidentified" };
 
   // Approved products join the registry (shown as tiles on /review and /brands).
-  if (verdict.status === "approved" && productIdentified) {
+  if (save && verdict.status === "approved" && productIdentified) {
     await upsertVerifiedProduct({
       slug: slugify(review.productName, review.brand),
       productName: review.productName,
@@ -1673,6 +1683,7 @@ export async function runProductReview(query: string): Promise<ProductReviewResu
   // identified product. An unidentified INCI-only scan is remembered in-process, apart
   // from the saved reviews and under the text that was pasted, so a repeat paste is
   // instant but it never reaches the directory DB or any product's page.
+  if (!save) return result;
   if (productIdentified) {
     await store(canonicalSlug, result);
     // The pages that show analyses are ISR-cached for 5 minutes; refresh them now so a fresh analysis shows up

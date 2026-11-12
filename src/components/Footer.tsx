@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import Image from "next/image";
+import { T } from "@/components/site-copy/SiteCopy";
+
+const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 const LINKS = {
   Standard: [
@@ -49,8 +52,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-[#4a4a4a] text-sm leading-relaxed max-w-xs mb-6">
-              Building independent evidence infrastructure for beauty and personal care.
-              Evidence over marketing, always.
+              <T k="footer.tagline">Building independent evidence infrastructure for beauty and personal care. Evidence over marketing, always.</T>
             </p>
 
             {/* Social icons */}
@@ -76,13 +78,13 @@ export default function Footer() {
             {Object.entries(LINKS).map(([category, items]) => (
               <div key={category}>
                 <h3 className="font-sans font-bold text-[11px] uppercase tracking-[0.18em] mb-4 text-[#282828]">
-                  {category}
+                  <T k={`footer.heading.${slug(category)}`}>{category}</T>
                 </h3>
                 <ul className="space-y-2.5">
                   {items.map(({ href, label }) => (
                     <li key={label}>
                       <Link href={href} className="text-[#4a4a4a] hover:text-[#248179] text-sm transition-colors">
-                        {label}
+                        <T k={`footer.link.${slug(href)}`}>{label}</T>
                       </Link>
                     </li>
                   ))}
@@ -95,9 +97,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-[#e5dfd6] pt-8">
           <p className="text-[#4a4a4a] text-xs leading-relaxed max-w-3xl mb-6">
-            Private certification framework. The Clean Sheet is an
-            independent private certification designed in alignment with ISO/IEC 17065
-            and ISO/IEC 17067. The certification framework is independently validated with industry experts.
+            <T k="footer.disclaimer">Private certification framework. The Clean Sheet is an independent private certification designed in alignment with ISO/IEC 17065 and ISO/IEC 17067. The certification framework is independently validated with industry experts.</T>
           </p>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-[#b0a8a4] tracking-[0.04em]">
             <p className="text-center sm:text-left">
