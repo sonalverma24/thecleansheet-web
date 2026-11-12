@@ -46,6 +46,18 @@ const plain = (t: string): string => t.replace(/\\([|*_[\]()#>~`-])/g, "$1").rep
 const entry = (t: string): string =>
   t.trim().replace(/\\+/g, "/").replace(/^\[\s*(?:\+\s*\/\s*-|may contain:?)\s*/i, "").replace(/^\+\s*\/\s*-\s*/, "").replace(/\](?=\s*\.?$)/, "").replace(/\s+/g, " ").trim();
 
+/** A US-style label prints its actives with their strengths, then the rest of the list after its own label, and Nykaa runs the two together: "Active: Octinoxate 6.7%,
+    Titanium Dioxide 1.6%Ingredients: Water/Aqua/Eau, ..." (Bobbi Brown Weightless Skin Foundation SPF 15, 2026-11-12). Each active is an entry with its strength
+    dropped (the quote keeps it), and the entry glued to the next label is two entries. */
+const GLUED_LABEL = /^(.*?\d(?:[.,]\d+)?\s*%)\s*(?:(?:inactive|other)\s+)?ingredients?\s*:\s*(.+)$/i;
+const ACTIVES_LABEL = /^(?:(?:drug\s+facts\s+)?active\s+ingredients?|actives?)\s*:?\s*/i;
+const STRENGTH = /\s*\d+(?:[.,]\d+)?\s*%$/;
+const entries = (t: string): string[] => {
+  const one = entry(t).replace(ACTIVES_LABEL, "");
+  const glued = GLUED_LABEL.exec(one);
+  return (glued ? [glued[1], glued[2]] : [one]).map((x) => x.replace(STRENGTH, "").trim()).filter(Boolean);
+};
+
 /** The ingredient list in the opened "Ingredients" panel of a rendered Nykaa page, with the text it was read from, or null.
     The panel follows the three tab headings. It is either the list alone or, for some brands, a "Key Ingredients" blurb and then "Full Ingredient List:".
     When the tab did not open, the panel is the product description: prose, which does not pass as a list. */
@@ -63,7 +75,7 @@ export function extractNykaaInci(markdown: string): { ingredients: string[]; quo
   const body = plain(labelled ? text.slice(labelled.index + labelled[0].length).split(/\n\s*\n/)[0] : text.split(/\n\s*\n/)[0]).replace(/^(?:ingredients?|inci)\s*:\s*/i, "");
   if (!body.includes(",")) return null;
   const quote = body.replace(/\.$/, "").trim();
-  const raw = quote.split(",").map(entry).filter(Boolean);
+  const raw = quote.split(",").flatMap(entries);
   const checked = sanitizeInciList(raw);
   // A list is short items, not sentences: prose that happens to contain commas (the description) is refused.
   const proseLike = raw.filter((t) => t.split(/\s+/).length > 9).length > raw.length * 0.1;

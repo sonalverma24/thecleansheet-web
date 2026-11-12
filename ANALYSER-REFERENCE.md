@@ -1481,7 +1481,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/ingredient-product-index.ts` | `7edef7cea639ac4b9463092dd351b97dce5247ad5e0240be99834a12edfd0613` |
 | `src/lib/ingredient-utils.ts` | `6e741947b8cc4a5f0e5bd58b0a471eb23356c38e11147ce6e70ecece8c3bd343` |
 | `src/lib/listing-pill.ts` | `c996f63bf601fc20b37e88f84463e952cb6bcc6e6a011ff0472aed07fc410818` |
-| `src/lib/nykaa-inci.ts` | `066587d78c05745195fb8d120dea172cc4381b9bbe6fa4d4ef2bb467005fcecf` |
+| `src/lib/nykaa-inci.ts` | `25b27eac885d53df8cce6c5b422d58d6b5883743f0189bf409e4bcf0e40d286a` |
 | `src/lib/owner-supplied-inci.ts` | `27904ab93e5cda3564c149eab948533249e2df9d288b8eacf9c7be7795bb62b3` |
 | `src/lib/pillar-display.ts` | `39adb1db50a2f79f585ece4f07de70cbef438719da90e896e34fe39639ff6522` |
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
