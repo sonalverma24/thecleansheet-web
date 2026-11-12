@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { ShelfCard } from "@/lib/home-shelf";
 import { isTileRoute, tileImage } from "@/lib/tile-image";
+import { GlanceRow } from "@/components/registry/MarketCard";
 
 /* The product shelf. Cards are real stored reviews with their real standing; the
    category chips are the only client-side state. On a phone the chips and the cards
@@ -58,7 +59,7 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
       )}
 
       {shown.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-5 no-scrollbar -mx-5 px-5 pb-1 md:mx-0 md:px-0 md:pb-0 md:overflow-visible md:grid md:grid-cols-2 md:gap-5 lg:grid-cols-4">
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-px-5 no-scrollbar -mx-5 px-5 pb-1 md:mx-0 md:px-0 md:pb-0 md:overflow-visible md:grid md:grid-cols-3 md:gap-5 lg:grid-cols-4">
           {shown.map((p) => (
             <Link
               key={p.slug}
@@ -71,23 +72,29 @@ export default function Shelf({ cards, categories }: { cards: ShelfCard[]; categ
                     src={tileImage(p.slug, p.image) ?? p.image}
                     alt={`${p.brand} ${p.name}`}
                     fill
-                    sizes="(min-width: 1024px) 280px, (min-width: 768px) 45vw, 236px"
+                    sizes="(min-width: 1024px) 280px, (min-width: 768px) 30vw, 236px"
                     unoptimized={isTileRoute(tileImage(p.slug, p.image))}
                     className="object-contain p-3"
                   />
                 )}
-                <span className="absolute top-2.5 left-2.5 md:top-3 md:left-3 text-[9px] md:text-[10px] tracking-[0.12em] text-[#4a4a4a] border border-[#e5dfd6] rounded-[4px] px-1.5 md:px-[7px] py-[3px] bg-white">
-                  {p.category}
-                </span>
+                {p.category !== "Other" && (
+                  <span className="absolute top-2.5 left-2.5 max-w-[calc(100%-56px)] truncate text-[9px] md:text-[10px] tracking-[0.12em] text-[#4a4a4a] border border-[#e5dfd6] rounded-[4px] px-1.5 md:px-[7px] py-[3px] bg-white">
+                    {p.category}
+                  </span>
+                )}
               </div>
-              <div className="p-3.5 md:p-5 flex flex-col gap-2 md:gap-2.5 flex-1">
-                <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#4a4a4a] uppercase">{p.brand}</span>
-                <span className="font-bold text-[15px] md:text-[16px] leading-[1.3] text-[#282828]">{p.name}</span>
+              {/* Same items, sizes and order as the /products card (MarketCard), with "View details" where that card has its Compare button. */}
+              <div className="p-3 md:p-4 flex flex-col gap-1.5 md:gap-2 flex-1">
+                <span className="text-[10px] md:text-[11px] font-bold tracking-[0.18em] text-[#4a4a4a] uppercase truncate">{p.brand}</span>
+                <span className="font-bold text-[14px] md:text-[15px] leading-[1.3] text-[#282828] line-clamp-2">{p.name}</span>
                 <span className="self-start py-0.5 pl-0.5"><RatingDot marker={p.marker} size={14} /></span>
-                <span className="text-[12px] md:text-[13px] text-[#4a4a4a] leading-[1.45] md:leading-[1.5] flex-1 line-clamp-4">{p.note}</span>
-                <span className="flex justify-between pt-2.5 md:pt-3 border-t border-[#e5dfd6] text-[13px] font-bold text-[#248179]">
-                  <span>View the proof</span>
-                  <span aria-hidden>→</span>
+                {p.glance && <GlanceRow items={p.glance} />}
+                <span className={`hidden md:block text-[13px] text-[#4a4a4a] leading-[1.5] flex-1 ${p.glance ? "line-clamp-2" : "line-clamp-3"}`}>{p.note}</span>
+                <span className="mt-auto flex items-center justify-between gap-2 pt-2.5 border-t border-[#e5dfd6]">
+                  <span title={p.price ?? undefined} className={`min-w-0 truncate text-[13px] tabular-nums ${p.price ? "font-bold text-[#282828]" : "text-[#b0a8a4]"}`}>{p.price ?? "Price n/a"}</span>
+                  <span className="flex-none inline-flex items-center gap-1 h-8 text-[13px] font-bold text-[#248179]">
+                    View details <span aria-hidden>→</span>
+                  </span>
                 </span>
               </div>
             </Link>

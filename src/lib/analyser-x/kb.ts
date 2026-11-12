@@ -83,13 +83,16 @@ export const BLOCKING_AUTHORITIES = ["EU", "IN"] as const;
    its endocrine flag also covers the silicones D5 and D6 (flagged mostly for persisting in water, so they stay a caution), the parabens, homosalate and
    several benzophenones, and its CMR flag covers reproductive toxicity and a monomer residue in polyacrylamide. Extending either list is a rule change. */
 
-/** Endocrine-flagged ingredients that are a Red: octinoxate, oxybenzone, BHA and D4. Matched on the name the database holds. */
+/** Endocrine-flagged ingredients that are a Red: oxybenzone, BHA and D4. Matched on the name the database holds. */
 export const HORMONE_DISRUPTORS_RED: readonly RegExp[] = [
-  /methoxycinnamate|octinoxate/i,
   /benzophenone-3|oxybenzone/i,
   /\bbha\b|butylated hydroxyanisole/i,
   /cyclotetrasiloxane|\bd4\b/i,
 ];
+
+/** Octinoxate is a Red for harm to marine life, and the site never calls it a hormone or endocrine disruptor (owner decision, 2026-11-04). It stays a Red
+    whatever the strength or product type. Anchored so amiloxate (Isoamyl p-Methoxycinnamate) and Polysilicone-15 do not match. */
+export const MARINE_HARM_RED: readonly RegExp[] = [/^\s*(?:ethylhexyl|octyl)\s+methoxycinnamate\b|\boctinoxate\b/i];
 
 /** A carcinogen is an ingredient whose own IARC group, as the database holds it, is Group 1 (carcinogenic to humans) or Group 2A (probably carcinogenic).
     The match is anchored to the start of the field: polyacrylamide's field names Group 2A for its monomer residue and says the polymer itself is not classified. */

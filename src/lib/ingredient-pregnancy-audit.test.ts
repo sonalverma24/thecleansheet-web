@@ -51,7 +51,8 @@ describe("the ingredients the owner chose to flag", () => {
     expect(rowLooksValid(r)).toBe(true);
     expect(["High", "Medium"], "the pregnancy screen only draws a flag for a High or Medium row").toContain(r.Data_Confidence);
     expect((r.Source_Reference ?? "").trim(), "a flag prints its source").not.toBe("");
-    expect(r.Last_Updated).toBe("2026-11-02");
+    // Octinoxate's row was touched again on 2026-11-04 (no endocrine wording, owner decision).
+    expect(["2026-11-02", "2026-11-04"]).toContain(r.Last_Updated);
     expect(r.Verification_Notes).toMatch(/2026-11-02/);
     expect(ingredientSafety(name).pregnancyRestriction).toBe(text);
   });

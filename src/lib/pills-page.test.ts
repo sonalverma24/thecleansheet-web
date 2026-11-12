@@ -279,6 +279,14 @@ describe("the pregnancy chip", () => {
     const { model: m } = page(rv({ productName: "Serum", category: "Serum", inciIngredients: [...BASE, "Retinyl Palmitate", "Zorbaflux"] }));
     expect(pregnancyChips(m)).toEqual([expect.objectContaining({ label: "Pregnancy ingredient flag: Retinyl Palmitate", state: "no", detail: expect.stringMatching(/Not checked: Zorbaflux\./) })]);
   });
+  it("never names salicylic acid in the at-a-glance pregnancy chip (owner rule, 2026-11-04); the FAQ still lists it", () => {
+    const only = page(rv({ productName: "Clarifying Toner", category: "Toner", inciIngredients: [...BASE, "Salicylic Acid"] })).model;
+    expect(pregnancyChips(only)).toEqual([]);
+    expect(only.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toMatch(/Salicylic Acid/);
+    const both = page(rv({ productName: "Night Serum", category: "Serum", inciIngredients: [...BASE, "Salicylic Acid", "Retinyl Palmitate"] })).model;
+    expect(pregnancyChips(both)).toEqual([expect.objectContaining({ label: "Pregnancy ingredient flag: Retinyl Palmitate", state: "no" })]);
+    expect(pregnancyChips(both)[0].detail).not.toMatch(/salicylic/i);
+  });
 });
 
 describe("buy links", () => {
@@ -661,7 +669,7 @@ describe("the templated pregnancy caution is gone, and every flag that stands gi
     ["Benzophenone-3", /SCCS\/1625\/20/, /placental tissue/],
     ["Propylparaben", /SCCS\/1623\/20/, /indications of endocrine effects/],
     ["Benzophenone-4", /SCCS\/1660\/23/, /benzophenone UV-filter class/],
-    ["Ethylhexyl Methoxycinnamate", /SCCS\/1671\/24/, /endocrine-active/],
+    ["Ethylhexyl Methoxycinnamate", /SCCS\/1671\/24/, /based on laboratory studies/],
     ["Homosalate", /SCCS\/1622\/20/, /not safe at the old 10% limit/],
   ])("%s raises a flag worded as its source words it, with the source named", (name, source, wording) => {
     const { product, model } = screenOf([name]);

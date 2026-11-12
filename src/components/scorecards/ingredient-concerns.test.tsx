@@ -58,6 +58,7 @@ describe("the label a finding puts on an ingredient", () => {
     "block.prohibited": { ingredient: "Formaldehyde" },
     "block.contradicted": { claim: "Paraben free, with a claim that runs on far longer than a label ever should, to prove it is clipped", ingredient: "Propyl Paraben" },
     "block.endocrine": { ingredient: "Benzophenone-3" },
+    "block.marine": { ingredient: "Ethylhexyl Methoxycinnamate" },
     "block.carcinogen": { ingredient: "Formaldehyde" },
     "block.over_limit": { ingredient: "Salicylic Acid", limit: 2, declared: 5, authority: "the EU" },
     "caution.soft_adverse": { label: "Comedogenicity risk", detail: "x", ingredients: "laminaria" },

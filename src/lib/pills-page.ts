@@ -263,13 +263,19 @@ const FULL_INCI_STATUSES = new Set(["Full INCI on brand PDP", "Full INCI in refe
       a complete screen, no flag "No pregnancy flags found".
     Anything in between (the ingredient list is not source-backed, or an ingredient could not be checked and nothing is flagged) shows no chip at all, neither a caution nor a
     reassurance; the FAQ still answers the question in words. Pregnancy flags describe ingredients and recorded exposure context: no flags found is not a product safety clearance. */
+/** Salicylic acid is never named in the at-a-glance pregnancy chip (owner rule, 2026-11-04). The FAQ and the pregnancy screen section still list it. */
+const GLANCE_PREGNANCY_EXCLUDED_RE = /\bsalicylic acid\b/i;
+
 function pregnancyHighlight(p?: ProductPregnancyScreen): Highlight | null {
   if (!p || p.status !== "screened") return null;
   const exposure = p.exposure ? `Recorded exposure category: ${p.exposure}.` : "Exposure category is unknown.";
+  // A product whose only flag is salicylic acid shows no pregnancy chip at all: neither a flag nor a "No pregnancy flags found" it would contradict.
   if (p.flags.length) {
-    const flags = p.flags.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source} (confidence: ${f.confidence}).`).join(" ");
+    const shown = p.flags.filter((f) => !GLANCE_PREGNANCY_EXCLUDED_RE.test(f.ingredient));
+    if (!shown.length) return null;
+    const flags = shown.map((f) => `${f.ingredient}: ${f.restriction} Source: ${f.source} (confidence: ${f.confidence}).`).join(" ");
     const unknown = p.unknownIngredients.length ? ` Not checked: ${joinAnd(p.unknownIngredients)}.` : "";
-    return { label: `Pregnancy ingredient flag${p.flags.length === 1 ? "" : "s"}: ${joinAnd(p.flags.map((f) => f.ingredient))}`, state: "no", detail: `${flags} ${exposure}${unknown} This is an ingredient screen, not a product safety conclusion.` };
+    return { label: `Pregnancy ingredient flag${shown.length === 1 ? "" : "s"}: ${joinAnd(shown.map((f) => f.ingredient))}`, state: "no", detail: `${flags} ${exposure}${unknown} This is an ingredient screen, not a product safety conclusion.` };
   }
   if (p.unknownIngredients.length) return null;
   return { label: "No pregnancy flags found", state: "unknown", detail: `No sourced pregnancy flag was found for the ingredients screened. This is not proof that the product is safe during pregnancy. ${exposure} Ask a healthcare professional about individual use.` };

@@ -75,7 +75,7 @@ Analyser Version X1 · the decision
 Good choice needs all of these supports: `support.list_verified`, `support.safety_clear`, `support.claims_proportionate`. Without them the decision is Not enough info (`gap.support_insufficient`).
 Green is the five rows of the product page (owner decisions, 2026-10-30 and 2026-11-04; `src/lib/analyser-x/sections.ts`): Ingredient safety, Formula logic, Claims evidence and Consumer clarity are Strong, and Test transparency is Fair or Strong. A row is Strong from 75% (Claims evidence from 70%) and weak (Concern) under 45%; Test transparency is weak only when the product shows no proof at all.
 The third core support, `support.claims_proportionate`, can then be replaced by `support.sections_green`, and the only cautions allowed are ones those rows already measure, a claim without a test on this product (`caution.claim_gap`) or a formula that may not deliver (`caution.formula`). Those two ride along as notes and are listed under Gaps. Any other caution is a flag and still decides Buy with caution. When nothing is wrong but a row is short of that, the decision is Buy with caution and names the row (`caution.rows`).
-Red also comes from the rows and the ingredients: two weak rows (`block.rows`); a hormone disruptor the owner named (`block.endocrine`: octinoxate, oxybenzone, BHA, D4); an ingredient the database places in IARC Group 1 or 2A (`block.carcinogen`); a strength the product states above a plain EU or India limit (`block.over_limit`); and a sunscreen with an SPF in its name whose list shows no UV filter (`block.no_uv_filter`). A claim that only "helps with" or "supports" needs no test of its own when the formula supports it; one that promises a change ("repairs", "treats", "heals") does.
+Red also comes from the rows and the ingredients: two weak rows (`block.rows`); a hormone disruptor the owner named (`block.endocrine`: oxybenzone, BHA, D4); octinoxate, for harm to marine life and never called a hormone disruptor (`block.marine`); an ingredient the database places in IARC Group 1 or 2A (`block.carcinogen`); a strength the product states above a plain EU or India limit (`block.over_limit`); and a sunscreen with an SPF in its name whose list shows no UV filter (`block.no_uv_filter`). A claim that only "helps with" or "supports" needs no test of its own when the formula supports it; one that promises a change ("repairs", "treats", "heals") does.
 
 ## 5. Reasons
 
@@ -101,6 +101,7 @@ block.contradicted: (p) => `The product says “${s(p.claim)}”, but its ingred
 block.fairness: () => "The product makes a skin-whitening or fairness claim, which India's advertising code treats as misleading."
 block.pillars: (p) => `Two areas of our checks fall short: ${s(p.pillarA)} and ${s(p.pillarB)}. Details are below.`
 block.endocrine: (p) => `${s(p.ingredient)} is flagged as a hormone disruptor. Found in the ingredient list read ${from(p) || "from the product page"}.`
+block.marine: (p) => `${s(p.ingredient)}${/octinoxate/i.test(String(p.ingredient ?? "")) ? "" : " (octinoxate)"} is a UV filter linked to harm to marine life, including coral reefs. Found in the ingredient list read ${from(p) || "from the product page"}.`
 block.carcinogen: (p) => `${s(p.ingredient)} is classed as a known or probable human carcinogen. Found in the ingredient list read ${from(p) || "from the product page"}.`
 block.over_limit: (p) => `${s(p.ingredient)} is stated at ${s(p.declared)}%, above the ${s(p.limit)}% limit set by ${s(p.authority)}.`
 block.no_uv_filter: (p) => `This is sold as an SPF ${s(p.spf)} sunscreen, but its ingredient list shows no UV filter.`
@@ -1340,7 +1341,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
 | `src/components/scorecards/PillsPage.tsx` | `05c16a0f857d0ce8a4b08699d56f92d0833d9a8f6a554231f0451e24969aefad` |
 | `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
-| `src/components/scorecards/ProductHero.tsx` | `17c0ae64d4adc5cfb097e29060224d3887f22ed2315d7e945651d17978537aa9` |
+| `src/components/scorecards/ProductHero.tsx` | `0fefde9a63d845e2cb708deadaf458c86a2dc61e25949f58467b25f288ed7c58` |
 | `src/components/scorecards/ProductRequestForm.tsx` | `076774b2d0c0d11cfd419dc064d49fec96b843cc4317471347891e0b347ce009` |
 | `src/components/scorecards/ProductScorecardView.tsx` | `1e68db79e07c012e947cbe765093ae88910ddcd0b284800ac07611d8c7f7d49e` |
 | `src/components/scorecards/RatingDot.tsx` | `38db0a7ece065f964f9c9919171b5b3ae794e6c58dea91999136191301cd02d1` |
@@ -1361,7 +1362,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
 | `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |
 | `src/data/ingredient-aliases.ts` | `d428faa6ba2be4f561581c0348566a158e605efb9476681d975a5c20e4f445b8` |
-| `src/data/ingredients.json` | `ee6c6295f16a459d65b04d5f9f0014b9670ca95e235b05fec16f20daeb8d6a96` |
+| `src/data/ingredients.json` | `5dec79f6d4d5a350ad11ef41d5fa6deb166a428caa3a1eefb45af9b1338bfbd1` |
 | `src/data/ingredients/claim-ontology.ts` | `c26f56943006af4a4daef5a1d2793d9fc425fbed86bbb38d35e15d977d08763f` |
 | `src/data/ingredients/concepts.ts` | `2c709afb7b734c259f84b0e663020d79df00645264d35758f4960a7e227fa9a5` |
 | `src/data/taxonomy/index.ts` | `c74f427f9b8fdb9dad017a24324fa6c7d0947f0f908ab6eeb7aff02bb296a602` |
@@ -1369,24 +1370,24 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/data/taxonomy/seed.ts` | `40164d44c39883af34ef462f46a0c54ee81e7e946c4747c17d14c2b0be69f3b0` |
 | `src/lib/admin-analysis-edits.ts` | `93549f033715794c628336a4e3739e15f6407661b4835c432327c97f3fde7fa0` |
 | `src/lib/analyser-flags.ts` | `91c8023cbf84911f4dbd79e1d9e40cf66a56fa7b3b094b8e7aca2761b8ffbe98` |
-| `src/lib/analyser-reference.ts` | `1185b319e3a18f6dd284bfd18ec28ad6d1e1b2e9a5627d0ba62d685a086a79f9` |
+| `src/lib/analyser-reference.ts` | `3ba8343ccb37917a78040e734b206518b07db59671941e30f0ff9fc3c1b29b77` |
 | `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
 | `src/lib/analyser-x/claimflags.ts` | `536713ad6e3fd041f93e046162470d9c4146a06cca8459329cdfda6e60e11aae` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `07bdcc7c128aef359956cbda8ebbadbd8a905e79f4d94560d30530e9cc16f0a1` |
+| `src/lib/analyser-x/copy.ts` | `403e6f5ce8a5356f03473d22cbbbe067880a1b0fd3b1d6c315dfaaa3f2d3f06d` |
 | `src/lib/analyser-x/decision.ts` | `23a031d652e25c9b6a55f7bf500b67e9a43874cd8b6a790eba34e679f072e759` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `ab086d1edb4166ab59529e260582fd8f6de82dc71e70514e9469b8b2678676e1` |
 | `src/lib/analyser-x/invariants.ts` | `399020aae190fcc34fbda9809355f8d36d84e45763daadb2d6b5f7a5165f591d` |
-| `src/lib/analyser-x/kb.ts` | `3c25a4f5069125390ab223148102a26a71b241d2bf008d76d230ff42cdb6d781` |
+| `src/lib/analyser-x/kb.ts` | `159dac1d123878fc0c2a45ab5d82d5413cdb39f9a7237847ece7a8bbb0914ec2` |
 | `src/lib/analyser-x/ladder.ts` | `41c174eb941998dedebaaa5b3f3b6286834f8363a87874d115b0e786e7b54116` |
 | `src/lib/analyser-x/panel.ts` | `aa92c8ddd87c8cd26c65b2253fdcc751c98cd2187284e76494bb579116b6a635` |
 | `src/lib/analyser-x/profile.ts` | `f0c1bcda47f50d751b0c2539b59481d417b831f9ff940e4e244cbfeaf5b6d4b0` |
 | `src/lib/analyser-x/regulatory.ts` | `fb0ac5ba051ea18a81cd9444ffe201c89152d157c8efec1f2d68f8c202a198cf` |
-| `src/lib/analyser-x/rules.ts` | `01e80f3020a1e5c3582cca0cdfea91e4d202a79695b05353c04b44de5ce70e43` |
+| `src/lib/analyser-x/rules.ts` | `f1d36fa77bcfae3b772c6d63673302aee89bec8cfc1046f1971234f2e30dfffa` |
 | `src/lib/analyser-x/screen.ts` | `f1b38f1fb3471f7f24c9f7b2a2683e84f8f01f25d190b32e1c46b10e25f1b1c0` |
 | `src/lib/analyser-x/sections.ts` | `9d2d9c6fe399e54ef4f33083ebcb7d2d83826500632ee46fa7220e9dd73836fa` |
-| `src/lib/analyser-x/tags.ts` | `a40748e88e7f6647347e428d26c71972bc416a5b53925c881b83338101dd00ae` |
+| `src/lib/analyser-x/tags.ts` | `5b0e0699e2ff150bca0eeac9644e4e53a1d8905920954c4186c650d2b20edf96` |
 | `src/lib/analyser-x/test-helpers.ts` | `17da8d36981283a224627f933602aa341d14e77510b9440f6134067bd40f011a` |
 | `src/lib/analyser-x/types.ts` | `16753986af9231b18fe0037a18b9444be733149606dbc9e2db3b4aa4e160ab7a` |
 | `src/lib/analyser-x/verifier.ts` | `2aba0b3ec3b2b08f3ca4990e77c895802a63166bd2c8c84251c4ede6cd989c7c` |
@@ -1409,7 +1410,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `585e71967242c14f31ced4c8cad2a35afe3dbac968503d758d8563e09684b361` |
-| `src/lib/inci-from-page.ts` | `788d1d43fa8d3a45daf09444cad272e90c8fdfb2a00eb07f5ebc57cfb7f79428` |
+| `src/lib/inci-from-page.ts` | `cf5e7464581352b1fb15236a4600a9d656d04abf7435681e4d0bbf4e5b5180e7` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
@@ -1429,7 +1430,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `dd87802f4da85b7a4660575250530a4107b378ea8c8ba03448cfef0ba28e9861` |
-| `src/lib/pills-page.ts` | `a710747269cb584a429ffcc2ebcf92fb23757dc65b1722d7d732c63129c1c902` |
+| `src/lib/pills-page.ts` | `8468ed9f38bff8e83e99ed9128d23a9e7cc5aa369007bd2b8cd38f751dd2927f` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |

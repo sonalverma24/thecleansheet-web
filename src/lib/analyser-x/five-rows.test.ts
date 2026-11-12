@@ -105,7 +105,6 @@ describe("a claim that only 'helps with' or 'supports' needs no test when the fo
 describe("Red: a hormone disruptor", () => {
   it.each([
     ["Benzophenone-3", "Benzophenone-3"],
-    ["Ethylhexyl Methoxycinnamate", "Ethylhexyl Methoxycinnamate"],
     ["BHA", "BHA (Butylated Hydroxyanisole)"],
     ["Cyclotetrasiloxane", "Cyclotetrasiloxane"],
   ])("%s is Look elsewhere", (entry, named) => {
@@ -115,6 +114,26 @@ describe("Red: a hormone disruptor", () => {
     expect(r.decision.reasons.find((x) => x.ruleId === "block.endocrine")?.text).toMatch(/is flagged as a hormone disruptor\. Found in the ingredient list read/);
     expect(ids(r)).not.toContain("note.endocrine"); // not repeated as "legal at its permitted level"
     expect(checkInvariants(r.decision, r.settled, r.ctx)).toEqual([]);
+  });
+
+  it("octinoxate is a Red for harm to marine life, never called a hormone disruptor (owner decision, 2026-11-04)", () => {
+    for (const entry of ["Ethylhexyl Methoxycinnamate", "Octinoxate"]) {
+      const r = decideReview(rv({ claimMap: [tested], inciIngredients: [...BASE, entry] }), NOW);
+      expect(r.decision.key, entry).toBe("look-elsewhere");
+      const reason = r.decision.reasons.find((x) => x.ruleId === "block.marine");
+      expect(reason?.text, entry).toMatch(/linked to harm to marine life, including coral reefs\. Found in the ingredient list read/);
+      expect(reason?.text, entry).toMatch(entry === "Octinoxate" ? /^Octinoxate is a UV filter/ : /^Ethylhexyl Methoxycinnamate \(octinoxate\) is a UV filter/);
+      expect(ids(r), entry).not.toContain("block.endocrine");
+      expect(ids(r), entry).not.toContain("note.endocrine");
+      expect(JSON.stringify(r.decision), entry).not.toMatch(/hormone|endocrine/i);
+      expect(checkInvariants(r.decision, r.settled, r.ctx)).toEqual([]);
+    }
+  });
+
+  it("amiloxate and Polysilicone-15 are not octinoxate", () => {
+    for (const entry of ["Isoamyl p-Methoxycinnamate", "Polysilicone-15"]) {
+      expect(ids(decideReview(rv({ claimMap: [tested], inciIngredients: [...BASE, entry] }), NOW)), entry).not.toContain("block.marine");
+    }
   });
 
   it("the silicones D5 and D6 stay a caution: their flag is mostly about persisting in water", () => {
@@ -251,7 +270,7 @@ describe("the Ingredient safety row on a page that is Red for another reason", (
   });
 
   it("is Concern for an ingredient block, for a fairness claim and for two failing pillars, as before", () => {
-    for (const id of ["block.prohibited", "block.endocrine", "block.carcinogen", "block.over_limit", "block.fairness", "block.pillars"]) {
+    for (const id of ["block.prohibited", "block.endocrine", "block.marine", "block.carcinogen", "block.over_limit", "block.fairness", "block.pillars"]) {
       expect(safetyMarker({ key: "look-elsewhere", settled: settled(id), screenCoverage: 1 }), id).toBe("red");
     }
   });
