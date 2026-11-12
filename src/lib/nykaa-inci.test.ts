@@ -114,3 +114,13 @@ describe("a Nykaa panel that prints names in several languages and a shade range
     expect(read?.quote).toMatch(/^Water/);
   });
 });
+
+describe("a Nykaa panel that runs a label's actives into the rest of its list (Bobbi Brown, 2026-11-12)", () => {
+  const panel = "### Description\n### Ingredients\n### How To Use\n\nActive: Octinoxate 6.7%, Titanium Dioxide 1.6%Ingredients: Water\\\\\\Aqua\\\\\\Eau, Dimethicone, Glycerin, Trimethylsiloxysilicate, Butylene Glycol, Phenoxyethanol\n\n## Ratings";
+  it("reads each active as an entry without its strength, and the entry glued to the next label as two", () => {
+    expect(extractNykaaInci(panel)?.ingredients).toEqual(["Octinoxate", "Titanium Dioxide", "Water/Aqua/Eau", "Dimethicone", "Glycerin", "Trimethylsiloxysilicate", "Butylene Glycol", "Phenoxyethanol"]);
+  });
+  it("keeps the strengths in the quote, as the page prints them", () => {
+    expect(extractNykaaInci(panel)?.quote).toMatch(/Octinoxate 6\.7%, Titanium Dioxide 1\.6%Ingredients: Water/);
+  });
+});
