@@ -177,6 +177,28 @@ function normalizeName(name: string): string {
   return tokens(name.replace(/\s+\d+$/, "")).join(" ");
 }
 
+/** The products a Decoder search page lists, with their display names. */
+function decoderSearchEntries(search: string): { name: string; slug: string }[] {
+  return [...search.matchAll(/\[([^\]]+)\]\((?:https:\/\/(?:www\.)?(?:inci|inkee)decoder\.com)?\/products\/([a-z0-9-]+)\)/gi)]
+    .map((m) => ({ name: m[1].replace(/\s+/g, " ").trim(), slug: m[2] }))
+    .filter((c) => c.slug !== "create" && c.name && !/^more$/i.test(c.name));
+}
+
+/** The product pages a Decoder search for `query` lists, as names and page addresses. Decoder's search wants every word it is given, so a short query
+    ("Lacto Calamine Kaolin") finds what a long retailer name does not. Empty on any failure. */
+export async function searchDecoderProducts(query: string, fetchPage: (url: string) => Promise<string | null> = fetchMarkdown): Promise<{ name: string; url: string }[]> {
+  const q = query.trim();
+  if (!q) return [];
+  const search = await fetchPage(`https://incidecoder.com/search?query=${encodeURIComponent(q)}`).catch(() => null);
+  if (!search) return [];
+  const seen = new Set<string>();
+  return decoderSearchEntries(search).flatMap((c) => {
+    if (seen.has(c.slug)) return [];
+    seen.add(c.slug);
+    return [{ name: c.name, url: `https://inkeedecoder.com/products/${c.slug}` }];
+  });
+}
+
 /** Resolve a free-text query to a single INCIDecoder product, or flag ambiguity.
     Never mixes one product's name with another's ingredients: the chosen INCI and its
     productName always come from the same entry. */
@@ -189,9 +211,7 @@ export async function resolveINCI(query: string): Promise<INCIResolution> {
   if (!search) return empty;
 
   // Candidate products with their display names, from the search results.
-  const raw = [...search.matchAll(/\[([^\]]+)\]\((?:https:\/\/(?:www\.)?(?:inci|inkee)decoder\.com)?\/products\/([a-z0-9-]+)\)/gi)]
-    .map((m) => ({ name: m[1].replace(/\s+/g, " ").trim(), slug: m[2] }))
-    .filter((c) => c.slug !== "create" && c.name && !/^more$/i.test(c.name));
+  const raw = decoderSearchEntries(search);
   if (!raw.length) return empty;
 
   const qTok = tokens(q);

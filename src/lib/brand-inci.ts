@@ -2,7 +2,7 @@
  * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
  * checks is read; the brand's own page wins whenever one passes (owner rule, 2026-11-03), otherwise the most complete list wins, and the other lists are recorded so the choice is visible. Other retailers (Amazon, Flipkart...) never supply it. */
 import { fetchInciFromProductPage, fetchInciFromRenderedPage, type InciAlternative, type PageINCI } from "./inci-from-page";
-import { fetchIncidecoderProduct, incidecoderProductSlug } from "./inci-fetch";
+import { fetchIncidecoderProduct, incidecoderProductSlug, searchDecoderProducts } from "./inci-fetch";
 import { generateResilientWithMeta } from "./gemini";
 import { fetchPageMarkdown } from "./scrape";
 import { inciSimilarity, nameTokens, pageTitleNamesProduct, sanitizeInciList } from "./product-identity";
@@ -131,6 +131,78 @@ async function firecrawlPages(query: string): Promise<string[]> {
   } catch { return []; }
 }
 
+/** A web search that keeps each result's title, for reading what retailers call the product. Firecrawl, one credit; empty when the key is unset or the call fails. */
+async function firecrawlTitles(query: string): Promise<SearchTitle[]> {
+  const key = process.env.FIRECRAWL_API_KEY;
+  if (!key) return [];
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v1/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({ query, limit: 10 }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as { data?: { url?: string; title?: string }[] };
+    return (data.data ?? []).flatMap((x) => x.url && x.title ? [{ url: x.url, title: x.title }] : []);
+  } catch { return []; }
+}
+
+export interface SearchTitle { url: string; title: string }
+
+/** Words in a retailer's title that say nothing about which product it is: shop names, pack sizes, who it is for, "free from" lines, sun-filter labels and generic
+    marketing. "Extract" is here too: nearly every list has one, so it cannot tell two products apart. */
+const TITLE_NOISE = new Set([
+  "nykaa", "amazon", "flipkart", "purplle", "myntra", "tira", "1mg", "pharmeasy", "apollo", "pharmacy", "blinkit", "zepto", "instamart", "swiggy", "bigbasket", "jiomart",
+  "meesho", "desertcart", "netmed", "otc", "buy", "online", "price", "india", "best", "offer", "shop", "store", "official", "review", "rating", "deal", "sale", "brand",
+  "gm", "gram", "ml", "pack", "each", "combo", "piece", "pc", "pcs", "tube", "bottle", "count", "size", "mini", "travel", "value",
+  "women", "men", "unisex", "girl", "boy", "adult", "kid", "all", "type", "every", "day", "use",
+  "free", "paraben", "sulphate", "sulfate", "silicone", "cruelty", "toxin", "dermatologically", "tested", "clinically", "proven",
+  "uva", "uvb", "broad", "spectrum", "protection", "protect", "blue", "light", "lightweight", "non", "sticky", "greasy", "oily", "dry", "normal", "combination",
+  "extract", "natural", "formula", "instant", "long", "lasting", "hour", "hours", "result",
+]);
+
+const stemWord = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
+
+/** The site a page is on, so several pages of one shop count once ("www.1mg.com" and "csc.1mg.com" are one shop). */
+function siteOf(url: string): string {
+  try {
+    const labels = new URL(url).hostname.toLowerCase().split(".");
+    return labels.slice(labels.length >= 3 && labels[labels.length - 2] === "co" ? -3 : -2).join(".");
+  } catch { return ""; }
+}
+
+/** Words that retailers' titles for this product carry and its name lacks: Nykaa and 1mg call Lacto Calamine's "Sunscreen SPF 50 PA+++ For Oily Skin" the one
+    "With Kaolin Clay & Lemon Extracts", which is how INKEE Decoder names it. A title counts only when it names the brand and at least 60% of the product's own words, so a
+    page about another of the brand's products adds nothing; a word counts only when titles on two or more sites carry it, so one shop's wording is not enough.
+    `words` is every such word, for judging a Decoder entry's name; `distinctive` leaves out the ones that say nothing about which product it is (TITLE_NOISE), and is
+    what Decoder is searched with. Best supported first. */
+export function retailerWords(results: SearchTitle[], brand: string, query: string): { words: string[]; distinctive: string[] } {
+  const own = new Set([...nameTokens(query, brand)].map(stemWord));
+  if (!own.size) return { words: [], distinctive: [] };
+  const sites = new Map<string, Set<string>>();
+  for (const r of results) {
+    if (!titleNamesBrand(r.title, brand)) continue;
+    const words = [...nameTokens(r.title, brand)].map(stemWord);
+    if ([...own].filter((w) => words.includes(w)).length / own.size < 0.6) continue;
+    const site = siteOf(r.url);
+    for (const w of words) {
+      if (own.has(w) || w.length < 3 || /\d/.test(w)) continue;
+      (sites.get(w) ?? sites.set(w, new Set()).get(w)!).add(site);
+    }
+  }
+  const words = [...sites].filter(([, s]) => s.size >= 2).sort((a, b) => b[1].size - a[1].size).map(([w]) => w);
+  return { words, distinctive: words.filter((w) => !TITLE_NOISE.has(w)) };
+}
+
+/** How many of the words a Decoder entry's name has beyond ours (and the retailers give) its own list holds as a whole word: "Kaolin Clay With Lemon Extracts" lists
+    Kaolin. A name that promises an ingredient its list holds is the better-supported page when two names fit the retailers' words equally. */
+export function namedWordsInList(entryName: string, brand: string, words: string[], ingredients: string[]): number {
+  const promised = [...nameTokens(entryName, brand)].map(stemWord).filter((w) => words.includes(w));
+  const listWords = new Set(ingredients.flatMap((i) => i.toLowerCase().match(/[a-z0-9]+/g) ?? []).map(stemWord));
+  return promised.filter((w) => listWords.has(w)).length;
+}
+
 /** Where candidate pages come from. Firecrawl first. Google's Custom Search API is next, but it answers 403 for this project
  *  (it has no access to the API), so it is a fallback that works only if access is restored. */
 export async function searchBrandPages(query: string): Promise<string[]> {
@@ -171,6 +243,10 @@ export interface Dependencies {
   /** The product's page found in the brand's own catalogue, from any page of the brand's site, when the catalogue has exactly one product that is clearly this one.
    *  Optional. See src/lib/brand-catalogue.ts. */
   findInCatalogue?: (siteUrl: string, brand: string, query: string) => Promise<string | null>;
+  /** Web results with their titles, read for the words retailers use for the product (see `retailerWords`), and a Decoder search that lists product names.
+      Optional: without both, a Decoder page named differently from the product is not looked for. */
+  searchTitles?: (query: string) => Promise<SearchTitle[]>;
+  searchDecoder?: (query: string) => Promise<{ name: string; url: string }[]>;
 }
 
 /** Read a Decoder product page with the parser the engine already uses. A quote that was cut short is refused:
@@ -233,7 +309,7 @@ export async function askModelForProductPage(query: string): Promise<string[]> {
 }
 
 /** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, Nykaa pages, then the grounded model. */
-export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage, readRendered: (url) => fetchInciFromRenderedPage(url), findInCatalogue: catalogueProductUrl };
+export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage, readRendered: (url) => fetchInciFromRenderedPage(url), findInCatalogue: catalogueProductUrl, searchTitles: firecrawlTitles, searchDecoder: (q) => searchDecoderProducts(q) };
 
 /** Wrap a lookup's dependencies so every URL it was shown (search results and the model's proposals) is remembered in `seen`.
  *  A search typed as a name can only guess the brand from the first word the shopper wrote, and a brand page such as
@@ -271,6 +347,8 @@ export const READ_CAP_MS = { decoder: 15_000, "brand-page": 20_000, nykaa: 30_00
 const MAX_RENDERED = 2;
 const RENDER_MIN_MS = 14_000;
 const RENDER_BUDGET_MS = 36_000;
+/** The most the retailer-words Decoder look may take: one web search, then Decoder searches and page reads side by side. */
+const RETAILER_WORDS_CAP_MS = 30_000;
 /** The most the brand-catalogue identity check may take (it reads one to three pages of the store's product feed). */
 const CATALOGUE_CAP_MS = 15_000;
 const within = <T>(work: Promise<T>, ms: number): Promise<T | null> => {
@@ -381,12 +459,41 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
   // one product that is clearly this one, its page is read; the catalogue is what identifies it, so the brand's name is used (`identity: "brand-catalogue"`).
   const fromCatalogue = await readFromCatalogue(first);
   if (fromCatalogue) return choose([...knownReads, fromCatalogue]);
-  if (!deps.askModel) return null;
 
-  // Nothing found so far gave a list: ask the web-grounded model where the page is, then read that page ourselves.
-  let asked: string[] = [];
-  try { asked = await deps.askModel(query); } catch { /* The model is a last resort, never a reason to fail. */ }
-  return choose(await readAll(asked));
+  // Nothing found so far gave a list. Two last looks run side by side, so neither adds to the other's time: the web-grounded model is asked where the page is (that
+  // page is then read by code), and a Decoder page named with the words retailers use for the product is looked for (`decoderByRetailerWords`).
+  const [asked, byRetailers] = await Promise.all([
+    deps.askModel ? deps.askModel(query).then(readAll).catch(() => [] as Read[]) : Promise.resolve([] as Read[]), // the model is a last resort, never a reason to fail
+    within(decoderByRetailerWords(), RETAILER_WORDS_CAP_MS),
+  ]);
+  return choose([...asked, ...(byRetailers ? [byRetailers] : [])]);
+
+  /** A Decoder page whose name has words ours lacks ("Lacto Calamine SPF 50 PA++ (Kaolin Clay With Lemon Extracts)" for "Lacto Calamine Sunscreen SPF 50 PA+++ For
+      Oily Skin"). Decoder's search wants every word it is given, so our name finds nothing, and the page's name fails the title rule against ours. Retailers' titles
+      for the product carry the missing words (`retailerWords`); Decoder is searched with the brand and each of them, and an entry is taken only when its name passes
+      the same title rule against our name with those words added, so every word of it is ours or a retailer's: an entry with a word nobody gave ("Dewy") is another
+      variant. Two entries that both pass are told apart by the words their names promise and their lists hold; a tie gives nothing. */
+  async function decoderByRetailerWords(): Promise<Read | null> {
+    if (!deps.searchTitles || !deps.searchDecoder) return null;
+    const { words, distinctive } = retailerWords(await deps.searchTitles(query).catch(() => [] as SearchTitle[]), brand, query);
+    if (!distinctive.length) return null;
+    const enriched = `${query} ${words.join(" ")}`;
+    const ownWords = new Set([...nameTokens(query, brand)].map(stemWord));
+    const searches = await Promise.all(distinctive.slice(0, 4).map((w) => within(deps.searchDecoder!(`${brand} ${w}`), READ_CAP_MS.decoder)));
+    const entries = [...new Map(searches.flatMap((s) => s ?? []).map((e) => [e.url, e])).values()].filter((e) => {
+      const name = [...nameTokens(e.name, brand)].map(stemWord);
+      return !tried.has(e.url) && titleNamesBrand(e.name, brand) && name.some((w) => distinctive.includes(w)) && name.some((w) => ownWords.has(w))
+        && pageTitleNamesProduct(e.name, brand, enriched);
+    }).slice(0, 3);
+    for (const e of entries) tried.add(e.url);
+    const reads = (await Promise.all(entries.map(async (e) => ({ e, page: await within(readDecoder(e.url), READ_CAP_MS.decoder) }))))
+      .filter((r): r is { e: { name: string; url: string }; page: PageINCI } => listOk(r.page));
+    if (!reads.length) return null;
+    const scored = reads.map((r) => ({ ...r, score: namedWordsInList(r.e.name, brand, distinctive, r.page.ingredients) })).sort((a, b) => b.score - a.score);
+    if (scored.length > 1 && scored[0].score === scored[1].score) return null;
+    const top = scored[0];
+    return { page: { ...top.page, origin: "decoder", trust: top.page.trust ?? 3, identity: "retailer-titles" }, supplied: false };
+  }
 
   async function readFromCatalogue(urls: string[]): Promise<Read | null> {
     if (!deps.findInCatalogue) return null;

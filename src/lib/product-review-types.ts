@@ -189,8 +189,9 @@ export interface InciEvidence {
   origin?: "decoder" | "brand-page" | "nykaa" | "owner-supplied";
   /** Other sources read for this product whose list differs from the one used (the most complete list is used), so the choice is visible. */
   alternatives?: { source: string; origin: "decoder" | "brand-page" | "nykaa" | "owner-supplied"; count: number }[];
-  /** Set when the brand's own catalogue, not the page's title, showed the source page to be this product; the product then carries the brand's name for it. */
-  identity?: "brand-catalogue";
+  /** Set when the source page's title alone did not show it to be this product. "brand-catalogue": the brand's own catalogue did, and the product then carries the
+      brand's name for it. "retailer-titles": several retailers' titles for the product carry the words the Decoder page's name has and ours lacks (src/lib/brand-inci.ts). */
+  identity?: "brand-catalogue" | "retailer-titles";
 }
 
 /** What the model searched and cited while producing a review (Google Search grounding).

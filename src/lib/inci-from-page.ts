@@ -41,8 +41,10 @@ export interface PageINCI {
   /** Other sources read for the same product whose list differs from this one, so a choice between sources is never silent. */
   alternatives?: InciAlternative[];
   /** How the page was known to be this product when its title did not say so: the brand's own catalogue has exactly one product that is clearly this one, and
-      this is its page. The product then takes the brand's own name for it (owner rule, 2026-11-12). Absent when the page's title names the product. */
-  identity?: "brand-catalogue";
+      this is its page. The product then takes the brand's own name for it (owner rule, 2026-11-12). "retailer-titles": a Decoder page whose name has words ours lacks,
+      and several retailers' titles for this product carry those words (`findDecoderByRetailerWords` in brand-inci.ts); the product keeps its own name.
+      Absent when the page's title names the product. */
+  identity?: "brand-catalogue" | "retailer-titles";
 }
 
 export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "owner-supplied";
