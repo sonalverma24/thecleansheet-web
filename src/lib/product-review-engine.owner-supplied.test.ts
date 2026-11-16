@@ -121,6 +121,20 @@ describe("runProductReview: an admin re-analysis (fresh, with a typed list, not 
     expect(h.upserts).toHaveLength(0);
   });
 
+  it("returns its own analysis, not the stored one, when it reaches the product under another name (a retailer address, a reworded name)", async () => {
+    const old = makeReview({ productName: "Calm Gel", brand: "Test Co", inciIngredients: ["Aqua"], reviewedAt: "2026-11-12T17:30:22.652Z" });
+    h.state.stored = { type: "product-review", review: old, verdict: {} };
+    h.generate.mockResolvedValue(modelReply("Calm Gel"));
+    // The query's slug differs from the product's, so the duplicate check meets the stored row: a shopper is served it, the admin's re-run is not.
+    const shopper = await runProductReview("Test Co Calm Gel Face Wash 100ml");
+    if (shopper.type !== "product-review") throw new Error("expected a review");
+    expect(shopper.review.reviewedAt).toBe(old.reviewedAt);
+    const out = await runProductReview("Test Co Calm Gel Face Wash 100ml", { fresh: true, save: false, ownerList: typed });
+    if (out.type !== "product-review") throw new Error("expected a review");
+    expect(out.review.reviewedAt).not.toBe(old.reviewedAt);
+    expect(out.review.inciIngredients).toEqual(typed.ingredients);
+  });
+
   it("still prefers a primary source over the typed list", async () => {
     h.brandInci.mockResolvedValue({ ingredients: ["Aqua", "Glycerin", "Panthenol", "Tocopherol", "Niacinamide"], quote: "Aqua, Glycerin, Panthenol, Tocopherol, Niacinamide", source: "https://testco.com/products/calm-gel-2", pageTitles: ["Calm Gel"], trust: 4, origin: "brand-page" });
     h.generate.mockResolvedValue(modelReply("Calm Gel"));

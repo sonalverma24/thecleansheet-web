@@ -1510,7 +1510,9 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
     canonicalSlug,
     ...brandNameVariants(review.brand).map((b) => slugify(review.productName, b)),
   ]);
-  for (const candidate of dedupeSlugs) {
+  // An admin re-analysis (`fresh`) skips both de-dupe passes: it is re-analysing a stored product on purpose, and the caller writes the result to that product's own row.
+  // Served the stored row here, it got the old analysis back unchanged (Dot & Key's face wash, re-run from its Nykaa address, 2026-11-16).
+  for (const candidate of opts.fresh ? [] : dedupeSlugs) {
     if (candidate === slug) continue;
     const existing = await getReusableStored(candidate);
     if (existing) return servedAsStored(existing);
@@ -1526,7 +1528,7 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
     brand: review.brand,
     inci: pageInci?.ingredients ?? inci?.ingredients ?? review.inciIngredients ?? review.ingredientReads?.map((r) => r.name) ?? [],
   };
-  try {
+  if (!opts.fresh) try {
     const { data: sameBrand } = await createAdminClient()
       .from("product_reviews").select("product_slug, product_name, brand, result")
       .in("brand", brandNameVariants(review.brand));
