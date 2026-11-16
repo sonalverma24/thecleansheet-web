@@ -1452,7 +1452,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `654bae53693b7a142c22e68c42034fc5e5269093c78346a4de95087d5f25eef9` |
+| `src/lib/brand-inci.ts` | `f2c77ef411d11abe8233a58103b9c361579b842e835a9c50a5a28820b2db593b` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1466,8 +1466,8 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-catchall.ts` | `c83855004cb4603bb90c1ba15e195352ff073742968998d444802778fb8e7254` |
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
-| `src/lib/inci-fetch.ts` | `585e71967242c14f31ced4c8cad2a35afe3dbac968503d758d8563e09684b361` |
-| `src/lib/inci-from-page.ts` | `3929943bac4b87bfdc21ae52ee0726426721fb722f74c1cef53bc4cb8d6140de` |
+| `src/lib/inci-fetch.ts` | `a628bbbecde02183b2538f75f3c0041f626f1602411667197b1b0e6dc59a10fd` |
+| `src/lib/inci-from-page.ts` | `9f04eb09fcc887978d618ed28f76d8ab98f1ba3ae2b3e8ab812d085c87cf451c` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
@@ -1494,7 +1494,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
 | `src/lib/product-review-engine.ts` | `b1f31cb5501ca7fff316d9d3bc3327c33a238aea9fe8bdb4896c17078f91bb08` |
-| `src/lib/product-review-types.ts` | `b92865e19bc08544b28f8a4272642b1940c524a3e4eef0daba55952d63324d8c` |
+| `src/lib/product-review-types.ts` | `7f57d146739ff108907386e30592450106f2a40a4dede80dd8ccb69f5409c99a` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
