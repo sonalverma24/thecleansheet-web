@@ -42,7 +42,7 @@ describe("buildShelf", () => {
     const cards = buildShelf([FACE(1), HAIR, FACE(2)], { picks: [] });
     expect(cards.map((c) => c.slug)).toEqual(["face-1", "face-2", "hair-1"]);
     expect(cards[0].href).toBe("/analysis/face-1");
-    expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Cleansers", "Other"]);
+    expect(cards.map((c) => c.category)).toEqual(["Cleansers", "Cleansers", "Hair care"]);
   });
 
   it("with no picks, shows the newest 2 Green and the newest 3 Yellow, and never a Grey or a Red one", () => {
@@ -117,6 +117,14 @@ describe("categoryFor and shelfCategories", () => {
     expect(categoryFor({ category: "Serum", productName: "x" })).toBe("Serums");
     expect(categoryFor({ category: "Pimple Patch", productName: "x" })).toBe("Spot care");
     expect(categoryFor({ category: "Hair Oil", productName: "Hair Elixir" })).toBeNull();
+  });
+
+  it("tags every card with the /products type, including lip, hair and sun products", () => {
+    const lip = tile({ slug: "nivea-lip", brand: "NIVEA", productName: "Nivea Cherry Shine Lip Balm", category: "Lip Balm" });
+    const hair = tile({ slug: "wishcare-dry", brand: "WishCare", productName: "WishCare Air Powder Dry Shampoo", category: "Dry Shampoo" });
+    const sun = tile({ slug: "deconstruct-sun", brand: "Deconstruct", productName: "Deconstruct Gel Sunscreen SPF 50", category: "Sunscreen" });
+    const cards = buildShelf([lip, hair, sun], { picks: [lip.slug, hair.slug, sun.slug] });
+    expect(cards.map((c) => c.category)).toEqual(["Lip care", "Hair care", "Sunscreens"]);
   });
 
   it("only lists chips that have a card, in display order", () => {
