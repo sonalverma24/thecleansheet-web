@@ -44,3 +44,24 @@ export function retailerNameForHost(host: string): string | null {
   const h = host.toLowerCase();
   return RETAILERS.find((r) => r.host.test(h))?.name ?? null;
 }
+
+/** The product's name as a retailer's product-page address spells it, in words, or null when the address carries none (an Amazon /dp/<ASIN> link alone).
+    Each retailer puts it in its own place: Myntra's address is /<category>/<brand>/<name>/<id>/buy, so the first long segment is the category, not the product;
+    1mg and Tira end the name with their own number ("-otc867982", "-8850340"). */
+export function retailerProductSlug(raw: string): string | null {
+  const retailer = retailerFor(raw);
+  if (!retailer) return null;
+  const segs = new URL(raw).pathname.split("/").filter(Boolean).map((s) => decodeURIComponent(s));
+  let slug: string | undefined;
+  switch (retailer.name) {
+    case "Amazon": { const at = segs.findIndex((s) => /^(?:dp|gp)$/i.test(s)); slug = at > 0 ? segs[at - 1] : undefined; break; }
+    case "Flipkart": case "Meesho": slug = segs[segs.indexOf("p") - 1]; break;
+    case "Myntra": { const id = segs.findIndex((s) => /^\d+$/.test(s)); slug = id > 0 ? segs[id - 1] : undefined; break; }
+    case "FOY": slug = segs[1]; break;
+    case "1mg": slug = segs[1]?.replace(/-otc\d+$/i, ""); break;
+    case "Tira": slug = segs[1]?.replace(/-\d+$/, ""); break;
+    default: slug = segs.at(-1);
+  }
+  const name = (slug ?? "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  return (name.toLowerCase().match(/[a-z]{2,}/g) ?? []).length >= 2 ? name : null;
+}

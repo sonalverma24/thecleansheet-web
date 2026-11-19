@@ -63,7 +63,8 @@ export function titleFromMarkdown(md: string): string | null {
   const m = md.match(/^Title:\s*(.+)$/m);
   if (!m) return null;
   // Strip storefront boilerplate: "Buy X Online at Best Price | Store" → "X"
-  return m[1]
+  // NFKC first: 1mg writes "best price" in mathematical bold letters, which the boilerplate rule below would not otherwise see.
+  return m[1].normalize("NFKC")
     .replace(/^buy\s+/i, "")
     .replace(/\s*(online.*|at best price.*)$/i, "")
     .split("|")[0]
