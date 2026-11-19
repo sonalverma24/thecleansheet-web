@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, BookOpen, ArrowRight, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import { getPostBySlug, getAllSlugs, BLOG_POSTS, type BlogBlock, type RichText } from "@/lib/blog-posts";
+import { LoopVideo, StatRow, BarChart, Steps } from "@/components/blog/AnimatedBlocks";
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -265,6 +266,18 @@ function renderBlock(block: BlogBlock, i: number) {
           </Link>
         </div>
       );
+
+    case "video":
+      return <LoopVideo key={i} src={block.src} poster={block.poster} mobileSrc={block.mobileSrc} mobilePoster={block.mobilePoster} label={block.label} caption={block.caption} />;
+
+    case "stats":
+      return <StatRow key={i} items={block.items} source={block.source} />;
+
+    case "bar-chart":
+      return <BarChart key={i} title={block.title} rows={block.rows} source={block.source} unit={block.unit} />;
+
+    case "steps":
+      return <Steps key={i} items={block.items} />;
 
     default:
       return null;
