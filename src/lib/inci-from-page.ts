@@ -34,7 +34,7 @@ export interface PageINCI {
   pageTitles?: string[];
   /** The page's og:site_name, when it states one. */
   siteName?: string | null;
-  /** How reliably the text was captured (see CaptureTrust): 4 a brand's own page, 3 INKEE Decoder or a Nykaa product page. */
+  /** How reliably the text was captured (see CaptureTrust): 4 a brand's own page, 3 INKEE Decoder, a Nykaa product page or another retailer's product page read by code. */
   trust?: 3 | 4;
   /** Which kind of source the list came from. */
   origin?: InciOrigin;
@@ -47,7 +47,7 @@ export interface PageINCI {
   identity?: "brand-catalogue" | "retailer-titles";
 }
 
-export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "owner-supplied";
+export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "retailer" | "owner-supplied";
 export interface InciAlternative { source: string; origin: InciOrigin; count: number }
 
 const UA =

@@ -8,6 +8,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import type { DecisionKey, Finding } from "./types";
+import { retailerNameForHost } from "@/lib/retailer-pages";
 
 export const COPY_VERSION = "copy-1";
 
@@ -41,6 +42,8 @@ export function sourceName(v: unknown): string {
       const host = new URL(t).hostname.replace(/^www\./, "");
       if (/(?:^|\.)inkeedecoder\.com$/.test(host)) return "INKEE Decoder";
       if (/(?:^|\.)nykaa\.com$/.test(host)) return "Nykaa";
+      const retailer = retailerNameForHost(host);
+      if (retailer) return retailer;
       return /incidecoder\.com$/.test(host) ? SOURCE_NAMES.incidecoder : host;
     } catch { return "the source"; }
   }

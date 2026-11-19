@@ -544,11 +544,13 @@ describe("a brand's own page for a product with a short name of its own", () => 
 });
 
 describe("what counts as a primary ingredient source", () => {
-  it("is a Decoder product page, the brand's own product page or a Nykaa product page, and nothing else", () => {
+  it("is a Decoder product page, the brand's own product page, a Nykaa product page or (since 2026-11-19) another retailer's product page, and nothing else", () => {
     expect(isPrimaryIngredientUrl("https://inkeedecoder.com/products/plix-night-cream", "Plix")).toBe(true);
     expect(isPrimaryIngredientUrl("https://www.plixlife.com/product/night-cream/602", "Plix")).toBe(true);
     expect(isPrimaryIngredientUrl("https://www.nykaa.com/plix-night-cream/p/123", "Plix")).toBe(true);
-    for (const u of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.amazon.in/Plix/dp/B0X123", "https://www.flipkart.com/plix/p/itm1", "https://plixlife.com.evil.test/product/a", "", "not a url"])
+    expect(isPrimaryIngredientUrl("https://www.amazon.in/dp/B0X1234567", "Plix")).toBe(true);
+    expect(isPrimaryIngredientUrl("https://www.flipkart.com/plix/p/itm1", "Plix")).toBe(true);
+    for (const u of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.amazon.in/s?k=plix", "https://www.flipkart.com/search?q=plix", "https://plixlife.com.evil.test/product/a", "", "not a url"])
       expect(isPrimaryIngredientUrl(u, "Plix"), u).toBe(false);
   });
 });
