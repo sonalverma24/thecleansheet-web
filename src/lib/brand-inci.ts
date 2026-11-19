@@ -1,7 +1,7 @@
 /** Deterministic fallback for retailer/name inputs. Search discovers pages; a matching product page on a recognisable brand domain, an INKEE/INCI Decoder
  * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
  * checks is read; the brand's own page wins whenever one passes (owner rule, 2026-11-03), otherwise the most complete list wins, and the other lists are recorded so the choice is visible.
- * Other retailers' product pages (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, Foxy, 1mg) supply a list only as a last resort, when none of those three gives one
+ * Other retailers' product pages (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, FOY, 1mg) supply a list only as a last resort, when none of those three gives one
  * (owner decision, 2026-11-19; src/lib/retailer-inci.ts). */
 import { fetchInciFromProductPage, fetchInciFromRenderedPage, type InciAlternative, type PageINCI } from "./inci-from-page";
 import { fetchIncidecoderProduct, incidecoderProductSlug, searchDecoderProducts } from "./inci-fetch";
@@ -251,7 +251,7 @@ export interface Dependencies {
       Optional: without both, a Decoder page named differently from the product is not looked for. */
   searchTitles?: (query: string) => Promise<SearchTitle[]>;
   searchDecoder?: (query: string) => Promise<{ name: string; url: string }[]>;
-  /** Other retailers' product pages (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, Foxy, 1mg) for the query, and a reader for one (src/lib/retailer-inci.ts). A list
+  /** Other retailers' product pages (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, FOY, 1mg) for the query, and a reader for one (src/lib/retailer-inci.ts). A list
       from them is used only when no brand page, Decoder or Nykaa list passes (owner decision, 2026-11-19). Optional: without them no other retailer is consulted. */
   searchRetailers?: (query: string) => Promise<string[]>;
   readRetailer?: (url: string, mayRender: boolean) => Promise<PageINCI | null>;

@@ -1,7 +1,7 @@
 /* Retailer product pages as a LAST-RESORT ingredient source (owner decision, 2026-11-19: "Allow retailer lists").
 
    The brand's own page, INKEE Decoder and Nykaa stay the sources a list is taken from. Only when none of them gives a list that passes every check is a list
-   printed on another retailer's product page (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, Foxy, 1mg) used, so a product that publishes its list only on a
+   printed on another retailer's product page (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, FOY, 1mg) used, so a product that publishes its list only on a
    marketplace is analysed instead of left Grey. The list is read by code from the page itself, with the quote captured, and must pass the same checks as every
    other source: the page's title names the brand and the product, the text is an ingredient list, and the list is possible for this product. It is recorded
    as `origin: "retailer"` with the page's address, so the analysis names the retailer it came from. Nothing here writes an ingredient the page does not print. */
@@ -43,7 +43,15 @@ export async function readRetailerPage(raw: string, mayRender = true, deps: Reta
   const plain = await deps.read(url).catch(() => null);
   const page = usable(plain) ? plain : mayRender && deps.readRendered ? await deps.readRendered(url).catch(() => null) : null;
   if (!usable(page)) return null;
-  return { ...page, source: url, siteName: page.siteName ?? retailer.name, trust: 3, origin: "retailer" };
+  return { ...page, ingredients: withoutLeadIn(page.ingredients), source: url, siteName: page.siteName ?? retailer.name, trust: 3, origin: "retailer" };
+}
+
+/** A retailer's lead-in glued to the first entry is not part of its name: FOY prints "Made with Aqua, Dimethyl Isosorbide, ..." (2026-11-19), and "Made with Aqua"
+    would otherwise be dropped as not an ingredient, losing Aqua. Only the first entry, and only these words. */
+export function withoutLeadIn(ingredients: string[]): string[] {
+  if (!ingredients.length) return ingredients;
+  const first = ingredients[0].replace(/^\s*(?:made\s+with|contains|ingredients?)\s*:?\s+/i, "").trim();
+  return first ? [first, ...ingredients.slice(1)] : ingredients.slice(1);
 }
 
 /** Retailer product pages for the query, from one Firecrawl web search (one credit). Empty when the key is unset or the call fails. */

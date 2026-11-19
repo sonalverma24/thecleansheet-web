@@ -1,4 +1,4 @@
-/* Other retailers' product-page addresses (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, Foxy, 1mg), with no fetching, so pages and copy can name a source.
+/* Other retailers' product-page addresses (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, FOY, 1mg), with no fetching, so pages and copy can name a source.
    The reader that takes a list from these pages is src/lib/retailer-inci.ts. */
 
 export interface Retailer { name: string; host: RegExp; product: RegExp }
@@ -11,7 +11,7 @@ const RETAILERS: readonly Retailer[] = [
   { name: "Tira", host: /^(?:www\.)?tirabeauty\.com$/i, product: /^\/product\/[a-z0-9-]+\/?$/i },
   { name: "Myntra", host: /^(?:www\.)?myntra\.com$/i, product: /\/\d+\/buy\/?$/i },
   { name: "Meesho", host: /^(?:www\.)?meesho\.com$/i, product: /\/p\/[a-z0-9]+\/?$/i },
-  { name: "Foxy", host: /^(?:www\.)?foxy\.in$/i, product: /^\/product\/[a-z0-9-]+\/?$/i },
+  { name: "FOY", host: /^(?:www\.)?foyforyou\.com$/i, product: /^\/p\/[a-z0-9-]+\/FOY\d+\/?$/i },
   { name: "1mg", host: /^(?:www\.)?1mg\.com$/i, product: /^\/otc\/[a-z0-9-]+\/?$/i },
 ];
 

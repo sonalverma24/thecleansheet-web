@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { findBrandInci, isPrimaryIngredientUrl } from "./brand-inci";
 import type { PageINCI } from "./inci-from-page";
-import { isRetailerProductUrl, readRetailerPage, retailerListLooksLikeInci, retailerProductUrl } from "./retailer-inci";
+import { isRetailerProductUrl, readRetailerPage, retailerListLooksLikeInci, retailerProductUrl, withoutLeadIn } from "./retailer-inci";
 import { retailerNameForHost } from "./retailer-pages";
 import { sourceName } from "./analyser-x/copy";
 
@@ -34,12 +34,12 @@ describe("retailer product pages", () => {
       "https://www.tirabeauty.com/product/plum-2-niacinamide-sunscreen-8850340",
       "https://www.myntra.com/face-wash/minimalist/minimalist-salicylic-face-wash/25034678/buy",
       "https://www.meesho.com/minimalist-sunscreen/p/4x1y2z",
-      "https://www.foxy.in/product/minimalist-spf-50-sunscreen",
+      "https://www.foyforyou.com/p/minimalist-alpha-arbutin-02-face-serum/FOY001135",
       "https://www.1mg.com/otc/moiz-syndet-bar-soap-otc867982",
     ]) expect(isRetailerProductUrl(u), u).toBe(true);
     for (const u of [
       "https://www.amazon.in/s?k=minimalist", "https://www.flipkart.com/search?q=minimalist", "https://www.tirabeauty.com/brand/minimalist",
-      "https://www.myntra.com/minimalist-sunscreen", "https://www.nykaa.com/minimalist-spf/p/2812174", "http://www.amazon.in/dp/B09FPS9D5T", "https://beminimalist.co/products/spf-50",
+      "https://www.myntra.com/minimalist-sunscreen", "https://www.foyforyou.com/brand/minimalist", "https://www.foyforyou.com/search?q=minimalist", "https://www.nykaa.com/minimalist-spf/p/2812174", "http://www.amazon.in/dp/B09FPS9D5T", "https://beminimalist.co/products/spf-50",
     ]) expect(isRetailerProductUrl(u), u).toBe(false);
   });
 
@@ -71,10 +71,17 @@ describe("retailer product pages", () => {
     expect(await readRetailerPage("https://www.amazon.in/s?k=minimalist", true, { read, readRendered })).toBeNull();
   });
 
+  it("drops a lead-in glued to the first entry (FOY prints \"Made with Aqua, ...\")", () => {
+    expect(withoutLeadIn(["Made with Aqua", "Glycerin"])).toEqual(["Aqua", "Glycerin"]);
+    expect(withoutLeadIn(["Ingredients: Water", "Glycerin"])).toEqual(["Water", "Glycerin"]);
+    expect(withoutLeadIn(["Aqua", "Made with love"])).toEqual(["Aqua", "Made with love"]); // only the first entry
+  });
+
   it("names the retailer on the page, not its address", () => {
     expect(sourceName(AMAZON_CLEAN)).toBe("Amazon");
     expect(sourceName("https://www.flipkart.com/x/p/itm1")).toBe("Flipkart");
     expect(retailerNameForHost("www.1mg.com")).toBe("1mg");
+    expect(sourceName("https://www.foyforyou.com/p/minimalist-alpha-arbutin-02-face-serum/FOY001135")).toBe("FOY");
     expect(sourceName("https://www.nykaa.com/x/p/1")).toBe("Nykaa");
   });
 
