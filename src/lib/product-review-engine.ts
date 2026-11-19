@@ -15,6 +15,8 @@ import { generateResilientWithMeta, researchLogFrom, type GroundingRecord } from
 import { findProductReviewImage, isLiveImage } from "@/lib/product-image";
 import { resolveINCI, inciGroundTruthBlock } from "@/lib/inci-fetch";
 import type { INCIResult } from "@/lib/inci-fetch";
+import { fetchProductPage } from "@/lib/product-page";
+import { retailerProductSlug } from "@/lib/retailer-pages";
 import { fetchPageMarkdown, titleFromMarkdown, productBodyExcerpt, evidenceLinksFromMarkdown } from "@/lib/scrape";
 import { imageEvidenceBlock } from "@/lib/evidence-images";
 import { brandsOwnName, defaultBrandInciDeps, findBrandInci, recordCandidates, withKnownCandidates } from "@/lib/brand-inci";
@@ -56,6 +58,9 @@ function identityPlaceholder(value: string | null | undefined): boolean {
 }
 
 function productNameHintFromURL(url: string): string {
+  // A retailer's product page spells the name in a place of its own (Myntra's first long segment is the category).
+  const fromRetailer = retailerProductSlug(url);
+  if (fromRetailer) return fromRetailer;
   try {
     const segments = new URL(url).pathname.split("/").filter(Boolean);
     const candidates = segments
@@ -1272,7 +1277,8 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
   let pageName: string | null = null;
 
   if (isURL(q)) {
-    const page = await fetchPageMarkdown(q);
+    // A block, error or store-front page is not the product page: it is read again in a browser, and if that is blocked too there is no page (src/lib/product-page.ts).
+    const page = (await fetchProductPage(q))?.markdown ?? null;
     if (page) pageName = titleFromMarkdown(page);
     // This URL can itself be an analyser failure page. Its title and slug are
     // explicit evidence that no product identity was recovered; do not feed

@@ -1493,7 +1493,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `c5ff88d482b1e3a5ca72dd008df46b98c73ffb7696ea3a4504639060ed53eada` |
+| `src/lib/product-review-engine.ts` | `832f395c16b502481d79ac9861f23bf1d6f9fe611c396a88a5af99ed86b0e699` |
 | `src/lib/product-review-types.ts` | `b2c1a031a7df79b37e1f4aaf6c8e931817eaf158cf2cc5dca5c654752f75d967` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/retailer-inci.ts` | `41d773c2582c0a58c9b41d73642c71a324ff38f1bc617838ab7620945b121e87` |
@@ -1507,7 +1507,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/review-verifier.ts` | `35fa0b60f42802ffbe0fe300df6c21304a6c7e550bd788006641868cb954720b` |
 | `src/lib/review.fixtures.ts` | `b859d8feed2c4320cd50142a50b2e2d6fb646e8d8c07e1ed2796e830ca78fd12` |
 | `src/lib/reviewer-audit.ts` | `d81b4706bc305e2afa82cb118f2c6df7e596054288ceefbf1e540f28b77a43dd` |
-| `src/lib/scrape.ts` | `14ff3a9ebd3168117388fc305321926545f9a3ad2c186a0e8ddb5ecd659f192c` |
+| `src/lib/scrape.ts` | `ffd1f81c0d2cf8f765b49cc5a5d0b7f662ac7b1bd1608d0514c88b5742f52903` |
 | `src/lib/text-negation.ts` | `4bc82eee3cb97ab35a439e588c5e9c05d4d2f59fc46e86490a18104c64cc790d` |
 | `src/lib/unrated-kind.ts` | `2c9eda296422616f443c2c94301a3d632fe4b8fa34d4b910a674bd2ffeb86a95` |
 | `src/lib/verdict-engine.ts` | `a8a3fc56e984540abb6a88fa6d9d95ff28bb32e86e1e4e41d9176e2a4a4074ae` |

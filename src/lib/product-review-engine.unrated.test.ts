@@ -76,7 +76,7 @@ describe("runProductReview", () => {
   });
 
   it("answers 'unrated' (a drug) when the product page carries a Drug Facts panel, and stores nothing", async () => {
-    h.read.page = "# Daily Shield Sunscreen SPF 30\n\nBroad spectrum protection.\n\nDrug Facts\nActive ingredient: Zinc oxide 8%\n";
+    h.read.page = `Title: Daily Shield Sunscreen SPF 30\n\n# Daily Shield Sunscreen SPF 30\n\n${"Broad spectrum protection. ".repeat(20)}\n\nDrug Facts\nActive ingredient: Zinc oxide 8%\n`; // a page as the reader returns it (title line, a real page's length)
     h.generate.mockResolvedValueOnce(model({ productName: "Daily Shield Sunscreen SPF 30", category: "Sunscreen" }));
     const out = await runProductReview("https://shop.example.com/daily-shield");
     expect(out).toMatchObject({ type: "unrated", kind: "drug", productName: "Daily Shield Sunscreen SPF 30" });
