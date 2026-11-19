@@ -265,7 +265,7 @@ describe("the pregnancy chip", () => {
     const { model: m } = page(rv({ productName: "Serum", category: "Serum", inciIngredients: [...BASE, "Zorbaflux"] }));
     expect(pregnancyChips(m)).toEqual([]);
     // The FAQ still answers the question in words.
-    expect(m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toMatch(/Ingredients not resolved: Zorbaflux\./);
+    expect(m.faq.find((f) => f.q === "Can I use it during pregnancy?")?.a).toBe("No sourced pregnancy flags were found for the ingredients screened. This is not proof that the product is safe during pregnancy.");
   });
 
   it("shows no chip when there is no ingredient list to check", () => {
