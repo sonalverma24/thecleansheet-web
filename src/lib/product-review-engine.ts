@@ -1287,8 +1287,8 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
       capturedPageAt = new Date().toISOString();
       completePageCapture = page.length < 60000 && capturedPageText.length < 60000;
       if (pageName) inci = (await resolveINCI(pageName)).chosen;
-      // Retailer pages supply claims, but never the authoritative ingredient list.
-      // Ingredient acquisition below checks the brand site or Decoder instead.
+      // A pasted retailer page is not read for its list here. Ingredient acquisition below looks at the brand site, Decoder and Nykaa first; another
+      // retailer's list (this page's included) is used only when none of them gives one (src/lib/brand-inci.ts, owner decision 2026-11-19).
 
       // Brand-published evidence: follow report/study/certificate links and read them.
       const links = evidenceLinksFromMarkdown(page, q);
@@ -1407,7 +1407,7 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
     // Without it the brand's own page failed the title check, and a Nykaa page for another product (the Ultra Light Gel) was taken for the Creme's list (2026-11-03).
     if (isValidProductReview(parsed) && taken?.origin !== "brand-page" && (isURL(q) || parsed.brand.toLowerCase() !== brandHint.toLowerCase())) {
       // The first lookup already searched and read Nykaa: this second one, for the corrected brand, is Decoder and the brand's pages only (no second render).
-      const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined }, firstLookup.seen), taken ? [taken] : []), PEER_LOOKUP_MS); // the model was already asked for this product
+      const second = await withinMs(findBrandInci(`${parsed.brand} ${parsed.productName}`, parsed.brand, isURL(q) ? q : undefined, withKnownCandidates({ ...defaultBrandInciDeps, askModel: undefined, searchNykaa: undefined, readNykaa: undefined, searchRetailers: undefined }, firstLookup.seen), taken ? [taken] : []), PEER_LOOKUP_MS); // the model was already asked for this product
       if (second && taken && second.source === taken.source) { // the first list won again: it stays the answer, with what lost recorded
         if (pageInci) pageInci = second; else inciAlternatives = second.alternatives ?? inciAlternatives;
       } else if (second) {
@@ -1572,7 +1572,7 @@ export async function runProductReview(query: string, opts: RunOptions = {}): Pr
   review.methodologyVersion = REVIEW_METHODOLOGY_VERSION;
   review.reviewedAt = new Date().toISOString();
   review.productSlug = canonicalSlug;
-  // Publish ingredients only from Decoder or the matched brand product page.
+  // Publish ingredients only from Decoder, the matched brand product page, a Nykaa page, or (last resort) another retailer's product page.
   // The exact captured quotation below anchors the ingredient-dependent tags.
   if (pageInci) {
     review.inciIngredients = pageInci.ingredients;

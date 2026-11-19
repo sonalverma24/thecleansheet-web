@@ -56,11 +56,13 @@ describe("the checks a fresh analysis must pass before it is kept", () => {
     expect(reviewCheckIssues(review({ brand: "Plix", inciSourceUrl: url, inciEvidence: evidence }))).toEqual(["ingredient-source-not-primary"]);
   });
 
-  it("passes a list read off a Nykaa product page, captured at trust 3 like Decoder; a Nykaa page that is not a product page, and any other retailer, still do not", () => {
+  it("passes a list read off a Nykaa or (since 2026-11-19) another retailer's product page, captured at trust 3 like Decoder; a page that is not a product page still does not", () => {
     const nykaa = "https://www.nykaa.com/plix-night-cream/p/123";
     const read = (url: string) => review({ inciSourceUrl: url, inciEvidence: makeInciEvidence(url, QUOTE, WHEN, "Plix Night Cream", false, { trust: 3, origin: "nykaa" }) });
     expect(reviewCheckIssues(read(nykaa))).toEqual([]);
-    for (const other of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.nykaa.com/plix-night-cream/p/123/extra", "https://www.amazon.in/Plix/dp/B0X123", "https://www.flipkart.com/plix/p/itm1"])
+    expect(reviewCheckIssues(read("https://www.amazon.in/dp/B0X1234567"))).toEqual([]);
+    expect(reviewCheckIssues(read("https://www.flipkart.com/plix/p/itm1"))).toEqual([]);
+    for (const other of ["https://www.nykaa.com/brands/plix/c/9999", "https://www.nykaa.com/plix-night-cream/p/123/extra", "https://www.amazon.in/s?k=plix", "https://www.flipkart.com/search?q=plix"])
       expect(reviewCheckIssues(read(other)), other).toContain("ingredient-source-not-primary");
   });
 

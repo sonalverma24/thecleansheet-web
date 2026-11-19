@@ -1431,7 +1431,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
 | `src/lib/analyser-x/claimflags.ts` | `536713ad6e3fd041f93e046162470d9c4146a06cca8459329cdfda6e60e11aae` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `403e6f5ce8a5356f03473d22cbbbe067880a1b0fd3b1d6c315dfaaa3f2d3f06d` |
+| `src/lib/analyser-x/copy.ts` | `64d819b17407c682b70ffb22ff8ed5c4c9084c2d361a21a0bfc73adaafde0255` |
 | `src/lib/analyser-x/decision.ts` | `23a031d652e25c9b6a55f7bf500b67e9a43874cd8b6a790eba34e679f072e759` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `ab086d1edb4166ab59529e260582fd8f6de82dc71e70514e9469b8b2678676e1` |
@@ -1452,7 +1452,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `f2c77ef411d11abe8233a58103b9c361579b842e835a9c50a5a28820b2db593b` |
+| `src/lib/brand-inci.ts` | `1ff351a0658bdcc9c2e16b052b1c0991874f6ed63c59eed503a0350124e7364b` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
@@ -1467,7 +1467,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `a628bbbecde02183b2538f75f3c0041f626f1602411667197b1b0e6dc59a10fd` |
-| `src/lib/inci-from-page.ts` | `9f04eb09fcc887978d618ed28f76d8ab98f1ba3ae2b3e8ab812d085c87cf451c` |
+| `src/lib/inci-from-page.ts` | `639625169c140c29c2d721ec7cccb1ddd512838dd7924ffee1ce706b32779bd1` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
@@ -1493,9 +1493,10 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
 | `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `fb38e230fd435ef0ae7900a611df24988190f556e36aa1d8fa7e94799dc436a2` |
-| `src/lib/product-review-types.ts` | `7f57d146739ff108907386e30592450106f2a40a4dede80dd8ccb69f5409c99a` |
+| `src/lib/product-review-engine.ts` | `c5ff88d482b1e3a5ca72dd008df46b98c73ffb7696ea3a4504639060ed53eada` |
+| `src/lib/product-review-types.ts` | `b2c1a031a7df79b37e1f4aaf6c8e931817eaf158cf2cc5dca5c654752f75d967` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
+| `src/lib/retailer-inci.ts` | `9f8f2ad35970170fe6ebd472eaeb6a379b08079028b1d20e68774aa529c65035` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |
 | `src/lib/review-engine.ts` | `d971f574d0e493587957020904f507c6cb33e46a3230cfab97d0054f9480c4a1` |
 | `src/lib/review-inci.ts` | `8490c3f2f2bf03dd643dadbe480f2f1fcb525dd96d6244b325225bc806f829a3` |
