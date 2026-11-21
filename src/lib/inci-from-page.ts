@@ -34,7 +34,7 @@ export interface PageINCI {
   pageTitles?: string[];
   /** The page's og:site_name, when it states one. */
   siteName?: string | null;
-  /** How reliably the text was captured (see CaptureTrust): 4 a brand's own page, 3 INKEE Decoder, a Nykaa product page or another retailer's product page read by code. */
+  /** How reliably the text was captured (see CaptureTrust): 4 a brand's own page, 3 INKEE Decoder, a Nykaa product page, an ingredient database's product page or another retailer's product page read by code. */
   trust?: 3 | 4;
   /** Which kind of source the list came from. */
   origin?: InciOrigin;
@@ -47,7 +47,7 @@ export interface PageINCI {
   identity?: "brand-catalogue" | "retailer-titles";
 }
 
-export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "retailer" | "owner-supplied";
+export type InciOrigin = "decoder" | "brand-page" | "nykaa" | "database" | "retailer" | "owner-supplied";
 export interface InciAlternative { source: string; origin: InciOrigin; count: number }
 
 const UA =
@@ -168,10 +168,14 @@ const TRAILING_STRENGTH_RE = /\s*\d+(?:[.,]\d+)?\s*%$/;
 
 function looksLikeIngredient(t: string): boolean {
   const s = t.trim().replace(TRAILING_STRENGTH_RE, "");
-  if (s.length < 2 || s.length > 70) return false;
+  // One entry may give its name twice, joined by a slash: the INCI name and the name with its common name in brackets ("Prunus Amygdalus Dulcis Oil/Prunus
+  // Amygdalus Dulcis (Sweet Almond) Oil", The Body Shop, 2026-11-21). Each name is held to the length and word limits on its own; read as one name the entry was
+  // too long, and the list was cut after it, losing its water base. Each name must still be short enough to be one.
+  const names = s.split(/\s*[/\\]\s*/).filter(Boolean);
+  if (s.length < 2 || s.length > 150 || names.some((n) => n.length > 70)) return false;
   if (!/[a-z]/i.test(s)) return false; // must carry letters (drops "36", "007")
   if (/[.!?;:]$/.test(s)) return false; // sentence fragment, not an INCI item
-  if ((s.match(/\s+/g) || []).length > 7) return false; // too many words for one item
+  if (names.some((n) => (n.match(/\s+/g) || []).length > 7)) return false; // too many words for one item
   if (/https?:|@|www\.|\bpvt\b|\bltd\b|road|marg|compound|©|®™?/i.test(s)) return false;
   // Letters, digits, spaces and INCI punctuation only. A backslash separates the names of one entry in several languages on Estée Lauder-group pages (Bobbi
   // Brown, Clinique, MAC: "Water\\Aqua\\Eau", "Honey Extract\\Mel\\Extrait De Miel"); without it those entries were rejected and the list was cut at them

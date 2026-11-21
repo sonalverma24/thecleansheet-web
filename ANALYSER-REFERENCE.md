@@ -188,7 +188,7 @@ EVIDENCE INTEGRITY - NO FABRICATION (highest priority, overrides everything):
   - For a "free from X" / "X-free" claim (fragrance-free, alcohol-free, paraben-free): if the retrieved INCI does NOT list X, the claim is SUPPORTED. A clean INCI proves the claim true, do not invent a contradiction. Only flag a conflict when you can QUOTE X in the retrieved INCI. If you could not retrieve the INCI, say so and do not assume X is present.
   - For a "contains [active] X" claim: FIRST map the marketing name to its INCI name, THEN check the retrieved INCI. Common maps: Pro-Vitamin B5 = Panthenol / D-Panthenol; Black Seed / Black Cumin Oil = Nigella Sativa Seed Oil; Onion = Allium Cepa; Hyaluronic Acid = Sodium Hyaluronate; Vitamin C = Ascorbic Acid / Sodium Ascorbyl Phosphate / Ethyl Ascorbic Acid; Vitamin E = Tocopherol; Vitamin B3 = Niacinamide; Aloe = Aloe Barbadensis. If the mapped ingredient is present, the claim is SUPPORTED.
   - If a claimed active is genuinely absent from the retrieved INCI even after name-mapping, mark it UNVERIFIED (could not confirm), NOT contradicted. A retrieved INCI can be the wrong variant/size, truncated, or outdated, so its absence is not proof of absence. NEVER call a brand's advertising "misleading" or an ASCI violation solely because a claimed ingredient is missing from a scraped INCI. Only a claim that is affirmatively disproven (e.g. "fragrance-free" while Parfum is listed) may be called contradicted.
-  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw on the brand's OWN website page for this exact product - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
+  - DO NOT INVENT CLAIMS. Every entry in claimMap must be a claim you actually saw on the brand's OWN website page, or the Nykaa or Tira product page, for this exact product - quote the wording, don't paraphrase into a claim the brand never made. This is critical for "free from X" / "X-free" claims: only list one if those exact words appear in a source. Never manufacture a "silicone-free", "sulphate-free", etc. claim just because the product could have made it. A fabricated claim that is then flagged as contradicted is the worst possible error.
   - ONE PRODUCT ONLY - never import another SKU's claims. Every claim in claimMap must be about the EXACT product under review (this variant, this format). A brand's homepage, "collections" pages, bundles, and marketplace listings routinely show OTHER products from the same brand right next to this one. Do NOT harvest a claim unless the source page is clearly about THIS product. A cross-CATEGORY mismatch is the tell-tale sign of misattribution and is forbidden: a body moisturizer / body wash / lotion must NOT carry hair, scalp, hair-fall, dandruff, frizz, or shine claims; a hair product must not carry skin/face claims; a face serum must not carry oral-care claims. If a striking claim (e.g. "50% less hair fall in 28 days") belongs to a different product type than the one you are reviewing, it is another SKU's claim - drop it. When unsure whether a claim is for this exact product, leave it out.
 
 ---
@@ -209,7 +209,7 @@ Step 2 - Map prices across all Indian platforms.
   Calculate price per ml or per g = price ÷ quantity.
 
 Step 3 - Find and catalogue EVERY claim.
-  Look ONLY on the brand's own website page for this exact product. That page is the one source of claims we hold the brand to. A claim that appears only on Nykaa, Amazon, Flipkart, Tira, a quick-commerce app, a reseller that copies the brand's text ("via Clinikally"), a review site or a retailer's brand-info blurb is NOT catalogued: do not list it in claimMap, even when it is a striking claim. If the brand's own page for this product cannot be found or read, return an EMPTY claimMap and say so in claimSummary and cleanSheetNote; never fill it from retailer listings.
+  Look on the brand's own website page for this exact product first, then on this product's page at Nykaa (nykaa.com) and Tira (tirabeauty.com). Those three pages are the sources of claims we hold the brand to. Set each claim's source to the place(s) you read it, plainly: "Brand Website", "Nykaa", "Tira" (e.g. "Brand Website / Nykaa"). A claim that appears only on Amazon, Flipkart, Myntra, Purplle, a quick-commerce app, a reseller that copies the brand's text ("via Clinikally"), a review site or a retailer's brand-info blurb ("Nykaa Brand Info") is NOT catalogued: do not list it in claimMap, even when it is a striking claim. If none of the three pages for this product can be found or read, return an EMPTY claimMap and say so in claimSummary and cleanSheetNote; never fill it from other listings.
   Capture the EXACT claim text, not your paraphrase.
   SCOPE each claim to THIS product's own listing/PDP. Brand sites cross-sell other SKUs (a body spray page may link a hair oil, a bundle, a "bestsellers" strip); only catalogue a claim you can tie to this exact product. Never carry a hair/scalp claim onto a body product (or vice-versa) - a category mismatch means the claim is another product's. See EVIDENCE INTEGRITY: "ONE PRODUCT ONLY".
 
@@ -221,7 +221,7 @@ Step 4 - Check evidence for each claim.
 
 Step 5 - Check platform claim parity.
   Compare exact claim language across brand website, Nykaa, Amazon, and quick commerce.
-  Note where claims are stronger, weaker, or differently worded. This step is a comparison note for platformParity only: a marketplace-only claim never becomes an entry in claimMap.
+  Note where claims are stronger, weaker, or differently worded. This step is a comparison note for platformParity only: a claim seen only on a marketplace other than Nykaa or Tira never becomes an entry in claimMap.
 
 Step 6 - Find INCI and assess ingredient transparency.
   Search: "[brand] [product name] ingredients" on the official brand product page or INKEE Decoder (formerly INCIDecoder).
@@ -1431,7 +1431,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analyser-x/adapter.ts` | `885d308754b74d25655e67214229001827dd814710f997f6e36120ca35394d94` |
 | `src/lib/analyser-x/claimflags.ts` | `536713ad6e3fd041f93e046162470d9c4146a06cca8459329cdfda6e60e11aae` |
 | `src/lib/analyser-x/context.ts` | `72274e85c69bacd7b1c4b594de3e78c050c3c04ed2c77fff07ccd396a093e35d` |
-| `src/lib/analyser-x/copy.ts` | `64d819b17407c682b70ffb22ff8ed5c4c9084c2d361a21a0bfc73adaafde0255` |
+| `src/lib/analyser-x/copy.ts` | `9ef911f7cd7922498f433d6ed6a3dae47cde2638d0e3336fa06acea1af4b7df9` |
 | `src/lib/analyser-x/decision.ts` | `23a031d652e25c9b6a55f7bf500b67e9a43874cd8b6a790eba34e679f072e759` |
 | `src/lib/analyser-x/factstore.ts` | `f67394c833a968e014500056739d04d3b03819d06808270fce2497db5667d1e9` |
 | `src/lib/analyser-x/index.ts` | `ab086d1edb4166ab59529e260582fd8f6de82dc71e70514e9469b8b2678676e1` |
@@ -1452,13 +1452,14 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/analysis-engine.ts` | `e424ed7b7ccd7f85afdaeca5be7fa497212524434e8831a8e853f1d5f7e62519` |
 | `src/lib/analysis-types.ts` | `68b9913ed3febf24d683c43b7c1d7ab7c2474ca136edd437cc36171514db2b17` |
 | `src/lib/analysis-wording.ts` | `e0212e3450a750e3be7852c351ca8de2f1ec677dbf9bdac7b477a7803f7d1324` |
-| `src/lib/brand-inci.ts` | `6d8143dcb721c7c87c82594eda8295f99bdaba15aa1ccc20bd6d3b9bbc1db4ee` |
+| `src/lib/brand-inci.ts` | `0f6e17845de11992dbbb1bd3d47cae327f2ac78bb9e28498f0679ef914c2cf33` |
 | `src/lib/capture-evidence.ts` | `8257e6d83e6469a1528151042d196d402cf166713abc827a432d8fa332b949d1` |
 | `src/lib/claim-evidence-display.ts` | `53f82f27429f2f993170b0105f9ad5fdc5cff95eea8f8027443c32ba286633ef` |
 | `src/lib/claim-ontology.ts` | `3106538b8631e6ce7b26e88a8a6acae539edebb6f9e1b9c705333ed15ed193bd` |
-| `src/lib/claim-source.ts` | `affea1c809828d7a8931d11f382bb624bc0ac00b5fcccc0115df6efddf8f7a29` |
+| `src/lib/claim-source.ts` | `bdc78ae4b380f9095ee0bc6b61ee1b97c180ab34ce28fae7405f2d1572a6cd37` |
 | `src/lib/claims-context.ts` | `9fe1aa10c247220a8fba83c2458f421444b8d233708cc06d4a4ef2696add6b6f` |
 | `src/lib/compliance-pillar.ts` | `c7a2c2a575d1e19548175e53bc716998a1e94135649bce8fd6e008134cc6b8a6` |
+| `src/lib/database-inci.ts` | `ad210f7c1c796367b8a4cda64ff5f04343c7c332e7cba2b7f6a8b2dd052166f8` |
 | `src/lib/drug-signals.ts` | `e4eba39275c9b08603e036d14fcf0d659ad4a7e75c342d9263b52863c76a63a0` |
 | `src/lib/evidence-images.ts` | `3997d516c3a0f9d5d048edc929a1241d9aefb805ed9ad082449ae23896cbdbed` |
 | `src/lib/fit-claims.ts` | `9757dde7e85691d1bf03570ada39c430e064de46b9c0907c958364760b316be4` |
@@ -1467,7 +1468,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/inci-cells.ts` | `8ff68b721a09998826d65a0ff2a0bcddd84f5f5897c7cb85d046ae394f9e4bae` |
 | `src/lib/inci-enrich.ts` | `8c7f92cb0e365ccf12329b017603eee36eb3ddda8128b1fe214a9df37451e37c` |
 | `src/lib/inci-fetch.ts` | `a628bbbecde02183b2538f75f3c0041f626f1602411667197b1b0e6dc59a10fd` |
-| `src/lib/inci-from-page.ts` | `639625169c140c29c2d721ec7cccb1ddd512838dd7924ffee1ce706b32779bd1` |
+| `src/lib/inci-from-page.ts` | `76ff1fdc056a791d105201ea26ee99ee598e5d6539a6e7155493ef00867f6e64` |
 | `src/lib/inci-normalise.ts` | `fedca1cdfd008456cab57d9b0ad63401fe784a75fb98c1ed2f472f1b7f59014b` |
 | `src/lib/inci-paste.ts` | `572f93f5cecdf44110e7ea5c7d925f6ebbcf310140c316025e9c7026274fd3ac` |
 | `src/lib/inci-plausibility.ts` | `7f9962f2f2e1bc1d7e467bed5d8ac51f2f91e809c29f968059d2af8d4918e95e` |
@@ -1487,14 +1488,14 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `dd87802f4da85b7a4660575250530a4107b378ea8c8ba03448cfef0ba28e9861` |
-| `src/lib/pills-page.ts` | `8468ed9f38bff8e83e99ed9128d23a9e7cc5aa369007bd2b8cd38f751dd2927f` |
+| `src/lib/pills-page.ts` | `a1843a08c3e8874982336bc77d7ece44922dae89ff398e17b767d4ff9314c0a5` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |
 | `src/lib/product-photo.ts` | `56129b74c9830a88a46e516e974a8935a64e0b26a23173b184636a06982cacfc` |
-| `src/lib/product-review-context.ts` | `018eef7ebe1df71f3868f63bb3c17fc304fcd30c09f81591f0d89b68d471ec7a` |
-| `src/lib/product-review-engine.ts` | `c5ff88d482b1e3a5ca72dd008df46b98c73ffb7696ea3a4504639060ed53eada` |
-| `src/lib/product-review-types.ts` | `b2c1a031a7df79b37e1f4aaf6c8e931817eaf158cf2cc5dca5c654752f75d967` |
+| `src/lib/product-review-context.ts` | `3d2415a072ba44cf3417f1bb4713a1a61d729dba61150837056bb7bedcd93ae1` |
+| `src/lib/product-review-engine.ts` | `03fe4b3697e1e3931ed173b992260f06b5d5ce6d2de496644227b54f77318aeb` |
+| `src/lib/product-review-types.ts` | `8bd9fd9cb350e9d7b88fed06d821e39440f32e4aca8c70abc9099ebe28aad74a` |
 | `src/lib/product-scope.ts` | `d5353ee2537c002562baf814972e1805d047dfdd4df45884d2ad6a047aee7290` |
 | `src/lib/retailer-inci.ts` | `41d773c2582c0a58c9b41d73642c71a324ff38f1bc617838ab7620945b121e87` |
 | `src/lib/review-checks.ts` | `dc8d50b1e72f9ab98cd7001ca0dfb2f688d8175d4871a902b6cb24b2a265db8a` |

@@ -9,7 +9,7 @@ type Outcome = { published: boolean; problems: string[]; preview: Preview };
 
 const colourName = (k: string) => COLOUR_CHOICES.find((c) => c.key === k)?.label ?? k;
 const SOURCE_NAME: Record<string, string> = {
-  "brand-page": "the brand's own page", decoder: "INKEE Decoder", nykaa: "Nykaa", "owner-supplied": "your list (typed from the pack)",
+  "brand-page": "the brand's own page", decoder: "INKEE Decoder", nykaa: "Nykaa", database: "an ingredient database", retailer: "a retailer page", "owner-supplied": "your list (typed from the pack)",
 };
 
 /** Add an ingredient list typed from the pack and re-analyse the product. Lives on /admin/repository/<slug>. */
