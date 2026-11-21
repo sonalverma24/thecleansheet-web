@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { decideReview } from "@/lib/analyser-x";
 import { BASE, claimOf, rv } from "@/lib/analyser-x/test-helpers";
 import type { ClaimAnalysis, ProductReview } from "./product-review-types";
-import { citesBrandWebsite, withBrandWebsiteClaimsOnly } from "./claim-source";
+import { citesAcceptedSource, citesBrandWebsite, withBrandWebsiteClaimsOnly } from "./claim-source";
 
 const NOW = "2026-11-02T00:00:00.000Z";
 
@@ -46,6 +46,34 @@ describe("citesBrandWebsite: the brand's own website, named plainly, among the p
   });
 });
 
+describe("citesAcceptedSource: the brand's website, or the product's page at Nykaa or Tira (owner rule, 2026-11-21)", () => {
+  it.each([
+    ["Brand Website", "Dot & Key"],
+    ["Nykaa", "Dot & Key"],
+    ["Nykaa Description", "Be Minimalist"],
+    ["Nykaa Product Page", "Truth Hair"],
+    ["nykaa.com", "Truth Hair"],
+    ["Tira", "Re'equil"],
+    ["Tira Beauty", "Re'equil"],
+    ["tirabeauty.com", "Re'equil"],
+    ["Flipkart / Nykaa / Purplle", "Re'equil"],
+    ["Amazon, Tira", "Fixderma"],
+  ])("counts %s", (source, brand) => expect(citesAcceptedSource(source, brand)).toBe(true));
+
+  it.each([
+    ["Nykaa Brand Info", "Re'equil"],
+    ["Flipkart", "Re'equil"],
+    ["Amazon / Purplle / Myntra", "Re'equil"],
+    ["Re'equil Brand Website (via Clinikally)", "Re'equil"],
+    ["Nykaa (implied)", "Dot & Key"],
+    ["Nykaa Reviews", "Dot & Key"],
+    ["Marketplace (General)", "Dot & Key"],
+    ["Product Pack", "Cetaphil"],
+    ["", "Cetaphil"],
+    [undefined, "Cetaphil"],
+  ])("does not count %s", (source, brand) => expect(citesAcceptedSource(source as string | undefined, brand)).toBe(false));
+});
+
 describe("withBrandWebsiteClaimsOnly", () => {
   const claim = (text: string, source: string, over: Partial<ClaimAnalysis> = {}): ClaimAnalysis => ({ ...claimOf({ text, evidenceLevel: 3 }), source, ...over } as ClaimAnalysis);
   const review = (claims: ClaimAnalysis[]): ProductReview =>
@@ -63,6 +91,18 @@ describe("withBrandWebsiteClaimsOnly", () => {
     expect(out.dropped).toBe(3);
     expect(out.review.claimSummary).toMatchObject({ total: 1, byRisk: { low: 1, medium: 0, high: 0, veryHigh: 0, redFlag: 0 }, highestEvidenceLevel: 6, asciConcernCount: 0, drugBoundaryCount: 0 });
     expect(out.review.researchLog).toMatchObject({ claimsKept: 1, claimsDropped: 3 });
+  });
+
+  it("keeps a claim read on the product's Nykaa or Tira page, as well as the brand's own", () => {
+    const out = withBrandWebsiteClaimsOnly(review([
+      claim("For all skin types", "Brand Website"),
+      claim("Gently exfoliates", "Nykaa Description"),
+      claim("Non-comedogenic", "Tira"),
+      claim("Dermatologist approved", "Nykaa Brand Info"),
+      claim("Best seller", "Amazon"),
+    ]));
+    expect(out.review.claimMap.map((c) => c.text)).toEqual(["For all skin types", "Gently exfoliates", "Non-comedogenic"]);
+    expect(out).toMatchObject({ kept: 3, dropped: 2 });
   });
 
   it("does not change the review it was given", () => {

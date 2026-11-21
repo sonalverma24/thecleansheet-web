@@ -2,7 +2,8 @@
  * product page, or a Nykaa product page supplies INCI. The three are searched together as equals (owner decision, 2026-10-30): every one that passes the same
  * checks is read; the brand's own page wins whenever one passes (owner rule, 2026-11-03), otherwise the most complete list wins, and the other lists are recorded so the choice is visible.
  * Other retailers' product pages (Amazon, Flipkart, Purplle, Tira, Myntra, Meesho, FOY, 1mg) supply a list only as a last resort, when none of those three gives one
- * (owner decision, 2026-11-19; src/lib/retailer-inci.ts). */
+ * (owner decision, 2026-11-19; src/lib/retailer-inci.ts). Ingredient databases' product pages (SkinSort, Skincarisma, CosDNA...) come just before those retailers
+ * (owner rule, 2026-11-21; src/lib/database-inci.ts). */
 import { fetchInciFromProductPage, fetchInciFromRenderedPage, type InciAlternative, type PageINCI } from "./inci-from-page";
 import { fetchIncidecoderProduct, incidecoderProductSlug, searchDecoderProducts } from "./inci-fetch";
 import { generateResilientWithMeta } from "./gemini";
@@ -13,6 +14,7 @@ import { catalogueConfirmsPage, catalogueProductUrl } from "./brand-catalogue";
 import { brandNameVariants } from "./verified-store";
 import { listPlausibleFor } from "./inci-plausibility";
 import { isRetailerProductUrl, readRetailerPage, retailerProductUrl, searchRetailerPages } from "./retailer-inci";
+import { databaseProductUrl, isDatabaseProductUrl, readDatabasePage, searchDatabasePages } from "./database-inci";
 
 const compact = (s: string) => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const SUFFIXES = new Set(["", "life", "beauty", "skincare", "skin", "cosmetics", "care", "naturals", "india", "official", "labs", "science", "wellness"]);
@@ -40,13 +42,17 @@ const OWN_SHOP_HOSTS = new Map<string, readonly string[]>([
   ["wishcare", ["mywishcare.com"]],
 ]);
 
+/** A first label that names a region or the shop of the brand's own domain ("us.thebodyshop.com", "in.example.com", "shop.example.com"), not another site. */
+const REGIONAL_SUBDOMAIN = /^(?:[a-z]{2}|shop|store|en|en-[a-z]{2})$/i;
+
 /** Conservative discovery filter: unknown domain spellings stay unverified. */
 export function isBrandIngredientUrl(raw: string, brand: string): boolean {
   try {
     const u = new URL(raw);
     if (u.protocol !== "https:" || u.username || u.password || u.port || u.hostname.endsWith(".local")) return false;
     const host = u.hostname.toLowerCase().replace(/^www\./, "");
-    const labels = host.split(".");
+    // A brand's regional or shop subdomain is its own site too: The Body Shop prints its lists on us.thebodyshop.com (2026-11-21), which a two-label rule refused.
+    const labels = host.split(".").filter((l, i, all) => !(i === 0 && all.length >= 3 && REGIONAL_SUBDOMAIN.test(l) && !(all.length === 3 && all[1] === "co")));
     if (!(labels.length === 2 || (labels.length === 3 && labels[1] === "co" && labels[2] === "in")) || /^\d+(\.\d+)*$/.test(host)) return false;
     if (u.pathname === "/") return false;
     const domain = compact(labels[0]);
@@ -115,7 +121,8 @@ export function brandsOwnName(titles: string[] | undefined, brand: string): stri
  *  2026-10-30 (a Nykaa list is captured at trust 3, like Decoder); the re-run policy did not know it and held every replacement whose only list came from there. */
 export function isPrimaryIngredientUrl(url: string, brand: string): boolean {
   // Another retailer's product page counts too since 2026-11-19 (owner decision): the lookup takes its list only when none of the others gives one.
-  return !!incidecoderProductSlug(url) || isBrandIngredientUrl(url, brand) || isNykaaProductUrl(url) || isRetailerProductUrl(url);
+  // So does an ingredient database's product page since 2026-11-21 (owner rule), taken only when the brand's page, Decoder and Nykaa give no list.
+  return !!incidecoderProductSlug(url) || isBrandIngredientUrl(url, brand) || isNykaaProductUrl(url) || isDatabaseProductUrl(url) || isRetailerProductUrl(url);
 }
 
 /** Firecrawl web search, URLs only (no page content, so one credit). Empty when the key is unset or the call fails. */
@@ -255,6 +262,10 @@ export interface Dependencies {
       from them is used only when no brand page, Decoder or Nykaa list passes (owner decision, 2026-11-19). Optional: without them no other retailer is consulted. */
   searchRetailers?: (query: string) => Promise<string[]>;
   readRetailer?: (url: string, mayRender: boolean) => Promise<PageINCI | null>;
+  /** Ingredient databases' product pages (SkinSort, Skincarisma, CosDNA...) for the query, and a reader for one (src/lib/database-inci.ts). A list from them is used
+      only when no brand page, Decoder or Nykaa list passes, and ahead of another retailer's (owner rule, 2026-11-21). Optional: without them no database is consulted. */
+  searchDatabases?: (query: string) => Promise<string[]>;
+  readDatabase?: (url: string, mayRender: boolean) => Promise<PageINCI | null>;
 }
 
 /** Read a Decoder product page with the parser the engine already uses. A quote that was cut short is refused:
@@ -317,7 +328,7 @@ export async function askModelForProductPage(query: string): Promise<string[]> {
 }
 
 /** What the engine uses when it passes nothing: Firecrawl and Google search, Decoder pages, brand pages, Nykaa pages, then the grounded model. */
-export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage, readRendered: (url) => fetchInciFromRenderedPage(url), findInCatalogue: catalogueProductUrl, searchTitles: firecrawlTitles, searchDecoder: (q) => searchDecoderProducts(q), searchRetailers: searchRetailerPages, readRetailer: (url, mayRender) => readRetailerPage(url, mayRender) };
+export const defaultBrandInciDeps: Dependencies = { search: searchBrandPages, read: fetchInciFromProductPage, readDecoder: readDecoderPage, askModel: askModelForProductPage, searchNykaa: searchNykaaPages, readNykaa: readNykaaPage, confirmInBrandCatalogue: catalogueConfirmsPage, readRendered: (url) => fetchInciFromRenderedPage(url), findInCatalogue: catalogueProductUrl, searchTitles: firecrawlTitles, searchDecoder: (q) => searchDecoderProducts(q), searchRetailers: searchRetailerPages, readRetailer: (url, mayRender) => readRetailerPage(url, mayRender), searchDatabases: searchDatabasePages, readDatabase: (url, mayRender) => readDatabasePage(url, mayRender) };
 
 /** Wrap a lookup's dependencies so every URL it was shown (search results and the model's proposals) is remembered in `seen`.
  *  A search typed as a name can only guess the brand from the first word the shopper wrote, and a brand page such as
@@ -334,6 +345,7 @@ export function recordCandidates(deps: Dependencies): { deps: Dependencies; seen
       askModel: deps.askModel ? async (q) => note(await deps.askModel!(q)) : undefined,
       searchNykaa: deps.searchNykaa ? async (q) => note(await deps.searchNykaa!(q)) : undefined,
       searchRetailers: deps.searchRetailers ? async (q) => note(await deps.searchRetailers!(q)) : undefined,
+      searchDatabases: deps.searchDatabases ? async (q) => note(await deps.searchDatabases!(q)) : undefined,
     },
   };
 }
@@ -349,7 +361,9 @@ interface Read { page: PageINCI; supplied: boolean }
 
 /** The longest each kind of read may take. A Nykaa page is rendered in a browser (15 to 40 s, and now and then more), so it is capped: a read that overruns counts as
     no list from that source, and the others' lists are used, instead of the whole lookup waiting on it. */
-export const READ_CAP_MS = { decoder: 15_000, "brand-page": 20_000, nykaa: 30_000, retailer: 30_000 } as const;
+export const READ_CAP_MS = { decoder: 15_000, "brand-page": 20_000, nykaa: 30_000, database: 25_000, retailer: 30_000 } as const;
+/** Database pages that may be rendered (a paid call) when the plain read found no list, a lookup. Skincarisma resets a plain reader's connection. */
+const MAX_DATABASE_RENDERS = 1;
 /** Retailer pages that may be rendered (a paid call) when the plain read found no list, a lookup. Flipkart, Myntra and Meesho send a plain reader an empty page. */
 const MAX_RETAILER_RENDERS = 1;
 /** A brand page whose plain read found no list may then be rendered with its tab opened, at most this many a lookup (each render is a paid call). A render takes 15 to
@@ -358,6 +372,8 @@ const MAX_RETAILER_RENDERS = 1;
 const MAX_RENDERED = 2;
 const RENDER_MIN_MS = 14_000;
 const RENDER_BUDGET_MS = 36_000;
+/** When a database or retailer list is already in hand, the lookup returns by this long after it started, so it ends inside the engine's 40 s wait. */
+const LOOKUP_BUDGET_MS = 36_000;
 /** The most the retailer-words Decoder look may take: one web search, then Decoder searches and page reads side by side. */
 const RETAILER_WORDS_CAP_MS = 30_000;
 /** The most the brand-catalogue identity check may take (it reads one to three pages of the store's product feed). */
@@ -391,14 +407,17 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
   // A brand page whose plain read found no list is opened in a browser with its "Ingredients" tab clicked, when its address names the product (two or more of the
   // product's words in its last segment, so another product of the brand found by the same search is not rendered for nothing), at most MAX_RENDERED a lookup.
   let renders = 0;
-  const deadline = Date.now() + RENDER_BUDGET_MS;
+  const startedAt = Date.now();
+  const deadline = startedAt + RENDER_BUDGET_MS;
   const wantWords = nameTokens(query, brand);
-  const addressNamesProduct = (url: string): boolean => {
+  // How many of the product's words the address's last segment carries.
+  const addressWords = (url: string): number => {
     try {
       const last = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() ?? "").replace(/\.html?$/i, "").replace(/[-_]+/g, " ");
-      return [...nameTokens(last, brand)].filter((w) => wantWords.has(w)).length >= 2;
-    } catch { return false; }
+      return [...nameTokens(last, brand)].filter((w) => wantWords.has(w)).length;
+    } catch { return 0; }
   };
+  const addressNamesProduct = (url: string): boolean => addressWords(url) >= 2;
   const readBrandPage = async (url: string, rendered = addressNamesProduct(url)): Promise<PageINCI | null> => {
     const plain = await within(deps.read(url), READ_CAP_MS["brand-page"]);
     const left = deadline - Date.now();
@@ -416,19 +435,32 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     if (mayRender) retailerRenders++;
     return within(deps.readRetailer!(url, mayRender), READ_CAP_MS.retailer);
   };
+  // Lists from ingredient databases' product pages, held apart the same way: used only when the brand's page, Decoder and Nykaa give none, and before another
+  // retailer's (owner rule, 2026-11-21).
+  const databaseReads: Read[] = [];
+  let databaseRenders = 0;
+  const readDatabase = async (url: string): Promise<PageINCI | null> => {
+    const mayRender = databaseRenders < MAX_DATABASE_RENDERS;
+    if (mayRender) databaseRenders++;
+    return within(deps.readDatabase!(url, mayRender), READ_CAP_MS.database);
+  };
 
   const readAll = async (candidates: string[]): Promise<Read[]> => {
-    const asRetailer = (u: string) => { try { return isRetailerProductUrl(u) ? retailerProductUrl(u) : u; } catch { return u; } };
+    const asRetailer = (u: string) => { try { return isRetailerProductUrl(u) ? retailerProductUrl(u) : isDatabaseProductUrl(u) ? databaseProductUrl(u) : u; } catch { return u; } };
     const fresh = [...new Set(candidates.map(asRetailer))].filter((u) => !tried.has(u));
     const decoderUrls = fresh.filter((u) => incidecoderProductSlug(u)).slice(0, 2);
-    const brandUrls = fresh.filter((u) => isBrandIngredientUrl(u, brand)).slice(0, 3);
+    // The brand's addresses that name more of the product's words are read first: a search for The Body Shop's hand cream returned its body butter and a gift set
+    // ahead of the hand cream's own page, which a first-three cut left unread (2026-11-21). A tie keeps the search's order.
+    const brandUrls = fresh.filter((u) => isBrandIngredientUrl(u, brand)).map((u, i) => ({ u, i, w: addressWords(u) })).sort((a, b) => b.w - a.w || a.i - b.i).slice(0, 3).map((x) => x.u);
     const nykaaUrls = deps.readNykaa ? fresh.filter(isNykaaProductUrl).slice(0, 2) : [];
+    const databaseUrls = deps.readDatabase ? fresh.filter(isDatabaseProductUrl).slice(0, 2) : [];
     const retailerUrls = deps.readRetailer ? fresh.filter(isRetailerProductUrl).slice(0, 2) : [];
-    for (const u of [...decoderUrls, ...brandUrls, ...nykaaUrls, ...retailerUrls]) tried.add(u);
+    for (const u of [...decoderUrls, ...brandUrls, ...nykaaUrls, ...databaseUrls, ...retailerUrls]) tried.add(u);
     const reads = await Promise.all([
       ...decoderUrls.map(async (url) => ({ url, page: await within(readDecoder(url), READ_CAP_MS.decoder), origin: "decoder" as const })),
       ...brandUrls.map(async (url) => ({ url, page: await readBrandPage(url), origin: "brand-page" as const })),
       ...nykaaUrls.map(async (url) => ({ url, page: await within(deps.readNykaa!(url), READ_CAP_MS.nykaa), origin: "nykaa" as const })),
+      ...databaseUrls.map(async (url) => ({ url, page: await readDatabase(url), origin: "database" as const })),
       ...retailerUrls.map(async (url) => ({ url, page: await readRetailer(url), origin: "retailer" as const })),
     ]);
     const kept = await Promise.all(reads.map(async (r): Promise<Read[]> => {
@@ -443,7 +475,8 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     }));
     const all = kept.flat();
     retailerReads.push(...all.filter((r) => r.page.origin === "retailer"));
-    return all.filter((r) => r.page.origin !== "retailer");
+    databaseReads.push(...all.filter((r) => r.page.origin === "database"));
+    return all.filter((r) => r.page.origin !== "retailer" && r.page.origin !== "database");
   };
 
   const choose = (reads: Read[]): PageINCI | null => {
@@ -470,12 +503,13 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
 
   let discovered: string[] = [];
   try {
-    const [general, nykaa, retailers] = await Promise.all([
+    const [general, nykaa, retailers, databases] = await Promise.all([
       deps.search(query).catch(() => [] as string[]),
       deps.searchNykaa ? deps.searchNykaa(query).catch(() => [] as string[]) : Promise.resolve([] as string[]),
       deps.searchRetailers && deps.readRetailer ? deps.searchRetailers(query).catch(() => [] as string[]) : Promise.resolve([] as string[]),
+      deps.searchDatabases && deps.readDatabase ? deps.searchDatabases(query).catch(() => [] as string[]) : Promise.resolve([] as string[]),
     ]);
-    discovered = [...general, ...nykaa, ...retailers];
+    discovered = [...general, ...nykaa, ...databases, ...retailers];
   } catch { /* No source is safer than a failed analysis. */ }
   const first = [...(suppliedUrl ? [suppliedUrl] : []), ...discovered];
   const found = choose([...knownReads, ...(await readAll(first))]);
@@ -486,15 +520,21 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
   // one product that is clearly this one, its page is read; the catalogue is what identifies it, so the brand's name is used (`identity: "brand-catalogue"`).
   const fromCatalogue = await readFromCatalogue(first);
   if (fromCatalogue) return choose([...knownReads, fromCatalogue]);
-  // The last resort, used only after every other look below has found nothing: a list printed on another retailer's product page.
-  const lastResort = (found: PageINCI | null): PageINCI | null => found ?? choose(retailerReads);
+  // The last resorts, used only after every other look below has found nothing: a list on an ingredient database's product page, then one printed on another
+  // retailer's product page.
+  const lastResort = (found: PageINCI | null): PageINCI | null => found ?? choose(databaseReads) ?? choose(retailerReads);
 
   // Nothing found so far gave a list. Two last looks run side by side, so neither adds to the other's time: the web-grounded model is asked where the page is (that
   // page is then read by code), and a Decoder page named with the words retailers use for the product is looked for (`decoderByRetailerWords`).
-  const [asked, byRetailers] = await Promise.all([
+  const lastLooks = Promise.all([
     deps.askModel ? deps.askModel(query).then(readAll).catch(() => [] as Read[]) : Promise.resolve([] as Read[]), // the model is a last resort, never a reason to fail
     within(decoderByRetailerWords(), RETAILER_WORDS_CAP_MS),
   ]);
+  // With a database or retailer list already in hand, the last looks may take only what is left of the lookup's time: the engine stops waiting at 40 s and a lookup
+  // that overruns loses every list it found (Fixderma's SkinSort list came back at 34 to 47 s, 2026-11-21). Without one, they take as long as before.
+  const holding = databaseReads.length > 0 || retailerReads.length > 0;
+  const looked = holding ? await within(lastLooks, Math.max(0, startedAt + LOOKUP_BUDGET_MS - Date.now())) : await lastLooks;
+  const [asked, byRetailers] = looked ?? [[] as Read[], null];
   return lastResort(choose([...asked, ...(byRetailers ? [byRetailers] : [])]));
 
   /** A Decoder page whose name has words ours lacks ("Lacto Calamine SPF 50 PA++ (Kaolin Clay With Lemon Extracts)" for "Lacto Calamine Sunscreen SPF 50 PA+++ For
