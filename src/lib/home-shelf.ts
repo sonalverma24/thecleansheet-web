@@ -3,6 +3,7 @@ import { resolveTier } from "@/components/scorecards/pillar-ui";
 import { MARKER_OF_TIER } from "@/components/scorecards/pill-palette";
 import { HOME_PICK_SLUGS, HOME_SHELF_MAX } from "@/data/home-picks";
 import { getDisplayPrice } from "@/lib/product-card-helpers";
+import { productGroup } from "@/lib/registry-filters";
 
 /* ────────────────────────────────────────────────────────────────
    HOME SHELF · the product cards on the home page.
@@ -27,7 +28,6 @@ export const CATEGORY_ORDER: readonly ShelfCategory[] = [
 ];
 
 /** Shown under "All" only: a top-up review whose type is not one of the filter groups. */
-const OTHER = "Other";
 
 export interface ShelfSeed {
   key: string;
@@ -151,7 +151,9 @@ export function buildShelf(tiles: ProductScorecard[], opts: { picks?: readonly s
   const unique = [...new Map(tiles.map((t) => [t.slug, t])).values()];
   const newest = (marker: "green" | "yellow", count: number) => unique.filter((t) => markerOf(t) === marker).slice(0, count);
   const chosen = (picked.length ? picked : [...newest("green", mix.green), ...newest("yellow", mix.yellow)]).slice(0, max);
-  return chosen.map((tile) => toCard(tile, seedKeyFor(tile), categoryFor(tile) ?? OTHER, seedImageFor(tile) ?? (tile.image || null)));
+  // The card's type tag is the same one the /products card shows (productGroup), so lip balms, hair products and
+  // sunscreens get a tag too; categoryFor only knows the skincare filter groups and left those cards untagged.
+  return chosen.map((tile) => toCard(tile, seedKeyFor(tile), productGroup(tile), seedImageFor(tile) ?? (tile.image || null)));
 }
 
 /** Filter chips: only groups that actually have a card, in display order. */
