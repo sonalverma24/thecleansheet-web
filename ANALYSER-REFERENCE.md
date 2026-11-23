@@ -1395,7 +1395,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/HeroActions.tsx` | `a43e86f016df7511e283bb06c3cb83575064208bf66fa65f97154c81ba09b376` |
 | `src/components/scorecards/NoResultsCard.tsx` | `77ee1bd923ed3c7be68e21a9e6642d0e098d0141a7a2ae3a80881079dff11602` |
 | `src/components/scorecards/OpenDetailsLink.tsx` | `f9dac41601b9eaba78453a49899d66581e2cc0ef8b823cafd75773aca0925b74` |
-| `src/components/scorecards/PillsHero.tsx` | `9590d9d05eb27743211ab31ccf1432d488515824e560378ed7aad252c304501a` |
+| `src/components/scorecards/PillsHero.tsx` | `e0dc057bdea472186139da761220f546988bae342ced94e4480d4d9b4fa18c8a` |
 | `src/components/scorecards/PillsPage.tsx` | `05c16a0f857d0ce8a4b08699d56f92d0833d9a8f6a554231f0451e24969aefad` |
 | `src/components/scorecards/ProductComparisonTable.tsx` | `9d6c78f2ac60d01947e389af98bab286348c54b47d0a4e6ac536268c0c1f3744` |
 | `src/components/scorecards/ProductHero.tsx` | `0fefde9a63d845e2cb708deadaf458c86a2dc61e25949f58467b25f288ed7c58` |
@@ -1412,9 +1412,9 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/components/scorecards/UnratedProductPage.tsx` | `2fb73b2b15ba35be2cdd5129c8d242bf7712fd0962029a724e5f5656265a5a73` |
 | `src/components/scorecards/pill-palette.ts` | `69cf5cbc0ec15e03c47c436dcaae3333d4b06b948af54185536f3a3bf1eaa187` |
 | `src/components/scorecards/pillar-ui.tsx` | `ca2b0e633cdce5ea22eea0978c8508ee68fb267d5b070b84640a67f43507cf62` |
-| `src/components/scorecards/pills-badge.css` | `1b5ff00a5688c23f62e67333ae200052f9bcfa996c89130eb3a498c97a88d406` |
+| `src/components/scorecards/pills-badge.css` | `c8efe24353e8c887f36648b8a6e27f882a11968002968b690739f68bd639dee5` |
 | `src/components/scorecards/pills-page.css` | `2dc4a4f6d4059985581db18d9ac97c412c7723806df1436df4656fba4e8761f8` |
-| `src/components/scorecards/pills-ui.tsx` | `7d0dffc2cc49eb497fe6a2ebc8aa33d42d8c46bfbcfc73bff5b41cfdd41b5ae3` |
+| `src/components/scorecards/pills-ui.tsx` | `4b7c29f32ea719f1f3ede6d7842565a406aca8accb738fa0f865a252106f4c48` |
 | `src/components/scorecards/useReviewRunner.ts` | `8107f398febc057c60678b9f9c53d7edc9f3a442e81d9223009c2b59ba8730b1` |
 | `src/data/analysis/ingredient-risk.ts` | `165ef393f41952f539d1bac7f850007a94244650363989eed92720202753b43d` |
 | `src/data/badges/taxonomy.ts` | `8c5ca46b0eb138650cfbb4dbdc9cb8fc2def5428890c1910087f19efa854d49b` |
@@ -1488,7 +1488,7 @@ CI compares these SHA-256 fingerprints with the source. Any change in these file
 | `src/lib/pillar-grade.ts` | `f2c9800b6a463f45d86bc2e0be35f3ad0e9c43cfb140733bc599e369d44ad425` |
 | `src/lib/pillar-standing.ts` | `4e0f84fc9b634df4b844c334360ef5924bd91b01cdb48d439e6c82ae8906845d` |
 | `src/lib/pills-for-review.ts` | `dd87802f4da85b7a4660575250530a4107b378ea8c8ba03448cfef0ba28e9861` |
-| `src/lib/pills-page.ts` | `a1843a08c3e8874982336bc77d7ece44922dae89ff398e17b767d4ff9314c0a5` |
+| `src/lib/pills-page.ts` | `82c6b47a63c1bbebf3583051e0917f3be3a9a75d4e94edd00415cd281c61d3ad` |
 | `src/lib/pregnancy-screen.ts` | `2396f68741d3cefeba45646cf2a17ff2f848b50b6b1b07ce95ef3ce485542aed` |
 | `src/lib/product-identity.ts` | `e77b6b9901c12c2e81a045ba12a07ff61e94dc6b1ff30df75cbe522b2ecd02b9` |
 | `src/lib/product-image.ts` | `14d91af7c6f23ef05e38d0f36a4f4c68529e69b15cd3df3a718f4718f029e6a0` |

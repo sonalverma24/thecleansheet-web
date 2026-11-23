@@ -88,10 +88,24 @@
   color: var(--cs-eyebrow);
 }
 
+/* A nearly-Green Yellow says what to watch for: a hairline above it, then the line in the rating's own ink. */
+.cs-verdict__watch {
+  display: block;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cs-line);
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--cs-ink);
+}
+
 /* ── On phones the card is a touch tighter ── */
 @media (max-width: 639px) {
   .cs-verdict { gap: 12px; padding: 12px 14px; border-radius: 18px; }
   .cs-verdict__key { font-size: 12px; }
+  .cs-verdict__watch { font-size: 12.5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
