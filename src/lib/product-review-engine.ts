@@ -7,6 +7,7 @@
 ──────────────────────────────────────────────────────────────── */
 
 import { createHash } from "node:crypto";
+import { stripCiteTags } from "@/lib/strip-cite-tags";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
 import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
 import { evaluateEvidence, validateProposal, type Capture } from "@/lib/neurosymbolic/harness";
@@ -836,7 +837,8 @@ async function needsProductResult(no: NoSpecificProduct, q: string, catalogue?: 
    total and the tier badge are both the current code sum, no backfill required. */
 function withFreshVerdict(r: ProductReviewResult): ProductReviewResult {
   if (r.type !== "product-review") return r;
-  const review = { ...r.review, scores: reconcileReviewScores(r.review).scores };
+  const clean = stripCiteTags(r.review);
+  const review = { ...clean, scores: reconcileReviewScores(clean).scores };
   return { ...r, review, verdict: deriveVerdict(review) };
 }
 
@@ -891,7 +893,8 @@ export function invalidateReviewCache(slug: string): void {
   REVIEW_CACHE.delete(slug);
 }
 
-async function store(slug: string, result: ProductReviewResult): Promise<void> {
+async function store(slug: string, raw: ProductReviewResult): Promise<void> {
+  const result = stripCiteTags(raw);
   REVIEW_CACHE.set(slug, { result, at: Date.now() });
   if (result.type !== "product-review") return;
   try {
