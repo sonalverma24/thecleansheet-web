@@ -18,6 +18,7 @@
    (the formula note, who it suits, the India context, how to use) are shown as stored, as they are today.
 ──────────────────────────────────────────────────────────────── */
 
+import { watchLineOf } from "@/lib/yellow-watch-line";
 import type { ProductReview } from "@/lib/product-review-types";
 import type { ProductScorecard, PregnancyScreen as ProductPregnancyScreen } from "@/data/brands/types";
 import { MARKER_OF_PILL, MARKER_WORD, type MarkerName } from "@/components/scorecards/pill-palette";
@@ -60,7 +61,7 @@ export interface PillsPageModel {
   mode: "pills" | "standing";
   decision: { key: DecisionKey; label: string; meaning: string; confidence: Decision["confidence"]; gapKind?: Decision["gapKind"]; reasons: { ruleId: string; kind: string; text: string }[] };
   /** `tone` picks the icon, `marker` the colour: green, yellow or red, or null for grey (Not enough info, Medicinal product). */
-  pill: { key: DecisionKey; label: string; tone: PillTone; marker: MarkerName | null };
+  pill: { key: DecisionKey; label: string; tone: PillTone; marker: MarkerName | null; /** On a nearly-Green Yellow only: what to watch for, in one line (yellow-watch-line.ts). */ watch?: string };
   /** Block 3 */
   take: {
     summary: string;
@@ -680,5 +681,8 @@ export function buildPillsPage(review: ProductReview, product: ProductScorecard,
     analysedAt: d.basis.analysedAt,
     stale: ageDays(d.basis.analysedAt, now) > STALE_DAYS,
   };
+  // The take card shows the rules' own pill, so a page in the layout-only mode (today's standing) gets no line.
+  const watch = standing ? null : watchLineOf(d.key, out.settled, base.details?.map((r) => ({ title: r.title, marker: r.rating.marker, oneLiner: r.oneLiner })) ?? null);
+  if (watch) base.pill = { ...base.pill, watch };
   return { ...base, faq: faqOf(base, review, product, preg, medicine, checks) };
 }

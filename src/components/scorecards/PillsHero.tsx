@@ -138,7 +138,7 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
             </div>
           </div>
         </div>
-        <PillTake marker={model.pill.marker} className="flex-[0_1_440px] min-w-[min(100%,320px)]" />
+        <PillTake marker={model.pill.marker} watch={model.pill.watch} className="flex-[0_1_440px] min-w-[min(100%,320px)]" />
       </Band>
 
       {/* At a glance, and who it suits and who should be careful. On a phone the ticks stand free and the two fit lists sit side by side. */}
