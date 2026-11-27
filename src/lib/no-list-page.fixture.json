@@ -1,0 +1,644 @@
+{
+ "review": {
+  "type": "product-review",
+  "brand": "La Roche-Posay",
+  "scores": {
+   "label": "Clean Sheet Strong",
+   "total": 88,
+   "claimClarity": 15,
+   "formulaLogic": 13,
+   "claimEvidence": 17,
+   "priceFairness": 8,
+   "consumerSuitability": 9,
+   "platformConsistency": 9,
+   "ingredientTransparency": 17
+  },
+  "verdict": {
+   "bestThing": "",
+   "claimRisk": "low",
+   "whoItMaySuit": "Anyone seeking advanced, lightweight sun protection, especially those with sensitive, oily, or combination skin, and those living in humid climates.",
+   "biggestConcern": "Ingredient list verification is incomplete.",
+   "transparencyLevel": "strong",
+   "cleanSheetTakeaway": "We could not verify a complete ingredient list from the brand website, Nykaa or INKEE Decoder. Ingredient-based conclusions are pending verification.",
+   "whoShouldBeCareful": "Individuals with very dry or easily irritated skin should patch-test due to the alcohol content."
+  },
+  "category": "Sunscreen",
+  "claimMap": [
+   {
+    "text": "Ultimate protection against ultra long UVA rays",
+    "types": [
+     "functional",
+     "concern"
+    ],
+    "source": "Brand Website / Amazon India",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "The brand highlights Mexoryl 400, a new exclusive UV filter, specifically for ultra-long UVA protection, backed by patented technology and internal R&D.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": true,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "With MEXORYL400, the only UV filter against the most insidious UV rays: ULTRA LONG UVA*",
+    "types": [
+     "active",
+     "functional",
+     "clinical"
+    ],
+    "source": "Brand Website / Amazon India",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "active",
+    "evidenceNote": "Mexoryl 400 is a patented, exclusive UV filter developed by La Roche-Posay, the result of 10 years of research and 25 patents, specifically targeting ultra-long UVA rays (380-400nm).",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": true,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Ultimate protection (UVB + UVA + ULTRA LONG UVA) against deep cell damage",
+    "types": [
+     "functional",
+     "concern"
+    ],
+    "source": "Brand Website / Amazon India",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "Supported by the presence of multiple broad-spectrum UV filters including Mexoryl 400 and XL-PROTECT technology.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": true,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Tested on sensitive, reactive and intolerant skin",
+    "types": [
+     "safety",
+     "clinical"
+    ],
+    "source": "Brand Website / Amazon India",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "The brand states the formula is 'designed for and tested on sensitive skin' and 'tested and re-tested for its efficacy and mildness on sensitive skin'.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Suitable for all types of skin, all phototypes",
+    "types": [
+     "safety"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Tira",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "Supported by dermatological testing on sensitive skin and the lightweight, non-comedogenic formula.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Without perfume / Non-perfumed / Fragrance Free",
+    "types": [
+     "free-from"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Tira",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "free-from",
+    "evidenceNote": "The retrieved INCI list from the brand's official product page for the 'non-perfumed' variant does not contain 'Parfum/Fragrance'.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": true,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Ultra-resistant: water, sweat and sand resistant",
+    "types": [
+     "functional",
+     "clinical"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "The formula incorporates Netlock Technology, an exclusive system that creates a protective homogenous film resistant to humidity.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": true,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "High tolerance",
+    "types": [
+     "safety"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "Supported by testing on sensitive, reactive, and intolerant skin.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Anti-eye stinging / Can be applied around the eyes",
+    "types": [
+     "safety"
+    ],
+    "source": "Brand Website / Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "The formula is ophthalmologically tested and specifically designed to avoid eye stinging.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Invisible, light-weight texture / Ultra-lightweight invisible fluid",
+    "types": [
+     "appearance",
+     "functional"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "appearance",
+    "evidenceNote": "Consumer perception study results indicate 97.3% of users reported no white marks and 99.1% found the product quickly absorbed. The formula contains silica and perlite for a matte finish.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Non-greasy and non-sticky finish",
+    "types": [
+     "appearance",
+     "functional"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "appearance",
+    "evidenceNote": "Consumer perception study results indicate 98.2% of users reported a clean finish. The formula contains ingredients like silica and perlite to absorb sebum and reduce greasiness.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Does not leave white marks on skin after application / No white cast",
+    "types": [
+     "appearance"
+    ],
+    "source": "Brand Website / Amazon India / Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "appearance",
+    "evidenceNote": "Consumer perception study results indicate 97.3% of users reported no white marks. The formula uses modern chemical filters that typically do not leave a white cast.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Hypoallergenic",
+    "types": [
+     "safety"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "The brand states the formula is hypoallergenic and tested on sensitive skin.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "XL-PROTECT, a patented filtering technology, provides broad-spectrum very high UVB/UVA protection and helps protect against damage caused by pollution and infra-red.",
+    "types": [
+     "active",
+     "functional",
+     "concern"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "active",
+    "evidenceNote": "XL-PROTECT is a patented technology, implying internal R&D and testing for its claimed benefits.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Powered by NETLOCK TECHNOLOGY for Ultimate protection, ultra resistance in an invisible texture.",
+    "types": [
+     "active",
+     "functional"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "active",
+    "evidenceNote": "Netlock Technology is an exclusive system that creates a protective homogenous film on the skin surface, shielding it from sun exposure and ensuring optimal protection and resistance to humidity.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "97,3% Skin feels hydrated.",
+    "types": [
+     "functional",
+     "time-bound",
+     "clinical"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "This is a consumer perception study result, indicating finished product testing. The methodology (sample size, duration) is not disclosed.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "98,2% Products leaves a clean finish.",
+    "types": [
+     "appearance",
+     "time-bound",
+     "clinical"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "appearance",
+    "evidenceNote": "This is a consumer perception study result, indicating finished product testing. The methodology (sample size, duration) is not disclosed.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "99,1% Product is quickly absorbed.",
+    "types": [
+     "functional",
+     "time-bound",
+     "clinical"
+    ],
+    "source": "Brand Website",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "This is a consumer perception study result, indicating finished product testing. The methodology (sample size, duration) is not disclosed.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "SPF50+ PA++++ protection",
+    "types": [
+     "functional",
+     "clinical"
+    ],
+    "source": "Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "Standard SPF/PA labelling for sunscreens, implying ISO 24444 compliant testing.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Fast-absorbing formula",
+    "types": [
+     "functional"
+    ],
+    "source": "Flipkart / Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "Consumer perception study results indicate 99.1% of users found the product quickly absorbed. The presence of Alcohol Denat also contributes to fast absorption.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Dermatologically tested",
+    "types": [
+     "safety",
+     "clinical"
+    ],
+    "source": "Flipkart / Tira",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "safety",
+    "evidenceNote": "The brand states the product is tested under dermatological control.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Leaves skin feeling soft, gentle, and glowing.",
+    "types": [
+     "appearance",
+     "emotional"
+    ],
+    "source": "Nykaa",
+    "asciNote": null,
+    "riskLevel": "medium",
+    "asciConcern": false,
+    "primaryType": "appearance",
+    "evidenceNote": "This is a consumer perception claim. While the formula is gentle, 'glowing' is subjective and not directly measured by the provided consumer study data.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Perfect for daily use, even under makeup.",
+    "types": [
+     "functional"
+    ],
+    "source": "Nykaa",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "functional",
+    "evidenceNote": "The lightweight, non-greasy, no white cast finish makes it suitable for layering under makeup.",
+    "evidenceLevel": 4,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   },
+   {
+    "text": "Antioxidants",
+    "types": [
+     "active"
+    ],
+    "source": "Tira",
+    "asciNote": null,
+    "riskLevel": "low",
+    "asciConcern": false,
+    "primaryType": "active",
+    "evidenceNote": "The INCI lists Tocopherol (Vitamin E), which is an antioxidant.",
+    "evidenceLevel": 2,
+    "inciFlagVoided": false,
+    "absoluteLanguage": false,
+    "drugBoundaryNote": null,
+    "drugBoundaryRisk": false
+   }
+  ],
+  "imageUrl": "https://images-static.nykaa.com/media/catalog/product/tr:w-220,h-220,cm-pad_resize/8/8/880a45aLAROC00000001_n1.jpg",
+  "quantity": "50ml",
+  "dataSource": {
+   "rating": "4.1 out of 5 stars",
+   "inciFound": false,
+   "inciSource": "Not verified",
+   "priceSource": "Amazon India",
+   "reviewCount": "18,830 (Amazon India)",
+   "userSentiment": "Users widely praise its lightweight, non-greasy, and invisible finish, effective sun protection, and suitability for sensitive skin. Some users mention the price as a drawback, and a few with very dry skin might find it slightly drying due to the alcohol content.",
+   "reviewPlatforms": [
+    "Amazon India",
+    "Nykaa",
+    "Flipkart"
+   ]
+  },
+  "pricePerMl": "Rs.25.20/ml",
+  "priceRange": "Rs.1260–1600",
+  "reviewedAt": "2026-11-25T20:22:49.683Z",
+  "targetUser": "Individuals seeking very high, broad-spectrum sun protection, especially for sensitive or reactive skin, and those who prefer a lightweight, invisible finish.",
+  "heroPromise": "Ultimate protection against UVB, UVA, and ultra-long UVA rays with an invisible, ultra-resistant, and anti-eye stinging fluid formula.",
+  "imageLocked": false,
+  "imageSource": "nykaa",
+  "lowestPrice": "Rs.1260.00 on Amazon India",
+  "productName": "La Roche-Posay Anthelios UVMUNE400 Invisible Fluid SPF50+ Sunscreen, 50ml",
+  "productSlug": "la-roche-posay-la-roche-posay-anthelios-uvmune400-invisible-fluid-spf50-sunscree",
+  "claimSummary": {
+   "total": 24,
+   "byRisk": {
+    "low": 23,
+    "high": 0,
+    "medium": 1,
+    "redFlag": 0,
+    "veryHigh": 0
+   },
+   "mostCommonType": "functional",
+   "asciConcernCount": 0,
+   "drugBoundaryCount": 0,
+   "highestEvidenceLevel": 4
+  },
+  "formulaLogic": {
+   "note": "Formula assessment is pending a verified ingredient list.",
+   "claimOverreach": false,
+   "irritancyConcerns": [],
+   "claimOverreachNote": null,
+   "baseFormulaAppropriate": true,
+   "formatSuitableForClaim": true,
+   "activesLikelyMeaningful": true,
+   "heroIngredientsMatchClaim": true
+  },
+  "indiaContext": "Ingredient-based suitability for use in India has not been assessed because a complete source ingredient list could not be verified.",
+  "priceInsight": "The product shows some price variation across major Indian e-commerce platforms, with Amazon India offering the lowest price at Rs.1260.00. Flipkart and Nykaa list it at a slightly higher price point.",
+  "parentCompany": "L'Oréal",
+  "cleanSheetNote": "This analysis evaluates brand claims against visible evidence and formula logic. It does not replace a full ingredient safety analysis or a clinical product test. Results vary by individual, and the consumer should always read the full ingredient list and follow usage guidance.",
+  "keyActivesRead": [
+   {
+    "name": "Mexoryl 400 (Methoxypropylamino Cyclohexenylidene Ethoxyethylcyanoacetate)",
+    "function": "Exclusive UV filter for ultra-long UVA protection (380-400nm).",
+    "concentrationConfidence": "High"
+   },
+   {
+    "name": "Broad-spectrum UV filters (e.g., Tinosorb S, Uvinul T 150, Avobenzone, Uvinul A Plus, Mexoryl XL, Mexoryl SX)",
+    "function": "Provides very high protection against UVB and UVA rays.",
+    "concentrationConfidence": "High"
+   },
+   {
+    "name": "Netlock Technology (C12-22 Alkyl Acrylate/Hydroxyethylacrylate Copolymer, Acrylates/C10-30 Alkyl Acrylate Crosspolymer)",
+    "function": "Forms a uniform, resistant film for ultra-resistance to water, sweat, and sand.",
+    "concentrationConfidence": "Medium"
+   },
+   {
+    "name": "Glycerin",
+    "function": "Humectant for skin hydration.",
+    "concentrationConfidence": "High"
+   },
+   {
+    "name": "Tocopherol (Vitamin E)",
+    "function": "Antioxidant to protect against free radical damage.",
+    "concentrationConfidence": "Low"
+   }
+  ],
+  "platformParity": {
+   "issues": [
+    "Minor wording variations across platforms (e.g., 'Without perfume' vs 'Non-perfumed' vs 'Fragrance Free').",
+    "Price variations across platforms, with Amazon India offering the lowest price."
+   ],
+   "reelAngle": "Highlight the consistent 'ultra-long UVA protection' claim across all platforms, emphasizing the Mexoryl 400 filter as a key differentiator for Indian consumers concerned about pigmentation.",
+   "consistent": true,
+   "packVsOnline": "Online claims are consistent with the brand's official website and product packaging, particularly regarding the 'non-perfumed' aspect.",
+   "amplificationPattern": null,
+   "mostCautiousPlatform": "Brand Website"
+  },
+  "productPageUrl": "https://www.amazon.in/Roche-Posay-Anthelios-UVMune-Invisible-Resistant/dp/B09SLF5ZH8",
+  "imageConfidence": 1,
+  "inciIngredients": [],
+  "ingredientReads": [],
+  "regulatoryScreen": {
+   "iarc": "No prohibited or restricted ingredients identified",
+   "echa_svhc": "No prohibited or restricted ingredients identified",
+   "korea_mfds": "No prohibited or restricted ingredients identified",
+   "canada_nhpid": "No prohibited or restricted ingredients identified",
+   "eu_1223_2009": "No prohibited or restricted ingredients identified",
+   "us_fda_21cfr": "Contains UV filters (Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Ethylhexyl Triazone, Methoxypropylamino Cyclohexenylidene Ethoxyethylcyanoacetate, Diethylamino Hydroxybenzoyl Hexyl Benzoate, Drometrizole Trisiloxane, Terephthalylidene Dicamphor Sulfonic Acid) not currently approved for OTC sunscreen use in the US.",
+   "india_cr_2020": "No prohibited or restricted ingredients identified",
+   "tga_australia": "No prohibited or restricted ingredients identified",
+   "aicis_australia": "No prohibited or restricted ingredients identified",
+   "health_canada_hotlist": "No prohibited or restricted ingredients identified"
+  },
+  "methodologyVersion": "TCS v3.0",
+  "consumerSuitability": {
+   "avoidIf": [],
+   "bestFor": [],
+   "routineFit": "Daily morning use as the final step in skincare, before makeup. Reapply every 2 hours or after swimming/sweating.",
+   "layeringNotes": "Applies well over serums and moisturizers. Its invisible finish makes it an excellent base for makeup.",
+   "sensitivityRisk": "medium - while tested for sensitive skin, the high concentration of Alcohol Denat may cause dryness or irritation for some individuals, especially those with compromised skin barriers.",
+   "longTermExpectation": "Effective protection against sun damage, including photoaging and dark spots, with consistent use.",
+   "pregnancyOrTeenNote": null,
+   "immediateExpectation": "A lightweight, non-greasy fluid that absorbs quickly without a white cast and feels comfortable on the skin."
+  },
+  "priceAcrossPlatforms": [
+   {
+    "note": null,
+    "price": "Rs.1260.00",
+    "platform": "Amazon India",
+    "pricePerMl": "Rs.25.20/ml"
+   },
+   {
+    "note": "Also listed at Rs.1600.00 for the same product.",
+    "price": "Rs.1500.00",
+    "platform": "Flipkart",
+    "pricePerMl": "Rs.30.00/ml"
+   },
+   {
+    "note": null,
+    "price": "Rs.1400.00",
+    "platform": "Nykaa",
+    "pricePerMl": "Rs.28.00/ml"
+   }
+  ],
+  "ingredientTransparency": {
+   "label": "Basic label transparency",
+   "score": 1,
+   "issues": [
+    "We could not verify a complete ingredient list from the brand website, Nykaa or INKEE Decoder. Ingredient-based conclusions are pending verification."
+   ],
+   "inciSource": "Not verified",
+   "inciOrderCorrect": false,
+   "fullInciAvailable": false,
+   "complexesExplained": true,
+   "fragranceDisclosed": false,
+   "usageWarningsClear": true,
+   "preservativesVisible": false,
+   "phDisclosedWhereRelevant": false,
+   "activePercentagesDisclosed": false
+  }
+ },
+ "verdict": {
+  "tier": "mostly-clean",
+  "gates": [
+   {
+    "id": "safety",
+    "label": "Ingredient safety",
+    "detail": "No ingredient list could be retrieved, so the safety screen could not run - approval is withheld until an INCI is available",
+    "passed": false
+   },
+   {
+    "id": "claims",
+    "label": "Lawful claims",
+    "detail": "No drug-boundary or INCI-contradicted claims confirmed",
+    "passed": true
+   },
+   {
+    "id": "evidence",
+    "label": "Honest evidence",
+    "detail": "Claims are substantially backed by visible evidence",
+    "passed": true
+   },
+   {
+    "id": "formula",
+    "label": "Formula supports claims",
+    "detail": "The formula and format plausibly deliver the claims",
+    "passed": true
+   }
+  ],
+  "status": "not_approved",
+  "headline": "A well-made, transparent product; some claims rest on ingredient evidence rather than finished-product proof.",
+  "standard": "TCS v3.0 · safety · claims · evidence · formula",
+  "tierLabel": "Good Standing"
+ }
+}

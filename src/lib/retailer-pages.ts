@@ -39,6 +39,22 @@ export function retailerProductUrl(raw: string): string {
   return `${u.origin}${u.pathname}`;
 }
 
+/** Amazon's sponsored-result links ("/sspa/click?...&url=%2F<name>%2Fdp%2F<ASIN>...", "/gp/slredirect/...?url=...") wrap the product page in a click tracker.
+ *  Pasted as is, the analysis took its product name from the tracker's path ("click") and searched for ingredients under that name: La Roche-Posay's
+ *  UVMUNE400 fluid was saved with no list though Nykaa, INKEE Decoder and SkinSort all print one (2026-11-25). This returns the product page inside, with its
+ *  name segment kept (the name is read from it) and the tracking dropped. Any other address comes back unchanged. */
+export function unwrapAdRedirect(raw: string): string {
+  try {
+    const u = new URL(raw.trim());
+    if (!/(^|\.)amazon\.[a-z.]+$/i.test(u.hostname) || !/^\/(?:sspa\/click|gp\/slredirect\/)/i.test(u.pathname)) return raw;
+    const inner = u.searchParams.get("url");
+    if (!inner || !inner.startsWith("/") || inner.startsWith("//")) return raw;
+    const target = new URL(inner, u.origin);
+    const product = /^(.*?\/(?:dp|gp\/product)\/[A-Z0-9]{10})/i.exec(target.pathname)?.[1];
+    return product ? `${u.origin}${product}` : raw;
+  } catch { return raw; }
+}
+
 /** The retailer's name for any address on its site ("amazon.in" is "Amazon"), product page or not; null for another site. */
 export function retailerNameForHost(host: string): string | null {
   const h = host.toLowerCase();

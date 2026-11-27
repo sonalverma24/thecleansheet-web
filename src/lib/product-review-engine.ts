@@ -9,6 +9,7 @@
 import { createHash } from "node:crypto";
 import { stripCiteTags } from "@/lib/strip-cite-tags";
 import { reconcileMissingIngredients } from "@/lib/review-ingredient-state";
+import { unwrapAdRedirect } from "@/lib/retailer-pages";
 import { withBrandWebsiteClaimsOnly } from "@/lib/claim-source";
 import { evaluateEvidence, validateProposal, type Capture } from "@/lib/neurosymbolic/harness";
 import { PRODUCT_REVIEW_SYSTEM_PROMPT } from "@/lib/product-review-context";
@@ -1237,7 +1238,8 @@ export interface RunOptions {
 
 export async function runProductReview(query: string, opts: RunOptions = {}): Promise<ProductReviewResult> {
   const startedAt = Date.now();
-  const q = query.trim();
+  // A sponsored Amazon link is read as the product page it wraps, so the name, the slug and the ingredient search all come from the product (src/lib/retailer-pages.ts).
+  const q = unwrapAdRedirect(query.trim());
   if (!q) return { type: "error" };
   const save = opts.save !== false;
 

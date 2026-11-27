@@ -14,6 +14,9 @@ export function reconcileMissingIngredients(review: ProductReview): ProductRevie
     verdict: { ...review.verdict, bestThing: "", biggestConcern: "Ingredient list verification is incomplete.", cleanSheetTakeaway: MISSING_INCI_MESSAGE },
     formulaLogic: { ...review.formulaLogic, note: "Formula assessment is pending a verified ingredient list.", irritancyConcerns: [] },
     consumerSuitability: { ...review.consumerSuitability, bestFor: [], avoidIf: [] },
+    // The model's key actives are read from the web, not from a list we hold: with none, the page named "Netlock Technology" as a key ingredient over an
+    // empty ingredient list (La Roche-Posay's UVMUNE400 fluid, 2026-11-25).
+    keyActivesRead: [],
     indiaContext: "Ingredient-based suitability for use in India has not been assessed because a complete source ingredient list could not be verified.",
   };
 }

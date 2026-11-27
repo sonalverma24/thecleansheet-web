@@ -106,3 +106,23 @@ describe("a Decoder page found by the words retailers use", () => {
     expect(askModel).toHaveBeenCalled();
   });
 });
+
+describe("a Decoder entry that adds a form or an audience", () => {
+  // La Roche-Posay's UVMUNE400 fluid, read from an Amazon address that named the brand "Roche", took the brand's "Dermo-pediatrics Invisible Spray" (2026-11-27).
+  const SPRAY = decoder("lacto-calamine-kids-spray-kaolin-clay-with-lemon-extracts");
+  const spray = { name: "Lacto Calamine Kids Spray SPF 50 PA++ (Kaolin Clay With Lemon Extracts)", url: SPRAY };
+  const only = (e: { name: string; url: string }) => async () => [e];
+  // As on the live case, two shops' titles for a product that shares most of our words carry the spray's words, so the title rule alone lets it through.
+  const sprayTitles: SearchTitle[] = [...titles,
+    { url: "https://www.nykaa.com/lacto-calamine-kids-spray/p/9", title: "Lacto Calamine Kids Spray Sunscreen SPF 50 PA++ For Oily Skin With Kaolin Clay & Lemon Extracts" },
+    { url: "https://www.purplle.com/product/lacto-calamine-kids-spray", title: "Lacto Calamine Kids Spray Sunscreen SPF 50 PA++ For Oily Skin Kaolin Clay Lemon" },
+  ];
+  it("is refused when our own name does not give that form or audience", async () => {
+    const found = await findBrandInci(query, brand, undefined, deps({ searchTitles: async () => sprayTitles, searchDecoder: vi.fn(only(spray)), readDecoder: async (u) => (u === SPRAY ? page(SPRAY, spray.name, kaolinList) : null) }));
+    expect(found).toBeNull();
+  });
+  it("still finds the Kaolin page, whose name adds neither", async () => {
+    const found = await findBrandInci(query, brand, undefined, deps({ searchDecoder: vi.fn(only(entries.kaolin)) }));
+    expect(found?.source).toBe(KAOLIN);
+  });
+});

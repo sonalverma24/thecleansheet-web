@@ -332,3 +332,20 @@ describe("when a part of the model is empty, that part is left out and the rest 
     expect(html).not.toContain("Invalid Date");
   });
 });
+
+describe("Key Ingredients with no verified ingredient list", () => {
+  // La Roche-Posay's UVMUNE400 fluid (stored 2026-11-25) named "Netlock Technology" here and offered "View all ingredients" over an empty list.
+  it("says there is no list and offers none to open", async () => {
+    const fixture = (await import("@/lib/no-list-page.fixture.json")).default as unknown as { review: ProductReview };
+    const html = render(pillsFor(fixture.review, deriveVerdict(fixture.review)));
+    const block = html.slice(html.indexOf('id="key-ingredients"'), html.indexOf("Independent and free."));
+    expect(block).toContain("We have no verified ingredient list for this product yet.");
+    expect(block).not.toContain("View all ingredients");
+    expect(block).not.toContain("Netlock");
+  });
+  it("keeps the link on a page that has a list", () => {
+    const { html } = page(SAMPLE_MINIMALIST_B5);
+    expect(html).toContain("View all ingredients");
+    expect(html).not.toContain("We have no verified ingredient list for this product yet.");
+  });
+});
