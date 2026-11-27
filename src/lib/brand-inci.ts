@@ -175,6 +175,12 @@ const TITLE_NOISE = new Set([
 
 const stemWord = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
 
+/** Words that name what kind of product it is or who it is for, stemmed as stemWord does. A Decoder entry found by retailers' words may not add one of these. */
+const FORM_OR_AUDIENCE = new Set([
+  "spray", "mist", "stick", "gel", "cream", "creme", "lotion", "fluid", "serum", "balm", "powder", "foam", "mousse", "milk", "essence", "toner", "mask", "wash",
+  "cleanser", "scrub", "ampoule", "drop", "tint", "tinted", "kid", "kids", "baby", "babie", "pediatric", "paediatric", "children", "child", "junior", "men",
+].map(stemWord));
+
 /** The site a page is on, so several pages of one shop count once ("www.1mg.com" and "csc.1mg.com" are one shop). */
 function siteOf(url: string): string {
   try {
@@ -551,7 +557,10 @@ export async function findBrandInci(query: string, brand: string, suppliedUrl?: 
     const searches = await Promise.all(distinctive.slice(0, 4).map((w) => within(deps.searchDecoder!(`${brand} ${w}`), READ_CAP_MS.decoder)));
     const entries = [...new Map(searches.flatMap((s) => s ?? []).map((e) => [e.url, e])).values()].filter((e) => {
       const name = [...nameTokens(e.name, brand)].map(stemWord);
+      // A form or an audience our own name does not give is another product, whatever the retailers' titles say: for La Roche-Posay's UVMUNE400 fluid, read from an
+      // Amazon address that named the brand "Roche", this took the brand's "Dermo-pediatrics Invisible Spray" (2026-11-27). A wrong list is worse than none.
       return !tried.has(e.url) && titleNamesBrand(e.name, brand) && name.some((w) => distinctive.includes(w)) && name.some((w) => ownWords.has(w))
+        && name.every((w) => !FORM_OR_AUDIENCE.has(w) || ownWords.has(w))
         && pageTitleNamesProduct(e.name, brand, enriched);
     }).slice(0, 3);
     for (const e of entries) tried.add(e.url);

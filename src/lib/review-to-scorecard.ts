@@ -24,6 +24,11 @@ import type { GlobalScreen, IngredientEntry, KeyActive, PregnancyIngredientFlag,
 const FRAGRANCE_RE = /^(parfum|fragrance|parfum\/fragrance|aroma)$/i;
 const DRYING_ALCOHOL_RE = /^alcohol( denat\.?)?$|^sd alcohol/i;
 
+/** Whether a claim's support is the formula's make-up ("the presence of", "contains", "incorporates", "formulated with"), not a test or the brand's own proof. */
+export function restsOnFormula(note: string | null | undefined): boolean {
+  return /\b(?:presence of|contains?|containing|incorporat(?:es?|ing)|formulated with|(?:formula|product) (?:has|includes|uses))\b/i.test(note ?? "");
+}
+
 function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: string[]): ClaimsCheckItem {
   const fragranceFreeClaim = /\b(?:fragrance|parfum|perfume|aroma)[\s-]*free\b|\b(?:no|without)\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b|\bfree from\b[^.;]{0,50}\b(?:fragrance|parfum|perfume|aroma)\b/i.test(c.text);
   if (fragranceFreeClaim) {
@@ -47,8 +52,18 @@ function claimToCheckItem(c: ClaimAnalysis, review: ProductReview, ingredients: 
       note: "This is a brand claim. TCS has not reviewed matching product-specific evidence for the claim. Its presence does not change the product rating by itself.",
     };
   }
-  const supported = c.riskLevel === "low";
+  // A claim the model backed with what the formula contains cannot be supported when we hold no verified list: La Roche-Posay's fluid had "Ultimate protection"
+  // supported "by the presence of multiple UV filters" and "Invisible" by "silica and perlite" on a page that says it has no ingredient list (2026-11-25).
   const contradicted = c.riskLevel === "red-flag" || c.drugBoundaryRisk;
+  if (!contradicted && c.riskLevel === "low" && restsOnFormula(c.evidenceNote) && !isSourceBackedInci(review, ingredients)) {
+    return {
+      claim: c.text.length > 90 ? c.text.slice(0, 90).replace(/\s+\S*$/, "") + "…" : c.text,
+      decision: "Needs proof",
+      evidenceStatus: "Missing",
+      note: "This rests on what the formula contains, and we could not verify a complete ingredient list.",
+    };
+  }
+  const supported = c.riskLevel === "low";
   return {
     claim: c.text.length > 90 ? c.text.slice(0, 90).replace(/\s+\S*$/, "") + "…" : c.text,
     decision: contradicted ? "Not publicly supported" : supported ? "Publicly supported" : "Needs proof",

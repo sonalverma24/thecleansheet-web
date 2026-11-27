@@ -457,6 +457,15 @@ export function testLevelOf(review: ProductReview): number {
 const NOT_HELD_NOTE = /\bnot in our (analysed |reference )?(database|data)\b/i;
 export const isNotHeldNote = (note?: string): boolean => Boolean(note && NOT_HELD_NOTE.test(note));
 
+/** A claim note about a test of the product or a study, not about its patents, research or make-up. */
+const TEST_NOTE_RE = /\b(?:test(?:ed|s|ing)?|stud(?:y|ies)|clinical(?:ly)?|trial|panel|participants|volunteers|users|subjects|in[- ]vivo|in[- ]vitro|lab(?:oratory)?|report)\b/i;
+
+/** Whether a product's pH is worth asking for: acids, exfoliants and pure vitamin C, where strength and pH decide what it does. A sunscreen's pH is not a gap. */
+function phMatters(review: ProductReview): boolean {
+  const text = [review.category, review.productName, review.heroPromise, ...reviewInciList(review)].filter(Boolean).join(" ");
+  return /\b(?:aha|bha|pha|glycolic|lactic|salicylic|mandelic|azelaic|gluconolactone|exfoliat\w*|peel(?:ing)?|l-ascorbic|ascorbic acid|vitamin c)\b/i.test(text);
+}
+
 function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, product: ProductScorecard, medicine: boolean = d.key === "medicinal-product", concerns: IngredientConcern[] = []): DetailRow[] | null {
   if (medicine || (d.key === "not-enough-info" && d.gapKind === "acquisition")) return null;
   const pillar = (re: RegExp) => product.pillars.find((p) => re.test(p.name))?.note ?? "";
@@ -478,6 +487,9 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
   const f = review.formulaLogic;
   const checks = [f?.heroIngredientsMatchClaim, f?.formatSuitableForClaim, f?.activesLikelyMeaningful, f?.baseFormulaAppropriate].filter((x) => x === true).length;
   const formulaLine = lead(f?.note) || (f?.claimOverreach ? "The claims promise more than the formula can deliver." : checks === 4 ? "The formula suits what it claims to do." : `${checks} of 4 formula checks pass.`);
+  // Without a verified list the formula was not read, so the row is not rated: it said "Strong" over "Formula assessment is pending a verified ingredient list"
+  // (La Roche-Posay's UVMUNE400 fluid, 2026-11-25). The model's formula score is left out of the row, as it is from the decision.
+  const hasList = reviewInciList(review).length > 0;
 
   // Formula logic, Claims evidence, Test transparency and Consumer clarity take their colours from the same function the decision reads
   // (analyser-x/sections.ts), so a row on the page and the check the decision makes about it cannot disagree.
@@ -488,15 +500,16 @@ function detailsOf(d: Decision, settled: Set<string>, review: ProductReview, pro
 
   // 4. Test transparency.
   const level = testLevelOf(review);
-  const evidenceNotes = [...(review.claimMap ?? [])].filter((c) => c.evidenceNote).sort((a, b) => b.evidenceLevel - a.evidenceLevel).slice(0, 3).map((c) => `${c.text}: ${c.evidenceNote}`);
+  // Only the notes that are about a test or study belong here: the row showed the claim notes about patents and research instead.
+  const evidenceNotes = [...(review.claimMap ?? [])].filter((c) => c.evidenceNote && TEST_NOTE_RE.test(c.evidenceNote)).sort((a, b) => b.evidenceLevel - a.evidenceLevel).slice(0, 3).map((c) => `${c.text}: ${c.evidenceNote}`);
 
   // 5. Consumer clarity.
   const it = review.ingredientTransparency;
-  const gaps = [it && it.usageWarningsClear === false ? "usage warnings" : "", it && it.phDisclosedWhereRelevant === false ? "pH" : "", it && it.activePercentagesDisclosed === false ? "active strengths" : ""].filter(Boolean);
+  const gaps = [it && it.usageWarningsClear === false ? "usage warnings" : "", it && it.phDisclosedWhereRelevant === false && phMatters(review) ? "pH" : "", it && it.activePercentagesDisclosed === false ? "active strengths" : ""].filter(Boolean);
 
   return [
     { n: "01", title: "Ingredient safety", oneLiner: safetyLine, rating: safety, body: [...flagged.map((i) => `${i.name}: ${i.note}`), ...safetyTexts.slice(1).map((r) => r.text)].filter(Boolean), ...(concerns.length ? { named: concerns } : {}) },
-    { n: "02", title: "Formula logic", oneLiner: formulaLine, rating: colour(sec.formula), body: [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
+    { n: "02", title: "Formula logic", oneLiner: hasList ? formulaLine : "We could not assess the formula without a verified ingredient list.", rating: hasList ? colour(sec.formula) : NOT_RATED, body: !hasList ? [] : [f?.note ?? "", f?.claimOverreachNote ?? "", f?.irritancyConcerns?.length ? `Worth knowing: ${joinAnd(f.irritancyConcerns)}.` : ""].filter(Boolean) },
     { n: "03", title: "Claims evidence", oneLiner: claimLine(product), rating: colour(sec.claims), body: [pillar(/claim support|claim/i)].filter(Boolean) },
     { n: "04", title: "Test transparency", oneLiner: LADDER_PLAIN[Math.min(7, Math.max(1, level))], rating: colour(sec.tests), body: evidenceNotes },
     { n: "05", title: "Consumer clarity", oneLiner: gaps.length ? `Clear overall, with ${plural(gaps.length, "gap", "gaps")} in guidance: ${joinAnd(gaps)}.` : "Clear claims, ingredients and instructions.", rating: colour(sec.clarity), body: [pillar(/clarity/i), ...(it?.issues ?? [])].filter(Boolean) },
@@ -629,7 +642,9 @@ function faqOf(m: Omit<PillsPageModel, "faq">, review: ProductReview, product: P
   const listFrom = review.inciEvidence?.origin === "owner-supplied"
     ? `the ingredient list printed on the product's pack, typed in by The Clean Sheet (${usedName} shows the product)`
     : sourceName(review.inciEvidence?.sourceUrl ?? review.dataSource?.inciSource ?? "");
-  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)} from ${listFrom}.${otherNote} We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
+  // With no list there is no source to name: the page said "Analysed on 25 Nov 2026 from Not verified." (La Roche-Posay's UVMUNE400 fluid, 2026-11-25).
+  const fromText = reviewInciList(review).length && listFrom && !/^not verified$/i.test(listFrom) ? ` from ${listFrom}` : ", without a verified ingredient list";
+  out.push({ q: "How recent is this analysis?", a: `Analysed on ${dayText(m.analysedAt)}${fromText}.${otherNote} We re-check analyses older than six months${m.stale ? "; this one is due a re-check" : ""}.` });
   return out;
 }
 

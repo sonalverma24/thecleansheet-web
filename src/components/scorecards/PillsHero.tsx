@@ -197,9 +197,14 @@ export function PillsHero({ product, brand, model }: { product: ProductScorecard
                 ? <Link key={name} href={`/ingredients/${slug}`} className="pp-pill">{name}</Link>
                 : <span key={name} className="pp-pill">{name}</span>;
             })}
-            <OpenDetailsLink targetId="ingredients" className="inline-flex items-center min-h-11 px-1 sm:px-0 sm:ml-0 text-sm font-medium text-[#1d6761] underline underline-offset-4">
-              View all ingredients
-            </OpenDetailsLink>
+            {product.ingredients.length ? (
+              <OpenDetailsLink targetId="ingredients" className="inline-flex items-center min-h-11 px-1 sm:px-0 sm:ml-0 text-sm font-medium text-[#1d6761] underline underline-offset-4">
+                View all ingredients
+              </OpenDetailsLink>
+            ) : (
+              // No verified list, so no key ingredients to name and no list to open.
+              <p className="text-sm text-[#282828]">We have no verified ingredient list for this product yet.</p>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-2 bg-[#f0f6f6] border border-[#cae1df] rounded-[18px] px-4 py-3.5 sm:px-[22px] sm:py-[18px]">

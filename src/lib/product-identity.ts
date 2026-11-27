@@ -100,8 +100,11 @@ export function pageTitleNamesProduct(title: string | null | undefined, brand: s
   if (titleIdentifiesProduct(title, brand, productName)) return true;
   if (!title) return false;
   const stem = (w: string) => (w.length > 3 ? w.replace(/s$/, "") : w);
-  const have = [...nameTokens(title, brand)].map(stem);
-  const want = new Set([...nameTokens(productName, brand)].map(stem));
+  // A word that runs letters into a number is the same as the two written apart: INKEE Decoder and SkinSort title La Roche-Posay's fluid "Uvmune 400",
+  // the brand and Nykaa "UVMUNE400", and the lists of the first two were refused as another product's (2026-11-25). Both sides are split the same way.
+  const apart = (w: string): string[] => /^[a-z]+\d+$|^\d+[a-z]+$/.test(w) ? w.split(/(?<=[a-z])(?=\d)|(?<=\d)(?=[a-z])/) : [w];
+  const have = [...new Set([...nameTokens(title, brand)].flatMap(apart))].map(stem);
+  const want = new Set([...nameTokens(productName, brand)].flatMap(apart).map(stem));
   return have.length >= 3 && have.every((w) => want.has(w));
 }
 
